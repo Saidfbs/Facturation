@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحويل البيانات</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      text-align: right;
+      margin: 0;
+      padding: 0;
+      background-color: #fafafa;
+    }
+    .button-container {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      width: 80%;
+    }
+    .button-container button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #dataList {
+      margin: 20px auto;
+      padding: 10px;
+      border-radius: 5px;
+      width: 80%;
+      background-color: #e0f7fa;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    li {
+      border: 1px solid #ddd;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    h2 {
+      text-align: center;
+    }
+    #progressContainer {
+      margin: 20px auto;
+      padding: 10px;
+      width: 80%;
+      text-align: center;
+    }
+    #progressBar {
+      width: 100%;
+      height: 20px;
+      background-color: #ddd;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    #progressBarFill {
+      height: 100%;
+      background-color: #76c7c0;
+      width: 0%;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">تحويل البيانات</h1>
+  
+  <div id="statusMessage" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+  
+  <div id="progressContainer" style="display:none;">
+    <div id="progressBar">
+      <div id="progressBarFill"></div>
+    </div>
+    <div id="progressPercentage" style="font-weight: bold;">0%</div>
+  </div>  
+  
+  <div class="button-container">
+    <button id="loadJsonButton">تحميل ملف JSON</button>
+    <button id="sortDataButton" style="display:none;">ترتيب البيانات</button>
+    <button id="saveDataButton" style="display:none;">تحميل البيانات المترتبة</button>
+    <button id="sendDataButton" style="display:none;">إرسال البيانات إلى قاعدة البيانات</button>
+  </div>
+
+  <div id="dataList">
+    <h2>البيانات المستردة</h2>
+  </div>
+
+  <script>
+    let fetchedData = [];
+    let sortedData = [];
+
+    const loadJsonFile = (event) => {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const jsonData = JSON.parse(e.target.result);
+        fetchedData = getNestedData(jsonData);
+        displayData(fetchedData);
+        document.getElementById('sortDataButton').style.display = 'block';
+        document.getElementById('statusMessage').textContent = `تم تحميل ملف JSON بنجاح. عدد العناصر: ${fetchedData.length}`;
+      };
+      reader.readAsText(file);
+    };
+
+    const getNestedData = (data) => {
+      // تجاوز المستوى الأول والثاني من البيانات
+      const firstKey = Object.keys(data)[0];
+      const secondKey = Object.keys(data[firstKey])[0];
+      return data[firstKey][secondKey];
+    };
+
+    const displayData = (data) => {
+      const dataList = document.getElementById('dataList');
+      dataList.innerHTML = '<h2>البيانات المستردة</h2>';
+      const ul = document.createElement('ul');
+      data.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>عنصر ${index + 1}:</strong><br>${JSON.stringify(item, null, 2)}`;
+        ul.appendChild(li);
+      });
+      dataList.appendChild(ul);
+    };
+
+    const sortData = (data, onProgress) => {
+      return new Promise((resolve) => {
+        const totalItems = data.length;
+        const sorted = [];
+        let index = 0;
+
+        function processNext() {
+          if (index < totalItems) {
+            const item = data[index];
+
+            const supplierPhone = item.details?.[0]?.contact_point || '';
+            const supplierAddress = item.details?.[1]?.contact_point || '';
+
+            sorted.push({
+              id: 0,
+              price: 0,
+              quantity: 0,
+              supplierName: 0,
+              supplierPhone: supplierPhone,
+              name: item.name,
+              supplierAddress: supplierAddress
+            });
+
+            index++;
+            const progress = (index / totalItems) * 100;
+            onProgress(progress);
+            setTimeout(processNext, 10); // تأخير بسيط لتمكين تحديث واجهة المستخدم
+          } else {
+            resolve(sorted);
+          }
+        }
+
+        processNext();
+      });
+    };
+
+    const saveData = (data) => {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sorted_data.json'; // اسم الملف المراد تحميله
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+
+    const sendDataToFirebase = async (data) => {
+      const firebasePath = 'https://said-rahil-default-rtdb.firebaseio.com/alldata/+212671243653/-O4q1qxG9fwLQK-XgbPg/products.json';
+      try {
+        const response = await fetch(firebasePath, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('فشل في إرسال البيانات');
+        document.getElementById('statusMessage').textContent = 'تم إرسال البيانات بنجاح إلى قاعدة البيانات.';
+      } catch (error) {
+        document.getElementById('statusMessage').textContent = 'خطأ في إرسال البيانات: ' + error.message;
+      }
+    };
+
+    const updateProgress = (percentage) => {
+      const progressBarFill = document.getElementById('progressBarFill');
+      const progressPercentage = document.getElementById('progressPercentage');
+      progressBarFill.style.width = `${percentage}%`;
+      progressPercentage.textContent = `${percentage.toFixed(2)}%`;
+    };
+
+    document.getElementById('loadJsonButton').addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = loadJsonFile;
+      input.click();
+    });
+
+    document.getElementById('sortDataButton').addEventListener('click', async () => {
+      document.getElementById('statusMessage').textContent = 'جاري ترتيب البيانات...';
+      document.getElementById('progressContainer').style.display = 'block'; // عرض شريط التقدم
+      sortedData = await sortData(fetchedData, updateProgress);
+      document.getElementById('saveDataButton').style.display = 'block'; // عرض زر تحميل البيانات بعد ترتيب البيانات
+      document.getElementById('sendDataButton').style.display = 'block'; // عرض زر إرسال البيانات بعد ترتيب البيانات
+      document.getElementById('statusMessage').textContent = 'تم ترتيب البيانات بنجاح.';
+    });
+
+    document.getElementById('saveDataButton').addEventListener('click', () => {
+      saveData(sortedData); // حفظ البيانات المرتبة
+      document.getElementById('statusMessage').textContent = 'تم تحميل البيانات المترتبة بنجاح.';
+    });
+
+    document.getElementById('sendDataButton').addEventListener('click', async () => {
+      await sendDataToFirebase(sortedData); // إرسال البيانات المرتبة إلى قاعدة البيانات
+    });
+  </script>
+</body>
+</html>
