@@ -1,634 +1,1453 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ESP 32 WIFI</title>
-
-<style>
+<title>Créer une facture</title>
+    
+    <style>
+    
 :root {
-  --background: #e6e6e6; /* Light grey for a soft background */
-  --container-background: #ffffff; /* White for container backgrounds */
-  --button_container: #e6e6e6; /* Light grey for button containers */
-  --circle-container: #e6e6e6; /* Light grey for circle containers */
-  --gray-container: #e6e6e6; /* Light grey for gray containers */
-  --input-background: #f9f9f9; /* Light grey for input backgrounds */
-  --label-background: var(--input-background);
-  --button-background: #4caf50; /* Calming green for primary buttons */
-  --shadow: 0 0 1px 1px var(--button-background);
-  --button-hover: #ffa500; /* Soft orange for button hover */
-  --button-text-color: #333333; /* Dark grey for button text */
-  --text-color: #333333; /* Dark grey for text */
-  --circle-inner: #dcedc800; /* Light green for circle inner */
+    --background-color: #6C757D; /* Light greenish-grey background, similar to WhatsApp */
+    --border-color: #ece5dd; /* Light border color, matching WhatsApp's borders */
+    --container-bg-color: #ddd; /* White for chat bubbles */
+    --container-bg-color2: #f4f4f4; /* White for chat bubbles */
+    --button-bg-color: #007BFF; /* WhatsApp's green for primary buttons */
+    --button-bg1-color: #D8F8D0; /* Darker green for secondary buttons */
+    --button-bg2-color: #D8F8D0; /* Light blue for tertiary buttons */
+    --button-delete-bg-color: #f44336; /* Red for delete buttons, keeping it consistent */
+    --invoice-bg-color: #ffffff; /* White for invoice background */
+    --invoice-table-header-bg-color: #ffffff; /* Very light grey for table headers */
+    --invoice-header-footer-bg-color: #ffffff; /* Dark green for headers and footers */
+    --text-color: #4a4a4a; /* Dark grey for text, similar to WhatsApp's text color */
+    --border-radius: 5px; /* Slightly rounded corners, less prominent than before */
 }
+    
+    
 body {
-height: 100%;
-margin: 0;
-display: flex;
-justify-content: center;
-align-items: center;
 font-family: Arial, sans-serif;
-background: var(--background);
-color: var(--text-color);
-font-weight: bold;
+direction: ltr;
+background-color: var(--background-color);
 }
-#container {
+
+.container{}
+
+.product-container,
+.client-container,
+.product,
+.product-item {
+border: 2px solid var(--text-color);
+padding: 15px;
+border-radius: var(--border-radius);
+margin-bottom: 15px;
+background-color: var(--container-bg-color);
+position: relative;
+}
+
+.button-container {
+display: flex;
+gap: 10px;
+}
+
+p {
+margin: 0;
+padding: 0;
+}
+
+.form-group {
+margin-bottom: 15px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea {
+width: 100%;
+padding: 8px;
+box-sizing: border-box;
+background-color: var(--container-bg-color2);
+border-radius: var(--border-radius);
+border: 2px solid var(--text-color);
+margin-bottom: 5px;
+}
+  
+#phoneDropdown {
+width: 100%;
+padding: 8px;
+box-sizing: border-box;
+background-color: var(--button-bg-color);
+border-radius: var(--border-radius);
+border: 2px solid var(--text-color);
+margin-bottom: 5px;
+}
+
+.form-group textarea {
+resize: vertical;
+}
+
+.btn,
+.btn1,
+.btn2,
+.btn-delete,
+.btn-edit {
+display: block;
+width: 100%;
+padding: 8.75px 0;
+color: var(--text-color);
+border: 2px solid var(--text-color);
+cursor: pointer;
+border-radius: var(--border-radius);
+text-align: center;
+margin-bottom: 5px;
+}
+
+.btn {
+background-color: var(--button-bg-color);
+}
+
+.btn1 {
+background-color: var(--button-bg1-color);
+}
+
+.btn2 {
+background-color: var(--button-bg2-color);
+}
+
+.btn-delete {
+background-color: var(--button-delete-bg-color);
+margin-top: 10px;
+}
+
+.btn-edit {
+background-color: var(--button-bg1-color);
+margin-top: 10px;
+}
+
+.invoice {
+margin-top: 20px;
 padding: 20px;
 border-radius: 10px;
-box-shadow: var(--shadow);
-background: var(--container-background);
+background-color: var(--invoice-bg-color);
 }
-#container-wrapper {
-display: flex;
-justify-content: center;
-align-items: flex-start;
-width: 100%;
-height: 100%;
-box-sizing: border-box;
-}
-#title_container, #input_container, #button_container {
-margin-bottom: 20px;
-text-align: center;
-width: 100%;
-border-radius: 10px;
-font-weight: bold;
-}
-#button_container {
-box-shadow: var(--shadow);
-background: var(--button_container);
-}
-#input_container label, #button_container label {
-display: block;
-box-shadow: var(--shadow);
-font-weight: bold;
-}
-#input_container {
-width: 100%;
-}
-#input_container label {
-margin-bottom: 10px;
-padding: 5px;
-font-weight: bold;
-color: var(--text-color);
-background-color: var(--label-background);
-border-radius: 10px;
-}
-#container input, #save_btn {
+
+.invoice h2,
+.invoice-header,
+.invoice-header1,
+.invoice-footer {
+border: 1px solid var(--border-color);
+background-color: var(--invoice-header-footer-bg-color);
 margin-bottom: 10px;
 padding: 10px;
-border: 2px solid var(--button-background);
-width: 100%;
-box-sizing: border-box;
-background-color: var(--input-background);
-color: var(--text-color);
-border-radius: 10px;
+}
+
+.invoice-header1 {
+background-color: var(--invoice-table-header-bg-color);
 text-align: center;
+}
+
+.invoice-header1 table {
+margin: 0 auto;
+}
+
+.invoice-header1 tfoot tr td {
+text-align: left;
 font-weight: bold;
 }
-#button_container input {
-margin-bottom: 10px;
-padding: 10px;
-border: 2px solid #00000000;
-width: 100%;
-box-sizing: border-box;
-background-color: var(--label-background);
-color: var(--text-color);
-border-radius: 10px;
-text-align: center;
-font-weight: bold;
-box-shadow: var(--shadow);
-}
-#input_container input {
-direction: ltr;
-}
-#container button, #save_btn {
-background-color:  var(--button-background);
-color: var(--button-text-color);
-border: none;
-cursor: pointer;
-font-weight: bold;
-}
-#input_container button:hover, #save_btn:hover {
-background-color: var(--button-hover);
-}
-#input_container button:hover {
-background-color: #00000000;
-}
-#input_container button:active, #save_btn:active {
-transform: scale(1);
-opacity: 1;
-}
-#button_container {
-width: 100%;
-}
-.button_table_group {
-width: 100%;
-margin-top: 5px;
-}
-#button_container table {
+
+.invoice-table {
 width: 100%;
 border-collapse: collapse;
+margin-bottom: 10px;
+background-color: var(--invoice-header-footer-bg-color);
 }
-#button_container th, #button_container td {
-padding: 10px;
+
+.invoice-table th,
+.invoice-table td {
+border: 1px solid var(--border-color);
+padding: 8px;
+text-align: left;
+}
+
+#displayTotalAmount,
+#displayTVA,
+#displayTotalTTC {
 text-align: center;
-font-weight: bold;
 }
-#button_container th {
-color: var(--text-color);
+
+.saved-products3,
+.saved-products4 {
 }
-#container button {
-padding: 15px;
-border: none;
-background-color: var(--button-background);
-width: 100%;
-height: 50px;
-border-radius: 10px;
-font-weight: bold;
-}
-#button_container button {
-padding: 15px;
-border: none;
-background-color: #00000000;
-width: 100%;
-height: 50px;
-border-radius: 10px;
-font-weight: bold;
-box-shadow: var(--shadow);
-}
-#button_container button:hover {
-/* Optional: Add hover effects */
-}
-#button_container button:active {
-transform: scale(1);
-opacity: 1;
-}
-.circle-wrap {
-margin: 0 auto;
-width: 100px;
-height: 100px;
-border-radius: 50%;
+
+.quantity-controls {
 display: flex;
 align-items: center;
-justify-content: center;
-position: relative;
-font-weight: bold;
+margin-top: 10px;
 }
-.circle-container {
-background-color: var(--circle-container);
-padding: 10px;
-text-align: center;
-border-radius: 10px;
-margin: 5px;
-box-shadow: var(--shadow);
-font-weight: bold;
+
+.quantity-controls button,
+.quantity-controls input {
+border-radius: var(--border-radius);
+border: 2px solid var(--text-color);
 }
-.circle-wrap::before {
-content: '';
-width: 80px;
-height: 80px;
-background: var(--circle-inner);
-border-radius: 50%;
-position: absolute;
+
+.quantity-controls button {
+width: 50%;
+height: 37px;
+background-color: var(--button-bg-color);
+padding: 5px 10px;
+cursor: pointer;
 }
-.circle-wrap input.circle-input {
-width: 80%;
-height: 80%;
-border: none;
-text-align: center;
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-background: transparent;
-font-size: 16px;
-outline: none;
-color: var(--text-color);
-font-weight: bold;
-}
-input[type="number"] {
-border: none;
-background: transparent;
-color: var(--text-color);
-font-size: 16px;
-outline: none;
-font-weight: bold;
-}
-.circle-wrap span.circle-value {
-display: none;
-}
-.circle-wrap span.circle-text {
-position: relative;
-font-size: 16px;
-z-index: 1;
-display: block;
-font-weight: bold;
-}
-.social-icons {
-display: flex;
-justify-content: center;
-gap: 15px;
-margin-bottom: 20px;
-font-weight: bold;
-}
-.social-icons .icon {
-display: flex;
-align-items: center;
-justify-content: center;
-width: 40px;
-height: 40px;
-border-radius: 50%;
-overflow: hidden;
-font-weight: bold;
-}
-.social-icons .icon img {
-width: 30px;
-height: 30px;
-}
-.social-icons .icon i {
-font-size: 24px;
-}
-.social-icons .icon:hover {
-transform: scale(0.8);
-box-shadow: var(--shadow);
-}
-.map-container {
-position: relative;
+
+.quantity-controls input {
 width: 100%;
-padding-bottom: 56.25%;
-height: 0;
-overflow: hidden;
+height: 32px;
+text-align: center;
+background-color: var(--container-bg-color2);
+margin: 0 10px;
+border-radius: var(--border-radius);
 }
-.map-container iframe {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
+
+.invoice p {
+margin: 5px 0;
 }
-.gray-background-container {
-background-color: var(--gray-container);
-padding: 10px;
-border-top-left-radius: 10px;
-border-top-right-radius: 10px;
-border-bottom-left-radius: 0;
-border-bottom-right-radius: 0;
-font-weight: bold;
+
+.invoice .divider {
+border-top: 1px solid var(--border-color);
+margin: 15px 0;
 }
+
+.product-item:last-child {
+border-bottom: none;
+}
+    
+
+.handwritten-title {
+    font-family: 'Arial', sans-serif; /* استخدم خطاً واضحاً مثل Arial */
+    font-size: 35px; /* حجم الخط أكبر لجعله أكثر وضوحًا */
+    font-weight: bold; /* اجعل الخط غليظاً */
+    text-align: center; /* جعل العنوان في المنتصف */
+    background: linear-gradient(90deg, 
+        green 0%, 
+        green 25%, 
+        green 40%,
+        orange 50%,
+        orange 75%, 
+        orange 100%); /* تدرج يبدأ بالأخضر، ثم الأصفر في الوسط */
+    -webkit-background-clip: text;
+    color: transparent; /* اجعل النص شفافاً لعرض التدرج */
+    margin-bottom: 10px; /* مسافة بين العنوان والنموذج */
+margin-top: 10px; /* مسافة بين العنوان والنموذج */
+letter-spacing: 1px; /* تحسين التباعد بين الحروف */
+}
+ 
+
+.social-icon {
+    position: fixed;
+    right: 8px; /* وضع الأيقونات على الجهة اليمنى */
+    width: 50px; /* حجم الأيقونات */
+    height: 50px; /* حجم الأيقونات */
+    z-index: 1000;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 1s ease; /* الانتقال لتأثير التحويل فقط */
+    background-size: 70%; /* حجم الخلفية المعدل */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.social-icon {
+    transition: opacity 0.4s ease, transform 0.5s ease; /* تدرج الشفافية والتحريك */
+}
+
+.social-icon.hidden {
+    transform: translateX(150%); /* تحريك الأيقونات خارج الشاشة */
+    pointer-events: none; /* تعطيل التفاعل مع الأيقونات عند إخفائها */
+    opacity: 0; /* جعل الأيقونات شفافة */
+}
+
+/* أيقونة العودة إلى الأعلى */
+.scroll-to-top-icon {
+    top: calc(50% - 130px); /* وضع الأيقونة في منتصف الشاشة تقريبًا */
+    background-color: var(--button-bg1-color);
+    background-image: url('https://cdn4.iconfinder.com/data/icons/pictype-free-vector-icons/16/home-1024.png');
+}
+
+/* أيقونة فيسبوك */
+.facebook-icon {
+    top: calc(50% - 65px); /* وضع الأيقونة أسفل الأيقونة السابقة */
+    background-color: #3b5998;
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg');
+}
+
+/* أيقونة واتساب */
+.whatsapp-icon {
+    top: calc(50%); /* وضع الأيقونة أسفل الأيقونة السابقة */
+    background-color: #25D366;
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg');
+}
+
+/* أيقونة التمرير إلى الأسفل */
+.scroll-down-icon {
+    top: calc(50% + 65px); /* وضع الأيقونة أسفل الأيقونة السابقة */
+    background-color: var(--button-bg1-color);
+    background-image: url('https://cdn0.iconfinder.com/data/icons/right-direction-1/64/arrow-solid-down-1024.png');
+}
+    
+ 
 </style>
-</head>
-<body>
-<div id="container-wrapper">
-<div id="container">
-<input type="text" id="db_url" placeholder="أدخل عنوان قاعدة البيانات..." list="db_urls">
-<datalist id="db_urls"></datalist>
-<input type="text" id="db_device" placeholder="أدخل اسم الجهاز..." list="db_devices">
-<datalist id="db_devices"></datalist>
-<button id="save_btn">SAVE</button>
-<div id="input_container">
-<div id="button_container">
-<div class="button_table_group">
-<table class="gray-background-container">
-<tr>
-<td><label for="btn_S1">S1</label><button id="btn_S1"></button></td>
-<td><label for="btn_S2">S2</label><button id="btn_S2"></button></td>
-<td><label for="btn_S3">S3</label><button id="btn_S3"></button></td>
-<td><label for="btn_S4">S4</label><button id="btn_S4"></button></td>
-</tr>
-<tr>
-<td><label for="btn_E1">E1</label><button id="btn_E1"></button></td>
-<td><label for="btn_E2">E2</label><button id="btn_E2"></button></td>
-<td><label for="btn_E3">E3</label><button id="btn_E3"></button></td>
-<td><label for="btn_E4">E4</label><button id="btn_E4"></button></td>
-</tr>
-</table>
-</div>
-<div class="button_table_group">
-<table >
-<tr>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A0">
-<div class="circle-wrap" id="circle_A0_wrap">
-<span id="circle_A0" class="circle-value"></span>
-<span class="circle-text">A1 %</span>
-</div>
-</div>
-</td>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A1">
-<div class="circle-wrap" id="circle_A1_wrap">
-<span id="circle_A1" class="circle-value"></span>
-<span class="circle-text">A2 %</span>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="button_table_group">
-<table >
-<tr>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A2">
-<div class="circle-wrap" id="circle_A2_wrap">
-<span id="circle_A2" class="circle-value"></span>
-<span class="circle-text">A3 %</span>
-</div>
-</div>
-</td>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A3">
-<div class="circle-wrap" id="circle_A3_wrap">
-<span id="circle_A3" class="circle-value"></span>
-<span class="circle-text">A4 %</span>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div id="button_container">
-<div class="button_table_group">
-<table class="gray-background-container">
-<tr>
-<td><label for="btn_S5">S5</label><button id="btn_S5"></button></td>
-<td><label for="btn_S6">S6</label><button id="btn_S6"></button></td>
-<td><label for="btn_S7">S7</label><button id="btn_S7"></button></td>
-<td><label for="btn_S8">S8</label><button id="btn_S8"></button></td>
-</tr>
-<tr>
-<td><label for="btn_E5">E5</label><button id="btn_E5"></button></td>
-<td><label for="btn_E6">E6</label><button id="btn_E6"></button></td>
-<td><label for="btn_E7">E7</label><button id="btn_E7"></button></td>
-<td><label for="btn_E8">E8</label><button id="btn_E8"></button></td>
-</tr>
-</table>
-</div>
-<div class="button_table_group">
-<table >
-<tr>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A4">
-<div class="circle-wrap" id="circle_A4_wrap">
-<span id="circle_A4" class="circle-value"></span>
-<span class="circle-text">A5 %</span>
-</div>
-</div>
-</td>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A6">
-<div class="circle-wrap" id="circle_A6_wrap">
-<span id="circle_A6" class="circle-value"></span>
-<span class="circle-text">A7 %</span>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="button_table_group">
-<table >
-<tr>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A5">
-<div class="circle-wrap" id="circle_A5_wrap">
-<span id="circle_A5" class="circle-value"></span>
-<span class="circle-text">A6 %</span>
-</div>
-</div>
-</td>
-<td>
-<div class="circle-container">
-<input type="number" id="db_A7">
-<div class="circle-wrap" id="circle_A7_wrap">
-<span id="circle_A7" class="circle-value"></span>
-<span class="circle-text">A8 %</span>
-</div>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-</div>
+
 <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+
+  <a href="https://wa.me/212690292010?text= مرحبا، أريد الاستفسار عن الموقع الإلكتروني الخاص بإنشاء الفواتير  https://saidfbs.github.io/Facturation/index.html " class="social-icon whatsapp-icon" target="_blank"></a>
+    <a href="https://www.facebook.com/automaticien.mr" class="social-icon facebook-icon" target="_blank"></a>
+    
+<a href="#" class="social-icon scroll-to-top-icon"></a>
+<a href="#" class="social-icon scroll-down-icon"></a>
+    
+<h1 class="handwritten-title"></h1>
+  
+<div class="product-container"> 
+<form id="productForm">
+<div class="form-group">
+<label>Nom du produit</label>
+<input type="text" id="productName" required placeholder="Nom du produit" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Prix du produit</label>
+<input type="number" id="productPrice" required placeholder="Prix du produit" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Nom du fournisseur</label>
+<input type="text" id="supplierName" required placeholder="Nom du fournisseur" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Adresse du fournisseur</label>
+<input type="text" id="supplierAddress" required placeholder="Adresse du fournisseur" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Téléphone du fournisseur</label>
+<input type="text" id="supplierPhone" required placeholder="Téléphone du fournisseur" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Quantité</label>
+<input type="number" id="productQuantity" required placeholder="Quantité" value="0">
+</div>
+<div class="button-container">
+<button type="submit" class="btn" id="addProduct">Ajouter produit</button>
+<button type="submit" class="btn" id="saveEditProduct">Modifier</button>
+<button type="button" class="btn1" id="toggleButton">Créer facture</button>
+</div>
+</form>
+</div>
+
+<!-- Client Form -->
+<div class="client-container" hidden>
+<form id="invoiceForm">
+<div class="form-group">
+<label>Date de la facture</label>
+<input type="text" id="invoiceDate" required placeholder="Date de la facture">
+</div>
+<div class="form-group">
+<label>Nom du client</label>
+<input type="text" id="customerName" required placeholder="Nom du client" autocomplete="on" value="CLIENT">
+</div>
+<div class="form-group">
+<label>Nom du Propriétaire de la facture</label>
+<input type="text" id="invoiceOwner" required placeholder="Nom du Propriétaire de la facture" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Adresse du propriétaire de la facture</label>
+<input type="text" id="invoiceOwnerAddress" required placeholder="Adresse du propriétaire de la facture" autocomplete="on">
+</div>
+<div class="form-group">
+<label>Téléphone du propriétaire de la facture</label>
+<input type="text" id="invoiceOwnerPhone" required placeholder="Téléphone du propriétaire de la facture" autocomplete="on">
+</div>
+<div class="form-group">
+<label>TVA</label>
+<input type="number" id="tva" required placeholder="TVA" value="0">
+</div>
+<div class="button-container">
+<button type="button" class="btn1" id="toggleButton3">Ajouter produit</button>
+<button type="submit" class="btn" id="createInvoiceButton">Créer facture</button>
+</div>
+</form>
+</div>
+
+<!-- Invoice Display -->
+<div class="invoice" id="invoiceDisplay" hidden>
+<button type="button" class="btn" id="savePdfButton">Gestion de stok</button>
+<h1></h1>
+  <h2>DEVIS</h2>
+<div class="invoice-header">
+<p>Nom du client: <span id="displayCustomerName"></span></p>
+<p>Propriétaire de la facture: <span id="displayInvoiceOwner"></span></p>
+<p>Date de la facture: <span id="displayInvoiceDate"></span></p>
+</div>
+
+<table class="invoice-table" id="invoiceDetails">
+<thead>
+<tr>
+<th>N°</th>
+<th>Nom du produit</th>
+<th>Prix</th>
+<th>Quantité</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody id="displayDetails">
+<!-- Product details will be inserted here -->
+</tbody>
+</table>
+
+<div class="invoice-header1">
+<table>
+<tfoot>
+<tr>
+<td colspan="3"><strong>Montant total HT:</strong></td>
+<td id="displayTotalAmount"></td>
+</tr>
+<tr>
+<td colspan="3"><strong>TVA:</strong></td>
+<td id="displayTVA"></td>
+</tr>
+<tr>
+<td colspan="3"><strong>Montant total TTC:</strong></td>
+<td id="displayTotalTTC"></td>
+</tr>
+</tfoot>
+</table>
+</div>
+
+<div class="invoice-footer">
+<p>Adresse: <span id="displayInvoiceOwnerAddressFooter"></span></p>
+<p>Téléphone: <span id="displayInvoiceOwnerPhoneFooter"></span></p>
+</div>
+<button type="button" class="btn" id="printButton">Imprimer la facture</button>
+</div>
+
+<!-- Saved Products Display -->
+<div class="container1">
+  <div class="saved-products" id="savedProductsDisplay">
+    <div class="form-group">
+      <button type="button" class="btn2" id="toggleButton1">All data</button>
+      <input type="text" id="searchProduct" placeholder="Rechercher un produit">
+    </div>
+    <div class="saved-products3" id="savedProductsList"></div>
+  </div>
+</div>
+
+<!-- Filtered Products Display -->
+<div class="container2">
+  <div class="saved-products2">
+    <div class="form-group">
+      <select hidden id="phoneDropdown" onchange="filterByPhoneNumber()">
+        <!-- الخيارات ستضاف هنا تلقائيًا عبر الكود البرمجي -->
+      </select>
+      <input type="text" id="searchInput" placeholder="Rechercher un produit" onkeyup="filterProducts()" hidden>
+    </div>
+    <div class="saved-products4" hidden id="productListContainerdata"></div>
+  </div>
+</div>
+
+</div>
+</body>
+
 <script>
-// تهيئة متغيرات إعداد Firebase مع القيم الافتراضية
-var firebaseConfig = {
-databaseURL: localStorage.getItem('databaseURL') || "",
+// تكوين Firebase
+const firebaseConfig = {
+databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
+
 };
-var appareil = localStorage.getItem('databasedevice') || "";
-if (firebaseConfig.databaseURL !== "") {
-if (appareil !== "") {
 // تهيئة Firebase
 firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
-// وظيفة لتبديل البيانات في Firebase
-function toggleData(sensorId) {
-return function() {
-var ref = database.ref(appareil + '/' + sensorId);
-ref.once('value')
-.then((snapshot) => {
-var currentValue = snapshot.val();
-var newValue = (currentValue === "0") ? "1" : "0";
-return ref.set(newValue);
-})
-.then(() => {
-console.log("تم تبديل قيمة " + sensorId + " بنجاح");
-})
-.catch((error) => {
-alert("خطأ في تبديل قيمة " + sensorId + ": " + error.message);
-});
+// الحصول على مرجع لقاعدة البيانات
+const database = firebase.database();
+// الحصول على عناصر HTML
+const productForm = document.getElementById('productForm');
+const invoiceForm = document.getElementById('invoiceForm');
+const invoiceDisplay = document.getElementById('invoiceDisplay');
+const customerName = document.getElementById('customerName');
+const invoiceOwner = document.getElementById('invoiceOwner');
+const invoiceOwnerPhone = document.getElementById('invoiceOwnerPhone');
+const invoiceOwnerAddress = document.getElementById('invoiceOwnerAddress');
+const invoiceDate = document.getElementById('invoiceDate');
+const addProductButton = document.getElementById('addProduct');
+const savedProductsDisplay = document.getElementById('savedProductsDisplay');
+const savedProductsList = document.getElementById('savedProductsList');
+const productContainer = document.querySelector('.product-container');
+const clientContainer = document.querySelector('.client-container');
+const toggleButton = document.getElementById('toggleButton');
+const toggleButton1 = document.getElementById('toggleButton1');
+const searchProduct = document.getElementById('searchProduct');
+// تعيين التاريخ والوقت الحاليين عند تحميل الصفحة
+window.onload = function() {
+
+toggleButton1.style.display = '';
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
+
+document.getElementById('saveEditProduct').style.display = 'none';
+
+const now = new Date();
+const formattedDate = now.toLocaleDateString('fr-FR');
+const formattedTime = now.toLocaleTimeString('fr-FR');
+invoiceDate.value = `${formattedDate} ${formattedTime}`;
+// تحميل البيانات المحفوظة من Local Storage
+const savedInvoiceOwner = localStorage.getItem('invoiceOwner');
+const savedInvoiceOwnerPhone = localStorage.getItem('invoiceOwnerPhone');
+const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress');
+const savedSupplierName = localStorage.getItem('supplierName');
+const savedSupplierAddress = localStorage.getItem('supplierAddress');
+const savedSupplierPhone = localStorage.getItem('supplierPhone');
+
+console.log('Loaded values:');
+console.log('savedInvoiceOwner:', savedInvoiceOwner);
+console.log('savedInvoiceOwnerPhone:', savedInvoiceOwnerPhone);
+console.log('savedInvoiceOwnerAddress:', savedInvoiceOwnerAddress);
+console.log('savedSupplierName:', savedSupplierName);
+console.log('savedSupplierAddress:', savedSupplierAddress);
+console.log('savedSupplierPhone:', savedSupplierPhone);
+
+
+if (savedInvoiceOwner) {
+invoiceOwner.value = savedInvoiceOwner;
+}
+
+if (savedInvoiceOwnerPhone) {
+invoiceOwnerPhone.value = savedInvoiceOwnerPhone;
+}
+
+if (savedInvoiceOwnerAddress) {
+invoiceOwnerAddress.value = savedInvoiceOwnerAddress;
+}
+
+if (savedSupplierName) {
+document.getElementById('supplierName').value = savedSupplierName;
+}
+
+if (savedSupplierAddress) {
+document.getElementById('supplierAddress').value = savedSupplierAddress;
+}
+
+if (savedSupplierPhone) {
+document.getElementById('supplierPhone').value = savedSupplierPhone;
+}
 };
-}
-// تحديث صورة الزر بناءً على القيمة ونوع المجموعة
-function updateButtonColor(sensorId, value) {
-var button = document.getElementById('btn_' + sensorId);
-var imageName;
-if (sensorId.startsWith('S') || sensorId.startsWith('E')) {
-if (value === "0") {
-button.style.backgroundColor = 'var(--button-background)';
-button.textContent = "OFF";
-button.style.fontWeight = "bold";
-} else if (value === "1") {
-button.style.backgroundColor = 'var(--button-hover)';
-button.textContent = "ON";
-button.style.fontWeight = "bold";
-}
-}
-button.style.backgroundImage = "url('" + imageName + "')";
-button.style.backgroundSize = "auto 100%";
-button.style.backgroundPosition = "center center";
-button.style.backgroundRepeat = "no-repeat";
-}
-function setupButtonListeners(sensorPrefix) {
-for (var i = 1; i <= 8; i++) {
-var sensorId = sensorPrefix + i;
-var buttonId = 'btn_' + sensorId;
-document.getElementById(buttonId).addEventListener('click', toggleData(sensorId));
-(function(sensorId) {
-database.ref(appareil + '/' + sensorId).on('value', function(snapshot) {
-var value = snapshot.val();
-updateButtonColor(sensorId, value);
+// التحقق من ملء جميع الحقول المطلوبة
+
+// مستمع للأحداث للزر الخاص بالصعود
+document.querySelector('.scroll-to-top-icon').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // تحقق مما إذا كانت الصفحة في الأعلى فعلاً
+    if (window.scrollY !== 0) {
+        // إذا لم تكن الصفحة في الأعلى، قم بالتمرير للأعلى
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }else
+    {
+
+        // بعد التمرير، تحديث الصفحة بعد 1.5 ثانية
+        setTimeout(function() {
+            location.reload();
+        }, );
+
+    }
 });
-})(sensorId);
+
+// مستمع للأحداث للزر الخاص بالهبوط
+document.querySelector('.scroll-down-icon').addEventListener('click', function(e) {
+    e.preventDefault();
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
+});
+
+
+// تحديد جميع الأيقونات
+const socialIcons = document.querySelectorAll('.social-icon');
+
+// تعريف متغير لتتبع التمرير
+let isScrolling;
+
+// تتبع تمرير الصفحة
+window.addEventListener('scroll', () => {
+    // إخفاء الأيقونات عند التمرير
+    socialIcons.forEach(icon => icon.classList.add('hidden'));
+
+    // تصفير مؤقت التوقف عن التمرير
+    clearTimeout(isScrolling);
+
+    // تحديد مؤقت لانتظار توقف التمرير
+    isScrolling = setTimeout(() => {
+        // إظهار الأيقونات عند توقف التمرير
+        socialIcons.forEach(icon => icon.classList.remove('hidden'));
+    }, 250); // 250ms بعد توقف التمرير
+});
+
+
+function checkFields(form) {
+let allFieldsFilled = true;
+const fields = form.querySelectorAll('input[required]');
+fields.forEach(field => {
+if (!field.value.trim()) {
+allFieldsFilled = false;
+field.style.border = '2px solid red';
+} else {
+field.style.border = '';
 }
+});
+return allFieldsFilled;
 }
-setupButtonListeners('S');
-setupButtonListeners('E');
-// تحديث قيمة عنصر <span> داخل الدائرة
-function updateCircleValue(sensorId, value) {
-const circleElement = document.getElementById('circle_' + sensorId);
-if (circleElement) {
-circleElement.textContent = value;
-// حساب النسبة المئوية للقيمة بناءً على القيمة القصوى (100)
-const maxValue = 100;
-const percentage = Math.min(Math.max(value / maxValue, 0), 1); // التأكد من أن النسبة بين 0 و 1
-// حساب الزاوية بناءً على القيمة
-const targetAngle = percentage * 360; // الزاوية المستهدفة
-// تحديث الزاوية ببطء
-let currentAngle = parseFloat(circleElement.dataset.currentAngle || 0);
-const step = 1; // مقدار التزايد في كل خطوة
-// تحديث التدرج اللوني بناءً على الزاوية الحالية
-const circleWrap = document.getElementById('circle_' + sensorId + '_wrap');
-if (!circleWrap) {
-console.error("Element with id 'circle_" + sensorId + "_wrap' not found.");
+// إضافة منتج جديد
+addProductButton.addEventListener('click', saveProduct);
+
+function saveProduct() {
+if (checkFields(productForm)) {
+const name = document.getElementById('productName').value;
+const price = document.getElementById('productPrice').value;
+const supplierName = document.getElementById('supplierName').value;
+const supplierAddress = document.getElementById('supplierAddress').value;
+const supplierPhone = document.getElementById('supplierPhone').value;
+const stockQuantity = document.getElementById('productQuantity').value; // احصل على كمية المخزون
+const id = Date.now();
+const date = new Date().toLocaleDateString(); // إنشاء التاريخ الحالي بصيغة محلية
+
+// حفظ بيانات المورد في Local Storage
+localStorage.setItem('supplierName', supplierName);
+localStorage.setItem('supplierAddress', supplierAddress);
+localStorage.setItem('supplierPhone', supplierPhone);
+
+let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const productExists = products.some(product =>
+product.name === name &&
+product.price === price &&
+product.supplierPhone === supplierPhone
+);
+
+// تعيين الخيار الأول في القائمة المنسدلة كخيار افتراضي
+
+
+if (productExists) {
+document.getElementById('searchInput').value = '';
+
+alert("Le produit existe déjà dans la liste.");
 return;
 }
-function animate() {
-if (Math.abs(currentAngle - targetAngle) > step) {
-currentAngle += (currentAngle < targetAngle ? step : -step);
+
+if (confirm("Êtes-vous sûr de vouloir ajouter ce produit ?")) {
+products.push({ id, name, price, supplierName, supplierAddress, supplierPhone, stockQuantity, date }); // إضافة التاريخ إلى البيانات المخزنة
+products.sort((a, b) => a.name.localeCompare(b.name));
+localStorage.setItem('savedProducts', JSON.stringify(products));
+displaySavedProducts();
+
+// إدخال اسم المنتج في حقل البحث بعد الحفظ
+
+
 } else {
-currentAngle = targetAngle; // تحديث الزاوية النهائية
+// لم يتم تأكيد الإضافة
+productContainer.style.display = 'block';
+window.scrollTo({ top: 0, behavior: 'smooth' });
+
+
+
+
+
 }
-circleWrap.style.background = `conic-gradient(
-from 180deg, /* بدء التدرج من الزاوية 270 درجة (أسفل الدائرة) */
-var(--button-hover) ${currentAngle}deg,   /* اللون الأزرق من الزاوية المحددة */
-var(--button-background) ${currentAngle}deg 180deg,  /* اللون الأبيض من الزاوية المحددة حتى 180 درجة */
-var(--button-background) 180deg 360deg  /* الشفافية من 180 درجة حتى 360 درجة */
-)`;
-var circleWraps = document.querySelectorAll('.circle-wrap');
-circleWraps.forEach(function(circleWrap) {
-circleWrap.style.setProperty('--circle-inner', 'var(--container-background)');
+} else {
+alert("Veuillez remplir tous les champs requis.");
+}
+
+
+}
+
+
+function updateStock() {
+const products = document.querySelectorAll('.product');
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+
+let canUpdate = true;
+
+// التحقق من توفر الكميات لجميع المنتجات
+products.forEach((product) => {
+const quantityInput = product.querySelector('.product-quantity');
+const quantity = parseInt(quantityInput.value); // تحويل القيمة إلى رقم صحيح
+
+if (quantity > 0) {
+const productData = savedProducts.find(p => p.name === product.querySelector('p').textContent.replace('Nom du produit: ', ''));
+if (productData && !product.classList.contains('auto-quantity')) {
+if (productData.stockQuantity < quantity) { // التحقق من توفر الكمية في المخزون
+canUpdate = false; // تعيين canUpdate إلى false إذا لم تتوفر الكمية
+
+// إظهار رسالة تأكيد مع إشارة واضحة
+
+
+
+location.reload();
+
+}
+}
+}
 });
-circleElement.dataset.currentAngle = currentAngle;
-// استدعاء للمتابعة في الإطار التالي
-if (currentAngle !== targetAngle) {
-requestAnimationFrame(animate);
+
+
+
+
+// إذا كانت جميع الكميات متوفرة، تحديث المخزون
+if (canUpdate) {
+products.forEach((product) => {
+const quantityInput = product.querySelector('.product-quantity');
+const quantity = parseInt(quantityInput.value); // تحويل القيمة إلى رقم صحيح
+
+if (quantity > 0) {
+const productData = savedProducts.find(p => p.name === product.querySelector('p').textContent.replace('Nom du produit: ', ''));
+if (productData && !product.classList.contains('auto-quantity')) {
+productData.stockQuantity -= quantity; // خصم الكمية من المخزون
 }
 }
-animate(); // بدء التحديث التدريجي
-}
-}
-// قراءة القيم الأولية من قاعدة البيانات وتحديث الدائرة
-database.ref(appareil + '/A6').once('value').then(function(snapshot) {
-var value = snapshot.val();
-updateCircleValue('A6', value);
 });
-function readWriteValueToInput(sensorId, inputId, circleId) {
-var inputElement = document.getElementById(inputId);
-var circleElement = document.getElementById(circleId);
-var ref = database.ref(appareil + '/' + sensorId);
-ref.on('value', function(snapshot) {
-var value = snapshot.val();
-inputElement.value = value;
-circleElement.textContent = value;
-updateCircleValue(sensorId, value);
-localStorage.setItem(inputId, value);
+
+localStorage.setItem('savedProducts', JSON.stringify(savedProducts)); // تحديث المخزون في Local Storage
+
+// عرض رسالة نجاح عند تحديث المخزون
+alert('تم تحديث المخزون بنجاح.');
+resetAllProductQuantities();
+location.reload();
+}
+}
+
+
+// حذف منتج
+function deleteProduct(id) {
+if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
+let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
+products = products.filter(product => product.id !== id);
+localStorage.setItem('savedProducts', JSON.stringify(products));
+displaySavedProducts();
+}
+}
+// البحث عن المنتجات وعرضها
+searchProduct.addEventListener('input', displaySavedProducts);
+
+
+
+function resetAllProductQuantities() {
+// قراءة المنتجات المحفوظة من localStorage
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+// تصفير كمية جميع المنتجات
+savedProducts.forEach(product => {
+product.quantity = 0;
 });
-inputElement.addEventListener('change', function() {
-var newValue = inputElement.value;
-database.ref(appareil + '/' + sensorId).set(newValue)
-.then(() => {
-console.log("تم تحديث قيمة " + sensorId + " في قاعدة البيانات بنجاح");
+// حفظ المصفوفة المعدلة في localStorage
+localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
+}
+
+function displaySavedProducts() {
+const searchTerm = searchProduct.value.toLowerCase();
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+savedProductsList.innerHTML = '';
+
+const filteredProducts = savedProducts
+.filter(product => product.name.toLowerCase().includes(searchTerm))  // تصفية المنتجات بناءً على مصطلح البحث
+.sort((a, b) => {
+// تعيين القيم الافتراضية إذا لم تكن الخصائص متوفرة
+const stockQuantityA = a.stockQuantity || 0;
+const stockQuantityB = b.stockQuantity || 0;
+const minStockQuantityA = a.minStockQuantity || 0;
+const minStockQuantityB = b.minStockQuantity || 0;
+const quantityA = a.quantity || 0;
+const quantityB = b.quantity || 0;
+
+// حساب الفرق بين الكمية المحددة وكمية المخزون لكل منتج
+const specifiedQuantityDiffA = quantityA - stockQuantityA;
+const specifiedQuantityDiffB = quantityB - stockQuantityB;
+
+const minStockDiffA = minStockQuantityA - stockQuantityA;
+const minStockDiffB = minStockQuantityB - stockQuantityB;
+
+if (specifiedQuantityDiffA > 0 && specifiedQuantityDiffB <= 0) {
+return -1; // A يأتي أولاً
+}
+if (specifiedQuantityDiffA <= 0 && specifiedQuantityDiffB > 0) {
+return 1; // B يأتي أولاً
+}
+
+if (minStockDiffA > 0 && minStockDiffB <= 0 && a.quantity > 0) {
+return -1; // العنصر A يأتي أولاً
+}
+if (minStockDiffA <= 0 && minStockDiffB > 0 && b.quantity > 0) {
+return 1; // العنصر B يأتي أولاً
+}
+
+// إذا كانت الفروق متساوية، قم بالترتيب حسب الكمية المحددة بترتيب تنازلي
+if (quantityA > quantityB) {
+return -1; // A يأتي أولاً
+}
+if (quantityA < quantityB) {
+return 1; // B يأتي أولاً
+}
+
+if (minStockDiffA > 0 && minStockDiffB <= 0) {
+return -1; // العنصر A يأتي أولاً
+}
+if (minStockDiffA <= 0 && minStockDiffB > 0) {
+return 1; // العنصر B يأتي أولاً
+}
+
+// إذا كانت الكميات المحددة متساوية أيضًا، قم بالترتيب حسب كمية المخزون
+return stockQuantityB - stockQuantityA;
+});
+
+let index = filteredProducts.length;
+
+filteredProducts.forEach((product) => {
+const productDiv = document.createElement('div');
+productDiv.className = 'product';
+
+const quantityToDisplay = product.quantity || 0;
+const stockQuantityToDisplay = product.stockQuantity || 0;
+const minStockQuantityToDisplay = product.minStockQuantity || 0;
+
+// تغيير لون خلفية العنصر بناءً على حالة الكمية المحددة وأولوية التلوين
+updateProductBackgroundColor(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay);
+
+// تعيين المحتوى الداخلي للعنصر
+productDiv.innerHTML = `
+<p>Nom du produit: ${product.name}</p>
+<p>Prix: ${product.price} DH</p>
+<p>Nom du fournisseur: ${product.supplierName}</p>
+<p>Adresse du fournisseur: ${product.supplierAddress}</p>
+<p>Téléphone du fournisseur: ${product.supplierPhone}</p>
+
+<button class="btn-delete" onclick="deleteProduct(${product.id})">${index} Supprimer</button>
+<button class="btn-edit" onclick="editProduct(${product.id})">Modifier</button>
+
+<p><strong>Quantité en stock:</strong></p>
+<div class="quantity-controls">
+<button onclick="adjustStock(${product.id}, -1)">-</button>
+<input type="number" id="stock-${product.id}" value="${stockQuantityToDisplay}" min="0">
+<button onclick="adjustStock(${product.id}, 1)">+</button>
+</div>
+
+<p><strong>Stock minimum:</strong></p>
+<div class="quantity-controls">
+<button onclick="adjustMinQuantity(${product.id}, -1)">-</button>
+<input type="number" class="min-product-quantity" data-id="${product.id}" value="${minStockQuantityToDisplay}" min="0">
+<button onclick="adjustMinQuantity(${product.id}, 1)">+</button>
+</div>
+
+<p><strong>La quantité spécifiée:</strong></p>
+<div class="quantity-controls">
+<button onclick="adjustQuantity(${product.id}, -1)">-</button>
+<input type="number" class="product-quantity" data-id="${product.id}" value="${quantityToDisplay}" min="0">
+<button onclick="adjustQuantity(${product.id}, 1)">+</button>
+</div>
+`;
+
+
+
+productDiv.addEventListener('click', (event) => {
+// تنفيذ الحدث فقط إذا كان العنصر الذي تم النقر عليه هو زر التعديل
+if (event.target.classList.contains('btn-edit')) {
+// مسح الخلفيات لجميع العناصر
+const allProductDivs = document.querySelectorAll('.product-item');
+allProductDivs.forEach(div => div.style.backgroundColor = '');
+
+window.scrollTo({ top: 0, behavior: 'smooth' });
+
+// تحديث الحقول النصية في النموذج
+document.getElementById('productName').value = product.name;
+document.getElementById('productPrice').value = product.price;
+document.getElementById('supplierName').value = product.supplierName;
+document.getElementById('supplierAddress').value = product.supplierAddress;
+document.getElementById('supplierPhone').value = product.supplierPhone;
+
+clientContainer.style.display = 'none';
+productContainer.style.display = 'block';
+
+document.getElementById('addProduct').style.display = 'none';
+document.getElementById('saveEditProduct').style.display = 'block';
+}
+});
+
+savedProductsList.appendChild(productDiv); // إضافة العنصر إلى الحاوية
+index--;
+});
+}
+
+
+
+function updateProductBackgroundColor(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay) {
+if (quantityToDisplay > 0 && stockQuantityToDisplay < quantityToDisplay) {
+productDiv.style.backgroundColor = 'rgba(255, 0, 0, 1)'; // أحمر شفاف إذا كانت الكمية المحددة أكبر من كمية المخزون
+} else if (stockQuantityToDisplay < minStockQuantityToDisplay && quantityToDisplay == 0) {
+productDiv.style.backgroundColor = 'rgba(255, 255, 0, 1)'; // أصفر شفاف إذا كان المخزون أقل من الحد الأدنى والكمية المحددة تساوي 0
+} else if (stockQuantityToDisplay < minStockQuantityToDisplay) {
+productDiv.style.backgroundColor = 'rgba(255, 165, 0, 1)'; // برتقالي شفاف إذا كان المخزون أقل من الحد الأدنى
+} else if (quantityToDisplay > 0) {
+productDiv.style.backgroundColor = 'rgba(0, 128, 0, 1)'; // أخضر شفاف إذا كانت الكمية المختارة أكبر من 0
+} else if (stockQuantityToDisplay > 0) {
+productDiv.style.backgroundColor = 'rgba(0, 0, 255, 1)'; // أزرق شفاف إذا كانت كمية المخزون أكبر من 0
+} else {
+productDiv.style.backgroundColor = ''; // اللون الافتراضي إذا لم تكن أي من الشروط الأخرى مطبقة
+}
+}
+
+
+
+document.getElementById('saveEditProduct').addEventListener('click', function(event) {
+if (checkFields(productForm)) {
+const name = document.getElementById('productName').value;
+const price = document.getElementById('productPrice').value;
+const supplierName = document.getElementById('supplierName').value;
+const supplierAddress = document.getElementById('supplierAddress').value;
+const supplierPhone = document.getElementById('supplierPhone').value;
+const stockQuantity = document.getElementById('productQuantity').value;
+const id = Date.now();
+const date = new Date().toLocaleDateString();
+
+// حفظ بيانات المورد في Local Storage
+localStorage.setItem('supplierName', supplierName);
+localStorage.setItem('supplierAddress', supplierAddress);
+localStorage.setItem('supplierPhone', supplierPhone);
+
+let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const existingProductIndex = products.findIndex(product =>
+product.name === name &&
+product.supplierPhone === supplierPhone
+);
+
+if (existingProductIndex !== -1) {
+// المنتج موجود بالفعل، تحديث المعلومات
+if (confirm("Le produit existe déjà. Voulez-vous mettre à jour les informations ?")) {
+products[existingProductIndex].price = price;
+products[existingProductIndex].supplierName = supplierName;
+products[existingProductIndex].supplierAddress = supplierAddress;
+products[existingProductIndex].stockQuantity = stockQuantity;
+products[existingProductIndex].date = date; // تحديث التاريخ
+localStorage.setItem('savedProducts', JSON.stringify(products));
+displaySavedProducts();
+alert("Le produit a été mis à jour avec succès.");
+}
+} else {
+// المنتج غير موجود، إضافته
+if (confirm("Êtes-vous sûr de vouloir ajouter ce produit ?")) {
+products.push({ id, name, price, supplierName, supplierAddress, supplierPhone, stockQuantity, date });
+products.sort((a, b) => a.name.localeCompare(b.name));
+localStorage.setItem('savedProducts', JSON.stringify(products));
+document.getElementById('saveEditProduct').style.display = 'none';
+displaySavedProducts();
+
+alert("Le produit a été ajouté avec succès.");
+}
+}
+} else {
+alert("Veuillez remplir tous les champs requis.");
+}
+
+});
+
+
+
+
+
+
+
+function adjustStock(id, amount) {
+const stockInput = document.getElementById(`stock-${id}`);
+let stockQuantity = parseInt(stockInput.value) || 0;
+stockQuantity += amount;
+if (stockQuantity < 0) stockQuantity = 0;
+stockInput.value = stockQuantity;
+
+// حفظ الكمية في Local Storage
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const productIndex = savedProducts.findIndex(product => product.id === id);
+if (productIndex !== -1) {
+savedProducts[productIndex].stockQuantity = stockQuantity;
+localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
+}
+
+}
+
+function adjustQuantity(id, amount) {
+const quantityInput = document.querySelector(`.product-quantity[data-id="${id}"]`);
+let quantity = parseInt(quantityInput.value) || 0;
+quantity += amount;
+if (quantity < 0) quantity = 0;
+quantityInput.value = quantity;
+
+// حفظ الكمية المختارة في Local Storage
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const productIndex = savedProducts.findIndex(product => product.id === id);
+if (productIndex !== -1) {
+savedProducts[productIndex].quantity = quantity;
+localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
+}
+
+}
+
+
+function adjustMinQuantity(id, amount) {
+const minQuantityInput = document.querySelector(`.min-product-quantity[data-id='${id}']`);
+let minQuantity = parseInt(minQuantityInput.value) || 0;
+minQuantity += amount;
+if (minQuantity < 0) minQuantity = 0;
+minQuantityInput.value = minQuantity;
+
+// حفظ القيمة الدنيا في Local Storage
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const productIndex = savedProducts.findIndex(product => product.id === id);
+if (productIndex !== -1) {
+savedProducts[productIndex].minStockQuantity = minQuantity;
+localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
+}
+
+}
+
+
+// تعديل قيمة المخزون مباشرة عند التغيير في الحقل
+
+
+// إنشاء فاتورة
+document.getElementById('createInvoiceButton').addEventListener('click', function () {
+    // إخفاء أيقونات التواصل الاجتماعي
+    const socialIcons = document.querySelectorAll('.social-icon');
+    socialIcons.forEach(icon => {
+        icon.style.display = 'none';
+    });
+
+    // إخفاء العنوان
+    document.querySelector('.handwritten-title').style.display = 'none';
+
+    // التحقق من الحقول وتحديث واجهة المستخدم
+    if (checkFields(invoiceForm)) {
+        const savedProductsDisplay = document.getElementById('savedProductsDisplay');
+        if (savedProductsDisplay.style.display === 'none' || savedProductsDisplay.style.display === '') {
+            invoiceDisplay.hidden = true;
+            savedProductsDisplay.style.display = 'block';
+            this.textContent = 'Créer une facture';
+        } else {
+            const productHidden = productContainer.hidden;
+            clientContainer.hidden = productHidden;
+            invoiceDisplay.hidden = false;
+            savedProductsDisplay.style.display = 'none';
+            toggleButton.style.display = 'none';
+            toggleButton1.style.display = 'none';
+            clientContainer.style.display = 'none';
+            productContainer.style.display = 'none';
+            this.textContent = 'Vos Produits';
+        }
+    } else {
+        alert("Veuillez remplir tous les champs requis.");
+    }
+});
+
+invoiceForm.addEventListener('submit', function (e) {
+e.preventDefault();
+
+let total = 0;
+let productNumber = 1;
+const detailsTbody = document.getElementById('displayDetails');
+detailsTbody.innerHTML = '';
+const products = document.querySelectorAll('.product');
+
+let anyProductSelected = false;
+
+products.forEach((product) => {
+const quantityInput = product.querySelector('.product-quantity');
+const quantity = parseInt(quantityInput.value); // تحويل القيمة إلى رقم صحيح
+
+if (quantity > 0) {
+anyProductSelected = true;
+}
+});
+
+if (!anyProductSelected) {
+products.forEach((product) => {
+const quantityInput = product.querySelector('.product-quantity');
+quantityInput.value = 1;
+});
+}
+
+products.forEach((product) => {
+const quantityInput = product.querySelector('.product-quantity');
+const quantity = parseInt(quantityInput.value); // تحويل القيمة إلى رقم صحيح
+
+if (quantity > 0) {
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const productData = savedProducts.find(p => p.name === product.querySelector('p').textContent.replace('Nom du produit: ', ''));
+if (productData) {
+const price = parseFloat(productData.price);
+const amount = price * quantity;
+total += amount;
+
+const productDetails = document.createElement('tr');
+productDetails.innerHTML = `
+<td>${productNumber++}</td> <!-- Add product number -->
+<td>${productData.name}</td>
+<td>${price.toFixed(2)} DH</td>
+<td>${quantity}</td>
+<td>${amount.toFixed(2)} DH</td>
+`;
+detailsTbody.appendChild(productDetails);
+}
+}
+});
+
+
+
+const tvaRate = parseFloat(document.getElementById('tva').value) / 100;
+const tva = (total * tvaRate).toFixed(2);
+const totalTTC = (total + parseFloat(tva)).toFixed(2);
+
+document.getElementById('displayCustomerName').textContent = customerName.value;
+document.getElementById('displayInvoiceOwner').textContent = invoiceOwner.value;
+document.getElementById('displayInvoiceDate').textContent = invoiceDate.value;
+document.getElementById('displayTotalAmount').textContent = total.toFixed(2) + ' DH';
+document.getElementById('displayTVA').textContent = tva + ' DH';
+document.getElementById('displayTotalTTC').textContent = totalTTC + ' DH';
+document.getElementById('displayInvoiceOwnerPhoneFooter').textContent = invoiceOwnerPhone.value;
+document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceOwnerAddress.value;
+invoiceDisplay.hidden = false;
+
+localStorage.setItem('invoiceOwner', invoiceOwner.value);
+localStorage.setItem('invoiceOwnerPhone', invoiceOwnerPhone.value);
+localStorage.setItem('invoiceOwnerAddress', invoiceOwnerAddress.value);
+
+const viewportMeta = document.querySelector('meta[name="viewport"]');
+if (viewportMeta) {
+viewportMeta.setAttribute('content', 'width=1024');
+} else {
+const newViewportMeta = document.createElement('meta');
+newViewportMeta.name = 'viewport';
+newViewportMeta.content = 'width=1024';
+document.head.appendChild(newViewportMeta);
+}
+
+
+
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+const invoiceData = { products: savedProducts };
+
+const alldataRef = database.ref(`alldata/${invoiceOwnerPhone.value}`);
+
+alldataRef.once('value')
+.then((snapshot) => {
+const invoiceAllData = [];
+snapshot.forEach((productSnapshot) => {
+const productData = productSnapshot.val();
+if (productData.products) {
+invoiceAllData.push(...productData.products);
+}
+});
+
+const newProducts = invoiceData.products.filter(product =>
+!invoiceAllData.some(existingProduct =>
+existingProduct.name === product.name &&
+existingProduct.price === product.price &&
+existingProduct.supplierPhone === product.supplierPhone
+)
+);
+
+if (newProducts.length > 0) {
+alldataRef.push({ products: newProducts }, (error) => {
+if (error) {
+console.error("Erreur lors de l'ajout du produit à la liste 'alldata':", error);
+} else {
+console.log("Produits ajoutés avec succès à la liste 'alldata' dans Firebase");
+}
+});
+} else {
+console.log("Aucun produit nouveau à ajouter dans Firebase");
+}
 })
 .catch((error) => {
-alert("خطأ في تحديث قيمة " + sensorId + " في قاعدة البيانات: " + error.message);
+console.error("Erreur lors de la vérification des données:", error);
 });
+
+
+
+
 });
+
+
+let allProducts = [];
+
+// وظيفة لجلب الأرقام من قاعدة البيانات وتحديث القائمة المنسدلة
+function populateDropdown() {
+const alldataRef = database.ref('alldata');
+alldataRef.once('value', (snapshot) => {
+const data = snapshot.val();
+const dropdown = document.getElementById('phoneDropdown');
+dropdown.innerHTML = ''; // مسح المحتوى الحالي للقائمة المنسدلة
+
+// إضافة خيار "عرض الكل"
+const allOption = document.createElement('option');
+allOption.value = 'all';
+allOption.textContent = 'Afficher tout';
+dropdown.appendChild(allOption);
+
+// جمع الأرقام وإضافتها إلى القائمة المنسدلة
+const phoneNumbers = new Set();
+for (const phoneKey in data) {
+if (data.hasOwnProperty(phoneKey)) {
+phoneNumbers.add(phoneKey);
 }
-readWriteValueToInput('A0', 'db_A0', 'circle_A0');
-readWriteValueToInput('A1', 'db_A1', 'circle_A1');
-readWriteValueToInput('A2', 'db_A2', 'circle_A2');
-readWriteValueToInput('A3', 'db_A3', 'circle_A3');
-readWriteValueToInput('A4', 'db_A4', 'circle_A4');
-readWriteValueToInput('A5', 'db_A5', 'circle_A5');
-readWriteValueToInput('A6', 'db_A6', 'circle_A6');
-readWriteValueToInput('A7', 'db_A7', 'circle_A7');
-} else {
-alert("اسم الجهاز فارغ.");
 }
-} else {
-alert("عنوان قاعدة البيانات فارغ.");
-}
-document.getElementById('save_btn').addEventListener('click', function() {
-var url = document.getElementById('db_url').value;
-localStorage.setItem('databaseURL', url);
-var device = document.getElementById('db_device').value;
-localStorage.setItem('databasedevice', device);
-alert((url.trim() !== "") ? "تم حفظ عنوان قاعدة البيانات بنجاح." : "عنوان قاعدة البيانات فارغ.");
-alert((device.trim() !== "") ? "تم حفظ اسم الجهاز بنجاح." : "اسم الجهاز فارغ.");
-location.reload();
-});
-function saveSettings() {
-var url = document.getElementById('db_url').value;
-localStorage.setItem('databaseURL', url);
-var device = document.getElementById('db_device').value;
-localStorage.setItem('databasedevice', device);
-location.reload();
-}
-document.addEventListener('DOMContentLoaded', function() {
-var storedUrl = localStorage.getItem('databaseURL');
-if (storedUrl) {
-document.getElementById('db_url').value = storedUrl;
-}
-var storedDevice = localStorage.getItem('databasedevice');
-if (storedDevice) {
-document.getElementById('db_device').value = storedDevice;
-}
-});
-const setupDatalistInput = (inputId, datalistId, localStorageKey) => {
-const input = document.getElementById(inputId);
-const datalist = document.getElementById(datalistId);
-let storedValues = JSON.parse(localStorage.getItem(localStorageKey)) || [];
-storedValues.forEach(value => {
+
+phoneNumbers.forEach(phoneNumber => {
 const option = document.createElement('option');
-option.value = value;
-datalist.appendChild(option);
+option.value = phoneNumber;
+option.textContent = phoneNumber;
+dropdown.appendChild(option);
 });
-input.addEventListener('change', () => {
-const newValue = input.value.trim();
-const valueIndex = storedValues.indexOf(newValue);
-if (newValue) {
-if (valueIndex !== -1) {
-storedValues.splice(valueIndex, 1);
-}
-storedValues.unshift(newValue);
-localStorage.setItem(localStorageKey, JSON.stringify(storedValues));
-saveSettings();
-datalist.innerHTML = "";
-storedValues.forEach(value => {
-const option = document.createElement('option');
-option.value = value;
-datalist.appendChild(option);
 });
 }
+
+
+
+
+function fetchAndDisplayData(selectedPhoneNumber = 'all') {
+
+const alldataRef = database.ref('alldata');
+alldataRef.once('value', (snapshot) => {
+const data = snapshot.val();
+const productListContainer = document.getElementById('productListContainerdata');
+productListContainer.innerHTML = '';
+
+allProducts = []; // إعادة تعيين allProducts
+
+for (const phoneKey in data) {
+if (data.hasOwnProperty(phoneKey)) {
+if (selectedPhoneNumber === 'all' || phoneKey === selectedPhoneNumber) {
+const phoneData = data[phoneKey];
+for (const productKey in phoneData) {
+if (phoneData.hasOwnProperty(productKey)) {
+const productData = phoneData[productKey];
+const products = productData.products || [];
+allProducts.push(...products);
+}
+}
+}
+}
+}
+
+const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+
+// فصل المنتجات إلى مكررة وغير مكررة
+const nonDuplicateProducts = [];
+const duplicateProducts = [];
+
+allProducts.forEach(product => {
+const isDuplicate = savedProducts.some(savedProduct =>
+savedProduct.name === product.name &&
+savedProduct.price === product.price &&
+savedProduct.phone === product.phone
+);
+if (isDuplicate) {
+product.isDuplicate = true;
+duplicateProducts.push(product);
+} else {
+product.isDuplicate = false;
+nonDuplicateProducts.push(product);
+}
 });
-};
-setupDatalistInput('db_url', 'db_urls', 'databaseURLs');
-setupDatalistInput('db_device', 'db_devices', 'databaseDevices');
+
+// ترتيب المنتجات غير المكررة بناءً على الـ id (الأحدث أولاً)
+nonDuplicateProducts.sort((a, b) => b.id - a.id);
+
+// ترتيب المنتجات المكررة بناءً على الـ id (الأحدث أولاً)
+duplicateProducts.sort((a, b) => b.id - a.id);
+
+// دمج المنتجات غير المكررة مع المكررة (غير المكررة في الأعلى)
+const sortedProducts = [...nonDuplicateProducts, ...duplicateProducts];
+
+// عرض المنتجات
+displayProducts(sortedProducts);
+
+});
+}
+
+
+
+
+function displayProducts(products) {
+const productListContainer = document.getElementById('productListContainerdata');
+productListContainer.innerHTML = '';
+
+let index = products.length;
+
+products.forEach(product => {
+const productDiv = document.createElement('div');
+productDiv.classList.add('product-item');
+
+// تغيير اللون إذا كان المنتج مكررًا
+if (product.isDuplicate) {
+productDiv.style.backgroundColor = '#c0c0f9'; // لون مغاير للمنتجات المكررة
+}
+
+productDiv.innerHTML = `
+<p>Date: ${product.date}</p>
+<p>Nom du produit: ${product.name}</p>
+<p>Prix: ${product.price} DH</p>
+<p>Nom du fournisseur: ${product.supplierName}</p>
+<p>Adresse du fournisseur: ${product.supplierAddress}</p>
+<p>Téléphone du fournisseur: ${product.supplierPhone}</p>
+<p>Index du Produit: ${index}</p>
+`;
+
+productDiv.addEventListener('click', () => {
+const allProductDivs = document.querySelectorAll('.product-item');
+allProductDivs.forEach(div => div.style.backgroundColor = '');
+
+document.getElementById('productName').value = product.name;
+document.getElementById('productPrice').value = product.price;
+document.getElementById('supplierName').value = product.supplierName;
+document.getElementById('supplierAddress').value = product.supplierAddress;
+document.getElementById('supplierPhone').value = product.supplierPhone;
+
+
+saveProduct();
+filterByPhoneNumber();
+fetchAndDisplayData();
+});
+
+productListContainer.appendChild(productDiv);
+index--;
+});
+}
+
+// وظيفة لتصفية المنتجات بناءً على البحث والنص المدخل والرقم المحدد
+function filterProducts() {
+
+const searchInput = document.getElementById('searchInput').value.toLowerCase();
+const phoneDropdown = document.getElementById('phoneDropdown');
+const selectedPhoneNumber = phoneDropdown.value;
+
+// إضافة مستمع للحدث change
+phoneDropdown.addEventListener('change', function() {
+// تحديد حقل البحث
+
+const searchInputElement = document.getElementById('searchInput');
+// تعيين القيمة إلى فارغة
+
+searchInputElement.value = "";
+
+});
+
+if (searchInput) {
+// تصفية المنتجات بناءً على النص
+const filteredProducts = allProducts.filter(product =>
+product.name.toLowerCase().includes(searchInput)
+);
+displayProducts(filteredProducts);
+} else {
+// عرض جميع المنتجات بناءً على الرقم المحدد
+fetchAndDisplayData(selectedPhoneNumber);
+}
+}
+// وظيفة لتصفية البيانات بناءً على الرقم الهاتفي المحدد
+function filterByPhoneNumber() {
+filterProducts(); // تحديث البيانات بناءً على الرقم الهاتفي المحدد
+}
+
+// عند تحميل الصفحة، قم بتعبئة القائمة المنسدلة وعرض البيانات
+document.addEventListener('DOMContentLoaded', () => {
+populateDropdown();
+fetchAndDisplayData('all'); // عرض الكل عند تحميل الصفحة
+});
+// قم بتحميل البيانات عند بدء التشغيل
+
+// قم بتحميل البيانات عند بدء التشغيل
+
+savedProductsDisplay.style.display = 'block';
+displaySavedProducts();
+// تبديل النماذج بين إضافة منتج وإنشاء فاتورة
+toggleButton.addEventListener('click', toggleForms);
+toggleButton1.addEventListener('click', toggleForms1);
+
+toggleButton3.addEventListener('click', toggleForms3);
+
+function toggleForms() {
+window.scrollTo({ top: 0, behavior: 'smooth' });
+clientContainer.style.display = 'block';
+productContainer.style.display = 'none';
+savedProductsDisplay.style.display = 'block';
+productListContainerdata.style.display = 'none';
+searchInput.style.display = 'none';
+document.getElementById('phoneDropdown').style.display = 'none';
+
+document.getElementById('productName').value = '';
+document.getElementById('productPrice').value = '';
+}
+
+function toggleForms1() {
+fetchAndDisplayData();
+searchInput.style.display = 'block';
+clientContainer.style.display = 'none';
+productContainer.style.display = 'block';
+savedProductsDisplay.style.display = 'none';
+productListContainerdata.style.display = 'block';
+document.getElementById('phoneDropdown').style.display = 'block';
+document.getElementById('phoneDropdown').selectedIndex = 0;
+}
+
+
+function toggleForms3() {
+window.scrollTo({ top: 0, behavior: 'smooth' });
+clientContainer.style.display = 'none';
+productContainer.style.display = 'block';
+savedProductsDisplay.style.display = 'block';
+productListContainerdata.style.display = 'none';
+searchInput.style.display = 'none';
+document.getElementById('phoneDropdown').style.display = 'none';
+addProduct.style.display = 'block';
+saveEditProduct.style.display = 'none';
+
+}
+
+// حفظ الفاتورة كملف PDF
+document.getElementById('savePdfButton').addEventListener('click', function() {
+// استدعاء دالة updateStock()
+updateStock();
+
+});
+// طباعة الفاتورة
+document.getElementById('printButton').addEventListener('click', function() {
+
+
+this.style.display = 'none';
+savePdfButton.style.display = 'none';
+window.print();
+
+
+setTimeout(() => {
+savePdfButton.style.display = 'inline-block';
+printButton.style.display = 'inline-block';
+}, 5000); // تأخير 3 ثواني
+
+});
 
 </script>
+
 </body>
 </html>
