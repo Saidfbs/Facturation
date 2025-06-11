@@ -133,7 +133,8 @@
         .invoice,
         .saved-products,
         .saved-products2,
-        .statistics-container {
+        .statistics-container,
+        .local-archive-container { /* Added new class for local archive */
             border: 1px solid var(--windows-border-light);
             padding: var(--spacing-lg);
             border-radius: var(--border-radius);
@@ -158,7 +159,8 @@
 
         /* Scrollable areas - adjusted for desktop */
         .saved-products3,
-        .saved-products4 {
+        .saved-products4,
+        .local-invoices-list { /* Added new class for local invoices list */
             flex-grow: 1;
             overflow-y: auto;
             max-height: calc(100vh - 280px); /* Adjust based on header/main controls height + top padding */
@@ -548,8 +550,47 @@
             border-color: var(--windows-accent-blue-light) !important;
         }
 
+        /* Local Invoice item specific styles */
+        .local-invoice-item {
+            border: 1px solid var(--windows-border-light);
+            padding: var(--spacing-md);
+            border-radius: 15px;
+            background-color: var(--windows-card-bg);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        .local-invoice-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .local-invoice-item p {
+            margin-bottom: 5px;
+        }
+        .local-invoice-item .invoice-summary-details {
+            flex-grow: 1;
+            margin-bottom: var(--spacing-sm);
+        }
+        .local-invoice-item .invoice-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            width: 100%;
+            margin-top: var(--spacing-sm);
+        }
+        .local-invoice-item .invoice-actions button {
+            flex: 1 1 48%;
+            min-width: 120px;
+        }
+
         /* Search input for saved products list */
-        #searchProduct {
+        #searchProduct,
+        #searchLocalInvoice { /* Added for local invoice search */
             padding: 0.6rem 1rem;
             border-radius: var(--button-border-radius);
             border: 1px solid var(--windows-border-light);
@@ -560,7 +601,8 @@
             color: var(--windows-text-dark);
             outline: none;
         }
-        #searchProduct:focus {
+        #searchProduct:focus,
+        #searchLocalInvoice:focus { /* Added for local invoice search */
             border-color: var(--windows-accent-blue);
             box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
         }
@@ -820,7 +862,7 @@
             .container {
                 max-width: 960px;
             }
-            .saved-products3, .saved-products4, .product-list-grid {
+            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             }
             .main-controls .btn-panel {
@@ -846,7 +888,7 @@
                 padding: 0.4rem;
                 font-size: 0.85em;
             }
-            .saved-products3, .saved-products4, .product-list-grid {
+            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 max-height: calc(100vh - 200px); /* Adjusted for independent visibility */
             }
@@ -893,7 +935,7 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            .saved-products3, .saved-products4, .product-list-grid {
+            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
                 grid-template-columns: 1fr; /* Single column on mobile */
             }
         }
@@ -925,6 +967,7 @@
         <button type="button" class="btn-panel" id="showSavedProductsListButton">قائمة المنتجات</button>
         <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
         <button type="button" class="btn-panel" id="showStatisticsButton">الإحصائيات</button>
+        <button type="button" class="btn-panel" id="showLocalInvoiceArchiveButton">أرشيف الفواتير المحلية</button> <!-- NEW: Local Archive Button -->
     </div>
 
     <div class="container">
@@ -1069,7 +1112,10 @@
                 <p>Adresse: <span id="displayInvoiceOwnerAddressFooter"></span></p>
                 <p>Téléphone: <span id="displayInvoiceOwnerPhoneFooter"></span></p>
             </div>
-            <button type="button" class="btn" id="printButton">طباعة الفاتورة</button>
+            <div class="button-container">
+                <button type="button" class="btn" id="printButton">طباعة الفاتورة</button>
+                <button type="button" class="btn" id="backToLocalArchiveButton" hidden>العودة إلى الأرشيف</button> <!-- NEW: Back to archive button -->
+            </div>
         </div>
         
         <div class="saved-products" id="savedProductsDisplay" hidden>
@@ -1159,6 +1205,18 @@
             </div>
         </div>
 
+        <!-- NEW: Local Invoice Archive Section -->
+        <div class="local-archive-container" id="localInvoiceArchive" hidden>
+            <h2>أرشيف الفواتير المحلية</h2>
+            <div class="form-group">
+                <label for="searchLocalInvoice" class="sr-only">البحث في الفواتير المحلية</label>
+                <input type="text" id="searchLocalInvoice" placeholder="البحث في الفواتير المحلية (العميل، المالك، التاريخ، المنتجات)">
+            </div>
+            <div class="local-invoices-list product-list-grid" id="localInvoicesList">
+                <p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>
+            </div>
+        </div>
+
     </div>
 
     <!-- Toast Notifications Container -->
@@ -1193,6 +1251,7 @@ const invoiceDisplay = document.getElementById('invoiceDisplay');
 const savedProductsDisplay = document.getElementById('savedProductsDisplay');
 const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay');
 const statisticsDisplay = document.getElementById('statisticsDisplay');
+const localInvoiceArchive = document.getElementById('localInvoiceArchive'); // NEW: Local Archive container
 
 // ====== Main Navigation Buttons ======
 const showProductFormButton = document.getElementById('showProductFormButton');
@@ -1200,6 +1259,7 @@ const showClientInvoiceFormButton = document.getElementById('showClientInvoiceFo
 const showSavedProductsListButton = document.getElementById('showSavedProductsListButton');
 const showFirebaseDataButton = document.getElementById('showFirebaseDataButton');
 const showStatisticsButton = document.getElementById('showStatisticsButton');
+const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton'); // NEW: Local Archive button
 
 // Array of all navigation buttons for easy active state management
 const navButtons = [
@@ -1207,7 +1267,8 @@ const navButtons = [
     showClientInvoiceFormButton,
     showSavedProductsListButton,
     showFirebaseDataButton,
-    showStatisticsButton
+    showStatisticsButton,
+    showLocalInvoiceArchiveButton // NEW: Add local archive button
 ];
 
 // ====== Form Elements ======
@@ -1243,6 +1304,11 @@ const statsPhoneDropdown = document.getElementById('statsPhoneDropdown');
 const statsSearchInput = document.getElementById('statsSearchInput');
 const lowStockProductsList = document.getElementById('lowStockProductsList'); 
 
+// NEW: Local Invoice Archive elements
+const localInvoicesList = document.getElementById('localInvoicesList');
+const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
+const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton'); // Button to return from invoice view
+
 // ====== Toast Notification Elements ======
 const toastContainer = document.getElementById('toast-container');
 
@@ -1259,6 +1325,9 @@ let allFirebaseInvoicesData = [];
 
 // Global array to hold all fetched Firebase products for Firebase data view filtering
 let allFirebaseProducts = [];
+
+// Global array to hold all local invoices for local archive view
+let allLocalInvoices = [];
 
 
 // ====== Initial Setup on Window Load ======
@@ -1448,6 +1517,16 @@ showStatisticsButton.addEventListener('click', () => {
     fetchAndDisplayStatistics(); // This will call filterStatistics internally
     statsSearchInput.value = ''; 
     statsPhoneDropdown.selectedIndex = 0; 
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// NEW: Local Invoice Archive Button Event Listener
+showLocalInvoiceArchiveButton.addEventListener('click', () => {
+    hideAllSections();
+    localInvoiceArchive.hidden = false;
+    setActiveButton(showLocalInvoiceArchiveButton);
+    displayLocalInvoices(); // Display local invoices
+    searchLocalInvoiceInput.value = ''; // Clear search
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -1665,7 +1744,7 @@ saveEditProductButton.addEventListener('click', async (event) => {
 /**
  * Deletes a product from Local Storage.
  * @param {number} id - The ID of the product to delete.
- */
+*/
 async function deleteProduct(id) {
     const confirmed = await showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟");
     if (confirmed) {
@@ -1792,7 +1871,7 @@ function displayLowStockProducts() {
     lowStockProductsList.innerHTML = ''; // Clear previous content
     const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
 
-    const lowStockItems = savedProducts.filter(p => (p.stockQuantity || 0) < (p.minStockQuantity || 0) && p.stockQuantity > 0);
+    const lowStockItems = savedProducts.filter(p => (p.stockQuantity || 0) < (p.minStockQuantity || 0) && (p.stockQuantity || 0) > 0);
     const outOfStockItems = savedProducts.filter(p => (p.stockQuantity || 0) === 0);
 
     if (lowStockItems.length === 0 && outOfStockItems.length === 0) {
@@ -2089,6 +2168,8 @@ document.getElementById('createInvoiceButton').addEventListener('click', async f
         
         hideAllSections();
         invoiceDisplay.hidden = false;
+        // Hide the "Back to Archive" button when generating a new invoice
+        backToLocalArchiveButton.hidden = true; 
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         localStorage.setItem('invoiceOwner', invoiceOwnerInput.value);
@@ -2120,30 +2201,35 @@ document.getElementById('createInvoiceButton').addEventListener('click', async f
             });
         });
 
-        if (productsToSaveToFirebase.length > 0) {
-            const invoiceDataToSave = {
-                date: invoiceDateInput.value,
-                customerName: customerNameInput.value,
-                ownerName: invoiceOwnerInput.value,
-                ownerAddress: invoiceOwnerAddressInput.value,
-                ownerPhone: invoiceOwnerPhoneInput.value,
-                products: productsToSaveToFirebase,
-                totalHT: finalTotalHT.toFixed(2), 
-                totalHTBeforeCommission: totalHTBeforeCommission.toFixed(2), 
-                tva: tva,
-                totalTTC: totalTTC,
-                totalProfit: totalProfit.toFixed(2), 
-                totalCommission: totalCommission.toFixed(2) 
-            };
-            if (invoiceCommissionRate > 0) { 
-                invoiceDataToSave.invoiceCommissionRate = invoiceCommissionRate; 
-            }
+        const invoiceDataToSave = {
+            id: Date.now(), // Unique ID for local storage invoice
+            date: invoiceDateInput.value,
+            customerName: customerNameInput.value,
+            ownerName: invoiceOwnerInput.value,
+            ownerAddress: invoiceOwnerAddressInput.value,
+            ownerPhone: invoiceOwnerPhoneInput.value,
+            products: productsToSaveToFirebase,
+            totalHT: finalTotalHT.toFixed(2), 
+            totalHTBeforeCommission: totalHTBeforeCommission.toFixed(2), 
+            tva: tva,
+            totalTTC: totalTTC,
+            totalProfit: totalProfit.toFixed(2), 
+            totalCommission: totalCommission.toFixed(2) 
+        };
+        if (invoiceCommissionRate > 0) { 
+            invoiceDataToSave.invoiceCommissionRate = invoiceCommissionRate; 
+        }
 
+        // Save to Firebase
+        if (productsToSaveToFirebase.length > 0) {
             const alldataRef = database.ref(`alldata/${invoiceOwnerPhoneInput.value}`);
             alldataRef.push(invoiceDataToSave)
             .then(() => showToast("تم حفظ بيانات الفاتورة في Firebase بنجاح.", 'success'))
             .catch(error => showToast(`خطأ في حفظ بيانات الفاتورة إلى Firebase: ${error.message}`, 'error'));
         }
+
+        // NEW: Save to Local Storage
+        saveInvoiceToLocalStorage(invoiceDataToSave);
 
     } else {
         showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
@@ -2204,7 +2290,7 @@ let originalViewportContent = '';
 
 /**
  * Prints the invoice.
- */
+*/
 document.getElementById('printButton').addEventListener('click', function() {
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     if (viewportMeta) {
@@ -2214,18 +2300,27 @@ document.getElementById('printButton').addEventListener('click', function() {
 
     this.style.display = 'none';
     document.getElementById('savePdfButton').style.display = 'none';
+    backToLocalArchiveButton.hidden = true; // Ensure this is hidden when printing
 
     window.print();
 
     setTimeout(() => {
         document.getElementById('savePdfButton').style.display = 'block';
         this.style.display = 'block';
+        // Only show backToLocalArchiveButton if it was previously set to show (i.e. came from archive)
+        if (invoiceDisplay.dataset.cameFromLocalArchive === 'true') {
+            backToLocalArchiveButton.hidden = false;
+        }
         if (viewportMeta && originalViewportContent) {
             viewportMeta.setAttribute('content', originalViewportContent);
         }
     }, 500);
 });
 
+// NEW: Event listener for Back to Archive button
+backToLocalArchiveButton.addEventListener('click', () => {
+    showLocalInvoiceArchiveButton.click(); // Simulate click on archive button to go back
+});
 
 // ====== Firebase Data Display and Filtering ======
 
@@ -2624,5 +2719,138 @@ function filterStatistics() {
         topCustomersList.innerHTML = '<li>لا توجد بيانات</li>';
     }
 }
+
+// ====== NEW: Local Invoice Archive Functions ======
+
+/**
+ * Saves an invoice to Local Storage.
+ * @param {object} invoiceData - The invoice object to save.
+ */
+function saveInvoiceToLocalStorage(invoiceData) {
+    let localInvoices = JSON.parse(localStorage.getItem('localInvoices')) || [];
+    localInvoices.push(invoiceData);
+    localStorage.setItem('localInvoices', JSON.stringify(localInvoices));
+    showToast("تم حفظ الفاتورة محلياً.", 'success');
+}
+
+/**
+ * Displays local invoices from Local Storage.
+ */
+function displayLocalInvoices() {
+    allLocalInvoices = JSON.parse(localStorage.getItem('localInvoices')) || [];
+    localInvoicesList.innerHTML = '';
+
+    const searchTerm = searchLocalInvoiceInput.value.toLowerCase();
+
+    const filteredInvoices = allLocalInvoices.filter(invoice => {
+        const matchesSearch = searchTerm ?
+            (invoice.customerName && invoice.customerName.toLowerCase().includes(searchTerm)) ||
+            (invoice.ownerName && invoice.ownerName.toLowerCase().includes(searchTerm)) ||
+            (invoice.date && invoice.date.toLowerCase().includes(searchTerm)) ||
+            (invoice.products && invoice.products.some(p => p.name.toLowerCase().includes(searchTerm)))
+            : true;
+        return matchesSearch;
+    });
+
+    if (filteredInvoices.length === 0) {
+        localInvoicesList.innerHTML = '<p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>';
+        return;
+    }
+
+    // Sort by date (newest first)
+    filteredInvoices.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    filteredInvoices.forEach(invoice => {
+        const invoiceDiv = document.createElement('div');
+        invoiceDiv.classList.add('local-invoice-item');
+        
+        invoiceDiv.innerHTML = `
+            <div class="invoice-summary-details">
+                <p><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
+                <p><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
+                <p><strong>تاريخ الفاتورة:</strong> ${invoice.date || 'N/A'}</p>
+                <p><strong>الإجمالي (TTC):</strong> ${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</p>
+                <p><strong>الربح:</strong> ${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</p>
+            </div>
+            <div class="invoice-actions">
+                <button type="button" class="btn1" onclick="viewLocalInvoiceDetails(${invoice.id})">عرض التفاصيل</button>
+                <button type="button" class="btn-delete" onclick="deleteLocalInvoice(${invoice.id})">حذف</button>
+            </div>
+        `;
+        localInvoicesList.appendChild(invoiceDiv);
+    });
+}
+
+/**
+ * Views the details of a specific local invoice.
+ * @param {number} invoiceId - The ID of the invoice to view.
+ */
+function viewLocalInvoiceDetails(invoiceId) {
+    const invoiceToView = allLocalInvoices.find(inv => inv.id === invoiceId);
+
+    if (invoiceToView) {
+        // Populate the invoice display section
+        document.getElementById('displayCustomerName').textContent = invoiceToView.customerName;
+        document.getElementById('displayInvoiceOwner').textContent = invoiceToView.ownerName;
+        document.getElementById('displayInvoiceDate').textContent = invoiceToView.date;
+        document.getElementById('displayTotalAmountBeforeCommission').textContent = parseFloat(invoiceToView.totalHTBeforeCommission || 0).toFixed(2) + ' DH';
+        document.getElementById('displayCommissionDeducted').textContent = parseFloat(invoiceToView.totalCommission || 0).toFixed(2) + ' DH';
+        document.getElementById('displayTotalAmount').textContent = parseFloat(invoiceToView.totalHT || 0).toFixed(2) + ' DH';
+        document.getElementById('displayTVA').textContent = parseFloat(invoiceToView.tva || 0).toFixed(2) + ' DH';
+        document.getElementById('displayTotalTTC').textContent = parseFloat(invoiceToView.totalTTC || 0).toFixed(2) + ' DH';
+
+        document.getElementById('displayInvoiceOwnerPhoneFooter').textContent = invoiceToView.ownerPhone;
+        document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceToView.ownerAddress;
+
+        const detailsTbody = document.getElementById('displayDetails');
+        detailsTbody.innerHTML = '';
+        let productNumber = 1;
+        invoiceToView.products.forEach(productData => {
+            const productDetails = document.createElement('tr');
+            productDetails.innerHTML = `
+                <td>${productNumber++}</td>
+                <td>${productData.name}</td>
+                <td>${parseFloat(productData.sellingPrice).toFixed(2)} DH</td>
+                <td>${productData.quantityUsed}</td>
+                <td>${(parseFloat(productData.sellingPrice) * productData.quantityUsed).toFixed(2)} DH</td>
+            `;
+            detailsTbody.appendChild(productDetails);
+        });
+
+        hideAllSections();
+        invoiceDisplay.hidden = false;
+        // Show the "Back to Archive" button
+        backToLocalArchiveButton.hidden = false;
+        // Mark that this invoice view came from the local archive
+        invoiceDisplay.dataset.cameFromLocalArchive = 'true'; 
+
+        // Hide "Update Stock" button as this is an archive view
+        document.getElementById('savePdfButton').style.display = 'none';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        showToast("الفاتورة غير موجودة في الأرشيف المحلي.", 'error');
+    }
+}
+
+/**
+ * Deletes a local invoice from Local Storage.
+ * @param {number} invoiceId - The ID of the invoice to delete.
+ */
+async function deleteLocalInvoice(invoiceId) {
+    const confirmed = await showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد حذف هذه الفاتورة من الأرشيف المحلي؟");
+    if (confirmed) {
+        let localInvoices = JSON.parse(localStorage.getItem('localInvoices')) || [];
+        localInvoices = localInvoices.filter(invoice => invoice.id !== invoiceId);
+        localStorage.setItem('localInvoices', JSON.stringify(localInvoices));
+        showToast("تم حذف الفاتورة بنجاح من الأرشيف المحلي.", 'success');
+        displayLocalInvoices(); // Refresh the list
+    } else {
+        showToast("تم إلغاء حذف الفاتورة.", 'info');
+    }
+}
+
+// NEW: Event listener for local invoice search
+searchLocalInvoiceInput.addEventListener('input', displayLocalInvoices);
 </script>
 </html>
