@@ -157,6 +157,34 @@
             transform: translateY(0);
         }
 
+        /* NEW: Dashboard View Specific Styles */
+        .dashboard-view {
+            display: flex;
+            flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+            gap: var(--spacing-md); /* Spacing between cards */
+            align-items: flex-start; /* Align items to the top */
+            width: 100%; /* Take full width of container */
+        }
+
+        /* Adjust individual container widths within the dashboard view */
+        /* On larger screens, distribute space */
+        .dashboard-view > .product-container,
+        .dashboard-view > .client-container {
+            flex: 1 1 48%; /* Each takes roughly half width, allows for a bit of gap */
+            min-width: 300px; /* Minimum width before wrapping */
+        }
+        /* On large screens, this will take full width below forms.
+           If we wanted it side-by-side on very wide screens, we'd need more complex media queries. */
+        .dashboard-view > .saved-products {
+            flex: 1 1 100%; /* Takes full width */
+            margin-top: var(--spacing-md); /* Add margin from the forms above */
+        }
+        /* Ensure that when dashboard-view is visible, its children are also visible */
+        .dashboard-view:not([hidden]) > div {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Scrollable areas - adjusted for desktop */
         .saved-products3,
         .saved-products4,
@@ -728,15 +756,17 @@
         /* Toast Notifications */
         #toast-container {
             position: fixed;
-            top: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for element's own size */
             z-index: 1000;
             display: flex;
             flex-direction: column;
             gap: 10px;
             pointer-events: none;
             align-items: center; 
+            width: auto; /* Allow toast to size based on content */
+            max-width: 90vw; /* Prevent overflow on very small screens */
         }
 
         .toast {
@@ -905,6 +935,13 @@
                 min-width: unset;
                 max-width: 90%;
             }
+
+            /* Stack dashboard items on smaller screens */
+            .dashboard-view > .product-container,
+            .dashboard-view > .client-container,
+            .dashboard-view > .saved-products {
+                flex: 1 1 100%; /* Take full width */
+            }
         }
 
         @media (max-width: 480px) { /* Mobile size */
@@ -962,102 +999,122 @@
 </head>
 <body>
     <div class="main-controls">
-        <button type="button" class="btn-panel" id="showProductFormButton">إدارة المنتجات</button>
-        <button type="button" class="btn-panel" id="showClientInvoiceFormButton">إنشاء فاتورة</button>
-        <button type="button" class="btn-panel" id="showSavedProductsListButton">قائمة المنتجات</button>
+        <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
         <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
         <button type="button" class="btn-panel" id="showStatisticsButton">الإحصائيات</button>
-        <button type="button" class="btn-panel" id="showLocalInvoiceArchiveButton">أرشيف الفواتير المحلية</button> <!-- NEW: Local Archive Button -->
+        <button type="button" class="btn-panel" id="showLocalInvoiceArchiveButton">أرشيف الفواتير المحلية</button>
     </div>
 
     <div class="container">
         
-        <div class="product-container" id="productFormContainer" hidden>
-            <form id="productForm">
+        <!-- NEW: Combined Dashboard View -->
+        <div id="mainDashboardView" class="dashboard-view">
+            <div class="product-container" id="productFormContainer"> <!-- No 'hidden' attribute -->
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName" class="required">Nom du produit</label>
+                        <input type="text" id="productName" required placeholder="Nom du produit" autocomplete="on">
+                        <span class="validation-error-message">اسم المنتج مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="purchasePrice" class="required">Prix d'achat (DH)</label>
+                        <input type="number" id="purchasePrice" required placeholder="Prix d'achat" autocomplete="on" min="0" step="0.01">
+                        <span class="validation-error-message">سعر الشراء مطلوب (غير سالب).</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="sellingPrice" class="required">Prix de vente (DH)</label>
+                        <input type="number" id="sellingPrice" required placeholder="Prix de vente" autocomplete="on" min="0" step="0.01">
+                        <span class="validation-error-message">سعر البيع مطلوب (غير سالب).</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierName" class="required">Nom du fournisseur</label>
+                        <input type="text" id="supplierName" required placeholder="Nom du fournisseur" autocomplete="on">
+                        <span class="validation-error-message">اسم المورد مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierAddress" class="required">Adresse du fournisseur</label>
+                        <input type="text" id="supplierAddress" required placeholder="Adresse du fournisseur" autocomplete="on">
+                        <span class="validation-error-message">عنوان المورد مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="supplierPhone" class="required">Téléphone du fournisseur</label>
+                        <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
+                        <span class="validation-error-message">رقم هاتف المورد مطلوب (10 أرقام).</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="productQuantity">Quantité initiale en stock</label>
+                        <input type="number" id="productQuantity" placeholder="Quantité" value="0" min="0">
+                    </div>
+                    <div class="button-container">
+                        <button type="submit" class="btn" id="addProduct">إضافة منتج</button>
+                        <button type="submit" class="btn" id="saveEditProduct">تعديل المنتج</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="client-container" id="clientFormContainer"> <!-- No 'hidden' attribute -->
+                <form id="invoiceForm">
+                    <div class="form-group">
+                        <label for="invoiceDate" class="required">Date de la facture</label>
+                        <input type="text" id="invoiceDate" required placeholder="Date de la facture" readonly>
+                        <span class="validation-error-message">تاريخ الفاتورة مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerName" class="required">Nom du client</label>
+                        <input type="text" id="customerName" required placeholder="Nom du client" autocomplete="on" value="CLIENT">
+                        <span class="validation-error-message">اسم العميل مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceOwner" class="required">Nom du Propriétaire de la facture</label>
+                        <input type="text" id="invoiceOwner" required placeholder="Nom du Propriétaire de la facture" autocomplete="on">
+                        <span class="validation-error-message">اسم مالك الفاتورة مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceOwnerAddress" class="required">Adresse du propriétaire de la facture</label>
+                        <input type="text" id="invoiceOwnerAddress" required placeholder="Adresse du propriétaire de la facture" autocomplete="on">
+                        <span class="validation-error-message">عنوان مالك الفاتورة مطلوب.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="invoiceOwnerPhone" class="required">Téléphone du propriétaire de la facture</label>
+                        <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
+                        <span class="validation-error-message">رقم هاتف مالك الفاتورة مطلوب (10 أرقام).</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="tva">TVA (%)</label>
+                        <input type="number" id="tva" required placeholder="TVA" value="0" min="0" max="100">
+                        <span class="validation-error-message">نسبة TVA مطلوبة (بين 0 و 100).</span>
+                    </div>
+                    <div class="form-group"> <!-- NEW: Invoice-level commission rate -->
+                        <label for="invoiceCommissionPercentage">Taux de commission de la facture (%)</label>
+                        <input type="number" id="invoiceCommissionPercentage" placeholder="مثال: 10" value="0" min="0" max="100" step="0.01">
+                        <span class="validation-error-message">نسبة العمولة للفاتورة (بين 0 و 100).</span>
+                    </div>
+                    <div class="button-container">
+                        <button type="button" class="btn" id="createInvoiceButton">إنشاء الفاتورة وعرضها</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="saved-products" id="savedProductsDisplay"> <!-- No 'hidden' attribute -->
+                <!-- NEW: Low stock products moved here, above search -->
+                <div class="low-stock-section"> 
+                    <h3>تتبع المخزون: المنتجات على وشك النفاد</h3>
+                    <div class="product-list-grid" id="lowStockProductsList"> 
+                        <p class="empty-list-message">لا توجد منتجات في المخزون المنخفض حالياً.</p>
+                    </div>
+                </div>
+
+                <div class="divider"></div> <!-- Divider to separate low stock from main products -->
+
                 <div class="form-group">
-                    <label for="productName" class="required">Nom du produit</label>
-                    <input type="text" id="productName" required placeholder="Nom du produit" autocomplete="on">
-                    <span class="validation-error-message">اسم المنتج مطلوب.</span>
+                    <label for="searchProduct" class="sr-only">البحث عن منتج</label>
+                    <input type="text" id="searchProduct" placeholder="البحث عن منتج">
                 </div>
-                <div class="form-group">
-                    <label for="purchasePrice" class="required">Prix d'achat (DH)</label>
-                    <input type="number" id="purchasePrice" required placeholder="Prix d'achat" autocomplete="on" min="0" step="0.01">
-                    <span class="validation-error-message">سعر الشراء مطلوب (غير سالب).</span>
-                </div>
-                <div class="form-group">
-                    <label for="sellingPrice" class="required">Prix de vente (DH)</label>
-                    <input type="number" id="sellingPrice" required placeholder="Prix de vente" autocomplete="on" min="0" step="0.01">
-                    <span class="validation-error-message">سعر البيع مطلوب (غير سالب).</span>
-                </div>
-                <div class="form-group">
-                    <label for="supplierName" class="required">Nom du fournisseur</label>
-                    <input type="text" id="supplierName" required placeholder="Nom du fournisseur" autocomplete="on">
-                    <span class="validation-error-message">اسم المورد مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="supplierAddress" class="required">Adresse du fournisseur</label>
-                    <input type="text" id="supplierAddress" required placeholder="Adresse du fournisseur" autocomplete="on">
-                    <span class="validation-error-message">عنوان المورد مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="supplierPhone" class="required">Téléphone du fournisseur</label>
-                    <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
-                    <span class="validation-error-message">رقم هاتف المورد مطلوب (10 أرقام).</span>
-                </div>
-                <div class="form-group">
-                    <label for="productQuantity">Quantité initiale en stock</label>
-                    <input type="number" id="productQuantity" placeholder="Quantité" value="0" min="0">
-                </div>
-                <div class="button-container">
-                    <button type="submit" class="btn" id="addProduct">إضافة منتج</button>
-                    <button type="submit" class="btn" id="saveEditProduct">تعديل المنتج</button>
-                </div>
-            </form>
+                <div class="saved-products3 product-list-grid" id="savedProductsList"></div> <!-- Added product-list-grid class here too -->
+            </div>
         </div>
         
-        <div class="client-container" id="clientFormContainer" hidden>
-            <form id="invoiceForm">
-                <div class="form-group">
-                    <label for="invoiceDate" class="required">Date de la facture</label>
-                    <input type="text" id="invoiceDate" required placeholder="Date de la facture" readonly>
-                    <span class="validation-error-message">تاريخ الفاتورة مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="customerName" class="required">Nom du client</label>
-                    <input type="text" id="customerName" required placeholder="Nom du client" autocomplete="on" value="CLIENT">
-                    <span class="validation-error-message">اسم العميل مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="invoiceOwner" class="required">Nom du Propriétaire de la facture</label>
-                    <input type="text" id="invoiceOwner" required placeholder="Nom du Propriétaire de la facture" autocomplete="on">
-                    <span class="validation-error-message">اسم مالك الفاتورة مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="invoiceOwnerAddress" class="required">Adresse du propriétaire de la facture</label>
-                    <input type="text" id="invoiceOwnerAddress" required placeholder="Adresse du propriétaire de la facture" autocomplete="on">
-                    <span class="validation-error-message">عنوان مالك الفاتورة مطلوب.</span>
-                </div>
-                <div class="form-group">
-                    <label for="invoiceOwnerPhone" class="required">Téléphone du propriétaire de la facture</label>
-                    <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
-                    <span class="validation-error-message">رقم هاتف مالك الفاتورة مطلوب (10 أرقام).</span>
-                </div>
-                <div class="form-group">
-                    <label for="tva">TVA (%)</label>
-                    <input type="number" id="tva" required placeholder="TVA" value="0" min="0" max="100">
-                    <span class="validation-error-message">نسبة TVA مطلوبة (بين 0 و 100).</span>
-                </div>
-                <div class="form-group"> <!-- NEW: Invoice-level commission rate -->
-                    <label for="invoiceCommissionPercentage">Taux de commission de la facture (%)</label>
-                    <input type="number" id="invoiceCommissionPercentage" placeholder="مثال: 10" value="0" min="0" max="100" step="0.01">
-                    <span class="validation-error-message">نسبة العمولة للفاتورة (بين 0 و 100).</span>
-                </div>
-                <div class="button-container">
-                    <button type="button" class="btn" id="createInvoiceButton">إنشاء الفاتورة وعرضها</button>
-                </div>
-            </form>
-        </div>
-        
+        <!-- Other sections remain hidden by default -->
         <div class="invoice" id="invoiceDisplay" hidden>
             <button type="button" class="btn" id="savePdfButton">تحديث المخزون (بعد الفاتورة)</button>
             <h2>DEVIS</h2>
@@ -1114,26 +1171,8 @@
             </div>
             <div class="button-container">
                 <button type="button" class="btn" id="printButton">طباعة الفاتورة</button>
-                <button type="button" class="btn" id="backToLocalArchiveButton" hidden>العودة إلى الأرشيف</button> <!-- NEW: Back to archive button -->
+                <button type="button" class="btn" id="backToLocalArchiveButton" hidden>العودة إلى الأرشيف</button>
             </div>
-        </div>
-        
-        <div class="saved-products" id="savedProductsDisplay" hidden>
-            <!-- NEW: Low stock products moved here, above search -->
-            <div class="low-stock-section"> 
-                <h3>تتبع المخزون: المنتجات على وشك النفاد</h3>
-                <div class="product-list-grid" id="lowStockProductsList"> 
-                    <p class="empty-list-message">لا توجد منتجات في المخزون المنخفض حالياً.</p>
-                </div>
-            </div>
-
-            <div class="divider"></div> <!-- Divider to separate low stock from main products -->
-
-            <div class="form-group">
-                <label for="searchProduct" class="sr-only">البحث عن منتج</label>
-                <input type="text" id="searchProduct" placeholder="البحث عن منتج">
-            </div>
-            <div class="saved-products3 product-list-grid" id="savedProductsList"></div> <!-- Added product-list-grid class here too -->
         </div>
         
         <div class="saved-products2" id="firebaseProductsDisplay" hidden>
@@ -1144,7 +1183,7 @@
                 <label for="searchInput" class="sr-only">البحث عن منتج في Firebase</label>
                 <input type="text" id="searchInput" placeholder="البحث عن منتج" onkeyup="filterProducts()">
             </div>
-            <div class="saved-products4 product-list-grid" id="productListContainerdata"></div> <!-- Added product-list-grid class here too -->
+            <div class="saved-products4 product-list-grid" id="productListContainerdata"></div>
         </div>
 
         <!-- Statistics and Tracking Section -->
@@ -1205,7 +1244,7 @@
             </div>
         </div>
 
-        <!-- NEW: Local Invoice Archive Section -->
+        <!-- Local Invoice Archive Section -->
         <div class="local-archive-container" id="localInvoiceArchive" hidden>
             <h2>أرشيف الفواتير المحلية</h2>
             <div class="form-group">
@@ -1245,30 +1284,27 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // ====== Global UI Elements ======
+const mainDashboardView = document.getElementById('mainDashboardView'); // NEW: Reference to the dashboard view
 const productFormContainer = document.getElementById('productFormContainer');
 const clientFormContainer = document.getElementById('clientFormContainer');
 const invoiceDisplay = document.getElementById('invoiceDisplay');
 const savedProductsDisplay = document.getElementById('savedProductsDisplay');
 const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay');
 const statisticsDisplay = document.getElementById('statisticsDisplay');
-const localInvoiceArchive = document.getElementById('localInvoiceArchive'); // NEW: Local Archive container
+const localInvoiceArchive = document.getElementById('localInvoiceArchive');
 
 // ====== Main Navigation Buttons ======
-const showProductFormButton = document.getElementById('showProductFormButton');
-const showClientInvoiceFormButton = document.getElementById('showClientInvoiceFormButton');
-const showSavedProductsListButton = document.getElementById('showSavedProductsListButton');
+const showDashboardButton = document.getElementById('showDashboardButton'); // NEW: Dashboard button
 const showFirebaseDataButton = document.getElementById('showFirebaseDataButton');
 const showStatisticsButton = document.getElementById('showStatisticsButton');
-const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton'); // NEW: Local Archive button
+const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton');
 
 // Array of all navigation buttons for easy active state management
 const navButtons = [
-    showProductFormButton,
-    showClientInvoiceFormButton,
-    showSavedProductsListButton,
+    showDashboardButton,
     showFirebaseDataButton,
     showStatisticsButton,
-    showLocalInvoiceArchiveButton // NEW: Add local archive button
+    showLocalInvoiceArchiveButton
 ];
 
 // ====== Form Elements ======
@@ -1307,7 +1343,7 @@ const lowStockProductsList = document.getElementById('lowStockProductsList');
 // NEW: Local Invoice Archive elements
 const localInvoicesList = document.getElementById('localInvoicesList');
 const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
-const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton'); // Button to return from invoice view
+const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton');
 
 // ====== Toast Notification Elements ======
 const toastContainer = document.getElementById('toast-container');
@@ -1332,7 +1368,11 @@ let allLocalInvoices = [];
 
 // ====== Initial Setup on Window Load ======
 window.onload = function() {
+    // Initially hide all sections except the main dashboard view
     hideAllSections();
+    mainDashboardView.hidden = false;
+    setActiveButton(showDashboardButton); // Set dashboard button as active initially
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
     saveEditProductButton.style.display = 'none'; 
@@ -1358,6 +1398,10 @@ window.onload = function() {
     if (savedSupplierAddress) supplierAddressInput.value = savedSupplierAddress;
     if (savedSupplierPhone) supplierPhoneInput.value = savedSupplierPhone;
     if (savedInvoiceCommission) invoiceCommissionPercentageInput.value = savedInvoiceCommission; 
+
+    // Initialize display for dashboard elements
+    displayLowStockProducts(); 
+    displaySavedProducts(); 
 };
 
 // ====== UI Management Functions ======
@@ -1366,8 +1410,9 @@ window.onload = function() {
  * Hides all main content sections.
  */
 function hideAllSections() {
-    const allSections = document.querySelectorAll('.container > div'); 
-    allSections.forEach(section => {
+    // Only hide sections that are not part of the default dashboard view
+    const sectionsToHide = [invoiceDisplay, firebaseProductsDisplay, statisticsDisplay, localInvoiceArchive, mainDashboardView]; 
+    sectionsToHide.forEach(section => {
         section.hidden = true;
     });
 }
@@ -1463,38 +1508,13 @@ function showConfirmModal(title, message) {
 
 // ====== Section Display Functions ======
 
-showProductFormButton.addEventListener('click', () => {
+// NEW: Dashboard Button Event Listener
+showDashboardButton.addEventListener('click', () => {
     hideAllSections();
-    productFormContainer.hidden = false;
-    setActiveButton(showProductFormButton); 
-    addProductButton.style.display = 'block';
-    saveEditProductButton.style.display = 'none';
-    productNameInput.value = '';
-    purchasePriceInput.value = ''; 
-    sellingPriceInput.value = '';    
-    supplierNameInput.value = localStorage.getItem('supplierName') || ''; 
-    supplierAddressInput.value = localStorage.getItem('supplierAddress') || ''; 
-    supplierPhoneInput.value = localStorage.getItem('supplierPhone') || ''; 
-    productQuantityInput.value = '0';
-    resetValidationMessages(productForm);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-showClientInvoiceFormButton.addEventListener('click', () => {
-    hideAllSections();
-    clientFormContainer.hidden = false;
-    setActiveButton(showClientInvoiceFormButton); 
-    resetValidationMessages(invoiceForm);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-showSavedProductsListButton.addEventListener('click', () => {
-    hideAllSections();
-    savedProductsDisplay.hidden = false;
-    setActiveButton(showSavedProductsListButton); 
-    displayLowStockProducts(); // Display low stock products FIRST
-    displaySavedProducts(); // Then display main product list
-    searchProductInput.value = '';
+    mainDashboardView.hidden = false;
+    setActiveButton(showDashboardButton); 
+    displayLowStockProducts(); 
+    displaySavedProducts(); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -1514,19 +1534,18 @@ showStatisticsButton.addEventListener('click', () => {
     statisticsDisplay.hidden = false;
     setActiveButton(showStatisticsButton); 
     populateStatisticsFilterDropdown(); 
-    fetchAndDisplayStatistics(); // This will call filterStatistics internally
+    fetchAndDisplayStatistics(); 
     statsSearchInput.value = ''; 
     statsPhoneDropdown.selectedIndex = 0; 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// NEW: Local Invoice Archive Button Event Listener
 showLocalInvoiceArchiveButton.addEventListener('click', () => {
     hideAllSections();
     localInvoiceArchive.hidden = false;
     setActiveButton(showLocalInvoiceArchiveButton);
-    displayLocalInvoices(); // Display local invoices
-    searchLocalInvoiceInput.value = ''; // Clear search
+    displayLocalInvoices(); 
+    searchLocalInvoiceInput.value = ''; 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -1638,7 +1657,7 @@ addProductButton.addEventListener('click', async (event) => {
             displaySavedProducts(); 
             displayLowStockProducts(); 
             showToast("المنتج تم إضافته بنجاح.", 'success');
-            showProductFormButton.click(); 
+            // No longer redirect to product form button, stay on dashboard
         } else {
             showToast("تم إلغاء إضافة المنتج.", 'info');
         }
@@ -1656,7 +1675,7 @@ function editProduct(productId) {
     const productToEdit = savedProducts.find(p => p.id == productId);
 
     if (productToEdit) {
-        showProductFormButton.click(); 
+        showDashboardButton.click(); // Ensure dashboard is visible
         
         productNameInput.value = productToEdit.name;
         purchasePriceInput.value = productToEdit.purchasePrice; 
@@ -1729,7 +1748,7 @@ saveEditProductButton.addEventListener('click', async (event) => {
                 displaySavedProducts();
                 displayLowStockProducts(); 
                 showToast("Le product a été mis à jour avec succès.", 'success');
-                showProductFormButton.click(); 
+                // No longer redirect to product form button, stay on dashboard
             } else {
                 showToast("تم إلغاء تعديل المنتج.", 'info');
             }
@@ -1896,7 +1915,7 @@ function displayLowStockProducts() {
                     <p><strong>الحد الأدنى للمخزون:</strong> ${product.minStockQuantity || 0}</p>
                 </div>
                 <div class="product-actions">
-                    <button type="button" class="btn1" onclick="showProductFormButton.click(); editProduct(${product.id});">تعديل</button>
+                    <button type="button" class="btn1" onclick="showDashboardButton.click(); editProduct(${product.id});">تعديل</button>
                 </div>
             `;
             lowStockProductsList.appendChild(productDiv);
@@ -2280,7 +2299,7 @@ document.getElementById('savePdfButton').addEventListener('click', async functio
 
         showToast('تم تحديث المخزون بنجاح.', 'success');
         resetAllProductQuantities(); 
-        showSavedProductsListButton.click(); 
+        showDashboardButton.click(); // Redirect to dashboard after stock update
     } else {
         showToast("تم إلغاء تحديث المخزون.", 'info');
     }
@@ -2468,7 +2487,7 @@ function displayFirebaseProducts(products) {
         `;
 
         productDiv.addEventListener('click', (event) => {
-            showProductFormButton.click(); 
+            showDashboardButton.click(); // Redirect to dashboard
             productNameInput.value = product.name;
             purchasePriceInput.value = parseFloat(product.purchasePrice || 0);
             sellingPriceInput.value = parseFloat(product.sellingPrice || 0);
@@ -2494,7 +2513,7 @@ function editProductFromFirebase(productId) {
     const firebaseProduct = allFirebaseProducts.find(p => p.id == productId); 
 
     if (firebaseProduct) {
-        showProductFormButton.click(); 
+        showDashboardButton.click(); // Redirect to dashboard
         productNameInput.value = firebaseProduct.name;
         purchasePriceInput.value = parseFloat(firebaseProduct.purchasePrice || 0);
         sellingPriceInput.value = parseFloat(firebaseProduct.sellingPrice || 0);
