@@ -34,6 +34,8 @@
             --spacing-md: 15px;
             --spacing-lg: 20px;
             --spacing-xl: 25px;
+            --box-shadow-light: 0 1px 3px rgba(0,0,0,0.1);
+            --box-shadow-medium: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         /* Added this rule to ensure hidden attribute works reliably */
@@ -70,7 +72,7 @@
             padding: var(--spacing-sm);
             background-color: var(--windows-accent-blue);
             border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow-medium);
             flex-shrink: 0;
         }
 
@@ -87,7 +89,7 @@
             transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
             font-weight: bold;
             font-size: 1em;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.15);
+            box-shadow: var(--box-shadow-light);
             outline: none;
         }
 
@@ -98,7 +100,7 @@
         }
         .main-controls .btn-panel:active {
             transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow-light);
         }
         .main-controls .btn-panel:focus-visible {
             outline: 2px solid var(--windows-text-light);
@@ -132,14 +134,13 @@
         .client-container,
         .invoice,
         .saved-products,
-        .saved-products2,
-        .statistics-container,
-        .local-archive-container { /* Added new class for local archive */
+        .firebase-stats-combined-container,
+        .local-archive-container {
             border: 1px solid var(--windows-border-light);
             padding: var(--spacing-lg);
             border-radius: var(--border-radius);
             background-color: var(--windows-card-bg);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow-light);
             margin-bottom: 0;
             position: relative;
             display: flex;
@@ -166,6 +167,16 @@
             width: 100%; /* Take full width of container */
         }
 
+        .dashboard-view h2 {
+            width: 100%; /* Make title span full width */
+            text-align: center;
+            color: var(--windows-accent-blue);
+            margin-bottom: var(--spacing-xl);
+            font-size: 2em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--windows-accent-blue-light);
+        }
+
         /* Adjust individual container widths within the dashboard view */
         /* On larger screens, distribute space */
         .dashboard-view > .product-container,
@@ -173,8 +184,6 @@
             flex: 1 1 48%; /* Each takes roughly half width, allows for a bit of gap */
             min-width: 300px; /* Minimum width before wrapping */
         }
-        /* On large screens, this will take full width below forms.
-           If we wanted it side-by-side on very wide screens, we'd need more complex media queries. */
         .dashboard-view > .saved-products {
             flex: 1 1 100%; /* Takes full width */
             margin-top: var(--spacing-md); /* Add margin from the forms above */
@@ -185,13 +194,70 @@
             transform: translateY(0);
         }
 
+        /* NEW: Firebase/Stats Combined Container Layout */
+        .firebase-stats-combined-container {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: var(--spacing-md); /* Space between product list and stats */
+            padding: var(--spacing-lg); /* Add padding to the combined container */
+            border-radius: var(--border-radius);
+            background-color: var(--windows-card-bg); /* Match overall card background */
+            box-shadow: var(--box-shadow-light); /* Apply consistent shadow */
+            margin-bottom: var(--spacing-md);
+        }
+        .firebase-stats-combined-container h2 {
+            width: 100%; /* Make title span full width */
+            text-align: center;
+            color: var(--windows-accent-blue);
+            margin-bottom: var(--spacing-xl);
+            font-size: 2em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--windows-accent-blue-light);
+        }
+        .firebase-stats-combined-container > .firebase-product-list-wrapper { /* Wrapper for product list & search/dropdown */
+            flex: 1 1 65%; /* Takes about 65% width on large screens */
+            min-width: 300px; /* Minimum width before wrapping */
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            background-color: var(--windows-bg-light); /* Slightly lighter background for list wrapper */
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+        }
+        .firebase-stats-combined-container > .statistics-section { /* Wrapper for stats content */
+            flex: 1 1 30%; /* Takes about 30% width on large screens */
+            min-width: 280px; /* Minimum width before wrapping */
+            background-color: var(--windows-bg-medium); /* Lighter background for stats section itself */
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
+            max-height: calc(100vh - 280px); /* Adjust to match product list height */
+            overflow-y: auto; /* Enable scrolling for stats if content is too long */
+        }
+        /* Adjust for smaller screens (stacking) */
+        @media (max-width: 768px) {
+            .firebase-stats-combined-container {
+                flex-direction: column; /* Stack vertically */
+                padding: var(--spacing-md); /* Adjust padding */
+            }
+            .firebase-stats-combined-container > .firebase-product-list-wrapper,
+            .firebase-stats-combined-container > .statistics-section {
+                flex: 1 1 100%; /* Take full width */
+                max-height: none; /* Remove max height constraint */
+                overflow-y: visible; /* Remove scrolling */
+                padding: var(--spacing-md); /* Consistent padding */
+            }
+        }
+
+
         /* Scrollable areas - adjusted for desktop */
         .saved-products3,
-        .saved-products4,
-        .local-invoices-list { /* Added new class for local invoices list */
+        .saved-products4, /* Now used for firebase product list only */
+        .local-invoices-list {
             flex-grow: 1;
             overflow-y: auto;
-            max-height: calc(100vh - 280px); /* Adjust based on header/main controls height + top padding */
+            max-height: calc(100vh - 350px); /* Adjusted for combined forms in dashboard, and combined header in firebase/stats */
             padding-right: 10px; /* More padding for scrollbar on desktop */
             margin-top: var(--spacing-sm);
             -webkit-overflow-scrolling: touch;
@@ -200,9 +266,13 @@
             gap: var(--spacing-md);
             align-content: start; /* Align content to start in grid */
         }
+        .firebase-stats-combined-container .saved-products4 {
+             max-height: calc(100vh - 400px); /* Adjusted for filters and stats section */
+        }
+
 
         /* Low stock container styling within product list */
-        .low-stock-section { /* Class for the container of low stock products */
+        .low-stock-section {
             flex-grow: 0;
             overflow-y: hidden;
             margin-top: 0;
@@ -212,7 +282,7 @@
             background-color: var(--windows-bg-medium); 
             border-radius: var(--border-radius);
             padding: var(--spacing-md);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05); /* Subtle inner shadow */
         }
         .low-stock-section h3 {
             color: var(--windows-error-red);
@@ -223,7 +293,7 @@
             border-bottom: 1px dashed var(--windows-error-red);
             padding-bottom: var(--spacing-sm);
         }
-        .product-list-grid { /* For products inside low stock section or main product list */
+        .product-list-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: var(--spacing-sm);
@@ -323,7 +393,7 @@
             margin-bottom: 0;
             font-weight: bold;
             transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.15);
+            box-shadow: var(--box-shadow-light);
             font-size: 0.95em;
             outline: none;
         }
@@ -341,7 +411,7 @@
         .btn1, .btn2 {
             background-color: var(--windows-success-green);
         }
-        .btn1:hover, .btn2:hover { background-color: #0C610C; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .btn1:hover, .btn2:hover { background-color: #0C610C; transform: translateY(-1px); box-shadow: 0 4고자 6px rgba(0,0,0,0.2); }
 
         .btn-delete {
             background-color: var(--windows-error-red);
@@ -362,7 +432,7 @@
             padding: var(--spacing-xl);
             border-radius: var(--border-radius);
             background-color: var(--windows-card-bg);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: var(--box-shadow-medium);
         }
 
         .invoice h2 {
@@ -453,13 +523,18 @@
             position: relative;
             font-size: 0.95em;
             line-height: 1.5;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            box-shadow: var(--box-shadow-light);
             transition: all 0.2s ease-in-out;
             display: flex; /* Use flexbox for internal layout */
             flex-direction: column;
             justify-content: space-between;
             align-items: flex-start;
         }
+        .product:hover, .product-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
 
         .product p, .product-item p {
             margin-bottom: 5px;
@@ -503,8 +578,8 @@
             background-color: var(--windows-accent-blue);
             color: var(--windows-text-light);
             border: none;
-            border-radius: 50%;
             cursor: pointer;
+            border-radius: 50%;
             transition: background-color 0.2s ease, transform 0.1s ease;
             outline: none;
             flex-shrink: 0; /* Prevent buttons from shrinking */
@@ -568,7 +643,7 @@
         .product.status-stock-positive, .product.status-default {
             background-color: var(--windows-card-bg) !important;
             border-color: var(--windows-border-light) !important;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow-light);
         }
 
 
@@ -584,7 +659,7 @@
             padding: var(--spacing-md);
             border-radius: 15px;
             background-color: var(--windows-card-bg);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            box-shadow: var(--box-shadow-light);
             transition: all 0.2s ease-in-out;
             display: flex;
             flex-direction: column;
@@ -618,7 +693,7 @@
 
         /* Search input for saved products list */
         #searchProduct,
-        #searchLocalInvoice { /* Added for local invoice search */
+        #searchLocalInvoice {
             padding: 0.6rem 1rem;
             border-radius: var(--button-border-radius);
             border: 1px solid var(--windows-border-light);
@@ -630,35 +705,52 @@
             outline: none;
         }
         #searchProduct:focus,
-        #searchLocalInvoice:focus { /* Added for local invoice search */
+        #searchLocalInvoice:focus {
             border-color: var(--windows-accent-blue);
             box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
         }
 
         /* Adjustments for dropdown and search in Firebase section */
-        #phoneDropdown, #searchInput,
-        #statsPhoneDropdown, 
-        #statsSearchInput { 
+        /* Combined filter controls for Firebase products and statistics */
+        .firebase-filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+        }
+        .firebase-filter-controls .form-group {
+            flex: 1 1 48%; /* Adjust for side-by-side on larger screens */
+            min-width: 200px; /* Prevent shrinking too much */
+            margin-bottom: 0; /* Remove default margin-bottom to avoid double spacing */
+        }
+        .firebase-filter-controls .form-group label {
+            display: none; /* Hide labels for filter controls to save space */
+        }
+        .firebase-filter-controls #phoneDropdown, 
+        .firebase-filter-controls #searchInput,
+        .firebase-filter-controls #statsPhoneDropdown, 
+        .firebase-filter-controls #statsSearchInput { 
             width: 100%;
             padding: 0.6rem 0.8rem;
             box-sizing: border-box;
-            background-color: var(--windows-bg-medium);
+            background-color: var(--windows-card-bg); /* Use card background for filter inputs */
             border-radius: 5px;
             border: 1px solid var(--windows-border-light);
-            margin-bottom: var(--spacing-sm);
             font-size: 1em;
             color: var(--windows-text-dark);
             outline: none;
         }
 
-        #phoneDropdown:focus, #searchInput:focus,
-        #statsPhoneDropdown:focus, 
-        #statsSearchInput:focus { 
+        .firebase-filter-controls #phoneDropdown:focus, 
+        .firebase-filter-controls #searchInput:focus,
+        .firebase-filter-controls #statsPhoneDropdown:focus, 
+        .firebase-filter-controls #statsSearchInput:focus { 
             border-color: var(--windows-accent-blue);
             box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.3);
         }
 
-        #phoneDropdown, #statsPhoneDropdown { 
+        .firebase-filter-controls #phoneDropdown, 
+        .firebase-filter-controls #statsPhoneDropdown { 
             appearance: none;
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236A7B82%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%00-13.2-5.4H18.6c-5%200-9.3%201.8-13.2%205.4A17.6%2017.6%200%200%000%2082.7c0%204.6%201.8%208.9%205.4%2012.8l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095.5a17.6%2017.6%200%200%005.4-12.8c0-4.6-1.8-8.9-5.4-12.8z%22/%3E%3C/svg%3E');
             background-repeat: no-repeat;
@@ -667,46 +759,39 @@
             padding-right: 30px;
         }
 
-        /* --- Statistics Section Styles --- */
-        .statistics-container {
-            border: 1px solid var(--windows-border-light);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius);
-            background-color: var(--windows-card-bg);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .statistics-container h2 {
+        /* --- Statistics Section Styles (Adjusted for embedding) --- */
+        .statistics-section h2 { /* Removed margin-bottom and made smaller */
             text-align: center;
             color: var(--windows-accent-blue);
-            margin-bottom: var(--spacing-xl);
-            font-size: 1.8em;
+            margin-bottom: var(--spacing-md);
+            font-size: 1.5em; /* Smaller title */
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--windows-accent-blue-light);
         }
 
-        .statistics-container h3 {
+        .statistics-section h3 {
             color: var(--windows-accent-blue);
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
-            font-size: 1.3em;
+            font-size: 1.2em;
             border-bottom: 1px solid var(--windows-border-light);
             padding-bottom: var(--spacing-sm);
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Smaller grid items */
             gap: var(--spacing-md);
             margin-bottom: var(--spacing-lg);
         }
 
         .stat-card {
-            background-color: var(--windows-bg-medium);
+            background-color: var(--windows-card-bg); /* Use card background for stat cards */
             border: 1px solid var(--windows-accent-blue-light);
             border-radius: var(--border-radius);
             padding: var(--spacing-md);
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: var(--box-shadow-light);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -714,14 +799,14 @@
 
         .stat-card h3 {
             margin: 0 0 var(--spacing-sm) 0;
-            font-size: 1.1em;
+            font-size: 1em; /* Smaller font for stat titles */
             color: var(--windows-accent-blue);
             border-bottom: none;
             padding-bottom: 0;
         }
 
         .stat-card p {
-            font-size: 1.6em;
+            font-size: 1.4em; /* Slightly smaller for compactness */
             font-weight: bold;
             color: var(--windows-text-dark);
             margin: 0;
@@ -732,19 +817,19 @@
             padding: 0;
             margin: 0;
             text-align: left;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
 
         .stat-card ul li {
-            background-color: var(--windows-card-bg);
-            padding: 5px 10px;
+            background-color: var(--windows-bg-light); /* Lighter background for list items */
+            padding: 4px 8px;
             border-radius: 5px;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             border: 1px solid var(--windows-border-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            flex-wrap: wrap;
         }
         .stat-card ul li:last-child {
             margin-bottom: 0;
@@ -767,6 +852,8 @@
             align-items: center; 
             width: auto; /* Allow toast to size based on content */
             max-width: 90vw; /* Prevent overflow on very small screens */
+            box-sizing: border-box; /* Include padding/border in width calculation */
+            padding: var(--spacing-md); /* Add some padding around the container */
         }
 
         .toast {
@@ -774,7 +861,7 @@
             color: var(--windows-text-dark);
             padding: 15px 20px;
             border-radius: var(--border-radius);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--box-shadow-medium);
             min-width: 250px;
             max-width: 350px;
             opacity: 0;
@@ -892,12 +979,22 @@
             .container {
                 max-width: 960px;
             }
-            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
+            .saved-products3, .product-list-grid, .local-invoices-list {
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             }
             .main-controls .btn-panel {
                 font-size: 0.95em;
                 padding: 0.7rem 0.9rem;
+            }
+            /* Firebase/Stats Combined Layout on smaller desktops */
+            .firebase-stats-combined-container > .firebase-product-list-wrapper {
+                flex: 1 1 60%; /* Slightly less width for product list */
+            }
+            .firebase-stats-combined-container > .statistics-section {
+                flex: 1 1 35%; /* Slightly more width for stats */
+            }
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjust stats grid items */
             }
         }
 
@@ -918,17 +1015,15 @@
                 padding: 0.4rem;
                 font-size: 0.85em;
             }
-            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
+            .saved-products3, .product-list-grid, .local-invoices-list {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 max-height: calc(100vh - 200px); /* Adjusted for independent visibility */
             }
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
+            
             .stat-card p {
                 font-size: 1.3em;
             }
-            .statistics-container h2 {
+            .statistics-section h2 {
                 font-size: 1.5em;
             }
             .toast {
@@ -972,7 +1067,7 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-            .saved-products3, .saved-products4, .product-list-grid, .local-invoices-list {
+            .saved-products3, .product-list-grid, .local-invoices-list {
                 grid-template-columns: 1fr; /* Single column on mobile */
             }
         }
@@ -1001,15 +1096,15 @@
     <div class="main-controls">
         <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
         <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
-        <button type="button" class="btn-panel" id="showStatisticsButton">الإحصائيات</button>
         <button type="button" class="btn-panel" id="showLocalInvoiceArchiveButton">أرشيف الفواتير المحلية</button>
     </div>
 
     <div class="container">
         
-        <!-- NEW: Combined Dashboard View -->
+        <!-- Dashboard View -->
         <div id="mainDashboardView" class="dashboard-view">
-            <div class="product-container" id="productFormContainer"> <!-- No 'hidden' attribute -->
+            <h2>لوحة التحكم الرئيسية</h2> <!-- NEW: Dashboard title -->
+            <div class="product-container" id="productFormContainer">
                 <form id="productForm">
                     <div class="form-group">
                         <label for="productName" class="required">Nom du produit</label>
@@ -1052,7 +1147,7 @@
                 </form>
             </div>
             
-            <div class="client-container" id="clientFormContainer"> <!-- No 'hidden' attribute -->
+            <div class="client-container" id="clientFormContainer">
                 <form id="invoiceForm">
                     <div class="form-group">
                         <label for="invoiceDate" class="required">Date de la facture</label>
@@ -1095,7 +1190,7 @@
                 </form>
             </div>
             
-            <div class="saved-products" id="savedProductsDisplay"> <!-- No 'hidden' attribute -->
+            <div class="saved-products" id="savedProductsDisplay">
                 <!-- NEW: Low stock products moved here, above search -->
                 <div class="low-stock-section"> 
                     <h3>تتبع المخزون: المنتجات على وشك النفاد</h3>
@@ -1110,7 +1205,7 @@
                     <label for="searchProduct" class="sr-only">البحث عن منتج</label>
                     <input type="text" id="searchProduct" placeholder="البحث عن منتج">
                 </div>
-                <div class="saved-products3 product-list-grid" id="savedProductsList"></div> <!-- Added product-list-grid class here too -->
+                <div class="saved-products3 product-list-grid" id="savedProductsList"></div>
             </div>
         </div>
         
@@ -1175,71 +1270,82 @@
             </div>
         </div>
         
-        <div class="saved-products2" id="firebaseProductsDisplay" hidden>
-            <div class="form-group">
-                <label for="phoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
-                <select id="phoneDropdown" onchange="filterByPhoneNumber()">
+        <!-- Combined Firebase Data and Statistics Section -->
+        <div class="firebase-stats-combined-container" id="firebaseProductsDisplay" hidden>
+            <h2>بيانات Firebase والإحصائيات</h2> <!-- NEW: Combined section title -->
+            <div class="firebase-filter-controls"> <!-- NEW: Combined filter controls -->
+                <div class="form-group">
+                    <label for="phoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
+                    <select id="phoneDropdown" onchange="filterProducts()">
+                        </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchInput" class="sr-only">البحث عن منتج في Firebase</label>
+                    <input type="text" id="searchInput" placeholder="البحث عن منتج" onkeyup="filterProducts()">
+                </div>
+                <div class="form-group">
+                    <label for="statsPhoneDropdown" class="sr-only">تصفية الإحصائيات حسب رقم الهاتف</label>
+                    <select id="statsPhoneDropdown" onchange="filterStatistics()">
                     </select>
-                <label for="searchInput" class="sr-only">البحث عن منتج في Firebase</label>
-                <input type="text" id="searchInput" placeholder="البحث عن منتج" onkeyup="filterProducts()">
+                </div>
+                <div class="form-group">
+                    <label for="statsSearchInput" class="sr-only">البحث في الإحصائيات</label>
+                    <input type="text" id="statsSearchInput" placeholder="البحث في الإحصائيات" onkeyup="filterStatistics()">
+                </div>
             </div>
-            <div class="saved-products4 product-list-grid" id="productListContainerdata"></div>
-        </div>
 
-        <!-- Statistics and Tracking Section -->
-        <div class="statistics-container" id="statisticsDisplay" hidden>
-            <h2>إحصائيات المبيعات</h2>
-            <div class="form-group"> <!-- Filters for statistics -->
-                <label for="statsPhoneDropdown" class="sr-only">تصفية الإحصائيات حسب رقم الهاتف</label>
-                <select id="statsPhoneDropdown" onchange="filterStatistics()">
-                </select>
-                <label for="statsSearchInput" class="sr-only">البحث في الإحصائيات</label>
-                <input type="text" id="statsSearchInput" placeholder="البحث في الإحصائيات" onkeyup="filterStatistics()">
+            <div class="firebase-product-list-wrapper">
+                <div class="saved-products4 product-list-grid" id="productListContainerdata"></div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>إجمالي سعر الشراء</h3> 
-                    <p id="totalPurchaseCost">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي سعر البيع</h3> 
-                    <p id="totalSellingPrice">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي العمولة</h3>
-                    <p id="totalCommission">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي الأرباح</h3>
-                    <p id="totalProfit">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي المبيعات (HT)</h3>
-                    <p id="totalSalesHT">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي TVA</h3>
-                    <p id="totalTVA">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>إجمالي المبيعات (TTC)</h3>
-                    <p id="totalSalesTTC">0.00 DH</p>
-                </div>
-                <div class="stat-card">
-                    <h3>عدد الفواتير</h3>
-                    <p id="invoiceCount">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3>المنتجات الأكثر مبيعاً</h3>
-                    <ul id="topSellingProducts">
-                        <li>لا توجد بيانات</li>
-                    </ul>
-                </div>
-                <div class="stat-card">
-                    <h3>العملاء الأكثر نشاطاً</h3>
-                    <ul id="topCustomers">
-                        <li>لا توجد بيانات</li>
-                    </ul>
+
+            <!-- Statistics section, now embedded -->
+            <div class="statistics-section">
+                <h2>إحصائيات المبيعات التفصيلية</h2> <!-- Smaller title for embedded section -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>إجمالي سعر الشراء</h3> 
+                        <p id="totalPurchaseCost">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي سعر البيع</h3> 
+                        <p id="totalSellingPrice">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي العمولة</h3>
+                        <p id="totalCommission">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي الأرباح</h3>
+                        <p id="totalProfit">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي المبيعات (HT)</h3>
+                        <p id="totalSalesHT">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي TVA</h3>
+                        <p id="totalTVA">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي المبيعات (TTC)</h3>
+                        <p id="totalSalesTTC">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>عدد الفواتير</h3>
+                        <p id="invoiceCount">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>المنتجات الأكثر مبيعاً</h3>
+                        <ul id="topSellingProducts">
+                            <li>لا توجد بيانات</li>
+                        </ul>
+                    </div>
+                    <div class="stat-card">
+                        <h3>العملاء الأكثر نشاطاً</h3>
+                        <ul id="topCustomers">
+                            <li>لا توجد بيانات</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1284,26 +1390,22 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 // ====== Global UI Elements ======
-const mainDashboardView = document.getElementById('mainDashboardView'); // NEW: Reference to the dashboard view
+const mainDashboardView = document.getElementById('mainDashboardView');
 const productFormContainer = document.getElementById('productFormContainer');
 const clientFormContainer = document.getElementById('clientFormContainer');
 const invoiceDisplay = document.getElementById('invoiceDisplay');
-const savedProductsDisplay = document.getElementById('savedProductsDisplay');
-const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay');
-const statisticsDisplay = document.getElementById('statisticsDisplay');
+const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay'); // Now combines Firebase data & Stats
 const localInvoiceArchive = document.getElementById('localInvoiceArchive');
 
 // ====== Main Navigation Buttons ======
-const showDashboardButton = document.getElementById('showDashboardButton'); // NEW: Dashboard button
+const showDashboardButton = document.getElementById('showDashboardButton');
 const showFirebaseDataButton = document.getElementById('showFirebaseDataButton');
-const showStatisticsButton = document.getElementById('showStatisticsButton');
 const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton');
 
 // Array of all navigation buttons for easy active state management
 const navButtons = [
     showDashboardButton,
     showFirebaseDataButton,
-    showStatisticsButton,
     showLocalInvoiceArchiveButton
 ];
 
@@ -1335,12 +1437,12 @@ const firebaseProductListContainer = document.getElementById('productListContain
 const firebaseSearchInput = document.getElementById('searchInput');
 const phoneDropdown = document.getElementById('phoneDropdown');
 
-// NEW: Statistics filtering elements & Low Stock container
+// Statistics filtering elements & Low Stock container (Now within firebaseProductsDisplay)
 const statsPhoneDropdown = document.getElementById('statsPhoneDropdown');
 const statsSearchInput = document.getElementById('statsSearchInput');
 const lowStockProductsList = document.getElementById('lowStockProductsList'); 
 
-// NEW: Local Invoice Archive elements
+// Local Invoice Archive elements
 const localInvoicesList = document.getElementById('localInvoicesList');
 const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
 const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton');
@@ -1410,8 +1512,8 @@ window.onload = function() {
  * Hides all main content sections.
  */
 function hideAllSections() {
-    // Only hide sections that are not part of the default dashboard view
-    const sectionsToHide = [invoiceDisplay, firebaseProductsDisplay, statisticsDisplay, localInvoiceArchive, mainDashboardView]; 
+    // Hide all main section containers
+    const sectionsToHide = [mainDashboardView, invoiceDisplay, firebaseProductsDisplay, localInvoiceArchive]; 
     sectionsToHide.forEach(section => {
         section.hidden = true;
     });
@@ -1508,7 +1610,7 @@ function showConfirmModal(title, message) {
 
 // ====== Section Display Functions ======
 
-// NEW: Dashboard Button Event Listener
+// Dashboard Button Event Listener
 showDashboardButton.addEventListener('click', () => {
     hideAllSections();
     mainDashboardView.hidden = false;
@@ -1518,25 +1620,23 @@ showDashboardButton.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
+// Firebase Data (now combined with Statistics) Button Event Listener
 showFirebaseDataButton.addEventListener('click', () => {
     hideAllSections();
     firebaseProductsDisplay.hidden = false;
     setActiveButton(showFirebaseDataButton); 
-    populateDropdown();
-    fetchAndDisplayFirebaseData('all');
+    
+    // Ensure all filter inputs are reset when entering the combined view
     firebaseSearchInput.value = '';
     phoneDropdown.selectedIndex = 0;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-showStatisticsButton.addEventListener('click', () => {
-    hideAllSections();
-    statisticsDisplay.hidden = false;
-    setActiveButton(showStatisticsButton); 
-    populateStatisticsFilterDropdown(); 
-    fetchAndDisplayStatistics(); 
     statsSearchInput.value = ''; 
     statsPhoneDropdown.selectedIndex = 0; 
+
+    populateDropdown(); // Populates phone dropdown for Firebase products
+    fetchAndDisplayFirebaseData('all'); // Fetches and displays Firebase products
+    populateStatisticsFilterDropdown(); // Populates phone dropdown for statistics
+    fetchAndDisplayStatistics(); // Fetches and displays statistics
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
@@ -1748,7 +1848,6 @@ saveEditProductButton.addEventListener('click', async (event) => {
                 displaySavedProducts();
                 displayLowStockProducts(); 
                 showToast("Le product a été mis à jour avec succès.", 'success');
-                // No longer redirect to product form button, stay on dashboard
             } else {
                 showToast("تم إلغاء تعديل المنتج.", 'info');
             }
@@ -2247,7 +2346,7 @@ document.getElementById('createInvoiceButton').addEventListener('click', async f
             .catch(error => showToast(`خطأ في حفظ بيانات الفاتورة إلى Firebase: ${error.message}`, 'error'));
         }
 
-        // NEW: Save to Local Storage
+        // Save to Local Storage
         saveInvoiceToLocalStorage(invoiceDataToSave);
 
     } else {
@@ -2336,12 +2435,12 @@ document.getElementById('printButton').addEventListener('click', function() {
     }, 500);
 });
 
-// NEW: Event listener for Back to Archive button
+// Event listener for Back to Archive button
 backToLocalArchiveButton.addEventListener('click', () => {
     showLocalInvoiceArchiveButton.click(); // Simulate click on archive button to go back
 });
 
-// ====== Firebase Data Display and Filtering ======
+// ====== Firebase Data Display and Filtering (Combined with Statistics) ======
 
 /**
  * Populates the phone number dropdown from Firebase data (for Invoice/Firebase data view).
@@ -2557,6 +2656,7 @@ function filterProducts() {
  */
 phoneDropdown.addEventListener('change', () => {
     filterProducts(); 
+    filterStatistics(); // Also trigger stats filter on phone change
 });
 
 
@@ -2738,8 +2838,13 @@ function filterStatistics() {
         topCustomersList.innerHTML = '<li>لا توجد بيانات</li>';
     }
 }
+// Event listener for stats search input
+statsSearchInput.addEventListener('input', filterStatistics);
+// Event listener for stats phone dropdown
+statsPhoneDropdown.addEventListener('change', filterStatistics);
 
-// ====== NEW: Local Invoice Archive Functions ======
+
+// ====== Local Invoice Archive Functions ======
 
 /**
  * Saves an invoice to Local Storage.
@@ -2869,7 +2974,7 @@ async function deleteLocalInvoice(invoiceId) {
     }
 }
 
-// NEW: Event listener for local invoice search
+// Event listener for local invoice search
 searchLocalInvoiceInput.addEventListener('input', displayLocalInvoices);
 </script>
 </html>
