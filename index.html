@@ -135,7 +135,7 @@
         .invoice,
         .saved-products,
         .firebase-stats-combined-container, /* NEW: Combined container class */
-        .local-archive-container {
+        .local-archive-container-embedded { /* Adjusted class for embedded archive */
             border: 1px solid var(--windows-border-light);
             padding: var(--spacing-lg);
             border-radius: var(--border-radius);
@@ -177,6 +177,17 @@
             border-bottom: 2px solid var(--windows-accent-blue-light);
         }
 
+        .dashboard-view h3 { /* Added for embedded section titles */
+            width: 100%;
+            text-align: center;
+            color: var(--windows-accent-blue);
+            margin-top: var(--spacing-lg); /* Space above sub-sections */
+            margin-bottom: var(--spacing-md);
+            font-size: 1.5em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--windows-accent-blue-light);
+        }
+
         /* Adjust individual container widths within the dashboard view */
         /* On larger screens, distribute space */
         .dashboard-view > .product-container,
@@ -184,7 +195,8 @@
             flex: 1 1 48%; /* Each takes roughly half width, allows for a bit of gap */
             min-width: 300px; /* Minimum width before wrapping */
         }
-        .dashboard-view > .saved-products {
+        .dashboard-view > .saved-products,
+        .dashboard-view > .local-archive-container-embedded { /* Now also full width in dashboard */
             flex: 1 1 100%; /* Takes full width */
             margin-top: var(--spacing-md); /* Add margin from the forms above */
         }
@@ -1037,7 +1049,8 @@
             /* Stack dashboard items on smaller screens */
             .dashboard-view > .product-container,
             .dashboard-view > .client-container,
-            .dashboard-view > .saved-products {
+            .dashboard-view > .saved-products,
+            .dashboard-view > .local-archive-container-embedded { /* Also full width for embedded archive */
                 flex: 1 1 100%; /* Take full width */
             }
             /* Stack firebase content wrapper items */
@@ -1107,12 +1120,10 @@
     <div class="main-controls">
         <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
         <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
-        <button type="button" class="btn-panel" id="showLocalInvoiceArchiveButton">أرشيف الفواتير المحلية</button>
-    </div>
+        </div>
 
     <div class="container">
         
-        <!-- Dashboard View -->
         <div id="mainDashboardView" class="dashboard-view">
             <h2>لوحة التحكم الرئيسية</h2>
             <div class="product-container" id="productFormContainer">
@@ -1190,8 +1201,7 @@
                         <input type="number" id="tva" required placeholder="TVA" value="0" min="0" max="100">
                         <span class="validation-error-message">نسبة TVA مطلوبة (بين 0 و 100).</span>
                     </div>
-                    <div class="form-group"> <!-- NEW: Invoice-level commission rate -->
-                        <label for="invoiceCommissionPercentage">Taux de commission de la facture (%)</label>
+                    <div class="form-group"> <label for="invoiceCommissionPercentage">Taux de commission de la facture (%)</label>
                         <input type="number" id="invoiceCommissionPercentage" placeholder="مثال: 10" value="0" min="0" max="100" step="0.01">
                         <span class="validation-error-message">نسبة العمولة للفاتورة (بين 0 و 100).</span>
                     </div>
@@ -1201,8 +1211,18 @@
                 </form>
             </div>
             
+            <div class="local-archive-container-embedded" id="localInvoiceArchive">
+                <h3>أرشيف الفواتير المحلية</h3>
+                <div class="form-group">
+                    <label for="searchLocalInvoice" class="sr-only">البحث في الفواتير المحلية</label>
+                    <input type="text" id="searchLocalInvoice" placeholder="البحث في الفواتير المحلية (العميل، المالك، التاريخ، المنتجات)">
+                </div>
+                <div class="local-invoices-list product-list-grid" id="localInvoicesList">
+                    <p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>
+                </div>
+            </div>
+
             <div class="saved-products" id="savedProductsDisplay">
-                <!-- NEW: Low stock products moved here, above search -->
                 <div class="low-stock-section"> 
                     <h3>تتبع المخزون: المنتجات على وشك النفاد</h3>
                     <div class="product-list-grid" id="lowStockProductsList"> 
@@ -1210,9 +1230,7 @@
                     </div>
                 </div>
 
-                <div class="divider"></div> <!-- Divider to separate low stock from main products -->
-
-                <div class="form-group">
+                <div class="divider"></div> <div class="form-group">
                     <label for="searchProduct" class="sr-only">البحث عن منتج</label>
                     <input type="text" id="searchProduct" placeholder="البحث عن منتج">
                 </div>
@@ -1220,7 +1238,6 @@
             </div>
         </div>
         
-        <!-- Other sections remain hidden by default -->
         <div class="invoice" id="invoiceDisplay" hidden>
             <button type="button" class="btn" id="savePdfButton">تحديث المخزون (بعد الفاتورة)</button>
             <h2>DEVIS</h2>
@@ -1277,16 +1294,13 @@
             </div>
             <div class="button-container">
                 <button type="button" class="btn" id="printButton">طباعة الفاتورة</button>
-                <button type="button" class="btn" id="backToLocalArchiveButton" hidden>العودة إلى الأرشيف</button>
-            </div>
+                </div>
         </div>
         
-        <!-- Combined Firebase Data and Statistics Section -->
         <div class="firebase-stats-combined-container" id="firebaseProductsDisplay" hidden>
             <h2>بيانات Firebase والإحصائيات</h2>
             
-            <div class="combined-firebase-filter-controls"> <!-- NEW: Combined filter controls -->
-                <div class="form-group">
+            <div class="combined-firebase-filter-controls"> <div class="form-group">
                     <label for="commonPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
                     <select id="commonPhoneDropdown">
                         </select>
@@ -1297,9 +1311,7 @@
                 </div>
             </div>
 
-            <div class="firebase-content-wrapper"> <!-- NEW: Wrapper for layout -->
-                <!-- Statistics section, now embedded and appears first -->
-                <div class="statistics-section">
+            <div class="firebase-content-wrapper"> <div class="statistics-section">
                     <h2>إحصائيات المبيعات التفصيلية</h2>
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -1355,24 +1367,10 @@
             </div>
         </div>
 
-        <!-- Local Invoice Archive Section -->
-        <div class="local-archive-container" id="localInvoiceArchive" hidden>
-            <h2>أرشيف الفواتير المحلية</h2>
-            <div class="form-group">
-                <label for="searchLocalInvoice" class="sr-only">البحث في الفواتير المحلية</label>
-                <input type="text" id="searchLocalInvoice" placeholder="البحث في الفواتير المحلية (العميل، المالك، التاريخ، المنتجات)">
-            </div>
-            <div class="local-invoices-list product-list-grid" id="localInvoicesList">
-                <p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>
-            </div>
         </div>
 
-    </div>
-
-    <!-- Toast Notifications Container -->
     <div id="toast-container"></div>
 
-    <!-- Custom Confirmation Modal -->
     <div id="confirm-modal-overlay" hidden>
         <div id="confirm-modal-dialog">
             <h3 id="confirm-modal-title">تأكيد الإجراء</h3>
@@ -1400,18 +1398,17 @@ const productFormContainer = document.getElementById('productFormContainer');
 const clientFormContainer = document.getElementById('clientFormContainer');
 const invoiceDisplay = document.getElementById('invoiceDisplay');
 const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay'); // Now combines Firebase data & Stats
-const localInvoiceArchive = document.getElementById('localInvoiceArchive');
+// const localInvoiceArchive = document.getElementById('localInvoiceArchive'); // Removed from main declaration, now part of dashboard
 
 // ====== Main Navigation Buttons ======
 const showDashboardButton = document.getElementById('showDashboardButton');
 const showFirebaseDataButton = document.getElementById('showFirebaseDataButton');
-const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton');
+// const showLocalInvoiceArchiveButton = document.getElementById('showLocalInvoiceArchiveButton'); // Removed button
 
 // Array of all navigation buttons for easy active state management
 const navButtons = [
     showDashboardButton,
-    showFirebaseDataButton,
-    showLocalInvoiceArchiveButton
+    showFirebaseDataButton
 ];
 
 // ====== Form Elements ======
@@ -1441,17 +1438,17 @@ const searchProductInput = document.getElementById('searchProduct');
 
 // Combined Firebase/Stats Filter Elements
 const commonPhoneDropdown = document.getElementById('commonPhoneDropdown'); // NEW common dropdown
-const commonSearchInput = document.getElementById('commonSearchInput');   // NEW common search input
+const commonSearchInput = document.getElementById('commonSearchInput');    // NEW common search input
 
 const firebaseProductListContainer = document.getElementById('productListContainerdata'); // Firebase products list container
 
 
 const lowStockProductsList = document.getElementById('lowStockProductsList'); 
 
-// Local Invoice Archive elements
+// Local Invoice Archive elements (still need references)
 const localInvoicesList = document.getElementById('localInvoicesList');
 const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
-const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton');
+// const backToLocalArchiveButton = document.getElementById('backToLocalArchiveButton'); // Removed button
 
 // ====== Toast Notification Elements ======
 const toastContainer = document.getElementById('toast-container');
@@ -1508,6 +1505,7 @@ window.onload = function() {
     if (savedInvoiceCommission) invoiceCommissionPercentageInput.value = savedInvoiceCommission; 
 
     // Initialize display for dashboard elements
+    displayLocalInvoices(); // Now called on dashboard load
     displayLowStockProducts(); 
     displaySavedProducts(); 
 };
@@ -1519,7 +1517,7 @@ window.onload = function() {
  */
 function hideAllSections() {
     // Hide all main section containers
-    const sectionsToHide = [mainDashboardView, invoiceDisplay, firebaseProductsDisplay, localInvoiceArchive]; 
+    const sectionsToHide = [mainDashboardView, invoiceDisplay, firebaseProductsDisplay]; 
     sectionsToHide.forEach(section => {
         section.hidden = true;
     });
@@ -1621,6 +1619,7 @@ showDashboardButton.addEventListener('click', () => {
     hideAllSections();
     mainDashboardView.hidden = false;
     setActiveButton(showDashboardButton); 
+    displayLocalInvoices(); // Ensure local invoices are displayed
     displayLowStockProducts(); 
     displaySavedProducts(); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1642,14 +1641,7 @@ showFirebaseDataButton.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-showLocalInvoiceArchiveButton.addEventListener('click', () => {
-    hideAllSections();
-    localInvoiceArchive.hidden = false;
-    setActiveButton(showLocalInvoiceArchiveButton);
-    displayLocalInvoices(); 
-    searchLocalInvoiceInput.value = ''; 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+// Removed: showLocalInvoiceArchiveButton.addEventListener logic as button is removed
 
 // ====== Form Validation Helper ======
 
@@ -2287,8 +2279,9 @@ document.getElementById('createInvoiceButton').addEventListener('click', async f
         
         hideAllSections();
         invoiceDisplay.hidden = false;
-        // Hide the "Back to Archive" button when generating a new invoice
-        backToLocalArchiveButton.hidden = true; 
+        // The "Back to Archive" button is completely removed now since archive is embedded
+        // backToLocalArchiveButton.hidden = true; 
+        document.getElementById('savePdfButton').style.display = 'block'; // Make sure this is visible for new invoices
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         localStorage.setItem('invoiceOwner', invoiceOwnerInput.value);
@@ -2409,7 +2402,7 @@ let originalViewportContent = '';
 
 /**
  * Prints the invoice.
-*/
+ */
 document.getElementById('printButton').addEventListener('click', function() {
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     if (viewportMeta) {
@@ -2419,27 +2412,27 @@ document.getElementById('printButton').addEventListener('click', function() {
 
     this.style.display = 'none';
     document.getElementById('savePdfButton').style.display = 'none';
-    backToLocalArchiveButton.hidden = true; // Ensure this is hidden when printing
+    // Removed: backToLocalArchiveButton.hidden = true; // Ensure this is hidden when printing
 
     window.print();
 
     setTimeout(() => {
         document.getElementById('savePdfButton').style.display = 'block';
         this.style.display = 'block';
-        // Only show backToLocalArchiveButton if it was previously set to show (i.e. came from archive)
-        if (invoiceDisplay.dataset.cameFromLocalArchive === 'true') {
-            backToLocalArchiveButton.hidden = false;
-        }
+        // The "Back to Archive" button is completely removed now.
+        // if (invoiceDisplay.dataset.cameFromLocalArchive === 'true') {
+        //     backToLocalArchiveButton.hidden = false;
+        // }
         if (viewportMeta && originalViewportContent) {
             viewportMeta.setAttribute('content', originalViewportContent);
         }
     }, 500);
 });
 
-// Event listener for Back to Archive button
-backToLocalArchiveButton.addEventListener('click', () => {
-    showLocalInvoiceArchiveButton.click(); // Simulate click on archive button to go back
-});
+// Removed: Event listener for Back to Archive button as it's no longer needed.
+// backToLocalArchiveButton.addEventListener('click', () => {
+//     showLocalInvoiceArchiveButton.click(); // Simulate click on archive button to go back
+// });
 
 /* --- Firebase Data Display and Statistics (Combined) --- */
 
@@ -2870,12 +2863,11 @@ function viewLocalInvoiceDetails(invoiceId) {
 
         hideAllSections();
         invoiceDisplay.hidden = false;
-        // Show the "Back to Archive" button
-        backToLocalArchiveButton.hidden = false;
-        // Mark that this invoice view came from the local archive
-        invoiceDisplay.dataset.cameFromLocalArchive = 'true'; 
+        // The "Back to Archive" button is completely removed now, so no need to show/hide it.
+        // backToLocalArchiveButton.hidden = false;
+        // invoiceDisplay.dataset.cameFromLocalArchive = 'true'; 
 
-        // Hide "Update Stock" button as this is an archive view
+        // Hide "Update Stock" button as this is an archive view and stock update only applies to new invoices
         document.getElementById('savePdfButton').style.display = 'none';
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
