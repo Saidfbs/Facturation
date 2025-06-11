@@ -27,16 +27,28 @@
             line-height: 1.6; /* تباعد الأسطر لتحسين القراءة */
             direction: rtl; /* اتجاه النص من اليمين لليسار (اللغة العربية) */
             text-align: right; /* محاذاة النص لليمين */
+            /* جعل الجسم يأخذ كامل ارتفاع الشاشة وتوسيط المحتوى */
+            display: flex;
+            justify-content: center; /* توسيط أفقي */
+            align-items: center; /* توسيط عمودي */
+            min-height: 100vh; /* التأكد من أن الجسم يأخذ كامل ارتفاع الرؤية */
+            box-sizing: border-box; /* لضمان أن البادينغ لا يزيد الارتفاع الكلي */
         }
 
         /* تنسيق الحاوية الرئيسية للمحتوى */
         .container {
             max-width: 900px; /* أقصى عرض للحاوية */
-            margin: 20px auto; /* توسيط الحاوية أفقياً مع هامش علوي وسفلي */
+            width: 100%; /* عرض كامل داخل المساحة المتاحة */
             background-color: var(--white); /* خلفية بيضاء */
             padding: 25px;
             border-radius: var(--border-radius); /* زوايا مستديرة */
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* ظل خفيف لإضافة عمق */
+            /* إزالة الهامش التلقائي حيث أن flexbox في body يتعامل مع التوسيط */
+            margin: 0;
+            /* السماح للحاوية بالتمرير إذا كان المحتوى يتجاوز الارتفاع المتاح */
+            max-height: calc(100vh - 40px); /* 40px هي مجموع البادينغ العلوي والسفلي للجسم */
+            overflow-y: auto; /* إضافة شريط تمرير عمودي عند الحاجة */
+            box-sizing: border-box;
         }
 
         /* تنسيق رأس الصفحة */
@@ -114,6 +126,8 @@
             max-width: 600px; /* أقصى عرض 600 بكسل */
             position: relative;
             animation: slideIn 0.3s ease-out; /* تطبيق حركة الانزلاق للداخل */
+            max-height: 90vh; /* الحد الأقصى لارتفاع محتوى المودال */
+            overflow-y: auto; /* تفعيل التمرير عند الحاجة */
         }
 
         /* زر الإغلاق داخل المودال */
@@ -300,35 +314,14 @@
             to { transform: rotate(360deg); } /* دوران كامل */
         }
 
-        /* تنسيق قسم السجل (History) */
-        .history {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f5f5f5; /* خلفية رمادية فاتحة */
-            border-radius: var(--border-radius);
-            display: block;
-        }
-
-        .history h3 {
-            margin-top: 0;
-            color: var(--main-color);
-            border-bottom: 1px solid #ddd; /* خط سفلي خفيف */
-            padding-bottom: 10px;
-        }
-
-        .history-item {
-            padding: 8px 0;
-            border-bottom: 1px dotted #ddd; /* خط سفلي منقط */
-        }
-
-        .history-item:last-child {
-            border-bottom: none; /* إزالة الخط السفلي من آخر عنصر */
-        }
-
         /* ----------------------- تنسيقات الشاشات الصغيرة (Media Queries) ----------------------- */
         @media (max-width: 768px) {
+            body {
+                padding: 10px; /* تقليل البادينغ على الشاشات الصغيرة */
+            }
             .container {
                 padding: 15px; /* تقليل البادينغ على الشاشات الصغيرة */
+                max-height: calc(100vh - 20px); /* ضبط الارتفاع ليتناسب مع البادينغ الجديد للجسم */
             }
 
             h2 {
@@ -371,10 +364,7 @@
                         </div>
                         <button id="calculate-percentage-btn">احسب الناتج</button>
                         <div class="result" id="percentage-result">الناتج: ...</div>
-                        <div class="history" id="percentage-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="percentage-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -424,10 +414,7 @@
                         <div class="result" id="uc-result">
                             <p>النتائج: ...</p>
                         </div>
-                        <div class="history" id="uc-history">
-                            <h3>سجل التحويلات (آخر 5)</h3>
-                            <div id="uc-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -454,7 +441,7 @@
                             <input type="number" id="pump-power-kw" placeholder="أدخل قدرة المضخة بالكيلوواط" min="0.1">
                         </div>
 
-                       
+                        
                         <div class="input-group">
                             <label for="pump-phase">طور المضخة</label>
                             <select id="pump-phase">
@@ -466,7 +453,7 @@
                             <label for="pump-power-factor">معامل قدرة المضخة (cos φ)</label>
                             <input type="number" id="pump-power-factor" value="0.8" step="0.01" min="0.1" max="1" placeholder="مثال: 0.8">
                         </div>
-                       
+                        
                         
 
                         <div class="input-group">
@@ -493,10 +480,7 @@
                         </div>
                         <button id="calculate-solar-panels-btn">احسب الألواح</button>
                         <div class="result" id="solar-panels-result">النتائج: ...</div>
-                        <div class="history" id="solar-panels-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="solar-panels-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -534,10 +518,7 @@
                         </div>
                         <button id="calculate-pulley-btn">احسب المجهول</button>
                         <div class="result" id="pulley-result">النتائج: ...</div>
-                        <div class="history" id="pulley-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="pulley-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -609,10 +590,7 @@
                         </div>
                         <button id="calculate-battery-btn">احسب السعة</button>
                         <div class="result" id="battery-result">النتائج: ...</div>
-                        <div class="history" id="battery-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="battery-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -641,10 +619,7 @@
                         </div>
                         <button id="convert-flow-btn">تحويل</button>
                         <div class="result" id="flow-result">النتيجة: ...</div>
-                        <div class="history" id="flow-history">
-                            <h3>سجل التحويلات (آخر 5)</h3>
-                            <div id="flow-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -687,10 +662,7 @@
                         </div>
                         <button id="calculate-tank-btn">احسب السعة والوقت</button>
                         <div class="result" id="tank-result">النتائج: ...</div>
-                        <div class="history" id="tank-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="tank-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -746,10 +718,7 @@
                         </div>
                         <button id="calculate-rvd-btn">احسب مساحة المقطع</button>
                         <div class="result" id="rvd-result">النتائج: ...</div>
-                        <div class="history" id="rvd-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="rvd-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -799,10 +768,7 @@
                         </div>
                         <button id="calculate-capacitor-btn">احسب السعة</button>
                         <div class="result" id="capacitor-result">السعة المطلوبة: ...</div>
-                        <div class="history" id="capacitor-history">
-                            <h3>سجل الحسابات (آخر 5)</h3>
-                            <div id="capacitor-history-items"></div>
-                        </div>
+                        <!-- سجل الحسابات تم إزالته بناءً على طلب المستخدم -->
                     </div>
                 </div>
             </div>
@@ -874,91 +840,9 @@
                 }
                 return null; // لا توجد بيانات محفوظة
             }
-
-            /**
-             * تضيف إدخالاً جديداً إلى سجل الحسابات وتدير عدد العناصر في السجل (آخر 5).
-             * يتم حفظ السجل في Local Storage.
-             * @param {string} historyContainerId - معرّف العنصر الذي يعرض السجل (مثال: "uc-history-items").
-             * @param {string} entry - النص الذي يمثل إدخال السجل.
-             * @param {number} maxItems - العدد الأقصى للعناصر المراد الاحتفاظ بها في السجل.
-             */
-            function addToHistory(historyContainerId, entry, maxItems = 5) {
-                const historyContainer = document.getElementById(historyContainerId);
-                if (!historyContainer) {
-                    console.error(`History container with ID '${historyContainerId}' not found.`);
-                    return;
-                }
-
-                // إنشاء مفتاح فريد لسجل كل حاسبة في Local Storage
-                let historyKey = historyContainerId + '_data';
-                let history = [];
-                try {
-                    // محاولة تحميل السجل الحالي من Local Storage
-                    const storedHistory = localStorage.getItem(historyKey);
-                    if (storedHistory) {
-                        history = JSON.parse(storedHistory);
-                    }
-                } catch (e) {
-                    console.error("Error loading history from localStorage:", e);
-                }
-
-                history.unshift(entry); // أضف العنصر الجديد في بداية المصفوفة (لجعل الأحدث يظهر أولاً)
-
-                // قص المصفوفة إذا تجاوزت الحد الأقصى للعناصر
-                if (history.length > maxItems) {
-                    history = history.slice(0, maxItems);
-                }
-
-                try {
-                    // حفظ السجل المحدث مرة أخرى في Local Storage
-                    localStorage.setItem(historyKey, JSON.stringify(history));
-                } catch (e) {
-                    console.error("Error saving history to localStorage:", e);
-                }
-
-                renderHistory(historyContainer, history); // تحديث عرض السجل على الواجهة
-            }
-
-            /**
-             * يعرض عناصر السجل الموجودة في المصفوفة داخل عنصر HTML المحدد.
-             * هذه الدالة للعرض فقط ولا تقوم بالحفظ.
-             * @param {HTMLElement} historyContainer - العنصر الذي سيعرض السجل.
-             * @param {string[]} historyArray - مصفوفة النصوص التي تمثل عناصر السجل.
-             */
-            function renderHistory(historyContainer, historyArray) {
-                historyContainer.innerHTML = ''; // مسح المحتوى الحالي للعرض
-                historyArray.forEach(itemText => {
-                    const historyItem = document.createElement("div");
-                    historyItem.className = "history-item"; // تطبيق كلاس التنسيق
-                    historyItem.textContent = itemText; // تعيين نص العنصر
-                    historyContainer.appendChild(historyItem); // إضافة العنصر إلى الحاوية
-                });
-            }
-
-            /**
-             * تحمل السجل الخاص بحاسبة معينة من Local Storage وتعرضه.
-             * تُستخدم عند فتح المودال لضمان تحديث السجل المعروض.
-             * @param {string} historyContainerId - معرّف العنصر الذي يعرض السجل.
-             */
-            function loadAndRenderHistory(historyContainerId) {
-                const historyContainer = document.getElementById(historyContainerId);
-                if (!historyContainer) {
-                    console.error(`History container with ID '${historyContainerId}' not found.`);
-                    return;
-                }
-
-                let historyKey = historyContainerId + '_data';
-                let history = [];
-                try {
-                    const storedHistory = localStorage.getItem(historyKey);
-                    if (storedHistory) {
-                        history = JSON.parse(storedHistory);
-                    }
-                } catch (e) {
-                    console.error("Error loading history from localStorage:", e);
-                }
-                renderHistory(historyContainer, history); // عرض السجل المحمل
-            }
+            
+            // تم إزالة وظائف `addToHistory`, `renderHistory`, `loadAndRenderHistory`
+            // حيث أن سجل الحسابات قد تم إلغاؤه
 
             /**
              * يملأ حقول الإدخال في الحاسبة بالبيانات المحفوظة.
@@ -1217,8 +1101,7 @@
                             }
                         };
                         saveCalculatorState("unit-converter", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("uc-history-items", `المدخل: ${inputValue} ${inputUnit.toUpperCase()}, الجهد: ${voltage}V, الطور: ${phase === "single" ? "أحادي" : "ثلاثي"}, PF: ${powerFactor} → kW: ${kw.toFixed(2)}, kVA: ${kva.toFixed(2)}, HP: ${hp.toFixed(2)}, A: ${amp.toFixed(2)}`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1229,7 +1112,7 @@
                         const pumpVoltage = parseFloat(document.getElementById("pump-voltage").value); // جهد المضخة (معلوماتي)
                         const pumpPhase = document.getElementById("pump-phase").value; // طور المضخة (معلوماتي)
                         const pumpPowerFactor = parseFloat(document.getElementById("pump-power-factor").value); // معامل قدرة المضخة (معلوماتي)
-                       
+                        
                         const idealSeriesVoltage = parseFloat(document.getElementById("ideal-series-voltage").value); // التوتر المثالي للألواح على التوالي
                         const panelVoltage = parseFloat(document.getElementById("panel-voltage").value); // جهد اللوح عند أقصى نقطة قدرة (Vmp)
                         const panelCurrent = parseFloat(document.getElementById("panel-current").value); // تيار اللوح عند أقصى نقطة قدرة (Imp)
@@ -1334,9 +1217,6 @@
                                 <li><strong>العدد الإجمالي للألواح الشمسية المطلوبة:</strong> <span style="color: var(--success-color); font-size: 1.2em;">${totalPanelsNeeded} لوح</span></li>
                                 <li><strong>القدرة الاسمية الإجمالية للألواح المطلوبة (الحد الأدنى):</strong> ${totalPanelsNeeded * nominalPanelPower.toFixed(2)} W</li>
                             </ul>
-                            
-
-
                             `;
 
                         displayResult("solar-panels-result", resultMessage, true);
@@ -1356,8 +1236,7 @@
                             }
                         };
                         saveCalculatorState("solar-panels-calculator", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("solar-panels-history-items", `مضخة: ${pumpPowerKw}kW, جهد: ${pumpVoltage}V, طور: ${pumpPhase}, PF: ${pumpPowerFactor}, تيار المضخة المقدر: ${actualPumpCurrentAC.toFixed(2)}A, لوح: ${panelVoltage}V/${panelCurrent}A, توتر سلسلة مثالي: ${idealSeriesVoltage}V → إجمالي الألواح: ${actualTotalPanelsInArray} (${actualSystemTotalPower.toFixed(2)}W)`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1481,13 +1360,7 @@
                         };
                         saveCalculatorState("battery-calculator", dataToSave);
 
-                        // بناء نص سجل الحسابات
-                        let historyEntry = `جهاز: ${deviceVoltage}V/${deviceCurrent}A (${deviceType === 'dc' ? 'DC' : `${devicePhase === 'single' ? 'أحادي' : 'ثلاثي'} AC, PF:${devicePowerFactor}`}), تشغيل ${operationDuration}h, بطارية: ${batteryVoltage}V, DoD: ${dod * 100}%, كفاءة: ${efficiency * 100}%`;
-                        if (deviceType === 'ac') {
-                            historyEntry += `, كفاءة محول: ${inverterEfficiencyBattery * 100}%`;
-                        }
-                        historyEntry += ` → سعة: ${nominalBatteryAhCapacity.toFixed(2)} Ah ( ${nominalBatteryWhCapacity.toFixed(2)}Wh )`;
-                        addToHistory("battery-history-items", historyEntry);
+                        // تمت إزالة بناء نص سجل الحسابات وإضافته
                     },
                 },
 
@@ -1534,8 +1407,7 @@
                             }
                         };
                         saveCalculatorState("percentage-calculator", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("percentage-history-items", `العدد الأصلي: ${originalNumber}, النسبة: ${percentageValue}% → القيمة: ${calculatedValue.toFixed(2)}, إضافة: ${addedValue.toFixed(2)}, خصم: ${subtractedValue.toFixed(2)}`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1663,8 +1535,7 @@
                             }
                         };
                         saveCalculatorState("capacitor-calculator", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("capacitor-history-items", `kW: ${realPowerKW}, PF1: ${currentPF}, PF2: ${desiredPF}, تردد: ${frequency}Hz, طور: ${phase === "single" ? "أحادي" : "ثلاثي"} → Qc: ${qCompensation.toFixed(2)} Var`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1717,8 +1588,7 @@
                             }
                         };
                         saveCalculatorState("flow-converter", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("flow-history-items", `تحويل ${inputValue} ${unitFrom} → ${result.toFixed(2)} ${unitTo}`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1784,8 +1654,7 @@
                             }
                         };
                         saveCalculatorState("tank-calculator", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("tank-history-items", `شكل: ${tankShape}, أبعاد: ${lengthOrDiameter}x${tankShape === 'cube' ? width + 'x' : ''}${height} م, تدفق: ${flowRateM3H} م³/ساعة → سعة: ${volume.toFixed(2)} م³, وقت: ${timeToEmptyMinutes.toFixed(2)} دقيقة`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1880,8 +1749,7 @@
                             }
                         };
                         saveCalculatorState("resistance-voltage-drop", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("rvd-history-items", `جهد: ${voltage}V, تيار: ${current}A, طول: ${length}م, مادة: ${material}, طور: ${phase === "single" ? "أحادي" : "ثلاثي"}, PF: ${powerFactor}, فقد مسموح به: ${allowedVoltageDropPercentage}% → مساحة المقطع: ${requiredArea.toFixed(2)} mm²`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 },
 
@@ -1973,8 +1841,7 @@
                             }
                         };
                         saveCalculatorState("pulley-calculator", dataToSave);
-                        // إضافة العملية إلى سجل الحسابات
-                        addToHistory("pulley-history-items", `D1:${isNaN(d1) ? '؟' : d1}, RPM1:${isNaN(rpm1) ? '؟' : rpm1}, D2:${isNaN(d2) ? '؟' : d2}, RPM2:${isNaN(rpm2) ? '؟' : rpm2}, المجهول: ${unknownType} → ${unknownValue.toFixed(2)}`);
+                        // تمت إزالة إضافة العملية إلى سجل الحسابات
                     },
                 }
             };
@@ -1997,8 +1864,7 @@
                         });
                         // تحميل وعرض حالة الحاسبة المحفوظة
                         loadAndDisplayCalculatorState(calculatorId, targetModal);
-                        // تحميل وعرض سجل الحسابات الخاص بهذه الحاسبة
-                        loadAndRenderHistory(calculatorId + '-history-items');
+                        // تمت إزالة تحميل وعرض سجل الحسابات الخاص بهذه الحاسبة
                     }
                 });
             });
@@ -2257,13 +2123,8 @@
              * @param {HTMLElement} targetElement - العنصر الأب للحاسبة (المودال).
              */
             function loadAndDisplayCalculatorState(calculatorId, targetElement) {
-                const historyContainerId = calculatorId + '-history-items';
-                const historyDiv = targetElement.querySelector(`#${historyContainerId}`);
+                // تمت إزالة مرجع تاريخ الحسابات
                 const resultElement = targetElement.querySelector('.result');
-
-                if (historyDiv) {
-                    historyDiv.innerHTML = ''; // مسح عرض السجل عند فتح المودال
-                }
 
                 const savedState = loadCalculatorState(calculatorId); // محاولة تحميل الحالة المحفوظة
                 if (savedState && savedState.inputs) {
@@ -2331,8 +2192,6 @@
                 // في سياق تشغيلها عند فتح المودال، `targetModal` هو الصحيح.
                 // عند تحميل الصفحة، يمكننا فقط التأكد من تعيين القيم الافتراضية
                 // ولن يكون هناك نتائج معروضة في البداية.
-                // الحل الأفضل هو استدعاء هذه الوظيفة فقط عند فتح المودال.
-                // الكود الحالي يقوم بذلك بالفعل (في معالج النقر على sectionTitle).
                 // لذا، ليس هناك حاجة لتكرارها هنا عند تحميل DOMContentLoaded.
             });
         });
@@ -2340,4 +2199,3 @@
 
 </body>
 </html>
-
