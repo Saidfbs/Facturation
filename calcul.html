@@ -68,7 +68,6 @@
             justify-content: center;
             align-items: center;
             flex-grow: 1;
-            /* تحديد حجم ثابت للأزرار في الوضع الأفقي على الشاشات الكبيرة */
             flex-basis: calc(33.33% - 13.33px); /* 3 أعمدة مع حساب الفجوة */
             max-width: calc(33.33% - 13.33px);
             margin-bottom: 0;
@@ -830,6 +829,7 @@
             function saveCalculatorState(calculatorId, data) {
                 try {
                     localStorage.setItem(calculatorId + '_state', JSON.stringify(data));
+                    // console.log(`State of ${calculatorId} saved:`, data); // For debugging
                 } catch (e) {
                     console.error("Error saving data to localStorage:", e);
                 }
@@ -839,6 +839,7 @@
                 try {
                     const storedData = localStorage.getItem(calculatorId + '_state');
                     if (storedData) {
+                        // console.log(`State of ${calculatorId} loaded:`, JSON.parse(storedData)); // For debugging
                         return JSON.parse(storedData);
                     }
                 } catch (e) {
@@ -848,6 +849,8 @@
             }
             
             function populateInputs(calculatorId, inputsData, targetElement) {
+                // console.log(`Populating inputs for ${calculatorId}`); // For debugging
+                // console.log('Inputs data:', inputsData); // For debugging
                 if (!targetElement || !inputsData) return;
 
                 const currentDefaultValues = {
@@ -898,18 +901,21 @@
                     }
                 };
 
+                // First, apply default values if they exist for the current calculator
                 if (currentDefaultValues[calculatorId]) {
                     for (const defaultKey in currentDefaultValues[calculatorId]) {
                         const defaultInputElement = targetElement.querySelector(`#${defaultKey}`);
                         if (defaultInputElement) {
-                            inputElement.value = currentDefaultValues[calculatorId][defaultKey];
+                            defaultInputElement.value = currentDefaultValues[calculatorId][defaultKey];
                         }
                     }
                 }
 
+                // Then, populate fields with saved data, overriding defaults if saved data exists
                 for (const key in inputsData) {
                     let inputElementId = key.replace(/([A-Z])/g, '-$1').toLowerCase();
 
+                    // Special handling for some IDs that don't follow direct conversion pattern
                     if (calculatorId === 'unit-converter') {
                         if (key === 'voltage') inputElementId = 'uc-voltage';
                         else if (key === 'inputValue') inputElementId = 'uc-input-value';
@@ -972,11 +978,13 @@
                     }
 
                     const inputElement = targetElement.querySelector(`#${inputElementId}`);
+                    // console.log(`Attempting to set ${inputElementId} to ${inputsData[key]}`); // For debugging
                     if (inputElement && (inputElement.type === 'number' || inputElement.type === 'text' || inputElement.tagName === 'SELECT') && inputsData[key] !== null && inputsData[key] !== undefined) {
                         inputElement.value = inputsData[key];
                     }
                 }
 
+                // Manually dispatch change events for select fields that affect other field visibility
                 if (calculatorId === 'tank-calculator') {
                     const tankShapeSelect = targetElement.querySelector('#tank-shape');
                     if (tankShapeSelect) {
@@ -1959,12 +1967,15 @@
             };
 
             function loadAndDisplayCalculatorState(calculatorId, targetElement) {
+                // console.log(`Loading and displaying state for ${calculatorId}`); // For debugging
                 const resultElement = targetElement.querySelector('.result');
 
                 const savedState = loadCalculatorState(calculatorId);
                 if (savedState && savedState.inputs) {
+                    // console.log('Found saved state, populating inputs...'); // For debugging
                     populateInputs(calculatorId, savedState.inputs, targetElement);
                 } else {
+                    // console.log('No saved state, applying defaults.'); // For debugging
                     const inputs = targetElement.querySelectorAll('input[type="number"], select');
                     inputs.forEach(input => {
                         const defaultValue = defaultValues[calculatorId] ? defaultValues[calculatorId][input.id] : undefined;
