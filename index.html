@@ -231,7 +231,7 @@
             min-width: 350px; /* Minimum width for readability */
         }
 
-        /* NEW: Wrapper for Local Archive and Low Stock for side-by-side display */
+        /* NEW: Wrapper for Local Invoice Archive and Low Stock for side-by-side display */
         .dashboard-archive-stock-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -343,9 +343,9 @@
 
         /* For Local Invoices Archive List - explicitly scrollable */
         .local-invoices-list {
-            flex-grow: 1;
-            overflow-y: auto; /* Ensure vertical scrolling */
-            max-height: 400px; /* Increased height for better visibility of initial items */
+            flex-grow: 1; /* Allow it to fill available height */
+            overflow-y: visible; /* Ensure vertical scrolling is visible, no fixed height */
+            max-height: none; /* Removed fixed height, let flex-grow manage */
             padding-right: var(--spacing-sm); /* More padding for scrollbar */
             margin-top: var(--spacing-sm);
             -webkit-overflow-scrolling: touch;
@@ -360,10 +360,10 @@
             box-sizing: border-box; /* Include padding in width/height */
         }
 
-        /* For Firebase Product List Container - explicitly scrollable */
+        /* For Firebase Product List Container - explicitly NOT scrollable by default, takes full height */
         #productListContainerdata {
             flex-grow: 1; /* Allow it to fill remaining vertical space in its parent */
-            overflow-y: auto; /* Ensure vertical scrolling */
+            overflow-y: visible; /* Explicitly visible, not auto scrollable unless content overflows */
             max-height: none; /* Removed fixed max-height, let flex-grow manage */
             padding-right: var(--spacing-sm); /* More padding for scrollbar */
             margin-top: var(--spacing-sm);
@@ -392,8 +392,9 @@
         }
         /* Specific styling for the product list grid *inside* the low stock section */
         .low-stock-section-standalone .product-list-grid { /* Updated class selector */
-            max-height: 250px; /* Increased fixed height for low stock product list */
-            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: none; /* Removed fixed max-height, let flex-grow manage */
+            flex-grow: 1; /* Allow it to fill available height */
+            overflow-y: visible; /* Enable vertical scrolling */
             padding-right: var(--spacing-xs); /* To make scrollbar visible */
             border: 1px solid var(--whatsapp-border-light);
             border-radius: var(--border-radius-md);
@@ -654,12 +655,12 @@
         }
 
         /* Product list items - resembling chat bubbles/contact cards */
-        .product,
-        .product-item {
+        /* Common base style for product cards */
+        .product { /* This class is now used for both local and Firebase products */
             border: 1px solid var(--whatsapp-border-light);
             padding: var(--spacing-md);
             border-radius: var(--border-radius-lg); /* More rounded, like a chat bubble */
-            margin-bottom: 0;
+            margin-bottom: 0; /* Managed by grid gap */
             background-color: var(--whatsapp-text-light); /* White background for list items */
             position: relative;
             font-size: 0.95em;
@@ -672,23 +673,19 @@
             align-items: flex-end; /* Align content to the right for RTL */
             text-align: right; /* Text alignment for RTL */
         }
-        .product:hover, .product-item:hover {
+        .product:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
 
-
-        .product p, .product-item p {
-            margin-bottom: 5px;
-        }
-
-        .product-details, .product-firebase-details {
+        /* Specific styling for product details within the common .product card */
+        .product .product-details {
             margin-bottom: var(--spacing-sm);
             flex-grow: 1;
             width: 100%;
         }
 
-        .product-actions {
+        .product .product-actions {
             display: flex;
             flex-wrap: wrap;
             gap: var(--spacing-sm);
@@ -696,7 +693,7 @@
             margin-top: var(--spacing-sm);
             justify-content: center;
         }
-        .product-actions button {
+        .product .product-actions button {
             flex: 1 1 48%;
             min-width: 120px;
             height: 50px; /* Increased height */
@@ -805,11 +802,8 @@
         }
 
 
-        /* Firebase product item specific styles */
-        .product-item.status-duplicate {
-            background-color: var(--whatsapp-bubble-sent) !important; /* Sent bubble color for duplicates */
-            border-color: var(--whatsapp-green-dark) !important;
-        }
+        /* Firebase product item specific styles - now these are handled by the .product class */
+        /* Removed .product-item specific styling as it is replaced by .product */
 
         /* Local Invoice item specific styles */
         .local-invoice-item {
@@ -1198,15 +1192,13 @@
             .scrollable-list-in-card {
                 max-height: 100px;
             }
-            .low-stock-section-standalone .product-list-grid { /* Updated class */
-                max-height: 200px;
-            }
+            /* low-stock and local-invoices will take full available height due to flex-grow:1 */
+            .low-stock-section-standalone .product-list-grid,
             .local-invoices-list {
-                max-height: 300px;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                max-height: none; /* Let flex-grow handle it */
             }
             #productListContainerdata {
-                max-height: 400px;
+                max-height: none; /* Let flex-grow handle it */
                 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             }
             .quantity-controls input {
@@ -1374,16 +1366,16 @@
 <body>
     <!-- Header section for main navigation -->
     <header class="main-controls">
-        <!-- Swapped order of buttons -->
-        <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
+        <!-- Dashboard button first as per user request -->
         <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
+        <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
     </header>
 
     <!-- Main content area -->
     <main class="container">
 
         <!-- Main Dashboard View Section -->
-        <section id="mainDashboardView" class="dashboard-view fade-in-section" hidden> <!-- Hidden by default, will be shown with animation via JS -->
+        <section id="mainDashboardView" class="dashboard-view fade-in-section" hidden>
             <h1>لوحة التحكم الرئيسية</h1>
 
             <!-- Product Management Section -->
@@ -1654,7 +1646,8 @@
                             <input type="text" id="commonSearchInput" placeholder="البحث برقم الهاتف، الاسم، أو المنتج">
                         </div>
                     </div>
-                    <div class="saved-products4 product-list-grid" id="productListContainerdata"></div>
+                    <!-- Changed class to saved-products3 to use consistent styling with local products list -->
+                    <div class="saved-products3 product-list-grid" id="productListContainerdata"></div>
                 </section>
             </div>
         </section>
@@ -1698,8 +1691,8 @@
 
         // Array of all navigation buttons for easy active state management
         const navButtons = [
-            showFirebaseDataButton, // Firebase is now first as per user request
-            showDashboardButton
+            showDashboardButton, // Dashboard is now first as per user request
+            showFirebaseDataButton
         ];
 
         // ====== Form Elements ======
@@ -1767,12 +1760,11 @@
 
         // ====== Initial Setup on Window Load ======
         window.onload = function() {
-            // Initially show Firebase Data view and mark its button as active
-            // This also ensures Firebase data is fetched and displayed upon load.
-            // All sections start as hidden in HTML. They will fade in.
-            showSection(firebaseProductsDisplay); // Use the new function to show with animation
-            setActiveButton(showFirebaseDataButton);
-            mainContainer.classList.add('full-width'); // Firebase section is full width by default
+            // Initially show Main Dashboard view and mark its button as active
+            // This also ensures necessary data is fetched and displayed upon load.
+            showSection(mainDashboardView); // Use the new function to show with animation
+            setActiveButton(showDashboardButton);
+            mainContainer.classList.remove('full-width'); // Ensure dashboard is not full width initially
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -1803,14 +1795,12 @@
             if (savedSupplierPhone) supplierPhoneInput.value = savedSupplierPhone;
             if (savedInvoiceCommission) invoiceCommissionPercentageInput.value = savedInvoiceCommission;
 
-            // Initialize display for dashboard elements (these won't be visible until dashboard is clicked)
-            // They are also now handled by showSection when their button is clicked.
+            // Initialize display for dashboard elements
             displayLocalInvoices();
             displayLowStockProducts();
             displaySavedProducts();
 
-            // Fetch Firebase data immediately since it's the default view
-            fetchAndDisplayCombinedFirebaseData();
+            // Firebase data will be fetched when its button is clicked.
         };
 
         // ====== UI Management Functions ======
@@ -2815,6 +2805,9 @@
 
                                 invoiceDetails.products.forEach(product => {
                                     allFirebaseProducts.push({
+                                        // Generate a unique ID for Firebase products for consistency when displaying in the product grid
+                                        // We use the invoiceKey + product index to make it unique within the combined list.
+                                        id: `${invoiceKey}-${product.name}-${product.quantityUsed}`,
                                         ...product,
                                         invoiceDate: invoiceDetails.date,
                                         customerName: invoiceDetails.customerName,
@@ -2858,19 +2851,13 @@
                 return matchesSearchInput && matchesPhoneNumber;
             });
 
-            const savedLocalProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
-            filteredProducts.forEach(product => {
-                const isDuplicate = savedLocalProducts.some(savedProduct =>
-                    product.name.toLowerCase() === savedProduct.name.toLowerCase() &&
-                    product.supplierPhone === savedProduct.supplierPhone
-                );
-                product.isDuplicate = isDuplicate;
-            });
-
+            // For Firebase products, 'isDuplicate' isn't relevant in the same way as local products.
+            // We can just sort them by date or name.
             filteredProducts.sort((a, b) => {
-                if (a.isDuplicate && !b.isDuplicate) return 1;
-                if (!a.isDuplicate && b.isDuplicate) return -1;
-                return b.id - a.id;
+                // Assuming invoiceDate is a string like "DD/MM/YYYY HH:MM" or an ISO string
+                const dateA = new Date(a.isoDate || a.invoiceDate);
+                const dateB = new Date(b.isoDate || b.invoiceDate);
+                return dateB - dateA; // Newest first
             });
 
             displayFirebaseProducts(filteredProducts);
@@ -2891,11 +2878,11 @@
 
 
         /**
-         * Displays a list of products from Firebase.
+         * Displays a list of products from Firebase, styled like local product cards.
          * @param {Array<Object>} products - Array of product objects to display.
          */
         function displayFirebaseProducts(products) {
-            firebaseProductListContainer.innerHTML = '';
+            firebaseProductListContainer.innerHTML = ''; // Clear previous content
 
             if (products.length === 0) {
                 firebaseProductListContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات لعرضها.</p>';
@@ -2904,54 +2891,62 @@
 
             products.forEach(product => {
                 const productDiv = document.createElement('div');
-                productDiv.classList.add('product-item');
+                // Use the 'product' class for consistent visual styling with local products
+                productDiv.classList.add('product');
 
-                if (product.isDuplicate) {
-                    productDiv.classList.add('status-duplicate');
-                }
-
-                const profitPerUnit = parseFloat(product.profitPerUnit || 0);
-                const commissionPerUnit = parseFloat(product.commissionPerUnit || 0);
-
+                // For Firebase products, we show their data as sold items.
+                // Stock and min stock are not live inventory from here, so we display N/A.
+                // Quantity input shows 'quantityUsed' but is read-only.
                 productDiv.innerHTML = `
-                    <div class="product-firebase-details">
-                        <p><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
-                        <p><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
-                        <p><strong>اسم المنتج:</strong> ${product.name}</p>
+                    <div class="product-details">
+                        <p><strong>الاسم:</strong> ${product.name}</p>
                         <p><strong>سعر الشراء:</strong> ${parseFloat(product.purchasePrice || 0).toFixed(2)} DH</p>
                         <p><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
-                        <p><strong>الكمية المستخدمة:</strong> ${product.quantityUsed || 0}</p>
-                        <p><strong>الربح/الوحدة (للفاتورة):</strong> ${profitPerUnit.toFixed(2)} DH</p>
-                        <p><strong>العمولة/الوحدة (للفاتورة):</strong> ${commissionPerUnit.toFixed(2)} DH</p>
                         <p><strong>المورد:</strong> ${product.supplierName}</p>
                         <p><strong>هاتف المورد:</strong> ${product.ownerPhone}</p>
+                        <p><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
+                        <p><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
                         <p><strong>مالك الفاتورة:</strong> ${product.ownerName || 'N/A'}</p>
-                        <p><strong>إجمالي الفاتورة (HT):</strong> ${parseFloat(product.totalHT || 0).toFixed(2)} DH</p>
-                        <p><strong>إجمالي الفاتورة (TTC):</strong> ${parseFloat(product.totalTTC || 0).toFixed(2)} DH</p>
                     </div>
+
+                    <p><strong>الكمية في المخزون:</strong></p>
+                    <div class="quantity-controls">
+                        <button type="button" disabled>-</button>
+                        <input type="text" value="N/A" readonly>
+                        <button type="button" disabled>+</button>
+                    </div>
+
+                    <p><strong>الحد الأدنى للمخزون:</strong></p>
+                    <div class="quantity-controls">
+                        <button type="button" disabled>-</button>
+                        <input type="text" value="N/A" readonly>
+                        <button type="button" disabled>+</button>
+                    </div>
+
+                    <p><strong>الكمية المباعة (للفاتورة):</strong></p>
+                    <div class="quantity-controls">
+                        <button type="button" disabled>-</button>
+                        <input type="number" value="${parseInt(product.quantityUsed || 0)}" min="0" readonly>
+                        <button type="button" disabled>+</button>
+                    </div>
+
                     <div class="product-actions">
-                        <button type="button" class="btn1" onclick="event.stopPropagation(); editProductFromFirebase(${product.id});">تعديل (محلي)</button>
+                        <!-- Use a unique ID for the edit button to link it to the specific Firebase product -->
+                        <button type="button" class="btn-edit" data-firebase-product-id="${product.id}">تعديل (محلي)</button>
                     </div>
                 `;
 
-                productDiv.addEventListener('click', (event) => {
-                    showDashboardButton.click(); // Redirect to dashboard
-                    productNameInput.value = product.name;
-                    purchasePriceInput.value = parseFloat(product.purchasePrice || 0);
-                    sellingPriceInput.value = parseFloat(product.sellingPrice || 0);
-                    supplierNameInput.value = product.supplierName;
-                    supplierAddressInput.value = product.supplierAddress;
-                    supplierPhoneInput.value = product.supplierPhone;
-                    productQuantityInput.value = product.stockQuantity || '0';
-                    addProductButton.style.display = 'block';
-                    saveEditProductButton.style.display = 'none';
-                    resetValidationMessages(productForm);
-                    showToast(`تم تحميل بيانات المنتج "${product.name}" إلى نموذج إدارة المنتجات.`, 'info');
+                // Add event listener to the "تعديل (محلي)" button to populate the local product form
+                productDiv.querySelector('.btn-edit').addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent the click from bubbling up to the productDiv
+                    const firebaseProductId = event.target.dataset.firebaseProductId;
+                    editProductFromFirebase(firebaseProductId);
                 });
 
                 firebaseProductListContainer.appendChild(productDiv);
             });
         }
+
 
         /**
          * Function for populating product form from Firebase data (simplified behavior).
@@ -2967,12 +2962,12 @@
                 sellingPriceInput.value = parseFloat(firebaseProduct.sellingPrice || 0);
                 supplierNameInput.value = firebaseProduct.supplierName;
                 supplierAddressInput.value = firebaseProduct.supplierAddress;
-                supplierPhoneInput.value = firebaseProduct.supplierPhone;
-                productQuantityInput.value = firebaseProduct.stockQuantity || '0';
+                supplierPhoneInput.value = firebaseProduct.ownerPhone; // Use ownerPhone as supplierPhone
+                productQuantityInput.value = ''; // Stock from Firebase sales record is not current inventory, clear it.
                 addProductButton.style.display = 'block';
                 saveEditProductButton.style.display = 'none';
                 resetValidationMessages(productForm);
-                showToast(`تم تحميل بيانات المنتج "${firebaseProduct.name}" إلى نموذج إضافة المنتجات (لإعادة إدخاله أو تعديله محليًا).`, 'info');
+                showToast(`تم تحميل بيانات المنتج "${firebaseProduct.name}" إلى نموذج إدارة المنتجات (لإعادة إدخاله أو تعديله محليًا).`, 'info');
             } else {
                 showToast("المنتج المراد تعديله غير موجود في بيانات Firebase الحالية.", 'error');
             }
