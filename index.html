@@ -1494,12 +1494,8 @@
                         <label for="productQuantity">Quantité initiale en stock</label>
                         <input type="number" id="productQuantity" placeholder="Quantité" value="0" min="0">
                     </div>
-                    <!-- NEW: Checkbox for Local Product -->
-                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="isLocalProduct" style="width: auto; margin-left: 0; margin-right: 0;">
-                        <label for="isLocalProduct" style="margin-bottom: 0;">منتج محلي؟</label>
-                    </div>
-
+                    <!-- REMOVED: Checkbox for Local Product -->
+                    
                     <div class="button-container">
                         <button type="submit" class="btn" id="addProduct">إضافة منتج</button>
                         <button type="submit" class="btn" id="saveEditProduct">تعديل المنتج</button>
@@ -1790,7 +1786,7 @@
         const supplierAddressInput = document.getElementById('supplierAddress');
         const supplierPhoneInput = document.getElementById('supplierPhone');
         const productQuantityInput = document.getElementById('productQuantity');
-        const isLocalProductCheckbox = document.getElementById('isLocalProduct'); // NEW: Reference to the checkbox
+        // REMOVED: const isLocalProductCheckbox = document.getElementById('isLocalProduct'); // No longer needed
 
 
         const invoiceForm = document.getElementById('invoiceForm');
@@ -1868,7 +1864,7 @@
             // Load saved data from Local Storage for persistent fields
             const savedInvoiceOwner = localStorage.getItem('invoiceOwner');
             const savedInvoiceOwnerPhone = localStorage.getItem('invoiceOwnerPhone');
-            const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress'); // Corrected key
+            const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress');
             const savedSupplierName = localStorage.getItem('supplierName');
             const savedSupplierAddress = localStorage.getItem('supplierAddress');
             const savedSupplierPhone = localStorage.getItem('supplierPhone');
@@ -2128,7 +2124,7 @@
                 const supplierAddress = supplierAddressInput.value.trim();
                 const supplierPhone = supplierPhoneInput.value.trim();
                 const stockQuantity = parseInt(productQuantityInput.value);
-                const isLocal = isLocalProductCheckbox.checked; // Get isLocal status
+                const isLocal = false; // Default to false when manually adding, as checkbox is removed
                 const id = Date.now();
                 const date = new Date().toLocaleDateString('ar-MA');
 
@@ -2157,7 +2153,6 @@
                     showToast("المنتج تم إضافته بنجاح.", 'success');
                     // Clear form fields
                     productForm.reset();
-                    isLocalProductCheckbox.checked = false; // Reset checkbox
                 } else {
                     showToast("تم إلغاء إضافة المنتج.", 'info');
                 }
@@ -2175,8 +2170,9 @@
             const productToEdit = savedProducts.find(p => p.id == productId);
 
             if (productToEdit) {
-                showDashboardButton.click(); // Ensure dashboard is visible
+                showDashboardButton.click(); // Ensure dashboard is visible and product form is active
 
+                // Populate form fields
                 productNameInput.value = productToEdit.name;
                 purchasePriceInput.value = productToEdit.purchasePrice;
                 sellingPriceInput.value = productToEdit.sellingPrice;
@@ -2184,7 +2180,7 @@
                 supplierAddressInput.value = productToEdit.supplierAddress;
                 supplierPhoneInput.value = productToEdit.supplierPhone;
                 productQuantityInput.value = productToEdit.stockQuantity;
-                isLocalProductCheckbox.checked = productToEdit.isLocal || false; // Set checkbox state
+                // isLocal status is not managed by UI input anymore, so no checkbox to set
 
                 addProductButton.style.display = 'none';
                 saveEditProductButton.style.display = 'block';
@@ -2214,7 +2210,6 @@
                 const supplierAddress = supplierAddressInput.value.trim();
                 const supplierPhone = supplierPhoneInput.value.trim();
                 const stockQuantity = parseInt(productQuantityInput.value);
-                const isLocal = isLocalProductCheckbox.checked; // Get isLocal status
                 const date = new Date().toLocaleDateString('ar-MA');
 
                 localStorage.setItem('supplierName', supplierName);
@@ -2245,7 +2240,7 @@
                         products[productIndex].supplierAddress = supplierAddress;
                         products[productIndex].supplierPhone = supplierPhone;
                         products[productIndex].stockQuantity = stockQuantity;
-                        products[productIndex].isLocal = isLocal; // Update isLocal
+                        // products[productIndex].isLocal is NOT updated here, retains its original value
                         products[productIndex].date = date;
                         localStorage.setItem('savedProducts', JSON.stringify(products));
                         displaySavedProducts();
@@ -2253,7 +2248,6 @@
                         showToast("تم تحديث المنتج بنجاح.", 'success');
                         // Reset form fields and buttons
                         productForm.reset();
-                        isLocalProductCheckbox.checked = false;
                         addProductButton.style.display = 'block';
                         saveEditProductButton.style.display = 'none';
                         delete saveEditProductButton.dataset.editingId; // Clear editing ID
@@ -2324,6 +2318,10 @@
                         return statusA - statusB;
                     }
 
+                    // Secondary sort criteria
+                    if (a.isLocal && !b.isLocal) return -1; // Local products first
+                    if (!a.isLocal && b.isLocal) return 1;
+                    
                     return stockQuantityB - stockQuantityA || a.name.localeCompare(b.name);
                 });
 
@@ -3111,7 +3109,7 @@
                         savedProducts.sort((a, b) => a.name.localeCompare(b.name));
                         localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
 
-                        showToast(`تم إضافة "${firebaseProduct.name}" إلى المنتجات المحلية بنجاح.`, 'success');
+                        showToast(`تم إضافة "${newLocalProduct.name}" إلى المنتجات المحلية بنجاح.`, 'success');
 
                         // Now load the newly added local product into the form for editing
                         editProduct(newLocalProductId);
