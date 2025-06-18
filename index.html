@@ -398,7 +398,7 @@
             border-radius: var(--border-radius-md);
             background-color: var(--whatsapp-text-light); /* Use card background for the scrollable list container */
             padding: var(--spacing-md); /* Add padding inside the scrollable area */
-            box-sizing: border-box; /* Include padding in width/height */
+            box-sizing: border-box;
             display: grid; /* Keep grid layout */
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Keep grid columns */
             gap: var(--spacing-sm); /* Keep grid gap */
@@ -493,7 +493,8 @@
         .btn1,
         .btn2,
         .btn-delete,
-        .btn-edit {
+        .btn-edit,
+        .btn-add-to-local { /* Added new class for Firebase product buttons */
             display: block;
             flex: 1;
             height: 50px; /* Increased height from 45px */
@@ -510,7 +511,7 @@
             font-size: 0.95em;
             outline: none;
         }
-        .btn:focus-visible, .btn1:focus-visible, .btn2:focus-visible, .btn-delete:focus-visible, .btn-edit:focus-visible {
+        .btn:focus-visible, .btn1:focus-visible, .btn2:focus-visible, .btn-delete:focus-visible, .btn-edit:focus-visible, .btn-add-to-local:focus-visible {
             outline: 2px solid var(--whatsapp-green-light);
             outline-offset: 2px;
             box-shadow: 0 0 0 4px rgba(18, 140, 126, 0.4);
@@ -545,6 +546,21 @@
         }
         .btn-edit:hover { background-color: #D69F00; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .btn-edit:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+
+        /* New style for the "Add to Local Products" button on Firebase product cards */
+        .btn-add-to-local {
+            background-color: var(--whatsapp-green-light);
+            color: var(--whatsapp-text-light);
+        }
+        .btn-add-to-local:hover {
+            background-color: #0E7166;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn-add-to-local:active {
+            transform: translateY(0);
+            box-shadow: var(--box-shadow-light);
+        }
 
 
         /* Invoice specific styles */
@@ -675,6 +691,45 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 6px rgba(0,0,0,0.15);
         }
+
+        /* NEW: Styling for products marked as 'local' within the local products list */
+        .product.is-local {
+            background-color: var(--whatsapp-bubble-received) !important; /* Light green bubble color */
+            border-color: var(--whatsapp-green-light) !important; /* WhatsApp green border */
+            box-shadow: 0 2px 5px rgba(18, 140, 126, 0.2);
+        }
+        .product.is-local p {
+             color: var(--whatsapp-text-dark); /* Ensure text is readable */
+        }
+        /* Specific styling for the 'Add to Local' button in Firebase products, to differentiate it */
+        .product.is-local .btn-add-to-local {
+            background-color: var(--whatsapp-text-dark); /* Dark button */
+            color: var(--whatsapp-text-light); /* White text */
+        }
+        .product.is-local .btn-add-to-local:hover {
+            background-color: #333;
+        }
+
+
+        /* NEW: Styling for Firebase products that match a local product */
+        .product.is-local-match {
+            background-color: var(--whatsapp-success-green) !important; /* A distinct color for Firebase products matching local ones */
+            border-color: var(--whatsapp-success-green) !important;
+            color: var(--whatsapp-text-light) !important; /* Ensure text is readable on darker background */
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+        }
+        .product.is-local-match p {
+            color: var(--whatsapp-text-light) !important;
+        }
+        /* Ensure buttons within .is-local-match products are also readable */
+        .product.is-local-match .product-actions button {
+            background-color: var(--whatsapp-text-light); /* White buttons */
+            color: var(--whatsapp-green-dark); /* Dark text on white buttons */
+        }
+        .product.is-local-match .product-actions button:hover {
+            background-color: #f0f0f0;
+        }
+
 
         /* Specific styling for product details within the common .product card */
         .product .product-details {
@@ -952,8 +1007,14 @@
         }
 
         /* Specific style for list-containing stat cards to span full grid width */
+        /* Changed to display lists side-by-side using flexbox */
         .stat-card-list {
-            grid-column: 1 / -1;
+            grid-column: 1 / -1; /* Make it span all columns */
+            display: flex; /* Use flexbox for its children */
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            gap: var(--spacing-md); /* Gap between the two lists */
+            align-items: flex-start; /* Align items to the start of the cross axis */
+            width: 100%; /* Ensure it takes full width within the grid */
         }
 
         .stat-card {
@@ -968,6 +1029,18 @@
             justify-content: space-between;
             align-items: center;
         }
+        /* Specific style for the two list containers within stat-card-list */
+        .stat-card-list > div { /* Target the direct div children (Top Selling and Top Customers) */
+            flex: 1 1 48%; /* Each takes roughly half width, allowing for gap */
+            min-width: 250px; /* Ensure they don't shrink too much */
+            background-color: var(--whatsapp-text-light); /* White background for these specific "cards" */
+            border: 1px solid var(--whatsapp-bubble-received);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            box-shadow: var(--box-shadow-light);
+            box-sizing: border-box; /* Include padding in width calculation */
+        }
+
 
         .stat-card h3 {
             margin: 0 0 var(--spacing-sm) 0;
@@ -1274,6 +1347,13 @@
                 width: 60px;
                 margin: 0 5px;
             }
+            /* Stack top selling and top customers on smaller screens */
+            .stat-card-list {
+                flex-direction: column;
+            }
+            .stat-card-list > div {
+                flex: 1 1 100%; /* Take full width when stacked */
+            }
         }
 
         @media (max-width: 480px) {
@@ -1293,7 +1373,7 @@
             .button-container {
                 flex-direction: column;
             }
-            .btn, .btn1, .btn2, .btn-delete, .btn-edit {
+            .btn, .btn1, .btn2, .btn-delete, .btn-edit, .btn-add-to-local {
                 flex: 1 1 100%;
             }
             .quantity-controls {
@@ -1414,6 +1494,12 @@
                         <label for="productQuantity">Quantité initiale en stock</label>
                         <input type="number" id="productQuantity" placeholder="Quantité" value="0" min="0">
                     </div>
+                    <!-- NEW: Checkbox for Local Product -->
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" id="isLocalProduct" style="width: auto; margin-left: 0; margin-right: 0;">
+                        <label for="isLocalProduct" style="margin-bottom: 0;">منتج محلي؟</label>
+                    </div>
+
                     <div class="button-container">
                         <button type="submit" class="btn" id="addProduct">إضافة منتج</button>
                         <button type="submit" class="btn" id="saveEditProduct">تعديل المنتج</button>
@@ -1612,21 +1698,21 @@
                             <h3>عدد الفواتير</h3>
                             <p id="invoiceCount">0</p>
                         </div>
-                        <!-- Product selling and customer activity cards now span full width -->
-                        <div class="stat-card stat-card-list">
-                            
-                            <h3>المنتجات الأكثر مبيعاً</h3>
-                            <ul id="topSellingProducts" class="scrollable-list-in-card">
-                                <li>لا توجد بيانات</li>
-                            </ul>
-
-                            <h3>العملاء الأكثر نشاطاً</h3>
-                            <ul id="topCustomers" class="scrollable-list-in-card">
-                                <li>لا توجد بيانات</li>
-                            </ul>
-                            
+                        <!-- Product selling and customer activity cards now span full width and are side-by-side -->
+                        <div class="stat-card-list">
+                            <div>
+                                <h3>المنتجات الأكثر مبيعاً</h3>
+                                <ul id="topSellingProducts" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3>العملاء الأكثر نشاطاً</h3>
+                                <ul id="topCustomers" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
                         </div>
-                        
                     </div>
                 </section>
 
@@ -1704,6 +1790,7 @@
         const supplierAddressInput = document.getElementById('supplierAddress');
         const supplierPhoneInput = document.getElementById('supplierPhone');
         const productQuantityInput = document.getElementById('productQuantity');
+        const isLocalProductCheckbox = document.getElementById('isLocalProduct'); // NEW: Reference to the checkbox
 
 
         const invoiceForm = document.getElementById('invoiceForm');
@@ -1781,7 +1868,7 @@
             // Load saved data from Local Storage for persistent fields
             const savedInvoiceOwner = localStorage.getItem('invoiceOwner');
             const savedInvoiceOwnerPhone = localStorage.getItem('invoiceOwnerPhone');
-            const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress');
+            const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress'); // Corrected key
             const savedSupplierName = localStorage.getItem('supplierName');
             const savedSupplierAddress = localStorage.getItem('supplierAddress');
             const savedSupplierPhone = localStorage.getItem('supplierPhone');
@@ -2041,6 +2128,7 @@
                 const supplierAddress = supplierAddressInput.value.trim();
                 const supplierPhone = supplierPhoneInput.value.trim();
                 const stockQuantity = parseInt(productQuantityInput.value);
+                const isLocal = isLocalProductCheckbox.checked; // Get isLocal status
                 const id = Date.now();
                 const date = new Date().toLocaleDateString('ar-MA');
 
@@ -2061,12 +2149,15 @@
 
                 const confirmed = await showConfirmModal("تأكيد الإضافة", "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟");
                 if (confirmed) {
-                    products.push({ id, name, purchasePrice, sellingPrice, commissionPercentage: 0, supplierName, supplierAddress, supplierPhone, stockQuantity, date, quantity: 0, minStockQuantity: 0 });
+                    products.push({ id, name, purchasePrice, sellingPrice, commissionPercentage: 0, supplierName, supplierAddress, supplierPhone, stockQuantity, date, quantity: 0, minStockQuantity: 0, isLocal }); // Save isLocal
                     products.sort((a, b) => a.name.localeCompare(b.name));
                     localStorage.setItem('savedProducts', JSON.stringify(products));
                     displaySavedProducts();
                     displayLowStockProducts();
                     showToast("المنتج تم إضافته بنجاح.", 'success');
+                    // Clear form fields
+                    productForm.reset();
+                    isLocalProductCheckbox.checked = false; // Reset checkbox
                 } else {
                     showToast("تم إلغاء إضافة المنتج.", 'info');
                 }
@@ -2093,6 +2184,7 @@
                 supplierAddressInput.value = productToEdit.supplierAddress;
                 supplierPhoneInput.value = productToEdit.supplierPhone;
                 productQuantityInput.value = productToEdit.stockQuantity;
+                isLocalProductCheckbox.checked = productToEdit.isLocal || false; // Set checkbox state
 
                 addProductButton.style.display = 'none';
                 saveEditProductButton.style.display = 'block';
@@ -2122,6 +2214,7 @@
                 const supplierAddress = supplierAddressInput.value.trim();
                 const supplierPhone = supplierPhoneInput.value.trim();
                 const stockQuantity = parseInt(productQuantityInput.value);
+                const isLocal = isLocalProductCheckbox.checked; // Get isLocal status
                 const date = new Date().toLocaleDateString('ar-MA');
 
                 localStorage.setItem('supplierName', supplierName);
@@ -2152,11 +2245,18 @@
                         products[productIndex].supplierAddress = supplierAddress;
                         products[productIndex].supplierPhone = supplierPhone;
                         products[productIndex].stockQuantity = stockQuantity;
+                        products[productIndex].isLocal = isLocal; // Update isLocal
                         products[productIndex].date = date;
                         localStorage.setItem('savedProducts', JSON.stringify(products));
                         displaySavedProducts();
                         displayLowStockProducts();
                         showToast("تم تحديث المنتج بنجاح.", 'success');
+                        // Reset form fields and buttons
+                        productForm.reset();
+                        isLocalProductCheckbox.checked = false;
+                        addProductButton.style.display = 'block';
+                        saveEditProductButton.style.display = 'none';
+                        delete saveEditProductButton.dataset.editingId; // Clear editing ID
                     } else {
                         showToast("تم إلغاء تعديل المنتج.", 'info');
                     }
@@ -2237,6 +2337,12 @@
             filteredProducts.forEach((product) => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'product';
+
+                // Add is-local class if the product is marked as local
+                if (product.isLocal) {
+                    productDiv.classList.add('is-local');
+                }
+
 
                 const quantityToDisplay = product.quantity || 0;
                 const stockQuantityToDisplay = product.stockQuantity || 0;
@@ -2353,7 +2459,13 @@
          * @param {number} minStockQuantityToDisplay - The minimum stock quantity.
          */
         function updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay) {
-            productDiv.classList.remove('status-insufficient', 'status-min-zero', 'status-min-positive', 'status-selected-sufficient', 'status-stock-positive', 'status-default');
+            // Keep the 'is-local' class if it was already applied
+            const isLocalClass = productDiv.classList.contains('is-local') ? 'is-local' : '';
+            productDiv.className = 'product'; // Reset all other classes
+            if (isLocalClass) {
+                productDiv.classList.add(isLocalClass);
+            }
+
 
             if (quantityToDisplay > 0 && stockQuantityToDisplay < quantityToDisplay) {
                 productDiv.classList.add('status-insufficient');
@@ -2455,7 +2567,7 @@
                 const productDiv = document.querySelector(`.product-quantity[data-id="${id}"]`).closest('.product');
                 const stockQuantityToDisplay = savedProducts[productIndex].stockQuantity || 0;
                 const minStockQuantityToDisplay = savedProducts[productIndex].minStockQuantity || 0;
-                updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay);
+                updateProductDivClass(productDiv, newQuantity, stockQuantityToDisplay, minStockQuantityToDisplay); // Pass newQuantity to updateProductDivClass
             }
         }
 
@@ -2803,11 +2915,11 @@
                                 const invoiceDetails = phoneData[invoiceKey];
                                 allFirebaseInvoicesData.push({ id: invoiceKey, ...invoiceDetails }); // Store full invoice for stats
 
-                                invoiceDetails.products.forEach(product => {
+                                invoiceDetails.products.forEach((product, index) => { // Added index for more unique ID
                                     allFirebaseProducts.push({
                                         // Generate a unique ID for Firebase products for consistency when displaying in the product grid
                                         // We use the invoiceKey + product index to make it unique within the combined list.
-                                        id: `${invoiceKey}-${product.name}-${product.quantityUsed}`,
+                                        id: `${invoiceKey}-${index}`, // More robust unique ID
                                         ...product,
                                         invoiceDate: invoiceDetails.date,
                                         customerName: invoiceDetails.customerName,
@@ -2829,6 +2941,19 @@
 
             // Apply filters and display both products and statistics
             applyCombinedFilters();
+        }
+
+        /**
+         * Checks if a Firebase product exists in local storage.
+         * @param {Object} firebaseProduct - The Firebase product object.
+         * @returns {Object|null} The matching local product object if found, otherwise null.
+         */
+        function findLocalProductMatch(firebaseProduct) {
+            const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+            return savedProducts.find(localProduct =>
+                localProduct.name.toLowerCase() === firebaseProduct.name.toLowerCase() &&
+                localProduct.supplierPhone === firebaseProduct.ownerPhone // Assuming Firebase ownerPhone maps to local supplierPhone
+            );
         }
 
         /**
@@ -2879,6 +3004,7 @@
 
         /**
          * Displays a list of products from Firebase, styled like local product cards.
+         * Highlights products that match locally saved products.
          * @param {Array<Object>} products - Array of product objects to display.
          */
         function displayFirebaseProducts(products) {
@@ -2894,10 +3020,12 @@
                 // Apply the 'product' class for consistent visual styling with local products
                 productDiv.classList.add('product');
 
-                // If it's a duplicate of a locally saved product, mark it.
-                // The styling for 'status-duplicate' will be applied through the .product class styling.
-                // Firebase products are sales records, not current inventory, so 'isDuplicate' isn't used here.
-                // The product items from Firebase are always displayed without current stock status colors.
+                // Check if this Firebase product matches any local product
+                const matchingLocalProduct = findLocalProductMatch(product);
+                if (matchingLocalProduct) {
+                    productDiv.classList.add('is-local-match');
+                }
+
 
                 const purchasePrice = parseFloat(product.purchasePrice || 0);
                 const sellingPrice = parseFloat(product.sellingPrice || 0);
@@ -2918,26 +3046,22 @@
                         <p><strong>مالك الفاتورة:</strong> ${product.ownerName || 'N/A'}</p>
                     </div>
 
-                    
-
                     <p><strong>الكمية المباعة (للفاتورة):</strong></p>
                     <div class="quantity-controls">
-                        
                         <input type="number" value="${quantityUsed}" min="0" readonly>
-                        
                     </div>
 
                     <div class="product-actions">
                         <!-- Use a unique ID for the edit button to link it to the specific Firebase product -->
-                        <button type="button" class="btn-edit" data-firebase-product-id="${product.id}">تعديل (محلي)</button>
+                        <button type="button" class="btn-edit btn-add-to-local" data-firebase-product-id="${product.id}">تعديل (محلي)</button>
                     </div>
                 `;
 
                 // Add event listener to the "تعديل (محلي)" button to populate the local product form
-                productDiv.querySelector('.btn-edit').addEventListener('click', (event) => {
+                productDiv.querySelector('.btn-add-to-local').addEventListener('click', (event) => {
                     event.stopPropagation(); // Prevent the click from bubbling up to the productDiv
                     const firebaseProductId = event.target.dataset.firebaseProductId;
-                    editProductFromFirebase(firebaseProductId);
+                    addOrEditProductFromFirebase(firebaseProductId);
                 });
 
                 firebaseProductListContainer.appendChild(productDiv);
@@ -2946,29 +3070,62 @@
 
 
         /**
-         * Function for populating product form from Firebase data (simplified behavior).
-         * It will just pre-fill the product management form. The user can then save as new or manually edit existing.
+         * Adds or edits a product in local storage based on Firebase data.
+         * @param {string} firebaseProductId - The unique ID of the Firebase product.
          */
-        function editProductFromFirebase(productId) {
-            const firebaseProduct = allFirebaseProducts.find(p => p.id == productId);
+        async function addOrEditProductFromFirebase(firebaseProductId) {
+            const firebaseProduct = allFirebaseProducts.find(p => p.id == firebaseProductId);
 
             if (firebaseProduct) {
-                showDashboardButton.click(); // Redirect to dashboard
-                productNameInput.value = firebaseProduct.name;
-                purchasePriceInput.value = parseFloat(firebaseProduct.purchasePrice || 0);
-                sellingPriceInput.value = parseFloat(firebaseProduct.sellingPrice || 0);
-                supplierNameInput.value = firebaseProduct.supplierName;
-                supplierAddressInput.value = firebaseProduct.supplierAddress;
-                supplierPhoneInput.value = firebaseProduct.ownerPhone; // Use ownerPhone as supplierPhone
-                productQuantityInput.value = ''; // Stock from Firebase sales record is not current inventory, clear it.
-                addProductButton.style.display = 'block';
-                saveEditProductButton.style.display = 'none';
-                resetValidationMessages(productForm);
-                showToast(`تم تحميل بيانات المنتج "${firebaseProduct.name}" إلى نموذج إدارة المنتجات (لإعادة إدخاله أو تعديله محليًا).`, 'info');
+                const existingLocalProduct = findLocalProductMatch(firebaseProduct);
+
+                if (existingLocalProduct) {
+                    // Product already exists locally, load it for editing
+                    showToast(`المنتج "${firebaseProduct.name}" موجود بالفعل محلياً. يتم تحميله للتعديل.`, 'info');
+                    editProduct(existingLocalProduct.id);
+                } else {
+                    // Product does not exist locally, add it as a new local product
+                    const confirmed = await showConfirmModal(
+                        "إضافة منتج محلي",
+                        `هل أنت متأكد من أنك تريد إضافة "${firebaseProduct.name}" كمنتج محلي جديد؟`
+                    );
+
+                    if (confirmed) {
+                        let savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+                        const newLocalProductId = Date.now();
+                        const newLocalProduct = {
+                            id: newLocalProductId,
+                            name: firebaseProduct.name,
+                            purchasePrice: parseFloat(firebaseProduct.purchasePrice || 0),
+                            sellingPrice: parseFloat(firebaseProduct.sellingPrice || 0),
+                            supplierName: firebaseProduct.supplierName,
+                            supplierAddress: firebaseProduct.supplierAddress,
+                            supplierPhone: firebaseProduct.ownerPhone, // Use ownerPhone as supplierPhone for local storage
+                            stockQuantity: 0, // Assume 0 initial stock for products added from Firebase sales
+                            date: new Date().toLocaleDateString('ar-MA'),
+                            quantity: 0,
+                            minStockQuantity: 0,
+                            isLocal: true // Mark as local
+                        };
+                        savedProducts.push(newLocalProduct);
+                        savedProducts.sort((a, b) => a.name.localeCompare(b.name));
+                        localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
+
+                        showToast(`تم إضافة "${firebaseProduct.name}" إلى المنتجات المحلية بنجاح.`, 'success');
+
+                        // Now load the newly added local product into the form for editing
+                        editProduct(newLocalProductId);
+                        displaySavedProducts(); // Refresh local product list
+                        displayLowStockProducts(); // Refresh low stock list
+                    } else {
+                        showToast(`تم إلغاء إضافة "${firebaseProduct.name}" إلى المنتجات المحلية.`, 'info');
+                    }
+                }
             } else {
                 showToast("المنتج المراد تعديله غير موجود في بيانات Firebase الحالية.", 'error');
             }
         }
+
 
         // Event listeners for combined filter controls
         commonPhoneDropdown.addEventListener('change', applyCombinedFilters);
