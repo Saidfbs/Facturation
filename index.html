@@ -341,16 +341,16 @@
             align-content: start;
         }
 
-        /* For Local Invoices Archive List - explicitly scrollable */
+        /* For Local Invoices Archive List - explicitly scrollable, showing max 2 items */
         .local-invoices-list {
-            flex-grow: 1; /* Allow it to fill available height */
-            overflow-y: visible; /* Ensure vertical scrolling is visible, no fixed height */
-            max-height: none; /* Removed fixed height, let flex-grow manage */
+            flex-grow: 1; /* Allows it to fill available height in flex parent */
+            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 280px; /* Explicitly limit to roughly 2 items, assuming ~140px height per item */
             padding-right: var(--spacing-sm); /* More padding for scrollbar */
             margin-top: var(--spacing-sm);
             -webkit-overflow-scrolling: touch;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Adjusted minmax to encourage 2-3 columns */
+            display: grid; /* Keep grid layout for items within the scrollable area */
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Encourage 2-3 columns */
             gap: var(--spacing-md);
             align-content: start;
             border: 1px solid var(--whatsapp-border-light); /* Added border for visual containment */
@@ -360,41 +360,39 @@
             box-sizing: border-box; /* Include padding in width/height */
         }
 
-        /* For Firebase Product List Container - explicitly NOT scrollable by default, takes full height */
+        /* For Firebase Product List Container - takes full height, allows overall page scroll */
         #productListContainerdata {
             flex-grow: 1; /* Allow it to fill remaining vertical space in its parent */
-            overflow-y: visible; /* Explicitly visible, not auto scrollable unless content overflows */
-            max-height: none; /* Removed fixed max-height, let flex-grow manage */
-            padding-right: var(--spacing-sm); /* More padding for scrollbar */
+            overflow-y: visible; /* Content can push parent scrollbar if it exceeds viewport */
+            max-height: none; /* Removed fixed max-height, letting content define height */
+            padding-right: var(--spacing-sm); /* Keep scrollbar padding in case of overall page scroll */
             margin-top: var(--spacing-sm);
             -webkit-overflow-scrolling: touch;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjusted minmax to encourage more columns */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Adjust for multi-column display */
             gap: var(--spacing-md);
             align-content: start;
-            border: 1px solid var(--whatsapp-border-light); /* Added border for visual containment */
+            border: 1px solid var(--whatsapp-border-light);
             border-radius: var(--border-radius-md);
-            background-color: var(--whatsapp-bubble-received); /* Match card background */
-            padding: var(--spacing-md); /* Add padding inside the scrollable area */
-            box-sizing: border-box; /* Include padding in width/height */
+            background-color: var(--whatsapp-bubble-received);
+            padding: var(--spacing-md);
+            box-sizing: border-box;
         }
 
 
         /* Low stock container styling within product list */
         .low-stock-section-standalone { /* New class for standalone section */
-            /* Inherits common card styles */
-            flex-grow: 0;
-            overflow-y: hidden;
+            flex-grow: 1; /* Allows it to fill available height in flex parent */
+            overflow-y: auto; /* Enable vertical scrolling */
             margin-top: 0; /* Margin managed by parent .dashboard-archive-stock-wrapper */
             margin-bottom: 0;
             padding-right: 0;
-            /* grid-column: 1 / -1; This rule is removed as it's now a flex item */
         }
         /* Specific styling for the product list grid *inside* the low stock section */
         .low-stock-section-standalone .product-list-grid { /* Updated class selector */
             max-height: none; /* Removed fixed max-height, let flex-grow manage */
             flex-grow: 1; /* Allow it to fill available height */
-            overflow-y: visible; /* Enable vertical scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
             padding-right: var(--spacing-xs); /* To make scrollbar visible */
             border: 1px solid var(--whatsapp-border-light);
             border-radius: var(--border-radius-md);
@@ -718,7 +716,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1.8em; /* Adjusted font size for larger button */
-            background-color: var(--whatsapp-green-light); /* WhatsApp green for quantity buttons */
+            background-color: var(--whatsapp-green-light);
             color: var(--whatsapp-text-light);
             border: none;
             cursor: pointer;
@@ -802,7 +800,7 @@
         }
 
 
-        /* Firebase product item specific styles - now these are handled by the .product class */
+        /* Firebase product items will now use the .product class directly for visual consistency */
         /* Removed .product-item specific styling as it is replaced by .product */
 
         /* Local Invoice item specific styles */
@@ -1195,7 +1193,7 @@
             /* low-stock and local-invoices will take full available height due to flex-grow:1 */
             .low-stock-section-standalone .product-list-grid,
             .local-invoices-list {
-                max-height: none; /* Let flex-grow handle it */
+                max-height: 280px; /* Specific limit for two items */
             }
             #productListContainerdata {
                 max-height: none; /* Let flex-grow handle it */
@@ -2891,17 +2889,26 @@
 
             products.forEach(product => {
                 const productDiv = document.createElement('div');
-                // Use the 'product' class for consistent visual styling with local products
+                // Apply the 'product' class for consistent visual styling with local products
                 productDiv.classList.add('product');
 
-                // For Firebase products, we show their data as sold items.
-                // Stock and min stock are not live inventory from here, so we display N/A.
-                // Quantity input shows 'quantityUsed' but is read-only.
+                // If it's a duplicate of a locally saved product, mark it.
+                // The styling for 'status-duplicate' will be applied through the .product class styling.
+                // Firebase products are sales records, not current inventory, so 'isDuplicate' isn't used here.
+                // The product items from Firebase are always displayed without current stock status colors.
+
+                const purchasePrice = parseFloat(product.purchasePrice || 0);
+                const sellingPrice = parseFloat(product.sellingPrice || 0);
+                const quantityUsed = parseInt(product.quantityUsed || 0);
+
+                // Replicate the structure of a local product item for visual consistency
+                // For Firebase data, stock and min stock are not live inventory, so show 'N/A' and disable inputs.
+                // "الكمية المحددة للفاتورة" is replaced with "الكمية المباعة (للفاتورة)".
                 productDiv.innerHTML = `
                     <div class="product-details">
                         <p><strong>الاسم:</strong> ${product.name}</p>
-                        <p><strong>سعر الشراء:</strong> ${parseFloat(product.purchasePrice || 0).toFixed(2)} DH</p>
-                        <p><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
+                        <p><strong>سعر الشراء:</strong> ${purchasePrice.toFixed(2)} DH</p>
+                        <p><strong>سعر البيع:</strong> ${sellingPrice.toFixed(2)} DH</p>
                         <p><strong>المورد:</strong> ${product.supplierName}</p>
                         <p><strong>هاتف المورد:</strong> ${product.ownerPhone}</p>
                         <p><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
@@ -2926,7 +2933,7 @@
                     <p><strong>الكمية المباعة (للفاتورة):</strong></p>
                     <div class="quantity-controls">
                         <button type="button" disabled>-</button>
-                        <input type="number" value="${parseInt(product.quantityUsed || 0)}" min="0" readonly>
+                        <input type="number" value="${quantityUsed}" min="0" readonly>
                         <button type="button" disabled>+</button>
                     </div>
 
