@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport">
     <title>إدارة المبيعات والمخزون - واتساب ستايل</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -238,12 +238,15 @@
             gap: var(--spacing-md);
             width: 100%; /* Take full width of parent */
             margin-top: var(--spacing-md);
+            align-items: stretch; /* Ensures children stretch to fill available height */
         }
         /* Make children of the wrapper take roughly half width */
         .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
         .dashboard-archive-stock-wrapper > .low-stock-section-standalone {
             flex: 1 1 48%; /* Each takes roughly half width, allowing gap */
             min-width: 300px; /* Ensure they don't get too small before stacking */
+            display: flex; /* Make them flex containers themselves */
+            flex-direction: column; /* Stack their internal content vertically */
         }
 
         /* Saved Products list below the forms */
@@ -383,10 +386,12 @@
         /* Low stock container styling within product list */
         .low-stock-section-standalone { /* New class for standalone section */
             flex-grow: 1; /* Allows it to fill available height in flex parent */
-            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-y: hidden; /* Hide overflow on the section itself, list inside handles scroll */
             margin-top: 0; /* Margin managed by parent .dashboard-archive-stock-wrapper */
             margin-bottom: 0;
             padding-right: 0;
+            display: flex; /* Make it a flex container */
+            flex-direction: column; /* Stack its children */
         }
         /* Specific styling for the product list grid *inside* the low stock section */
         .low-stock-section-standalone .product-list-grid { /* Updated class selector */
@@ -404,9 +409,19 @@
             gap: var(--spacing-sm); /* Keep grid gap */
         }
 
-        .low-stock-section-standalone h3 { /* Updated class selector */
-            color: var(--whatsapp-error-red);
+        .low-stock-section-standalone h2 { /* Updated to h2 for consistency */
+            color: var(--whatsapp-green-dark); /* Dark green for consistency with other h2 */
             margin-top: 0;
+            margin-bottom: var(--spacing-sm); /* Adjusted margin as the list now has its own padding/border */
+            font-size: 1.8em; /* Adjusted font size for consistency with other h2 */
+            text-align: center;
+            border-bottom: 2px solid var(--whatsapp-green-light); /* Consistent border */
+            padding-bottom: var(--spacing-sm);
+        }
+        /* specific low stock section header */
+        .low-stock-section-standalone h3 { /* Updated class selector */
+            color: var(--whatsapp-error-red); /* Keep specific red for low stock warning */
+            margin-top: 0; /* Remove top margin */
             margin-bottom: var(--spacing-sm); /* Adjusted margin as the list now has its own padding/border */
             font-size: 1.4em;
             text-align: center;
@@ -1013,7 +1028,7 @@
             display: flex; /* Use flexbox for its children */
             flex-wrap: wrap; /* Allow wrapping on smaller screens */
             gap: var(--spacing-md); /* Gap between the two lists */
-            align-items: flex-start; /* Align items to the start of the cross axis */
+            align-items: stretch; /* Ensures children stretch to fill available height */
             width: 100%; /* Ensure it takes full width within the grid */
         }
 
@@ -1039,6 +1054,8 @@
             padding: var(--spacing-md);
             box-shadow: var(--box-shadow-light);
             box-sizing: border-box; /* Include padding in width calculation */
+            display: flex; /* Make these inner divs flex containers */
+            flex-direction: column; /* Stack title and list vertically */
         }
 
 
@@ -1065,7 +1082,8 @@
             text-align: right; /* Align text to right for RTL */
             font-size: 0.9em;
             width: 100%;
-            max-height: 120px;
+            flex-grow: 1; /* Allow the list to take available height */
+            max-height: 120px; /* Fallback max-height, but flex-grow is primary */
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             padding-left: var(--spacing-xs); /* Padding for scrollbar on left in RTL */
@@ -1073,6 +1091,7 @@
             border-radius: var(--border-radius-sm);
             background-color: var(--whatsapp-bubble-sent); /* A slightly different background */
             box-sizing: border-box;
+            margin-top: var(--spacing-sm); /* Add space below the heading */
         }
         .scrollable-list-in-card li {
             background-color: var(--whatsapp-bubble-sent); /* Base for list items */
@@ -1445,15 +1464,15 @@
     <!-- Header section for main navigation -->
     <header class="main-controls">
         <!-- Dashboard button first as per user request -->
-        <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
         <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
+        <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
     </header>
 
     <!-- Main content area -->
     <main class="container">
 
         <!-- Main Dashboard View Section -->
-        <section id="mainDashboardView" class="dashboard-view fade-in-section" hidden>
+        <section id="mainDashboardView" class="dashboard-view fade-in-section">
             <h1>لوحة التحكم الرئيسية</h1>
 
             <!-- Product Management Section -->
@@ -1487,7 +1506,7 @@
                     </div>
                     <div class="form-group">
                         <label for="supplierPhone" class="required">Téléphone du fournisseur</label>
-                        <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
+                        <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="tel" pattern="[0-9]{10}" inputmode="numeric">
                         <span class="validation-error-message">رقم هاتف المورد مطلوب (10 أرقام).</span>
                     </div>
                     <div class="form-group">
@@ -1529,7 +1548,7 @@
                     </div>
                     <div class="form-group">
                         <label for="invoiceOwnerPhone" class="required">Téléphone du propriétaire de la facture</label>
-                        <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678" autocomplete="on" pattern="[0-9]{10}">
+                        <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678" autocomplete="tel" pattern="[0-9]{10}" inputmode="numeric">
                         <span class="validation-error-message">رقم هاتف مالك الفاتورة مطلوب (10 أرقام).</span>
                     </div>
                     <div class="form-group">
@@ -1575,6 +1594,7 @@
             <!-- Saved Products Display Section -->
             <section class="saved-products" id="savedProductsDisplay">
                 <div class="divider"></div>
+                <h2>المنتجات المحفوظة</h2>
                 <div class="form-group">
                     <label for="searchProduct" class="sr-only">البحث عن منتج</label>
                     <input type="text" id="searchProduct" placeholder="البحث عن منتج">
@@ -1694,7 +1714,7 @@
                             <h3>عدد الفواتير</h3>
                             <p id="invoiceCount">0</p>
                         </div>
-                        <!-- Product selling and customer activity cards now span full width and are side-by-side -->
+                        <!-- NEW: Wrapper for Top Selling and Top Customers -->
                         <div class="stat-card-list">
                             <div>
                                 <h3>المنتجات الأكثر مبيعاً</h3>
@@ -1773,7 +1793,7 @@
 
         // Array of all navigation buttons for easy active state management
         const navButtons = [
-            showDashboardButton, // Dashboard is now first as per user request
+            showDashboardButton,
             showFirebaseDataButton
         ];
 
@@ -1786,7 +1806,6 @@
         const supplierAddressInput = document.getElementById('supplierAddress');
         const supplierPhoneInput = document.getElementById('supplierPhone');
         const productQuantityInput = document.getElementById('productQuantity');
-        // REMOVED: const isLocalProductCheckbox = document.getElementById('isLocalProduct'); // No longer needed
 
 
         const invoiceForm = document.getElementById('invoiceForm');
@@ -1804,7 +1823,6 @@
         const searchProductInput = document.getElementById('searchProduct');
 
         // Combined Firebase/Stats Filter Elements
-        // NOTE: These are now children of firebaseProductListContainer for better grouping
         const commonPhoneDropdown = document.getElementById('commonPhoneDropdown');
         const commonSearchInput = document.getElementById('commonSearchInput');
 
@@ -1840,22 +1858,28 @@
         // Reference to the main container to adjust its width
         const mainContainer = document.querySelector('main.container');
 
+        // A variable to store the ID of the product being edited (used by unified submission handler)
+        let currentEditingProductId = null;
+
 
         // ====== Initial Setup on Window Load ======
         window.onload = function() {
             // Initially show Main Dashboard view and mark its button as active
             // This also ensures necessary data is fetched and displayed upon load.
-            showSection(mainDashboardView); // Use the new function to show with animation
+            showSection(mainDashboardView);
             setActiveButton(showDashboardButton);
             mainContainer.classList.remove('full-width'); // Ensure dashboard is not full width initially
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            // Ensure add product button is visible and edit button is hidden initially
+            addProductButton.style.display = 'block';
             saveEditProductButton.style.display = 'none';
 
             const now = new Date();
-            const formattedDate = now.toLocaleDateString('ar-MA'); // Changed to Moroccan Arabic for date
-            const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' }); // Changed to Moroccan Arabic for time
+            // Using 'ar-MA' (Moroccan Arabic) for date and time for better localization
+            const formattedDate = now.toLocaleDateString('ar-MA', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
             invoiceDateInput.value = `${formattedDate} ${formattedTime}`;
             // Set datetime attribute for the <time> element
             document.getElementById('displayInvoiceDate').setAttribute('datetime', now.toISOString());
@@ -1881,7 +1905,7 @@
             // Initialize display for dashboard elements
             displayLocalInvoices();
             displayLowStockProducts();
-            displaySavedProducts();
+            displaySavedProducts(); // This will also handle initial visibility of empty message
 
             // Firebase data will be fetched when its button is clicked.
         };
@@ -2023,6 +2047,7 @@
             displayLocalInvoices(); // Ensure local invoices are displayed
             displayLowStockProducts();
             displaySavedProducts();
+            resetProductFormAndButtons(); // Reset product form state when navigating to dashboard
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
@@ -2052,7 +2077,7 @@
          */
         function checkFields(form) {
             let allFieldsFilled = true;
-            const fields = form.querySelectorAll('input[required], textarea[required]');
+            const fields = form.querySelectorAll('input[required], textarea[required], select[required]');
             fields.forEach(field => {
                 const errorMessageSpan = field.nextElementSibling;
                 const fieldValue = field.value.trim();
@@ -2112,54 +2137,125 @@
         // ====== Product Management (Local Storage) ======
 
         /**
-         * Saves a new product to Local Storage.
+         * Saves a new product to Local Storage or updates an existing one.
+         * @param {number|null} productId - The ID of the product to edit, or null for a new product.
          */
-        addProductButton.addEventListener('click', async (event) => {
-            event.preventDefault();
-            if (checkFields(productForm)) {
-                const name = productNameInput.value.trim();
-                const purchasePrice = parseFloat(purchasePriceInput.value);
-                const sellingPrice = parseFloat(sellingPriceInput.value);
-                const supplierName = supplierNameInput.value.trim();
-                const supplierAddress = supplierAddressInput.value.trim();
-                const supplierPhone = supplierPhoneInput.value.trim();
-                const stockQuantity = parseInt(productQuantityInput.value);
-                const isLocal = false; // Default to false when manually adding, as checkbox is removed
-                const id = Date.now();
-                const date = new Date().toLocaleDateString('ar-MA');
+        async function handleProductFormSubmission(productId = null) {
+            if (!checkFields(productForm)) {
+                showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
+                return;
+            }
 
-                localStorage.setItem('supplierName', supplierName);
-                localStorage.setItem('supplierAddress', supplierAddress);
-                localStorage.setItem('supplierPhone', supplierPhone);
+            const name = productNameInput.value.trim();
+            const purchasePrice = parseFloat(purchasePriceInput.value);
+            const sellingPrice = parseFloat(sellingPriceInput.value);
+            const supplierName = supplierNameInput.value.trim();
+            const supplierAddress = supplierAddressInput.value.trim();
+            const supplierPhone = supplierPhoneInput.value.trim();
+            const stockQuantity = parseInt(productQuantityInput.value);
+            const date = new Date().toLocaleDateString('ar-MA');
 
-                let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
-                const productExists = products.some(product =>
-                    product.name.toLowerCase() === name.toLowerCase() &&
-                    product.supplierPhone === supplierPhone
-                );
+            // Save supplier info to localStorage (always save latest entered)
+            localStorage.setItem('supplierName', supplierName);
+            localStorage.setItem('supplierAddress', supplierAddress);
+            localStorage.setItem('supplierPhone', supplierPhone);
 
-                if (productExists) {
-                    showToast("المنتج موجود بالفعل بنفس الاسم ورقم هاتف المورد.", 'info');
+            let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
+            let isEditing = productId !== null;
+            let productIndex = -1;
+
+            if (isEditing) {
+                productIndex = products.findIndex(p => p.id == productId);
+                if (productIndex === -1) {
+                    showToast("المنتج المراد تعديله غير موجود.", 'error');
+                    // Ensure buttons are reset if product not found during edit attempt
+                    resetProductFormAndButtons();
                     return;
                 }
-
-                const confirmed = await showConfirmModal("تأكيد الإضافة", "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟");
-                if (confirmed) {
-                    products.push({ id, name, purchasePrice, sellingPrice, commissionPercentage: 0, supplierName, supplierAddress, supplierPhone, stockQuantity, date, quantity: 0, minStockQuantity: 0, isLocal }); // Save isLocal
-                    products.sort((a, b) => a.name.localeCompare(b.name));
-                    localStorage.setItem('savedProducts', JSON.stringify(products));
-                    displaySavedProducts();
-                    displayLowStockProducts();
-                    showToast("المنتج تم إضافته بنجاح.", 'success');
-                    // Clear form fields
-                    productForm.reset();
-                } else {
-                    showToast("تم إلغاء إضافة المنتج.", 'info');
-                }
-            } else {
-                showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
             }
+
+            // Check for duplicates (name + supplierPhone), excluding the product being edited itself
+            const duplicateCheck = products.some((p, idx) =>
+                (isEditing ? idx !== productIndex : true) && // Exclude self if editing
+                p.name.toLowerCase() === name.toLowerCase() &&
+                p.supplierPhone === supplierPhone
+            );
+
+            if (duplicateCheck) {
+                showToast("المنتج موجود بالفعل بنفس الاسم ورقم هاتف المورد.", 'info');
+                return;
+            }
+
+            let confirmTitle = isEditing ? "تأكيد التعديل" : "تأكيد الإضافة";
+            let confirmMessage = isEditing ? "هل أنت متأكد من أنك تريد تعديل هذا المنتج؟" : "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟";
+
+            const confirmed = await showConfirmModal(confirmTitle, confirmMessage);
+            if (!confirmed) {
+                showToast(isEditing ? "تم إلغاء تعديل المنتج." : "تم إلغاء إضافة المنتج.", 'info');
+                return;
+            }
+
+            if (isEditing) {
+                // Update existing product
+                products[productIndex].name = name;
+                products[productIndex].purchasePrice = purchasePrice;
+                products[productIndex].sellingPrice = sellingPrice;
+                products[productIndex].supplierName = supplierName;
+                products[productIndex].supplierAddress = supplierAddress;
+                products[productIndex].supplierPhone = supplierPhone;
+                products[productIndex].stockQuantity = stockQuantity;
+                // products[productIndex].isLocal is NOT updated here, retains its original value
+                products[productIndex].date = date;
+                showToast("تم تحديث المنتج بنجاح.", 'success');
+            } else {
+                // Add new product
+                const newProduct = {
+                    id: Date.now(),
+                    name,
+                    purchasePrice,
+                    sellingPrice,
+                    commissionPercentage: 0,
+                    supplierName,
+                    supplierAddress,
+                    supplierPhone,
+                    stockQuantity,
+                    date,
+                    quantity: 0, // Quantity for invoice, initialized to 0
+                    minStockQuantity: 0,
+                    isLocal: true // Newly added products are local by default
+                };
+                products.push(newProduct);
+                showToast("المنتج تم إضافته بنجاح.", 'success');
+            }
+
+            products.sort((a, b) => a.name.localeCompare(b.name));
+            localStorage.setItem('savedProducts', JSON.stringify(products));
+            displaySavedProducts();
+            displayLowStockProducts();
+            resetProductFormAndButtons(); // Reset form and buttons after successful operation
+        }
+
+        // Event listener for "Add Product" button (calls the unified function)
+        addProductButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            handleProductFormSubmission(null); // Pass null for a new product
         });
+
+        // Event listener for "Save Edited Product" button (calls the unified function)
+        saveEditProductButton.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const idToEdit = event.target.dataset.editingId;
+            handleProductFormSubmission(idToEdit);
+        });
+
+        // Function to reset product form and buttons state
+        function resetProductFormAndButtons() {
+            productForm.reset();
+            addProductButton.style.display = 'block';
+            saveEditProductButton.style.display = 'none';
+            delete saveEditProductButton.dataset.editingId; // Clean up the data attribute
+            resetValidationMessages(productForm); // Clear any validation errors
+        }
 
         /**
          * Handles editing an existing product. Populates the form with product data.
@@ -2180,87 +2276,18 @@
                 supplierAddressInput.value = productToEdit.supplierAddress;
                 supplierPhoneInput.value = productToEdit.supplierPhone;
                 productQuantityInput.value = productToEdit.stockQuantity;
-                // isLocal status is not managed by UI input anymore, so no checkbox to set
 
+                // Change button visibility and set data-editing-id
                 addProductButton.style.display = 'none';
                 saveEditProductButton.style.display = 'block';
                 saveEditProductButton.dataset.editingId = productId;
                 resetValidationMessages(productForm);
+                // Scroll to the product form container after populating
+                window.scrollTo({ top: productFormContainer.offsetTop, behavior: 'smooth' });
             } else {
                 showToast("المنتج المراد تعديله غير موجود.", 'error');
             }
         }
-
-        /**
-         * Saves edited product data to Local Storage.
-         */
-        saveEditProductButton.addEventListener('click', async (event) => {
-            event.preventDefault();
-            if (checkFields(productForm)) {
-                const idToEdit = event.target.dataset.editingId;
-                if (!idToEdit) {
-                    showToast("لا يوجد منتج محدد للتعديل.", 'error');
-                    return;
-                }
-
-                const name = productNameInput.value.trim();
-                const purchasePrice = parseFloat(purchasePriceInput.value);
-                const sellingPrice = parseFloat(sellingPriceInput.value);
-                const supplierName = supplierNameInput.value.trim();
-                const supplierAddress = supplierAddressInput.value.trim();
-                const supplierPhone = supplierPhoneInput.value.trim();
-                const stockQuantity = parseInt(productQuantityInput.value);
-                const date = new Date().toLocaleDateString('ar-MA');
-
-                localStorage.setItem('supplierName', supplierName);
-                localStorage.setItem('supplierAddress', supplierAddress);
-                localStorage.setItem('supplierPhone', supplierPhone);
-
-                let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
-                const productIndex = products.findIndex(p => p.id == idToEdit);
-
-                if (productIndex !== -1) {
-                    const duplicateCheck = products.some((p, idx) =>
-                        idx !== productIndex &&
-                        p.name.toLowerCase() === name.toLowerCase() &&
-                        p.supplierPhone === supplierPhone
-                    );
-
-                    if (duplicateCheck) {
-                        showToast("لا يمكن تعديل المنتج. يوجد منتج آخر بنفس الاسم ورقم هاتف المورد.", 'error');
-                        return;
-                    }
-
-                    const confirmed = await showConfirmModal("تأكيد التعديل", "هل أنت متأكد من أنك تريد تعديل هذا المنتج؟");
-                    if (confirmed) {
-                        products[productIndex].name = name;
-                        products[productIndex].purchasePrice = purchasePrice;
-                        products[productIndex].sellingPrice = sellingPrice;
-                        products[productIndex].supplierName = supplierName;
-                        products[productIndex].supplierAddress = supplierAddress;
-                        products[productIndex].supplierPhone = supplierPhone;
-                        products[productIndex].stockQuantity = stockQuantity;
-                        // products[productIndex].isLocal is NOT updated here, retains its original value
-                        products[productIndex].date = date;
-                        localStorage.setItem('savedProducts', JSON.stringify(products));
-                        displaySavedProducts();
-                        displayLowStockProducts();
-                        showToast("تم تحديث المنتج بنجاح.", 'success');
-                        // Reset form fields and buttons
-                        productForm.reset();
-                        addProductButton.style.display = 'block';
-                        saveEditProductButton.style.display = 'none';
-                        delete saveEditProductButton.dataset.editingId; // Clear editing ID
-                    } else {
-                        showToast("تم إلغاء تعديل المنتج.", 'info');
-                    }
-                } else {
-                    showToast("المنتج المراد تعديله غير موجود.", 'error');
-                }
-            } else {
-                showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
-            }
-        });
 
         /**
          * Deletes a product from Local Storage.
@@ -2415,9 +2442,9 @@
                     const productDiv = document.createElement('div');
                     productDiv.classList.add('product');
                     if ((product.stockQuantity || 0) < (product.minStockQuantity || 0) && (product.stockQuantity || 0) > 0) {
-                                productDiv.classList.add('low');
+                                productDiv.classList.add('status-min-positive'); // Use this for low stock but > 0
                     } else if ((product.stockQuantity || 0) === 0) {
-                                productDiv.classList.add('status-insufficient');
+                                productDiv.classList.add('status-insufficient'); // Use this for out of stock
                     }
 
                     productDiv.innerHTML = `
@@ -2441,12 +2468,12 @@
          * Lower number means higher priority (appears earlier in the list).
          */
         function getProductStatusPriority(quantity, stock, minStock) {
-            if (quantity > 0 && stock < quantity) return 1;
-            if (stock < minStock && quantity === 0) return 2;
-            if (stock < minStock) return 3;
-            if (quantity > 0) return 4;
-            if (stock > 0) return 5;
-            return 6;
+            if (quantity > 0 && stock < quantity) return 1; // Selected quantity is more than stock (critical)
+            if (stock === 0) return 2; // Out of stock
+            if (stock > 0 && stock < minStock) return 3; // Low stock but not zero
+            if (quantity > 0) return 4; // Selected for invoice, and stock is sufficient
+            if (stock > 0) return 5; // Has stock, not selected, not low
+            return 6; // Default / no specific status
         }
 
         /**
@@ -2459,15 +2486,21 @@
         function updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay) {
             // Keep the 'is-local' class if it was already applied
             const isLocalClass = productDiv.classList.contains('is-local') ? 'is-local' : '';
+            // Keep the 'is-local-match' class if it was already applied
+            const isLocalMatchClass = productDiv.classList.contains('is-local-match') ? 'is-local-match' : '';
+
             productDiv.className = 'product'; // Reset all other classes
             if (isLocalClass) {
                 productDiv.classList.add(isLocalClass);
+            }
+            if (isLocalMatchClass) {
+                productDiv.classList.add(isLocalMatchClass);
             }
 
 
             if (quantityToDisplay > 0 && stockQuantityToDisplay < quantityToDisplay) {
                 productDiv.classList.add('status-insufficient');
-            } else if (stockQuantityToDisplay < minStockQuantityToDisplay && quantityToDisplay === 0) {
+            } else if (stockQuantityToDisplay < minStockQuantityToDisplay && stockQuantityToDisplay === 0) {
                 productDiv.classList.add('status-min-zero');
             } else if (stockQuantityToDisplay < minStockQuantityToDisplay) {
                 productDiv.classList.add('status-min-positive');
@@ -3037,7 +3070,7 @@
                         <p><strong>الاسم:</strong> ${product.name}</p>
                         <p><strong>سعر الشراء:</strong> ${purchasePrice.toFixed(2)} DH</p>
                         <p><strong>سعر البيع:</strong> ${sellingPrice.toFixed(2)} DH</p>
-                        <p><strong>المورد:</strong> ${product.supplierName}</p>
+                        <p><strong>المورد:</strong> ${product.supplierName || product.ownerName || 'N/A'}</p>
                         <p><strong>هاتف المورد:</strong> ${product.ownerPhone}</p>
                         <p><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
                         <p><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
@@ -3080,7 +3113,7 @@
                 if (existingLocalProduct) {
                     // Product already exists locally, load it for editing
                     showToast(`المنتج "${firebaseProduct.name}" موجود بالفعل محلياً. يتم تحميله للتعديل.`, 'info');
-                    editProduct(existingLocalProduct.id);
+                    editProduct(existingLocalProduct.id); // This will call editProduct and scroll
                 } else {
                     // Product does not exist locally, add it as a new local product
                     const confirmed = await showConfirmModal(
@@ -3096,8 +3129,8 @@
                             name: firebaseProduct.name,
                             purchasePrice: parseFloat(firebaseProduct.purchasePrice || 0),
                             sellingPrice: parseFloat(firebaseProduct.sellingPrice || 0),
-                            supplierName: firebaseProduct.supplierName,
-                            supplierAddress: firebaseProduct.supplierAddress,
+                            supplierName: firebaseProduct.supplierName || firebaseProduct.ownerName || 'N/A', // Use ownerName if supplierName not found
+                            supplierAddress: firebaseProduct.ownerAddress || 'N/A',
                             supplierPhone: firebaseProduct.ownerPhone, // Use ownerPhone as supplierPhone for local storage
                             stockQuantity: 0, // Assume 0 initial stock for products added from Firebase sales
                             date: new Date().toLocaleDateString('ar-MA'),
@@ -3112,7 +3145,7 @@
                         showToast(`تم إضافة "${newLocalProduct.name}" إلى المنتجات المحلية بنجاح.`, 'success');
 
                         // Now load the newly added local product into the form for editing
-                        editProduct(newLocalProductId);
+                        editProduct(newLocalProductId); // This will call editProduct and scroll
                         displaySavedProducts(); // Refresh local product list
                         displayLowStockProducts(); // Refresh low stock list
                     } else {
