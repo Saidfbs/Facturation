@@ -406,9 +406,18 @@
             align-items: flex-start;
         }
         .dashboard-layout > .product-management,
-        .dashboard-layout > .invoice-creation {
-            flex: 1 1 48%;
+        .dashboard-layout > .invoice-creation,
+        .dashboard-layout > .search-local-products-section { /* New */
+            flex: 1 1 48%; /* Adjust for new section on larger screens */
             min-width: 350px;
+        }
+
+        /* New section for local product search, sits before sub-sections */
+        .search-local-products-section {
+            margin-bottom: var(--space-md); /* Space below search section */
+        }
+        .search-local-products-section h2 {
+            margin-top: 0; /* Remove extra top margin */
         }
 
         .dashboard-sub-sections {
@@ -782,6 +791,11 @@
 
         @media (max-width: 1024px) {
             .container { max-width: 960px; }
+            .dashboard-layout > .product-management,
+            .dashboard-layout > .invoice-creation,
+            .dashboard-layout > .search-local-products-section {
+                flex: 1 1 100%; /* Stack on smaller desktops */
+            }
             .saved-products-list { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
             .main-controls .btn-panel { font-size: 0.9em; padding: 0.6rem 0.8rem; }
             .stats-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
@@ -799,7 +813,7 @@
             body { padding: var(--space-sm); }
             .container { max-width: 100%; }
             .main-controls .btn-panel { flex: 1 1 48%; max-width: none; font-size: 0.9em; padding: 0.6rem 0.8rem; }
-            .dashboard-layout > .product-management, .dashboard-layout > .invoice-creation { min-width: unset; flex: 1 1 100%; }
+            .dashboard-layout > .product-management, .dashboard-layout > .invoice-creation, .dashboard-layout > .search-local-products-section { min-width: unset; flex: 1 1 100%; }
             .dashboard-sub-sections > .archive-container,
             .dashboard-sub-sections > .low-stock-section { flex: 1 1 100%; }
             .invoice-display h1 { font-size: 1.8em; }
@@ -859,6 +873,7 @@
         <section id="mainDashboardView" class="dashboard-layout fade-in-section">
             <h1>لوحة التحكم الرئيسية</h1>
 
+            <!-- Product Management Section -->
             <section class="card-container product-management" id="productFormContainer">
                 <h2>إدارة المنتجات</h2>
                 <form id="productForm">
@@ -904,6 +919,7 @@
                 </form>
             </section>
 
+            <!-- Invoice Creation Section -->
             <section class="card-container invoice-creation" id="clientFormContainer">
                 <h2>إنشاء الفواتير</h2>
                 <form id="invoiceForm">
@@ -948,7 +964,9 @@
                 </form>
             </section>
 
+
             <div class="dashboard-sub-sections">
+                <!-- Local Invoice Archive Section -->
                 <section class="card-container archive-container" id="localInvoiceArchive">
                     <h2>أرشيف الفواتير المحلية</h2>
                     <div class="form-group">
@@ -960,26 +978,29 @@
                     </div>
                 </section>
 
+                <!-- Low Stock Products Section -->
                 <section class="card-container low-stock-section" id="lowStockProductsContainer">
-                    <h2>تتبع المخزون</h2>
+                    <h2>تتبع المخزون</h2>          
                      <div class="form-group">
                     <label for="searchProduct" class="sr-only">البحث عن منتج</label>
                     <input type="text" id="searchProduct" class="search-input" placeholder="البحث عن منتج">
-                </div>
+                    </div>                    
                     <div class="product-grid" id="lowStockProductsList">
                         <p class="empty-list-message">لا توجد منتجات في المخزون المنخفض أو نفدت حالياً.</p>
                     </div>
                 </section>
             </div>
 
+            <!-- Saved Products Display Section -->
             <section class="card-container saved-products" id="savedProductsDisplay">
                 <div class="visual-divider"></div>
                 <h2>المنتجات المحفوظة</h2>
-               
+                <!-- Search input moved to searchSavedProductsSection -->
                 <div class="saved-products-list product-grid" id="savedProductsList"></div>
             </section>
         </section>
 
+        <!-- Invoice Display Article -->
         <article class="card-container invoice-display fade-in-section" id="invoiceDisplay" hidden>
             <button type="button" class="btn-primary" id="savePdfButton">تحديث المخزون (بعد الفاتورة)</button>
             <h1>DEVIS</h1>
@@ -1044,6 +1065,7 @@
             </div>
         </article>
 
+        <!-- Firebase Products and Statistics Section -->
         <section class="card-container firebase-stats-combined-container fade-in-section" id="firebaseProductsDisplay" hidden>
             <h1>بيانات Firebase والإحصائيات</h1>
 
@@ -1105,7 +1127,7 @@
                 </section>
 
                 <section class="card-container firebase-product-list-wrapper">
-                    <h2>قائمة منتجات Firebase</h2>
+                    <h2>قائمة منتجات Firebase (<span id="firebaseProductCount">0</span>)</h2>
                     <div class="filter-controls">
                         <div class="form-group">
                             <label for="commonPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
@@ -1185,6 +1207,7 @@
         const commonPhoneDropdown = document.getElementById('commonPhoneDropdown');
         const commonSearchInput = document.getElementById('commonSearchInput');
         const firebaseProductListContainer = document.getElementById('productListContainerdata');
+        const firebaseProductCountSpan = document.getElementById('firebaseProductCount'); // NEW: لعدد عناصر قائمة Firebase
         const lowStockProductsList = document.getElementById('lowStockProductsList');
 
         // عناصر أرشيف الفواتير المحلية
@@ -2036,6 +2059,7 @@
             }).sort((a, b) => new Date(b.isoDate || b.invoiceDate) - new Date(a.isoDate || a.invoiceDate));
 
             displayFirebaseProducts(filteredProducts);
+            firebaseProductCountSpan.textContent = filteredProducts.length; // NEW: تحديث عدد المنتجات
 
             // تصفية الإحصائيات بناءً على نفس الفلاتر
             const filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
@@ -2066,6 +2090,7 @@
             }).sort((a, b) => new Date(b.isoDate || b.invoiceDate) - new Date(a.isoDate || a.invoiceDate));
 
             displayFirebaseProducts(filteredProducts); // تحديث قائمة المنتجات فقط
+            firebaseProductCountSpan.textContent = filteredProducts.length; // NEW: تحديث عدد المنتجات
             // لا يتم استدعاء displayStatistics هنا للحفاظ على الإحصائيات الأصلية
         }
 
@@ -2074,6 +2099,7 @@
             firebaseProductListContainer.innerHTML = '';
             if (products.length === 0) {
                 firebaseProductListContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات لعرضها.</p>';
+                firebaseProductCountSpan.textContent = 0; // NEW: تحديث العدد إلى صفر
                 return;
             }
 
@@ -2113,6 +2139,7 @@
                 });
                 firebaseProductListContainer.appendChild(productDiv);
             });
+            firebaseProductCountSpan.textContent = products.length; // NEW: تحديث العدد النهائي
         }
 
         async function addOrEditProductFromFirebase(firebaseProductId) {
@@ -2256,7 +2283,7 @@
             updateList(document.getElementById('topCustomers'), customerActivity, stats => `${stats.totalProfit.toFixed(2)} DH`, ([, a], [, b]) => b.totalProfit - a.totalProfit);
             // Invoice Owners: Display total TTC sales
             updateList(document.getElementById('topInvoiceOwners'), invoiceOwnerActivity, stats => `${stats.invoiceCount} فواتير (${stats.totalSalesTTC.toFixed(2)} DH)`, ([, a], [, b]) => b.invoiceCount - a.invoiceCount || b.totalSalesTTC - a.totalSalesTTC);
-            // Suppliers: Display total items supplied and total purchase value
+            // Suppliers: Display total items supplied and total purchase value, and use special click handler
             updateList(document.getElementById('topSuppliers'), supplierActivity, stats => `${stats.totalItemsSupplied} وحدات (${stats.totalPurchaseValue.toFixed(2)} DH)`, ([, a], [, b]) => b.totalItemsSupplied - a.totalItemsSupplied || b.totalPurchaseValue - a.totalPurchaseValue, true);
         }
 
