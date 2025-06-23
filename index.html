@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المبيعات والمخزون - لوحة معلومات عصرية</title>
+    <title>إدارة المبيعات والمخزون - لوحة معلومات عصرية ومحدثة</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
@@ -100,7 +100,7 @@
             line-height: 1;
         }
         .main-controls .btn-panel:hover {
-            background-color: var(--primary-color); 
+            background-color: #303f9f; /* Darker primary on hover */
             transform: translateY(-1px);
             box-shadow: var(--shadow-medium);
         }
@@ -113,15 +113,18 @@
             outline-offset: 2px;
             box-shadow: 0 0 0 4px rgba(63, 81, 181, 0.4);
         }
-        /* Active button state */
+
+        /* Active button state - enhanced */
         .main-controls .btn-panel.active {
-            background-color: var(--primary-color); 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); 
-            transform: translateY(0); 
+            background-color: var(--background-card); /* White background for active */
+            color: var(--primary-color); /* Primary color text for active */
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1); /* Stronger shadow */
+            transform: translateY(-3px); /* Slight lift */
+            border: 2px solid var(--accent-color); /* Accent color border */
         }
         .main-controls .btn-panel.active:hover {
-            background-color: var(--primary-color); 
-            transform: translateY(0);
+            background-color: var(--background-card); /* Keep white on hover */
+            transform: translateY(-3px); /* Maintain lift */
         }
 
         /* Bottom Navigation Bar (mobile fixed) */
@@ -155,6 +158,8 @@
             border-radius: var(--border-radius-md);
             flex: 1; 
             max-width: 120px; 
+            position: relative; /* For ripple effect */
+            overflow: hidden;
         }
         .bottom-nav .nav-button .icon {
             font-size: 1.8em;
@@ -164,13 +169,38 @@
             background-color: rgba(255,255,255,0.1);
             transform: translateY(-2px);
         }
+        /* Ripple effect for mobile nav buttons */
+        .bottom-nav .nav-button::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+        .bottom-nav .nav-button:active::after {
+            transform: scale(0, 0);
+            opacity: 0.2;
+            transition: 0s;
+        }
+
+        /* Active mobile nav button - enhanced */
         .bottom-nav .nav-button.active {
             color: var(--accent-color); /* Accent color for active mobile nav */
             background-color: var(--primary-light);
-            transform: translateY(-2px); 
+            transform: translateY(-5px); /* Lift more for active button */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2), 0 5px 15px rgba(0,0,0,0.1); /* Additional shadow */
         }
         .bottom-nav .nav-button.active .icon {
-            transform: scale(1.1);
+            transform: scale(1.2); /* Scale icon for active state */
+            transition: transform 0.3s ease;
         }
 
         .container {
@@ -182,7 +212,7 @@
             margin: 0 auto;
             transition: max-width 0.3s ease, padding 0.3s ease; 
         }
-        /* Specific max-width for the full-width Firebase view */
+        /* Specific max-width for the full-width Firebase view and Invoice */
         .container.full-width {
             max-width: 100%; 
             margin: 0; 
@@ -191,7 +221,8 @@
             box-sizing: border-box;
         }
         /* Ensure direct children of full-width container expand and have padding */
-        .container.full-width > section {
+        .container.full-width > section,
+        .container.full-width > article { /* Added article for invoice */
             padding-left: var(--spacing-md); 
             padding-right: var(--spacing-md);
             box-sizing: border-box;
@@ -219,6 +250,7 @@
             box-sizing: border-box;
             width: 100%;
         }
+
         /* Specific style for the main Firebase stats container to be transparent */
         .firebase-stats-combined-container {
             background-color: transparent; 
@@ -292,6 +324,7 @@
             font-size: 1.2em;
             line-height: 1;
         }
+
         /* Sub-headings for lists/sections within main containers */
         .dashboard-view h3,
         .statistics-section h3,
@@ -316,6 +349,7 @@
             border-bottom: none;
             padding-bottom: 0;
         }
+
         /* Specific override for low stock warning sub-heading if needed */
         .low-stock-section-standalone h3 {
             color: var(--error-color); 
@@ -328,6 +362,7 @@
             flex: 1 1 48%;
             min-width: 350px; 
         }
+
         /* Wrapper for Local Invoice Archive and Low Stock for side-by-side display */
         .dashboard-archive-stock-wrapper {
             display: flex;
@@ -345,6 +380,7 @@
             display: flex; 
             flex-direction: column; 
         }
+
         /* Saved Products list below the forms */
         .dashboard-view > .saved-products {
             flex: 1 1 100%; 
@@ -370,55 +406,170 @@
             border-radius: 0;
         }
 
-        /* Unified Scrollable List Containers */
+        /* Styles for lists that should display all content without scrolling (Saved Products, Firebase Products) */
         .saved-products3,
-        .local-invoices-list,
-        .low-stock-section-standalone .product-list-grid,
-        .scrollable-list-in-card {
+        #productListContainerdata {
             flex-grow: 1;
-            overflow-y: auto;
-            padding-right: var(--spacing-sm); /* Padding for scrollbar */
+            overflow-y: visible; /* Ensure content is fully visible */
+            max-height: none;   /* Allow content to define height */
+            padding-right: 0;   /* No padding for scrollbar */
             margin-top: var(--spacing-sm);
             -webkit-overflow-scrolling: touch;
-            display: grid;
+            display: grid; /* Use grid for product card layout */
             gap: var(--spacing-md);
             align-content: start;
             border: 1px solid var(--border-light);
             border-radius: var(--border-radius-md);
-            background-color: var(--background-card); 
+            background-color: var(--background-card);
             padding: var(--spacing-md);
             box-sizing: border-box;
         }
-        /* Specific styles for #productListContainerdata (Firebase Products List) to show all items */
-        #productListContainerdata {
-            max-height: none; 
-            overflow-y: visible; 
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-        }
-
-        /* Specific max-height for dashboard lists if needed, but generally let content flow */
+        /* Specific column layouts for these non-scrolling lists */
         .saved-products3 {
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         }
+        #productListContainerdata {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        /* Styles for lists that should have a fixed height and be scrollable (Local Invoices, Low Stock) */
+        .local-invoices-list,
+        .low-stock-section-standalone .product-list-grid {
+            flex-grow: 1; /* Allow them to grow within their parent flex container */
+            overflow-y: auto;   /* Enable vertical scrolling */
+            padding-right: var(--spacing-sm); /* Padding for the scrollbar (RTL) */
+            margin-top: var(--spacing-sm);
+            -webkit-overflow-scrolling: touch;
+            display: grid; /* Use grid for layout of items within */
+            gap: var(--spacing-md);
+            align-content: start;
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-md);
+            background-color: var(--background-card);
+            padding: var(--spacing-md);
+            box-sizing: border-box;
+            /* Unified fixed height for both scrolling lists */
+            max-height: 450px; /* Increased height as requested */
+            /* Custom Scrollbar for Webkit browsers */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--primary-light) var(--background-main); /* Firefox */
+        }
+        .local-invoices-list::-webkit-scrollbar,
+        .low-stock-section-standalone .product-list-grid::-webkit-scrollbar {
+            width: 8px; /* width of the vertical scrollbar */
+            height: 8px; /* height of the horizontal scrollbar */
+        }
+        .local-invoices-list::-webkit-scrollbar-track,
+        .low-stock-section-standalone .product-list-grid::-webkit-scrollbar-track {
+            background: var(--background-main); /* color of the tracking area */
+            border-radius: 10px;
+        }
+        .local-invoices-list::-webkit-scrollbar-thumb,
+        .low-stock-section-standalone .product-list-grid::-webkit-scrollbar-thumb {
+            background: var(--primary-light); /* color of the scroll thumb */
+            border-radius: 10px;
+            border: 2px solid var(--background-main); /* creates padding around scroll thumb */
+        }
+        .local-invoices-list::-webkit-scrollbar-thumb:hover,
+        .low-stock-section-standalone .product-list-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color); /* color of the scroll thumb on hover */
+        }
+
+        /* Specific column layouts for these scrolling lists */
         .local-invoices-list {
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            max-height: 350px; 
         }
         .low-stock-section-standalone .product-list-grid {
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            max-height: 350px; 
         }
-        /* Specific styling for UL elements inside dynamic stat cards */
+
+        /* Styling for the .scrollable-list-in-card (used for dynamic stats lists) - ENHANCED */
         .scrollable-list-in-card {
-            grid-template-columns: 1fr; 
-            max-height: 150px; 
+            max-height: none; /* Ensure no max-height here */
+            overflow-y: visible; /* Ensure no scroll here */
             padding-left: var(--spacing-xs); 
             border: 1px solid var(--border-light);
             border-radius: var(--border-radius-sm);
             background-color: var(--background-main); /* A slightly different background for stat lists UL */
             margin-top: var(--spacing-sm);
-            display: flex; 
-            flex-direction: column;
+            
+            display: flex; /* Enable flexbox for list items inside */
+            flex-direction: row; /* Ensure row for wrapping items */
+            flex-wrap: wrap; /* Important for wrapping */
+            gap: var(--spacing-sm); /* Gap between list items */
+            justify-content: flex-end; /* Align items to the end (right for RTL) */
+            align-items: flex-start; /* Align items to the top */
+            padding: var(--spacing-md); /* Add padding around the entire list */
+            list-style: none; /* Remove default list bullets */
+            margin-right: 0; /* Adjust for RTL */
+            margin-left: 0; /* Adjust for RTL */
+
+            /* Custom Scrollbar for Webkit browsers */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: var(--primary-light) var(--background-main); /* Firefox */
+        }
+        .scrollable-list-in-card::-webkit-scrollbar {
+            width: 8px; /* width of the vertical scrollbar */
+        }
+        .scrollable-list-in-card::-webkit-scrollbar-track {
+            background: var(--background-main); /* color of the tracking area */
+            border-radius: 10px;
+        }
+        .scrollable-list-in-card::-webkit-scrollbar-thumb {
+            background: var(--primary-light); /* color of the scroll thumb */
+            border-radius: 10px;
+            border: 2px solid var(--background-main); /* creates padding around scroll thumb */
+        }
+        .scrollable-list-in-card::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color); /* color of the scroll thumb on hover */
+        }
+
+        .scrollable-list-in-card li {
+            background-color: var(--background-card); /* White background for individual items */
+            padding: 8px 12px; /* Adjusted padding for a balanced look */
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-light);
+            display: flex; /* Enable flex for inner content of LI */
+            flex-direction: column; /* Stack content vertically within LI */
+            justify-content: center;
+            align-items: center; /* Center horizontally */
+            flex-wrap: nowrap; /* Prevent wrapping inside single li element */
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+            flex: 0 0 auto; /* No grow, no shrink, auto basis */
+            width: auto; /* Width determined by content initially */
+            min-width: 120px; /* Minimum width for each item to prevent extreme squeezing */
+            max-width: 100%; /* Ensure it doesn't overflow container */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+            text-align: center; /* Center text within the list item */
+            box-shadow: var(--shadow-subtle); /* Subtle shadow for each item */
+        }
+        .scrollable-list-in-card li:hover { 
+            background-color: #e8ebf0; /* Subtle hover effect */
+            box-shadow: var(--shadow-medium); /* Stronger shadow on hover */
+            transform: translateY(-1px); /* Slight lift on hover */
+        }
+        .scrollable-list-in-card li:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-subtle);
+        }
+        .scrollable-list-in-card li span {
+            display: block; /* Each span on its own line within the flex column LI */
+            text-align: center;
+            white-space: normal; /* Allow text to wrap within the span */
+            word-break: break-word; /* Break long words */
+        }
+        .scrollable-list-in-card li span:first-child {
+            font-weight: bold;
+            color: var(--primary-color); /* Primary color for the main name */
+            margin-bottom: var(--spacing-xs); /* Added margin */
+            font-size: 1.1em;
+        }
+        .scrollable-list-in-card li span:last-child {
+            font-weight: normal; 
+            font-size: 0.95em; /* Slightly larger font for values */
+            color: var(--text-dark); /* Darker text for value */
+            flex-shrink: 0;
         }
 
         /* Styling for the container of the filter dropdown within stat-card-list */
@@ -434,6 +585,7 @@
             flex-direction: column;
             margin-bottom: var(--spacing-md); 
         }
+
         /* Make #dynamicStatsListContainer a grid for its *own* children (the individual stat list cards) */
         #dynamicStatsListContainer {
             display: grid;
@@ -441,6 +593,7 @@
             gap: var(--spacing-md);
             flex: 1 1 auto; 
         }
+
         /* Styling for the individual dynamic list cards (e.g., top products, top customers) */
         #dynamicStatsListContainer > div {
             background-color: var(--background-card); 
@@ -484,7 +637,7 @@
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.6rem 0.8rem;
+            padding: 0.8rem 1rem; /* Increased padding */
             box-sizing: border-box;
             background-color: var(--background-card); 
             border-radius: var(--border-radius-sm); 
@@ -493,13 +646,14 @@
             font-size: 1em;
             color: var(--text-dark);
             outline: none;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.3s ease; /* Smooth transition for all properties */
         }
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             border-color: var(--primary-color); 
-            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.3), var(--shadow-subtle); 
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.2); /* Wider and clearer shadow */
+            transform: scale(1.005); /* Slight scale on focus */
         }
         .form-group input[required]:invalid:not(:focus):not(:placeholder-shown),
         .form-group input.error, .form-group select.error {
@@ -507,11 +661,13 @@
         }
         .form-group .validation-error-message {
             color: var(--error-color);
-            font-size: 0.85em;
+            font-size: 0.8em; /* Smaller font size for error messages */
+            padding-right: var(--spacing-xs); /* Small padding for RTL icon */
             margin-top: 5px;
             display: none;
             align-items: center;
-            gap: var(--spacing-xs);
+            gap: 5px;
+            font-weight: bold;
         }
         .form-group input[required]:invalid:not(:focus):not(:placeholder-shown) + .validation-error-message,
         .form-group input.error + .validation-error-message, .form-group select.error + .validation-error-message {
@@ -526,7 +682,7 @@
         .btn, .btn1, .btn2, .btn-delete, .btn-edit, .btn-add-to-local {
             display: flex;
             flex: 1;
-            height: 50px;
+            height: 50px; /* Unified button height */
             padding: 1rem 0;
             color: var(--text-light);
             border: none;
@@ -668,7 +824,7 @@
             border-radius: var(--border-radius-md); 
             background-color: var(--background-card); 
             box-shadow: var(--shadow-subtle);
-            transition: all 0.2s ease-in-out;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Enhanced transition */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -677,23 +833,26 @@
             font-size: 0.95em;
             line-height: 1.5;
             position: relative; 
+            overflow: hidden; /* For side bar */
         }
         .product:hover, .local-invoice-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
+            transform: translateY(-8px) scale(1.02); /* More pronounced lift and scale on hover */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15), 0 6px 6px rgba(0,0,0,0.1); /* Stronger, layered shadow */
         }
 
-        /* Status indicators for product cards */
+        /* Status indicators for product cards - Enhanced Side Bar */
         .product::before {
             content: '';
             position: absolute;
             top: 0;
-            right: 0;
-            width: 6px;
+            right: auto; /* Override original right */
+            left: 0; /* Align to left for RTL */
+            width: 8px; /* Thicker bar */
             height: 100%;
-            border-top-right-radius: var(--border-radius-md);
-            border-bottom-right-radius: var(--border-radius-md);
+            border-radius: var(--border-radius-md) 0 0 var(--border-radius-md); /* Rounded only on left side */
+            transition: background-color 0.3s ease;
         }
+
         /* Specific styling for local/matched products */
         .product.is-local {
             background-color: var(--background-card) !important;
@@ -713,6 +872,7 @@
         .product.is-local .btn-add-to-local:hover {
             background-color: #303f9f;
         }
+
         .product.is-local-match {
             background-color: var(--accent-color) !important; 
             border-color: var(--accent-color) !important;
@@ -740,10 +900,12 @@
             width: 100%;
         }
         .product .product-details p, .local-invoice-item .invoice-summary-details p {
-            margin-bottom: 5px;
+            margin-bottom: 8px; /* Slightly increased margin */
+            font-size: 0.95em; /* Consistent font size */
+            color: var(--text-dark); /* Consistent text color */
         }
         .product .product-details p:first-child strong {
-            font-size: 1.1em;
+            font-size: 1.2em; /* Larger font for product name */
             color: var(--primary-color);
         }
         .product .product-actions, .local-invoice-item .invoice-actions {
@@ -815,8 +977,8 @@
             box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.3);
         }
 
-        /* Product status colors */
-        .product.status-insufficient {
+        /* Product status colors - Updated for clarity */
+        .product.status-insufficient { /* Selected for invoice, but stock is less than selected quantity */
             background-color: var(--error-color) !important;
             color: var(--text-light);
             border-color: var(--error-color) !important;
@@ -826,36 +988,50 @@
             background-color: var(--error-color);
         }
         .product.status-insufficient p { color: var(--text-light); }
-        .product.status-min-zero, .product.status-min-positive {
+
+        .product.status-min-zero { /* Stock is 0 and below min */
             background-color: var(--warning-color) !important;
             color: var(--text-dark);
             border-color: var(--warning-color) !important;
             box-shadow: 0 2px 5px rgba(255, 193, 7, 0.2);
         }
-        .product.status-min-zero::before, .product.status-min-positive::before {
+        .product.status-min-zero::before {
             background-color: var(--warning-color);
         }
-        .product.status-min-zero p, .product.status-min-positive p { color: var(--text-dark); }
-        .product.status-selected-sufficient {
-            background-color: var(--background-main) !important;
-            border-color: var(--primary-light) !important;
+        .product.status-min-zero p { color: var(--text-dark); }
+
+        .product.status-min-positive { /* Stock is > 0 but below min */
+            background-color: var(--warning-color) !important; /* Keep warning color */
+            color: var(--text-dark);
+            border-color: var(--warning-color) !important;
+            box-shadow: 0 2px 5px rgba(255, 193, 7, 0.2);
+        }
+        .product.status-min-positive::before {
+            background-color: var(--warning-color);
+        }
+        .product.status-min-positive p { color: var(--text-dark); }
+
+        .product.status-selected-sufficient { /* Selected for invoice, and stock is sufficient */
+            background-color: var(--background-main) !important; /* Keep light background */
+            border-color: var(--primary-color) !important; /* Primary color border for selection */
             box-shadow: 0 2px 5px rgba(63, 81, 181, 0.2);
         }
         .product.status-selected-sufficient::before {
-            background-color: var(--primary-light);
+            background-color: var(--primary-color); /* Primary color side bar */
         }
-        .product.status-stock-positive, .product.status-default {
+
+        .product.status-stock-positive, .product.status-default { /* Stock is good (not low, not zero), and not selected */
             background-color: var(--background-card) !important;
             border-color: var(--border-light) !important;
             box-shadow: var(--shadow-subtle);
         }
         .product.status-stock-positive::before, .product.status-default::before {
-            background-color: transparent; /* No specific color for default/positive stock */
+            background-color: var(--accent-color); /* Green for good stock */
         }
 
         /* Search inputs */
         #searchProduct, #searchLocalInvoice, #commonSearchInput {
-            padding: 0.6rem 1rem;
+            padding: 0.8rem 1rem; /* Increased padding */
             border-radius: var(--border-radius-lg); 
             border: 1px solid var(--border-light);
             width: 100%;
@@ -866,10 +1042,10 @@
             outline: none;
             text-align: right;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            padding-left: 30px; 
+            padding-left: 45px; /* Increased padding for icon */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%239e9e9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
             background-repeat: no-repeat;
-            background-position: left 10px center;
+            background-position: left 15px center; /* Adjusted icon position for RTL */
             background-size: 18px;
         }
         #searchProduct:focus, #searchLocalInvoice:focus, #commonSearchInput:focus {
@@ -889,6 +1065,7 @@
             border-radius: var(--border-radius-md);
             box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
         }
+
         /* Override for filters within Firebase product list wrapper to be transparent */
         .firebase-product-list-wrapper > .combined-firebase-filter-controls {
             background-color: transparent;
@@ -906,10 +1083,11 @@
         .combined-firebase-filter-controls .form-group label {
             display: none;
         }
+
         /* Select element styling (for dropdowns) */
         .combined-firebase-filter-controls select {
             width: 100%;
-            padding: 0.6rem 0.8rem;
+            padding: 0.8rem 1rem; /* Increased padding */
             box-sizing: border-box;
             background-color: var(--background-card);
             border-radius: var(--border-radius-sm);
@@ -938,6 +1116,7 @@
             gap: var(--spacing-md);
             margin-bottom: var(--spacing-lg);
         }
+
         /* Specific style for list-containing stat cards to span full grid width */
         .stat-card-list {
             grid-column: 1 / -1; 
@@ -947,10 +1126,11 @@
             align-items: stretch; 
             width: 100%;
         }
-        /* Individual stat cards */
+
+        /* Individual stat cards - Enhanced */
         .stat-card {
-            background-color: var(--background-card);
-            border: 1px solid var(--border-light);
+            background: linear-gradient(135deg, var(--background-card), #f0f2f5); /* Subtle gradient */
+            border: 2px solid var(--border-light); /* Bolder border */
             border-radius: var(--border-radius-md);
             padding: var(--spacing-md);
             text-align: center;
@@ -960,40 +1140,49 @@
             justify-content: space-between;
             align-items: center;
             flex: 1 1 auto; 
+            transition: all 0.3s ease-in-out; /* Smooth transition */
+            overflow: hidden;
+            position: relative;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02); /* Lift and slight scale on hover */
+            box-shadow: var(--shadow-medium); /* Stronger shadow */
+        }
+        /* Visual element behind numbers */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px; /* Position for RTL */
+            width: 80px;
+            height: 80px;
+            background-color: var(--primary-light);
+            border-radius: var(--border-radius-pill);
+            opacity: 0.1;
+            transform: scale(0);
+            transition: transform 0.5s ease;
+            z-index: 0;
+        }
+        .stat-card:hover::before {
+            transform: scale(1);
         }
         .stat-card p {
-            font-size: 1.5em;
+            font-size: 1.8em; /* Larger main number */
             font-weight: bold;
-            color: var(--text-dark);
+            color: var(--primary-color); /* Primary color for numbers */
             margin: 0;
+            position: relative;
+            z-index: 1;
+            font-variant-numeric: tabular-nums; /* Align numbers neatly */
         }
-        /* Styling for list items within scrollable cards (e.g., top selling products list) */
-        .scrollable-list-in-card li {
-            background-color: var(--background-main); /* Slightly darker background for list items */
-            padding: 6px 10px;
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 6px;
-            border: 1px solid var(--border-light);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
+        .stat-card h3 {
+            font-size: 1.2em; /* Slightly larger heading */
+            color: var(--text-dark);
+            margin-bottom: var(--spacing-sm);
+            position: relative;
+            z-index: 1;
         }
-        .scrollable-list-in-card li:hover { background-color: #e8ebf0; } /* Subtle hover */
-        .scrollable-list-in-card li:last-child { margin-bottom: 0; }
-        .scrollable-list-in-card li span:first-child {
-            white-space: normal;
-            word-break: break-word;
-            flex-grow: 1;
-            margin-left: var(--spacing-xs);
-            margin-right: 0;
-        }
-        .scrollable-list-in-card li span:last-child {
-            font-weight: bold;
-            flex-shrink: 0;
-        }
+
         /* Toast Notifications */
         #toast-container {
             position: fixed;
@@ -1042,6 +1231,7 @@
             90% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(20px); }
         }
+
         /* Custom Confirmation Modal */
         #confirm-modal-overlay {
             position: fixed;
@@ -1123,12 +1313,10 @@
             .stats-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
             .stat-card h3 { font-size: 1em; }
             .stat-card p { font-size: 1.4em; }
-            /* This is for UL list within dynamic stat cards, not the card itself */
-            .scrollable-list-in-card { max-height: 100px; } /* Smaller max-height for tablets */
-            .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
-            .dashboard-archive-stock-wrapper > .low-stock-section-standalone { flex: 1 1 45%; }
-            .local-invoices-list, .low-stock-section-standalone .product-list-grid {
-                 max-height: 300px; /* Adjust fixed heights for tablets */
+            /* Adjusted max-height for scrolling lists on tablets */
+            .local-invoices-list,
+            .low-stock-section-standalone .product-list-grid {
+                max-height: 350px; /* Adjusted for tablets */
             }
             /* Adjust dynamic stats list container for smaller desktop/tablet */
             #dynamicStatsListContainer {
@@ -1146,18 +1334,25 @@
             .invoice h1 { font-size: 1.8em; }
             .invoice h2 { font-size: 1.4em; }
             .invoice-table th, .invoice-table td { padding: 0.5rem; font-size: 0.8em; }
-            .saved-products3, .local-invoices-list, #productListContainerdata {
+            /* Lists that remain non-scrolling (full height) on mobile */
+            .saved-products3, #productListContainerdata {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                max-height: none; /* Removed max height for mobile to show all */
-                overflow-y: visible; /* Ensure no internal scroll on mobile */
+                max-height: none;
+                overflow-y: visible;
+            }
+            /* Lists that are now scrolling on mobile */
+            .local-invoices-list,
+            .low-stock-section-standalone .product-list-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust column width */
+                max-height: 200px; /* Further adjusted for mobile, important to keep reasonable size */
+                overflow-y: auto; /* Ensure scrolling is active */
             }
             .stat-card p { font-size: 1.3em; }
             .statistics-section h2 { font-size: 1.5em; }
             .toast { min-width: unset; max-width: 90%; }
+            .toast .icon { font-size: 1.2em; }
             .dashboard-view > section { flex: 1 1 100%; }
             .combined-firebase-filter-controls .form-group { min-width: unset; flex: 1 1 100%; }
-            .scrollable-list-in-card { max-height: 150px; }
-            .low-stock-section-standalone .product-list-grid { max-height: 250px; }
             .quantity-controls input { width: 60px; margin: 0 5px; }
             .stat-card-list { flex-direction: column; } /* Forces filter and dynamic list container to stack */
             .stat-card-list > div { flex: 1 1 100%; } /* Makes filter wrapper and dynamicStatsListContainer take full width */
@@ -1172,10 +1367,12 @@
             .quantity-controls { flex-wrap: wrap; justify-content: center; }
             .quantity-controls input { width: 60px; margin: 0 5px; }
             .stats-grid { grid-template-columns: 1fr; }
-            .saved-products3, .product-list-grid, .local-invoices-list, #productListContainerdata {
-                grid-template-columns: 1fr;
-                max-height: none; /* Ensure no max-height even on smallest mobile */
-                overflow-y: visible; /* No internal scroll */
+            /* Lists that are now scrolling on very small mobile */
+            .local-invoices-list,
+            .low-stock-section-standalone .product-list-grid {
+                grid-template-columns: 1fr; /* Single column on very small screens */
+                max-height: 180px; /* Even smaller for very compact mobile view */
+                overflow-y: auto;
             }
             .dashboard-view h1, .firebase-stats-combined-container h1 { font-size: 1.8em; }
             .dashboard-view h2, .firebase-stats-combined-container h2 { font-size: 1.5em; }
@@ -1184,16 +1381,76 @@
             .invoice h2 { font-size: 1.3em; }
             .stat-card h3 { font-size: 0.9em; }
             .stat-card p { font-size: 1.2em; }
-            .scrollable-list-in-card { font-size: 0.8em; padding: 4px 6px; max-height: 150px; }
-            .low-stock-section-standalone .product-list-grid { max-height: 200px; }
             .toast { padding: 10px 15px; font-size: 0.9em; }
             .toast .icon { font-size: 1.2em; }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: #fff; /* White background for print */
+                color: #000; /* Black text */
+            }
+
+            .main-controls,
+            .bottom-nav,
+            .button-container { /* Hide navigation and unnecessary buttons */
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100% !important; /* Invoice fills paper width */
+                margin: 0 !important;
+                padding: 1cm !important; /* Margins for printing */
+            }
+
+            .invoice {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                background-color: #fff !important;
+            }
+
+            .invoice-table {
+                border: 1px solid #000 !important; /* Black borders for print */
+            }
+
+            .invoice-table th,
+            .invoice-table td {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                background-color: #fff !important;
+            }
+
+            .invoice-table th {
+                background-color: #f2f2f2 !important; /* Light grey background for table headers */
+            }
+
+            #displayTotalAmountBeforeCommission,
+            #displayCommissionDeducted,
+            #displayTotalAmount,
+            #displayTVA,
+            #displayTotalTTC {
+                color: #000 !important; /* Make colored numbers black in print */
+            }
+
+            h1, h2, h3 {
+                color: #000 !important; /* Black headings */
+                border-bottom-color: #ccc !important; /* Light grey border */
+            }
+
+            /* Hide icons if not essential for print */
+            .icon {
+                display: none;
+            }
         }
     </style>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <!-- JsPDF and html2canvas for PDF generation -->
+    <!-- JsPDF and html2canvas for PDF generation (though not used in JS logic directly now) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
 </head>
@@ -1211,7 +1468,7 @@
 
             <!-- قسم إدارة المنتجات -->
             <section class="product-container" id="productFormContainer">
-                <h2><span class="icon">📦</span>إدارة المنتجات</h2>
+                <h2 id="productFormTitle"><span class="icon">📦</span>إدارة المنتجات</h2>
                 <form id="productForm">
                     <div class="form-group">
                         <label for="productName" class="required">Nom du produit</label>
@@ -1362,14 +1619,12 @@
         <article class="invoice fade-in-section" id="invoiceDisplay" hidden>
             <button type="button" class="btn" id="savePdfButton"><span class="icon">📦</span>تحديث المخزون (بعد الفاتورة)</button>
             <h1>DEVIS</h1>
-
             <section class="invoice-header">
                 <h2><span class="icon">👤</span>تفاصيل العميل</h2>
                 <p>Nom du client: <span id="displayCustomerName"></span></p>
                 <p>Propriétaire de la facture: <span id="displayInvoiceOwner"></span></p>
                 <p>Date de la facture: <time datetime="" id="displayInvoiceDate"></time></p>
             </section>
-
             <div class="table-responsive">
                 <table class="invoice-table" id="invoiceDetails">
                     <thead>
@@ -1385,7 +1640,6 @@
                     </tbody>
                 </table>
             </div>
-
             <div class="invoice-header1">
                 <h2><span class="icon">📊</span>ملخص الفاتورة</h2>
                 <table>
@@ -1413,12 +1667,10 @@
                     </tfoot>
                 </table>
             </div>
-
             <footer class="invoice-footer">
                 <p>Adresse: <span id="displayInvoiceOwnerAddressFooter"></span></p>
                 <p>Téléphone: <span id="displayInvoiceOwnerPhoneFooter"></span></p>
             </footer>
-
             <div class="button-container">
                 <button type="button" class="btn" id="printButton"><span class="icon">🖨️</span>طباعة الفاتورة</button>
             </div>
@@ -1469,7 +1721,7 @@
                                         <option value="none">عرض الكل (الإحصائيات)</option>
                                         <option value="topSellingProducts">المنتجات الأكثر مبيعاً</option>
                                         <option value="topCustomers">العملاء الأكثر نشاطاً</option>
-                                        <option         value="topSuppliers">الموردون الأكثر نشاطاً</option>
+                                        <option value="topSuppliers">الموردون الأكثر نشاطاً</option>
                                         <option value="topInvoiceOwners">أصحاب الفواتير الأكثر نشاطاً</option>
                                     </select>
                                 </div>
@@ -1566,6 +1818,7 @@
         const firebaseConfig = {
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
         };
+
         // Initialize Firebase App
         let firebaseApp;
         let database;
@@ -1600,6 +1853,7 @@
         const mobileNavButtons = [mobileShowDashboardButton, mobileShowFirebaseDataButton, mobileCreateInvoiceButton];
 
         const productForm = document.getElementById('productForm');
+        const productFormTitle = document.getElementById('productFormTitle'); // New element for form title
         const productNameInput = document.getElementById('productName');
         const purchasePriceInput = document.getElementById('purchasePrice');
         const sellingPriceInput = document.getElementById('sellingPrice');
@@ -1770,7 +2024,7 @@
         desktopShowDashboardButton.addEventListener('click', async () => {
             await showSection(mainDashboardView);
             setActiveButton(desktopShowDashboardButton, desktopNavButtons);
-            mainContainer.classList.remove('full-width');
+            mainContainer.classList.remove('full-width'); // Ensure not full width
             displayLocalInvoices();
             displayLowStockProducts();
             displaySavedProducts();
@@ -1780,13 +2034,13 @@
         desktopShowFirebaseDataButton.addEventListener('click', async () => {
             await showSection(firebaseProductsDisplay);
             setActiveButton(desktopShowFirebaseDataButton, desktopNavButtons);
-            mainContainer.classList.add('full-width');
+            mainContainer.classList.add('full-width'); // Make full width for Firebase data view
             commonSearchInput.value = '';
             commonFilterSelect.value = 'none'; // Reset general filter
             mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
             if (database) {
                 populateCommonDropdown(); // Populates dropdown with unique phone numbers from Firebase
-                fetchAndDisplayCombinedFirebaseData(); // Fetches all Firebase data and applies filters
+                fetchAndDisplayCombinedFirebaseData(); // Fetch and display all products, and stats
             } else {
                 showToast("قاعدة بيانات Firebase غير مهيأة. لا يمكن جلب بيانات Firebase.", 'error');
                 firebaseProductListContainer.innerHTML = '<p class="empty-list-message">تعذر الاتصال بقاعدة بيانات Firebase.</p>';
@@ -1799,7 +2053,7 @@
         mobileShowDashboardButton.addEventListener('click', async () => {
             await showSection(mainDashboardView);
             setActiveButton(mobileShowDashboardButton, mobileNavButtons);
-            mainContainer.classList.remove('full-width');
+            mainContainer.classList.remove('full-width'); // Ensure not full width
             displayLocalInvoices();
             displayLowStockProducts();
             displaySavedProducts();
@@ -1809,13 +2063,13 @@
         mobileShowFirebaseDataButton.addEventListener('click', async () => {
             await showSection(firebaseProductsDisplay);
             setActiveButton(mobileShowFirebaseDataButton, mobileNavButtons);
-            mainContainer.classList.add('full-width');
+            mainContainer.classList.add('full-width'); // Make full width for Firebase data view
             commonSearchInput.value = '';
             commonFilterSelect.value = 'none'; // Reset general filter
             mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
             if (database) {
                 populateCommonDropdown();
-                fetchAndDisplayCombinedFirebaseData();
+                fetchAndDisplayCombinedFirebaseData(); // Fetch and display all products, and stats
             } else {
                 showToast("قاعدة بيانات Firebase غير مهيأة. لا يمكن جلب بيانات Firebase.", 'error');
                 firebaseProductListContainer.innerHTML = '<p class="empty-list-message">تعذر الاتصال بقاعدة بيانات Firebase.</p>';
@@ -1826,7 +2080,7 @@
         mobileCreateInvoiceButton.addEventListener('click', async () => {
             await showSection(mainDashboardView); // Go to dashboard
             setActiveButton(mobileCreateInvoiceButton, mobileNavButtons); // Activate this button to indicate invoice focus
-            mainContainer.classList.remove('full-width');
+            mainContainer.classList.remove('full-width'); // Ensure not full width
             window.scrollTo({ top: clientFormContainer.offsetTop, behavior: 'smooth' }); // Scroll to invoice form
             resetAllProductQuantities(); // Clear any previously selected quantities
             displaySavedProducts(); // Refresh products list
@@ -1843,8 +2097,9 @@
                 field.classList.remove('error'); // Clear previous error state
                 if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
                     errorMessageSpan.style.display = 'none';
-                    errorMessageSpan.textContent = ''; // Clear previous message
+                    errorMessageSpan.textContent = ''; // Clear message
                 }
+
                 if (!fieldValue) {
                     allFieldsFilled = false;
                     field.classList.add('error');
@@ -1969,7 +2224,6 @@
                 products.push(newProduct);
                 showToast("المنتج تم إضافته بنجاح.", 'success');
             }
-
             products.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
             localStorage.setItem('savedProducts', JSON.stringify(products));
 
@@ -1987,15 +2241,14 @@
             const idToEdit = event.target.dataset.editingId;
             handleProductFormSubmission(idToEdit);
         });
-
         function resetProductFormAndButtons() {
             productForm.reset();
+            productFormTitle.innerHTML = '<span class="icon">📦</span>إدارة المنتجات'; // Reset title
             addProductButton.style.display = 'block';
             saveEditProductButton.style.display = 'none';
             delete saveEditProductButton.dataset.editingId;
             resetValidationMessages(productForm);
         }
-
         async function editProduct(productId) {
             await showSection(mainDashboardView); // Ensure dashboard is visible
             // Activate corresponding button based on screen size
@@ -2005,18 +2258,18 @@
                 setActiveButton(desktopShowDashboardButton, desktopNavButtons);
             }
             mainContainer.classList.remove('full-width');
-
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             const productToEdit = savedProducts.find(p => p.id == productId);
 
             if (productToEdit) {
+                productFormTitle.innerHTML = '<span class="icon">✏️</span>تعديل المنتج'; // Update title
                 productNameInput.value = productToEdit.name;
                 purchasePriceInput.value = productToEdit.purchasePrice;
                 sellingPriceInput.value = productToEdit.sellingPrice;
                 supplierNameInput.value = productToEdit.supplierName;
                 supplierAddressInput.value = productToEdit.supplierAddress;
-                supplierPhoneInput.value = productToEdit.supplierPhone;
                 productQuantityInput.value = productToEdit.stockQuantity;
+                supplierPhoneInput.value = productToEdit.supplierPhone;
                 
                 addProductButton.style.display = 'none';
                 saveEditProductButton.style.display = 'block';
@@ -2028,7 +2281,6 @@
                 showToast("المنتج المراد تعديله غير موجود.", 'error');
             }
         }
-
         async function deleteProduct(id) {
             const confirmed = await showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟");
             if (confirmed) {
@@ -2043,13 +2295,11 @@
             }
         }
         searchProductInput.addEventListener('input', displaySavedProducts);
-
         function resetAllProductQuantities() {
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             savedProducts.forEach(product => { product.quantity = 0; });
             localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
         }
-
         function displaySavedProducts() {
             const searchTerm = searchProductInput.value.toLowerCase();
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
@@ -2127,29 +2377,26 @@
                 savedProductsList.appendChild(productDiv);
             });
         }
-
         function displayLowStockProducts() {
             lowStockProductsList.innerHTML = '';
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
-
             // Filter for low stock (stock < minStock AND stock > 0) or out of stock (stock === 0)
             const lowStockItems = savedProducts.filter(p => (p.stockQuantity || 0) < (p.minStockQuantity || 0) && (p.stockQuantity || 0) > 0);
             const outOfStockItems = savedProducts.filter(p => (p.stockQuantity || 0) === 0);
-
-            if (lowStockItems.length === 0 && outOfStockItems.length === 0) {
-                lowStockProductsList.innerHTML = '<p class="empty-list-message">لا توجد منتجات في المخزون المنخفض أو نفدت حالياً.</p>';
-                return;
-            }
 
             // Combine and sort out of stock first, then low stock, then alphabetically
             const combinedLowStock = [...outOfStockItems, ...lowStockItems];
             combinedLowStock.sort((a, b) => {
                 const statusA = (a.stockQuantity || 0) === 0 ? 0 : 1; // 0 for out of stock, 1 for low stock
                 const statusB = (b.stockQuantity || 0) === 0 ? 0 : 1;
-
                 if (statusA !== statusB) return statusA - statusB;
                 return a.name.localeCompare(b.name);
             });
+
+            if (lowStockItems.length === 0 && outOfStockItems.length === 0) {
+                lowStockProductsList.innerHTML = '<p class="empty-list-message">لا توجد منتجات في المخزون المنخفض أو نفدت حالياً.</p>';
+                return;
+            }
 
             combinedLowStock.forEach(product => {
                 const productDiv = document.createElement('div');
@@ -2157,8 +2404,9 @@
                 if ((product.stockQuantity || 0) < (product.minStockQuantity || 0) && (product.stockQuantity || 0) > 0) {
                     productDiv.classList.add('status-min-positive'); // Low stock (positive quantity)
                 } else if ((product.stockQuantity || 0) === 0) {
-                    productDiv.classList.add('status-insufficient'); // Out of stock (zero quantity)
+                    productDiv.classList.add('status-min-zero'); // Out of stock (zero quantity)
                 }
+
                 productDiv.innerHTML = `
                     <div class="product-details">
                         <p><strong>المنتج:</strong> ${product.name}</p>
@@ -2214,7 +2462,6 @@
                 productDiv.classList.add('status-default');
             }
         }
-
         function adjustStock(id, amount) {
             const stockInput = document.getElementById(`stock-${id}`);
             let stockQuantity = parseInt(stockInput.value) || 0;
@@ -2241,7 +2488,6 @@
                 displayLowStockProducts(); // Re-render low stock list
             }
         }
-
         function adjustQuantity(id, amount) {
             const quantityInput = document.querySelector(`.product-quantity[data-id="${id}"]`);
             let quantity = parseInt(quantityInput.value) || 0;
@@ -2267,7 +2513,6 @@
                 updateProductDivClass(productDiv, newQuantity, stockQuantityToDisplay, minStockQuantityToDisplay);
             }
         }
-
         function adjustMinQuantity(id, amount) {
             const minQuantityInput = document.querySelector(`.min-product-quantity[data-id='${id}']`);
             let minQuantity = parseInt(minQuantityInput.value) || 0;
@@ -2296,6 +2541,7 @@
         }
 
         /* --- Invoice Generation and Display --- */
+        let isNewInvoice = false; // Flag to track if the current invoice is newly created
         document.getElementById('createInvoiceButton').addEventListener('click', async function (e) {
             e.preventDefault();
             // Save TVA to localStorage as well
@@ -2324,7 +2570,6 @@
                         });
                         localStorage.setItem('savedProducts', JSON.stringify(allSavedProducts)); // Update localStorage
                         selectedProductsForInvoice = allSavedProducts.filter(p => p.quantity > 0); // Re-filter
-
                         if (selectedProductsForInvoice.length === 0) {
                             showToast("لا توجد منتجات لتضمينها في الفاتورة بعد التحديث.", 'info');
                             return;
@@ -2380,8 +2625,9 @@
                 document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceOwnerAddressInput.value;
 
                 await showSection(invoiceDisplay);
-                mainContainer.classList.remove('full-width');
-                document.getElementById('savePdfButton').style.display = 'block'; // Show stock update button
+                mainContainer.classList.add('full-width'); // Make full width for Invoice display
+                document.getElementById('savePdfButton').style.display = 'block'; // Show stock update button for new invoice
+                isNewInvoice = true; // Set flag for new invoice
                 window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 // Save frequently used invoice details to localStorage
@@ -2395,7 +2641,6 @@
                     const profitPerUnitBeforeCommissionFirebase = (parseFloat(productData.sellingPrice) - parseFloat(productData.purchasePrice)) || 0;
                     const commissionPerUnitFirebase = profitPerUnitBeforeCommissionFirebase * (invoiceCommissionRate / 100);
                     const actualProfitPerUnitFirebase = profitPerUnitBeforeCommissionFirebase - commissionPerUnitFirebase;
-
                     productsToSaveToFirebase.push({
                         ...productData,
                         quantityUsed: productData.quantity, // Renamed for clarity in Firebase
@@ -2403,7 +2648,6 @@
                         commissionPerUnit: commissionPerUnitFirebase.toFixed(2)
                     });
                 });
-
                 const invoiceDataToSave = {
                     id: Date.now(),
                     date: invoiceDateInput.value,
@@ -2423,7 +2667,6 @@
                 if (invoiceCommissionRate > 0) {
                     invoiceDataToSave.invoiceCommissionRate = invoiceCommissionRate;
                 }
-
                 // Save to Firebase Realtime Database using the specified path
                 // The appId is used as the first level node for namespacing your app's data.
                 // Firebase path: /{appId}/alldata/{ownerPhone}/{invoiceId}
@@ -2437,7 +2680,6 @@
                     showToast("لم يتم تهيئة قاعدة بيانات Firebase. لا يمكن حفظ الفاتورة.", 'error');
                 }
                 saveInvoiceToLocalStorage(invoiceDataToSave); // Save to local archive
-
             } else {
                 showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
             }
@@ -2445,6 +2687,10 @@
 
         // Event listener for updating stock after invoice confirmation
         document.getElementById('savePdfButton').addEventListener('click', async function() {
+            if (!isNewInvoice) { // Prevent updating stock for archived invoices
+                showToast("لا يمكن تحديث المخزون لفاتورة مؤرشفة.", 'info');
+                return;
+            }
             const productsInInvoiceRows = document.querySelectorAll('#invoiceDetails tbody tr');
             let savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             let hasInsufficientStock = false;
@@ -2487,6 +2733,7 @@
                 localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
                 showToast('تم تحديث المخزون بنجاح.', 'success');
                 resetAllProductQuantities(); // Reset quantities selected for invoice
+                isNewInvoice = false; // Reset flag after updating stock
 
                 // Go back to dashboard view after update
                 if (window.innerWidth <= 768) {
@@ -2511,11 +2758,16 @@
             // Hide buttons before printing
             this.style.display = 'none';
             document.getElementById('savePdfButton').style.display = 'none';
+
             // Trigger browser print dialog
             window.print();
+
             // Restore buttons and original viewport after a short delay
             setTimeout(() => {
-                document.getElementById('savePdfButton').style.display = 'block';
+                // Only show savePdfButton if it's a new invoice
+                if (isNewInvoice) { 
+                    document.getElementById('savePdfButton').style.display = 'block';
+                }
                 this.style.display = 'block';
                 if (viewportMeta && originalViewportContent) {
                     viewportMeta.setAttribute('content', originalViewportContent);
@@ -2538,6 +2790,7 @@
                 allOption.value = 'all';
                 allOption.textContent = 'عرض الكل';
                 commonPhoneDropdown.appendChild(allOption);
+
                 const phoneNumbers = new Set();
                 if (data) {
                     for (const phoneKey in data) {
@@ -2607,7 +2860,8 @@
                     }
                 }
             }
-            applyCombinedFilters(); // Apply filters once all data is loaded
+            // Always apply combined filters and update both product list and stats section
+            applyCombinedFilters(); 
         }
         function findLocalProductMatch(firebaseProduct) {
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
@@ -2642,8 +2896,8 @@
             });
             displayFirebaseProducts(filteredProducts);
 
-            // Filter invoices for statistics section
-            let filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
+            // Filter invoices for statistics section based on current filters
+            let filteredInvoicesForStats = allFirebaseInvoicesData.filter(invoice => {
                 const matchesSearchInput = searchTerm ?
                     (invoice.customerName && invoice.customerName.toLowerCase().includes(searchTerm)) ||
                     (invoice.ownerName && invoice.ownerName.toLowerCase().includes(searchTerm)) ||
@@ -2653,7 +2907,9 @@
                 const matchesPhoneNumber = (selectedPhoneNumber === 'all' || invoice.ownerPhone === selectedPhoneNumber);
                 return matchesSearchInput && matchesPhoneNumber;
             });
-            displayStatistics(filteredInvoices, selectedStatsFilter);
+            
+            // Always update statistics lists based on current `commonFilterSelect` value and filtered invoices
+            displayStatistics(filteredInvoicesForStats, selectedStatsFilter);
         }
         function displayFirebaseProducts(products) {
             firebaseProductListContainer.innerHTML = '';
@@ -2666,9 +2922,11 @@
                 productDiv.classList.add('product');
                 const matchingLocalProduct = findLocalProductMatch(product);
                 if (matchingLocalProduct) { productDiv.classList.add('is-local-match'); }
+
                 const purchasePrice = parseFloat(product.purchasePrice || 0);
                 const sellingPrice = parseFloat(product.sellingPrice || 0);
                 const quantityUsed = parseInt(product.quantityUsed || 0);
+
                 productDiv.innerHTML = `
                     <div class="product-details">
                         <p><strong>الاسم:</strong> ${product.name}</p>
@@ -2740,9 +2998,10 @@
                 showToast("المنتج المراد تعديله غير موجود في بيانات Firebase الحالية.", 'error');
             }
         }
-        commonPhoneDropdown.addEventListener('change', applyCombinedFilters);
-        commonSearchInput.addEventListener('input', applyCombinedFilters);
-        commonFilterSelect.addEventListener('change', applyCombinedFilters);
+        // Event listeners for common search and filter dropdown
+        commonPhoneDropdown.addEventListener('change', () => applyCombinedFilters()); // Always apply filters to both sections
+        commonSearchInput.addEventListener('input', () => applyCombinedFilters()); // Always apply filters to both sections
+        commonFilterSelect.addEventListener('change', () => applyCombinedFilters()); // Always apply filters to both sections
 
         /* --- Statistics and Tracking --- */
         function displayStatistics(invoices, filterType) {
@@ -2823,6 +3082,29 @@
             dynamicStatsListContainer.innerHTML = '';
             mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
 
+            const listsConfig = {
+                topSellingProducts: {
+                    title: 'المنتجات الأكثر مبيعاً',
+                    data: Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 10),
+                    prop1: 'quantitySold', unit1: 'وحدات', prop2: 'totalRevenue', unit2: 'DH', isPurchase: false
+                },
+                topCustomers: {
+                    title: 'العملاء الأكثر نشاطاً',
+                    data: Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 10),
+                    prop1: 'invoiceCount', unit1: 'فواتير', prop2: 'totalTTC', unit2: 'DH', isPurchase: false
+                },
+                topInvoiceOwners: {
+                    title: 'أصحاب الفواتير الأكثر نشاطاً',
+                    data: Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 10),
+                    prop1: 'invoiceCount', unit1: 'فواتير', prop2: 'totalProfit', unit2: 'DH ربح', isPurchase: false
+                },
+                topSuppliers: {
+                    title: 'الموردون الأكثر نشاطاً',
+                    data: Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 10),
+                    prop1: 'totalPurchaseCost', unit1: 'DH', prop2: 'productsCount', unit2: 'منتج', isPurchase: true
+                }
+            };
+            
             const renderList = (listId, data, prop, unit, altProp, altUnit, isPurchase = false) => {
                 const listWrapper = document.createElement('div'); // This div will be a grid item
                 let title;
@@ -2847,8 +3129,13 @@
                         `;
                         li.dataset.searchTerm = name;
                         li.addEventListener('click', () => {
+                            // When clicking an item in a stats list, set the main search input
                             commonSearchInput.value = li.dataset.searchTerm;
-                            applyCombinedFilters();
+                            // And set the general filter dropdown to 'none' if it's currently a specific list,
+                            // so all stat lists are visible while the main product list is filtered.
+                            // This ensures other stat lists remain visible.
+                            commonFilterSelect.value = 'none'; 
+                            applyCombinedFilters(); // Re-apply filters with new search term and reset stats display mode
                         });
                         listEl.appendChild(li);
                     });
@@ -2859,10 +3146,10 @@
 
             if (filterType === 'none') {
                 // Display all lists in a 2x2 grid (or stacked on mobile)
-                renderList('topSellingProductsList', Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 5), 'quantitySold', 'وحدات', 'totalRevenue', 'DH');
-                renderList('topCustomersList', Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 5), 'invoiceCount', 'فواتير', 'totalTTC', 'DH');
-                renderList('topInvoiceOwnersList', Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 5), 'invoiceCount', 'فواتير', 'totalProfit', 'DH ربح');
-                renderList('topSuppliersList', Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 5), 'totalPurchaseCost', 'DH', 'productsCount', 'منتج', true);
+                renderList('topSellingProductsList', listsConfig.topSellingProducts.data, listsConfig.topSellingProducts.prop1, listsConfig.topSellingProducts.unit1, listsConfig.topSellingProducts.prop2, listsConfig.topSellingProducts.unit2, listsConfig.topSellingProducts.isPurchase);
+                renderList('topCustomersList', listsConfig.topCustomers.data, listsConfig.topCustomers.prop1, listsConfig.topCustomers.unit1, listsConfig.topCustomers.prop2, listsConfig.topCustomers.unit2, listsConfig.topCustomers.isPurchase);
+                renderList('topInvoiceOwnersList', listsConfig.topInvoiceOwners.data, listsConfig.topInvoiceOwners.prop1, listsConfig.topInvoiceOwners.unit1, listsConfig.topInvoiceOwners.prop2, listsConfig.topInvoiceOwners.unit2, listsConfig.topInvoiceOwners.isPurchase);
+                renderList('topSuppliersList', listsConfig.topSuppliers.data, listsConfig.topSuppliers.prop1, listsConfig.topSuppliers.unit1, listsConfig.topSuppliers.prop2, listsConfig.topSuppliers.unit2, listsConfig.topSuppliers.isPurchase);
             } else {
                 // Display only the selected list
                 const config = listsConfig[filterType];
@@ -2870,10 +3157,9 @@
                     const listDiv = document.createElement('div');
                     listDiv.classList.add('stats-grid-item');
                     listDiv.style.flex = '1 1 100%'; // Make it take full width when alone
-                    listDiv.innerHTML = `<h3>${config.title}</h3><ul class="scrollable-list-in-card"></ul>`;
+                    listDiv.innerHTML = `<h3>${config.title}</h3><ul id="${filterType}List" class="scrollable-list-in-card"></ul>`;
                     dynamicStatsListContainer.appendChild(listDiv);
-                    renderList(listDiv.querySelector('ul').id, config.data, config.prop1, config.unit1, config.prop2, config.unit2, config.isPurchase);
-
+                    renderList(`${filterType}List`, config.data, config.prop1, config.unit1, config.prop2, config.unit2, config.isPurchase);
                     // Show total price for most selling products only if selected
                     if (filterType === 'topSellingProducts') {
                         let currentMostSellingTotalPrice = 0;
@@ -2899,7 +3185,6 @@
             allLocalInvoices = JSON.parse(localStorage.getItem('localInvoices')) || [];
             localInvoicesList.innerHTML = '';
             const searchTerm = searchLocalInvoiceInput.value.toLowerCase();
-
             const filteredInvoices = allLocalInvoices.filter(invoice => {
                 const matchesSearch = searchTerm ?
                     (invoice.customerName && invoice.customerName.toLowerCase().includes(searchTerm)) ||
@@ -2909,12 +3194,10 @@
                     : true;
                 return matchesSearch;
             });
-
             if (filteredInvoices.length === 0) {
                 localInvoicesList.innerHTML = '<p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>';
                 return;
             }
-
             filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date)); // Sort by date (newest first)
 
             filteredInvoices.forEach(invoice => {
@@ -2940,8 +3223,9 @@
             const invoiceToView = allLocalInvoices.find(inv => inv.id === invoiceId);
             if (invoiceToView) {
                 await showSection(invoiceDisplay);
-                mainContainer.classList.remove('full-width');
+                mainContainer.classList.add('full-width'); // Make full width for Invoice display
                 document.getElementById('savePdfButton').style.display = 'none'; // Hide stock update button when viewing archived
+                isNewInvoice = false; // Set flag to false for archived invoice
 
                 // Populate invoice details
                 document.getElementById('displayCustomerName').textContent = invoiceToView.customerName;
