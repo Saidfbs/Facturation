@@ -33,11 +33,15 @@
             --spacing-xl: 25px;
             --box-shadow-light: 0 1px 3px rgba(0,0,0,0.1);
             --box-shadow-medium: 0 2px 8px rgba(0,0,0,0.15);
+            --box-shadow-strong: 0 4px 12px rgba(0,0,0,0.2);
+            --subtle-pattern: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><circle fill="%23dcd2c9" cx="3" cy="3" r="3"/><circle fill="%23dcd2c9" cx="57" cy="57" r="3"/><circle fill="%23dcd2c9" cx="3" cy="57" r="3"/><circle fill="%23dcd2c9" cx="57" cy="3" r="3"/></svg>');
         }
+
         /* Ensure hidden attribute works reliably */
         [hidden] {
             display: none !important;
         }
+
         /* Base styles and reset */
         html, body {
             height: 100%;
@@ -46,16 +50,21 @@
             font-family: 'Cairo', sans-serif;
             direction: rtl; /* Set direction to Right-To-Left for Arabic */
             background-color: var(--whatsapp-bg-main); /* WhatsApp chat background */
+            background-image: var(--subtle-pattern); /* Subtle background pattern */
+            background-repeat: repeat;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
             color: var(--whatsapp-text-dark);
             font-size: 16px;
         }
+
         body {
             padding: var(--spacing-md); /* Default padding for larger screens */
+            padding-bottom: calc(var(--spacing-md) + 60px); /* Space for bottom nav on mobile */
         }
-        /* Main controls for navigation (top bar) */
+
+        /* Main controls for navigation (desktop top bar, mobile hidden) */
         .main-controls {
             display: flex;
             flex-wrap: wrap;
@@ -67,7 +76,10 @@
             border-radius: var(--border-radius-md); /* Slightly rounded corners for the bar */
             box-shadow: var(--box-shadow-medium);
             flex-shrink: 0;
+            /* Hide on mobile, show on desktop */
+            display: none;
         }
+
         .main-controls .btn-panel {
             flex: 1 1 auto;
             max-width: 200px;
@@ -83,31 +95,101 @@
             font-size: 1em;
             box-shadow: var(--box-shadow-light);
             outline: none;
+            display: flex; /* For icon alignment */
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
         }
+
+        .main-controls .btn-panel .icon {
+            font-size: 1.2em;
+            line-height: 1;
+        }
+
         .main-controls .btn-panel:hover {
             background-color: #0E7166; /* Slightly darker on hover */
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow-strong);
         }
+
         .main-controls .btn-panel:active {
             transform: translateY(0);
             box-shadow: var(--box-shadow-light);
         }
+
         .main-controls .btn-panel:focus-visible {
             outline: 2px solid var(--whatsapp-text-light);
             outline-offset: 2px;
             box-shadow: 0 0 0 4px rgba(7, 94, 84, 0.4);
         }
+
         /* Active button state */
         .main-controls .btn-panel.active {
             background-color: var(--whatsapp-active-button); /* Even darker green for active */
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); /* Inset shadow for active */
             transform: translateY(0); /* No lift for active */
         }
+
         .main-controls .btn-panel.active:hover {
             background-color: var(--whatsapp-active-button); /* Maintain active color on hover */
             transform: translateY(0);
         }
+
+        /* Bottom Navigation Bar (mobile fixed) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--whatsapp-green-dark);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            /* Hidden on desktop, shown on mobile */
+            display: none; /* Default hidden */
+        }
+
+        .bottom-nav .nav-button {
+            background: none;
+            border: none;
+            color: var(--whatsapp-text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xs);
+            gap: var(--spacing-xs);
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: color 0.3s ease, background-color 0.3s ease, transform 0.1s ease;
+            border-radius: var(--border-radius-md);
+            flex: 1; /* Distribute space evenly */
+            max-width: 120px; /* Max width for larger phone screens */
+        }
+
+        .bottom-nav .nav-button .icon {
+            font-size: 1.8em;
+            line-height: 1;
+        }
+
+        .bottom-nav .nav-button:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .bottom-nav .nav-button.active {
+            color: var(--whatsapp-success-green);
+            background-color: var(--whatsapp-active-button);
+            transform: translateY(-2px); /* Slight lift for active */
+        }
+
+        .bottom-nav .nav-button.active .icon {
+            transform: scale(1.1);
+        }
+
         .container {
             flex-grow: 1;
             display: flex;
@@ -117,6 +199,7 @@
             margin: 0 auto;
             transition: max-width 0.3s ease, padding 0.3s ease; /* Smooth transition for width change */
         }
+
         /* Specific max-width for the full-width Firebase view */
         .container.full-width {
             max-width: 100%; /* Take full available width of its parent */
@@ -125,6 +208,7 @@
             height: 100%; /* Make container take full height */
             box-sizing: border-box;
         }
+
         /* Ensure direct children of full-width container expand and have padding */
         .container.full-width > section {
             padding-left: var(--spacing-md); /* Add back the body padding on the sections */
@@ -132,6 +216,7 @@
             box-sizing: border-box;
             flex-grow: 1; /* Allow sections to grow vertically if needed */
         }
+
         /* Unified Container Styles - for all major content sections */
         .product-container,
         .client-container,
@@ -152,16 +237,19 @@
             box-sizing: border-box;
             width: 100%;
         }
+
         /* Class to apply for animation when hiding/showing. */
         .fade-in-section {
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
+
         .fade-in-section.visible {
             opacity: 1;
             transform: translateY(0);
         }
+
         /* Dashboard View Specific Styles */
         .dashboard-view {
             display: flex;
@@ -170,6 +258,7 @@
             align-items: flex-start;
             width: 100%;
         }
+
         /* Unified Headings */
         .dashboard-view h1,
         .firebase-stats-combined-container h1,
@@ -182,6 +271,7 @@
             padding-bottom: var(--spacing-sm);
             border-bottom: 2px solid var(--whatsapp-green-light);
         }
+
         .dashboard-view h2,
         .firebase-stats-combined-container h2,
         .local-archive-container-embedded h2,
@@ -197,7 +287,22 @@
             font-size: 1.8em;
             padding-bottom: var(--spacing-sm);
             border-bottom: 2px solid var(--whatsapp-green-light);
+            display: flex; /* For icon */
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
         }
+
+        .dashboard-view h2 .icon,
+        .firebase-stats-combined-container h2 .icon,
+        .local-archive-container-embedded h2 .icon,
+        .low-stock-section-standalone h2 .icon,
+        .client-container h2 .icon,
+        .product-container h2 .icon,
+        .invoice h2 .icon {
+            font-size: 1.2em;
+        }
+
         /* Sub-headings for lists/sections within main containers */
         .dashboard-view h3,
         .statistics-section h3,
@@ -212,6 +317,7 @@
             text-align: center;
             width: 100%; /* Ensure it takes full width of its parent */
         }
+
         /* Specific override for low stock warning sub-heading if needed */
         .low-stock-section-standalone h3 {
             color: var(--whatsapp-error-red); /* Keep specific red for low stock warning */
@@ -224,6 +330,7 @@
             flex: 1 1 48%;
             min-width: 350px; /* Minimum width for readability */
         }
+
         /* Wrapper for Local Invoice Archive and Low Stock for side-by-side display */
         .dashboard-archive-stock-wrapper {
             display: flex;
@@ -233,6 +340,7 @@
             margin-top: var(--spacing-md);
             align-items: stretch; /* Ensures children stretch to fill available height */
         }
+
         /* Make children of the wrapper take roughly half width */
         .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
         .dashboard-archive-stock-wrapper > .low-stock-section-standalone {
@@ -241,15 +349,18 @@
             display: flex; /* Make them flex containers themselves */
             flex-direction: column; /* Stack their internal content vertically */
         }
+
         /* Saved Products list below the forms */
         .dashboard-view > .saved-products {
             flex: 1 1 100%; /* Take full width below forms and combined section */
             margin-top: var(--spacing-md);
         }
+
         /* Firebase/Stats Combined Container Layout */
         .firebase-stats-combined-container {
             flex-grow: 1; /* Allow to fill vertical space */
         }
+
         .firebase-content-wrapper {
             display: flex;
             flex-direction: column;
@@ -257,6 +368,7 @@
             width: 100%;
             flex-grow: 1;
         }
+
         .firebase-content-wrapper > .statistics-section {
             background-color: var(--whatsapp-bubble-received); /* Lighter background for stats section itself */
             border-radius: var(--border-radius-md);
@@ -265,6 +377,7 @@
             flex-shrink: 0;
             overflow-y: visible; /* Content can scroll if larger than available space */
         }
+
         .firebase-content-wrapper > .firebase-product-list-wrapper {
             background-color: var(--whatsapp-bubble-sent); /* Slightly lighter background for list wrapper */
             padding: var(--spacing-md);
@@ -274,6 +387,7 @@
             display: flex;
             flex-direction: column;
         }
+
         /* Style for Firebase product list filters (now inside firebase-product-list-wrapper) */
         .firebase-product-list-wrapper > .combined-firebase-filter-controls {
             margin-bottom: var(--spacing-md);
@@ -284,6 +398,7 @@
             padding-right: 0;
             border-radius: 0;
         }
+
         /* Unified Scrollable List Containers */
         .saved-products3,
         .local-invoices-list,
@@ -310,18 +425,22 @@
         .saved-products3 {
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         }
+
         .local-invoices-list {
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             max-height: 350px; /* Example fixed height for archive section for visual balance */
         }
+
         #productListContainerdata {
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             max-height: 500px; /* Example fixed height for Firebase product list */
         }
+
         .low-stock-section-standalone .product-list-grid {
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             max-height: 350px; /* Example fixed height for low stock section for visual balance */
         }
+
         .scrollable-list-in-card {
             grid-template-columns: 1fr; /* Single column for stat lists */
             max-height: 150px; /* Example fixed height for stats lists */
@@ -339,15 +458,18 @@
             margin-top: var(--spacing-md);
             justify-content: center;
         }
+
         p {
             margin: 0;
             padding: 0;
         }
+
         .form-group {
             margin-bottom: var(--spacing-md);
             flex-shrink: 0;
             position: relative;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.3rem;
@@ -355,10 +477,12 @@
             color: var(--whatsapp-text-dark);
             font-size: 0.95em;
         }
+
         .form-group label.required::after {
             content: ' *';
             color: var(--whatsapp-error-red);
         }
+
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -372,32 +496,42 @@
             font-size: 1em;
             color: var(--whatsapp-text-dark);
             outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             border-color: var(--whatsapp-green-light); /* Green accent on focus */
-            box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.3);
+            box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.3), var(--box-shadow-light); /* Subtle glow on focus */
         }
-        .form-group input[required]:invalid:not(:focus):not(:placeholder-shown) {
+
+        .form-group input[required]:invalid:not(:focus):not(:placeholder-shown),
+        .form-group input.error, .form-group select.error {
             border-color: var(--whatsapp-error-red);
         }
+
         .form-group .validation-error-message {
             color: var(--whatsapp-error-red);
             font-size: 0.85em;
             margin-top: 5px;
             display: none;
+            align-items: center;
+            gap: var(--spacing-xs);
         }
-        .form-group input[required]:invalid:not(:focus):not(:placeholder-shown) + .validation-error-message {
-            display: block;
+        .form-group input[required]:invalid:not(:focus):not(:placeholder-shown) + .validation-error-message,
+        .form-group input.error + .validation-error-message, .form-group select.error + .validation-error-message {
+            display: flex;
         }
+
         .form-group textarea {
             resize: vertical;
             min-height: 60px;
         }
+
         /* General button styles */
         .btn, .btn1, .btn2, .btn-delete, .btn-edit, .btn-add-to-local {
-            display: block;
+            display: flex;
             flex: 1;
             height: 50px;
             padding: 1rem 0;
@@ -412,48 +546,64 @@
             box-shadow: var(--box-shadow-light);
             font-size: 0.95em;
             outline: none;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
         }
+
         .btn:focus-visible, .btn1:focus-visible, .btn2:focus-visible, .btn-delete:focus-visible, .btn-edit:focus-visible, .btn-add-to-local:focus-visible {
             outline: 2px solid var(--whatsapp-green-light);
             outline-offset: 2px;
             box-shadow: 0 0 0 4px rgba(18, 140, 126, 0.4);
         }
+
         .btn {
             background-color: var(--whatsapp-green-light);
         }
-        .btn:hover { background-color: #0E7166; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+
+        .btn:hover { background-color: #0E7166; transform: translateY(-1px); box-shadow: var(--box-shadow-medium); }
         .btn:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+
         .btn1, .btn2 {
             background-color: var(--whatsapp-success-green);
         }
-        .btn1:hover, .btn2:hover { background-color: #1DA851; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+
+        .btn1:hover, .btn2:hover { background-color: #1DA851; transform: translateY(-1px); box-shadow: var(--box-shadow-medium); }
         .btn1:active, .btn2:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+
         .btn-delete {
             background-color: var(--whatsapp-error-red);
             margin-top: var(--spacing-sm);
         }
-        .btn-delete:hover { background-color: #A32531; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+
+        .btn-delete:hover { background-color: #A32531; transform: translateY(-1px); box-shadow: var(--box-shadow-medium); }
         .btn-delete:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+
         .btn-edit {
             background-color: var(--whatsapp-warning-orange);
             color: var(--whatsapp-text-dark);
             margin-top: var(--spacing-sm);
         }
-        .btn-edit:hover { background-color: #D69F00; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+
+        .btn-edit:hover { background-color: #D69F00; transform: translateY(-1px); box-shadow: var(--box-shadow-medium); }
         .btn-edit:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+
         .btn-add-to-local {
             background-color: var(--whatsapp-green-light);
             color: var(--whatsapp-text-light);
         }
+
         .btn-add-to-local:hover {
             background-color: #0E7166;
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: var(--box-shadow-medium);
         }
+
         .btn-add-to-local:active {
             transform: translateY(0);
             box-shadow: var(--box-shadow-light);
         }
+
         /* Invoice specific styles */
         .invoice-header,
         .invoice-footer {
@@ -463,6 +613,7 @@
             padding: var(--spacing-md);
             border-radius: var(--border-radius-md);
         }
+
         .invoice-header1 {
             background-color: var(--whatsapp-bubble-received);
             text-align: center;
@@ -470,15 +621,18 @@
             border-radius: var(--border-radius-md);
             margin-bottom: var(--spacing-md);
         }
+
         .invoice-header1 table {
             width: 100%;
             margin: 0 auto;
         }
+
         .invoice-header1 tfoot tr td {
             text-align: right;
             font-weight: bold;
             padding: 0.3rem 0;
         }
+
         /* Responsive table wrapper */
         .table-responsive {
             overflow-x: auto;
@@ -488,6 +642,7 @@
             border: 1px solid var(--whatsapp-border-light);
             background-color: var(--whatsapp-bubble-received);
         }
+
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
@@ -495,6 +650,7 @@
             font-size: 0.95em;
             border: none;
         }
+
         .invoice-table th,
         .invoice-table td {
             border: 1px solid var(--whatsapp-border-light);
@@ -502,11 +658,13 @@
             text-align: right;
             white-space: nowrap;
         }
+
         .invoice-table th {
             background-color: var(--whatsapp-green-light);
             color: var(--whatsapp-text-light);
             font-weight: bold;
         }
+
         #displayTotalAmountBeforeCommission,
         #displayCommissionDeducted,
         #displayTotalAmount,
@@ -517,19 +675,22 @@
             color: var(--whatsapp-success-green);
             font-size: 1.1em;
         }
+
         .invoice p {
             margin: 5px 0;
             line-height: 1.6;
         }
+
         .invoice .divider {
             border-top: 1px dashed var(--whatsapp-border-light);
             margin: var(--spacing-lg) 0;
         }
+
         /* Unified Product/Item Cards */
         .product, .local-invoice-item {
             border: 1px solid var(--whatsapp-border-light);
             padding: var(--spacing-md);
-            border-radius: var(--border-radius-lg);
+            border-radius: var(--border-radius-md); /* Slightly smaller for lists */
             background-color: var(--whatsapp-text-light); /* White background for items */
             box-shadow: var(--box-shadow-light);
             transition: all 0.2s ease-in-out;
@@ -540,49 +701,87 @@
             text-align: right;
             font-size: 0.95em;
             line-height: 1.5;
+            position: relative; /* For status indicators */
         }
+
         .product:hover, .local-invoice-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            box-shadow: var(--box-shadow-medium);
         }
+
+        /* Status indicators for product cards */
+        .product::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100%;
+            border-top-right-radius: var(--border-radius-md);
+            border-bottom-right-radius: var(--border-radius-md);
+        }
+
         /* Specific styling for local/matched products */
         .product.is-local {
             background-color: var(--whatsapp-bubble-received) !important;
             border-color: var(--whatsapp-green-light) !important;
             box-shadow: 0 2px 5px rgba(18, 140, 126, 0.2);
         }
+        .product.is-local::before {
+            background-color: var(--whatsapp-green-light);
+        }
+
         .product.is-local p {
             color: var(--whatsapp-text-dark);
         }
+
         .product.is-local .btn-add-to-local {
             background-color: var(--whatsapp-text-dark);
             color: var(--whatsapp-text-light);
         }
+
         .product.is-local .btn-add-to-local:hover {
             background-color: #333;
         }
+
         .product.is-local-match {
             background-color: var(--whatsapp-success-green) !important;
             border-color: var(--whatsapp-success-green) !important;
             color: var(--whatsapp-text-light) !important;
             box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
         }
+        .product.is-local-match::before {
+            background-color: var(--whatsapp-success-green);
+        }
+
         .product.is-local-match p {
             color: var(--whatsapp-text-light) !important;
         }
+
         .product.is-local-match .product-actions button {
             background-color: var(--whatsapp-text-light);
             color: var(--whatsapp-green-dark);
         }
+
         .product.is-local-match .product-actions button:hover {
             background-color: #f0f0f0;
         }
+
         /* Product details and actions within cards */
         .product .product-details, .local-invoice-item .invoice-summary-details {
             margin-bottom: var(--spacing-sm);
             flex-grow: 1;
             width: 100%;
         }
+
+        .product .product-details p, .local-invoice-item .invoice-summary-details p {
+            margin-bottom: 5px;
+        }
+        .product .product-details p:first-child strong {
+            font-size: 1.1em;
+            color: var(--whatsapp-green-dark);
+        }
+
         .product .product-actions, .local-invoice-item .invoice-actions {
             display: flex;
             flex-wrap: wrap;
@@ -591,12 +790,15 @@
             margin-top: var(--spacing-sm);
             justify-content: center;
         }
+
         .product .product-actions button, .local-invoice-item .invoice-actions button {
             flex: 1 1 48%;
             min-width: 120px;
-            height: 50px;
-            padding: 1rem 0;
+            height: 45px; /* Slightly shorter for better fit in cards */
+            padding: 0.8rem 0;
+            font-size: 0.9em;
         }
+
         .quantity-controls {
             display: flex;
             align-items: center;
@@ -605,6 +807,7 @@
             width: 100%;
             justify-content: center;
         }
+
         .quantity-controls button {
             width: 45px;
             height: 45px;
@@ -622,14 +825,18 @@
             outline: none;
             flex-shrink: 0;
             margin-top: 0;
+            box-shadow: var(--box-shadow-light);
         }
-        .quantity-controls button:hover { background-color: #0E7166; }
-        .quantity-controls button:active { transform: scale(0.95); }
+
+        .quantity-controls button:hover { background-color: #0E7166; box-shadow: var(--box-shadow-medium); }
+        .quantity-controls button:active { transform: scale(0.95); box-shadow: var(--box-shadow-light); }
+
         .quantity-controls button:focus-visible {
             outline: 2px solid var(--whatsapp-green-light);
             outline-offset: 2px;
             box-shadow: 0 0 0 4px rgba(18, 140, 126, 0.4);
         }
+
         .quantity-controls input {
             width: 80px;
             max-width: 120px;
@@ -637,16 +844,19 @@
             margin: 0 var(--spacing-sm);
             font-size: 1.1em;
             text-align: center;
-            border-radius: var(--border-radius-sm);
+            border-radius: var(--border-radius-pill); /* Pill shaped input */
             background-color: var(--whatsapp-bubble-sent);
             border: 1px solid var(--whatsapp-border-light);
             color: var(--whatsapp-text-dark);
             outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
         .quantity-controls input:focus {
             border-color: var(--whatsapp-green-light);
             box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.3);
         }
+
         /* Product status colors */
         .product.status-insufficient {
             background-color: var(--whatsapp-error-red) !important;
@@ -654,24 +864,40 @@
             border-color: var(--whatsapp-error-red) !important;
             box-shadow: 0 2px 5px rgba(216, 46, 62, 0.2);
         }
+        .product.status-insufficient::before {
+            background-color: var(--whatsapp-error-red);
+        }
         .product.status-insufficient p { color: var(--whatsapp-text-light); }
+
         .product.status-min-zero, .product.status-min-positive {
             background-color: var(--whatsapp-warning-orange) !important;
             color: var(--whatsapp-text-dark);
             border-color: var(--whatsapp-warning-orange) !important;
             box-shadow: 0 2px 5px rgba(255, 193, 7, 0.2);
         }
+        .product.status-min-zero::before, .product.status-min-positive::before {
+            background-color: var(--whatsapp-warning-orange);
+        }
         .product.status-min-zero p, .product.status-min-positive p { color: var(--whatsapp-text-dark); }
+
         .product.status-selected-sufficient {
             background-color: var(--whatsapp-bubble-received) !important;
             border-color: var(--whatsapp-green-light) !important;
             box-shadow: 0 2px 5px rgba(37, 211, 102, 0.2);
         }
+        .product.status-selected-sufficient::before {
+            background-color: var(--whatsapp-green-light);
+        }
+
         .product.status-stock-positive, .product.status-default {
             background-color: var(--whatsapp-text-light) !important;
             border-color: var(--whatsapp-border-light) !important;
             box-shadow: var(--box-shadow-light);
         }
+        .product.status-stock-positive::before, .product.status-default::before {
+            background-color: transparent; /* No specific color for default/positive stock */
+        }
+
         /* Search inputs */
         #searchProduct, #searchLocalInvoice, #commonSearchInput {
             padding: 0.6rem 1rem;
@@ -684,11 +910,19 @@
             color: var(--whatsapp-text-dark);
             outline: none;
             text-align: right;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            padding-left: 30px; /* Space for icon */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23B4B4B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: left 10px center;
+            background-size: 18px;
         }
+
         #searchProduct:focus, #searchLocalInvoice:focus, #commonSearchInput:focus {
             border-color: var(--whatsapp-green-light);
             box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.3);
         }
+
         /* Filter controls in Firebase section */
         .combined-firebase-filter-controls {
             display: flex;
@@ -701,6 +935,7 @@
             border-radius: var(--border-radius-md);
             box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
         }
+
         .firebase-product-list-wrapper > .combined-firebase-filter-controls {
             background-color: transparent;
             box-shadow: none;
@@ -709,14 +944,17 @@
             padding-right: 0;
             border-radius: 0;
         }
+
         .combined-firebase-filter-controls .form-group {
             flex: 1 1 48%;
             min-width: 250px;
             margin-bottom: 0;
         }
+
         .combined-firebase-filter-controls .form-group label {
             display: none;
         }
+
         .combined-firebase-filter-controls select {
             width: 100%;
             padding: 0.6rem 0.8rem;
@@ -736,10 +974,12 @@
             padding-left: 30px;
             padding-right: 0.8rem;
         }
+
         .combined-firebase-filter-controls select:focus {
             border-color: var(--whatsapp-green-light);
             box-shadow: 0 0 0 2px rgba(18, 140, 126, 0.3);
         }
+
         /* Statistics Section Styles */
         .stats-grid {
             display: grid;
@@ -747,6 +987,7 @@
             gap: var(--spacing-md);
             margin-bottom: var(--spacing-lg);
         }
+
         /* Specific style for list-containing stat cards to span full grid width */
         .stat-card-list {
             grid-column: 1 / -1;
@@ -756,6 +997,7 @@
             align-items: stretch;
             width: 100%;
         }
+
         .stat-card {
             background-color: var(--whatsapp-text-light);
             border: 1px solid var(--whatsapp-bubble-received);
@@ -769,6 +1011,7 @@
             align-items: center;
             flex: 1 1 auto; /* Allow stat cards to grow/shrink */
         }
+
         /* Specific style for the list containers within stat-card-list */
         .stat-card-list > div {
             flex: 1 1 calc(33% - var(--spacing-md)); /* For 3 columns, adjust for gap */
@@ -782,17 +1025,20 @@
             display: flex;
             flex-direction: column;
         }
+
         /* Media query adjustments for stat-card-list */
         @media (min-width: 1025px) {
             .stat-card-list > div {
                 flex: 1 1 calc(25% - var(--spacing-md) * 3 / 4);
             }
         }
+
         @media (min-width: 769px) and (max-width: 1024px) {
-             .stat-card-list > div {
+            .stat-card-list > div {
                 flex: 1 1 calc(50% - var(--spacing-md) / 2);
             }
         }
+
         .stat-card h3 {
             margin: 0 0 var(--spacing-sm) 0;
             font-size: 1.1em;
@@ -800,12 +1046,14 @@
             border-bottom: none;
             padding-bottom: 0;
         }
+
         .stat-card p {
             font-size: 1.5em;
             font-weight: bold;
             color: var(--whatsapp-text-dark);
             margin: 0;
         }
+
         .scrollable-list-in-card li {
             background-color: var(--whatsapp-text-light); /* White background for list items */
             padding: 6px 10px;
@@ -819,8 +1067,10 @@
             cursor: pointer;
             transition: background-color 0.2s ease;
         }
+
         .scrollable-list-in-card li:hover { background-color: #f0f0f0; }
         .scrollable-list-in-card li:last-child { margin-bottom: 0; }
+
         .scrollable-list-in-card li span:first-child {
             white-space: normal;
             word-break: break-word;
@@ -828,19 +1078,21 @@
             margin-left: var(--spacing-xs);
             margin-right: 0;
         }
+
         .scrollable-list-in-card li span:last-child {
             font-weight: bold;
             flex-shrink: 0;
         }
+
         /* Toast Notifications */
         #toast-container {
             position: fixed;
-            top: 50%;
+            bottom: var(--spacing-lg); /* Appear from bottom */
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 1000;
             display: flex;
-            flex-direction: column;
+            flex-direction: column-reverse; /* Stack from bottom up */
             gap: 10px;
             pointer-events: none;
             align-items: center;
@@ -849,6 +1101,7 @@
             box-sizing: border-box;
             padding: var(--spacing-md);
         }
+
         .toast {
             background-color: var(--whatsapp-text-light);
             color: var(--whatsapp-text-dark);
@@ -858,7 +1111,7 @@
             min-width: 250px;
             max-width: 350px;
             opacity: 0;
-            transform: translateY(-20px);
+            transform: translateY(20px); /* Start from below */
             animation: fadeinout 4s forwards;
             pointer-events: auto;
             display: flex;
@@ -867,19 +1120,23 @@
             border: 1px solid var(--whatsapp-border-light);
             direction: rtl;
         }
+
         .toast.success { border-right: 5px solid var(--whatsapp-success-green); border-left: none;}
         .toast.error { border-right: 5px solid var(--whatsapp-error-red); border-left: none;}
         .toast.info { border-right: 5px solid var(--whatsapp-green-light); border-left: none;}
+
         .toast .icon { font-size: 1.5em; line-height: 1; }
         .toast.success .icon { color: var(--whatsapp-success-green); }
         .toast.error .icon { color: var(--whatsapp-error-red); }
         .toast.info .icon { color: var(--whatsapp-green-light); }
+
         @keyframes fadeinout {
-            0% { opacity: 0; transform: translateY(-20px); }
+            0% { opacity: 0; transform: translateY(20px); }
             10% { opacity: 1; transform: translateY(0); }
             90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 0; transform: translateY(20px); }
         }
+
         /* Custom Confirmation Modal */
         #confirm-modal-overlay {
             position: fixed;
@@ -896,10 +1153,12 @@
             visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
+
         #confirm-modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
+
         #confirm-modal-dialog {
             background-color: var(--whatsapp-text-light);
             padding: var(--spacing-xl);
@@ -912,23 +1171,28 @@
             transition: transform 0.3s ease;
             direction: rtl;
         }
+
         #confirm-modal-overlay.active #confirm-modal-dialog { transform: scale(1); }
+
         #confirm-modal-dialog h3 {
             color: var(--whatsapp-text-dark);
             margin-top: 0;
             margin-bottom: var(--spacing-md);
             font-size: 1.6em;
         }
+
         #confirm-modal-dialog p {
             color: var(--whatsapp-text-dark);
             margin-bottom: var(--spacing-lg);
             line-height: 1.5;
         }
+
         #confirm-modal-buttons {
             display: flex;
             justify-content: center;
             gap: var(--spacing-md);
         }
+
         #confirm-modal-buttons button {
             padding: 0.8rem 1.5rem;
             border: none;
@@ -938,11 +1202,26 @@
             font-size: 1em;
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
+
         #confirm-yes-btn { background-color: var(--whatsapp-green-light); color: var(--whatsapp-text-light); }
         #confirm-yes-btn:hover { background-color: #0E7166; }
+
         #confirm-no-btn { background-color: var(--whatsapp-border-light); color: var(--whatsapp-text-dark); }
         #confirm-no-btn:hover { background-color: #A0A0A0; }
+
         /* Media Queries for Responsiveness */
+        @media (min-width: 769px) {
+            .main-controls {
+                display: flex; /* Show top nav on desktop */
+            }
+            .bottom-nav {
+                display: none; /* Hide bottom nav on desktop */
+            }
+            body {
+                padding-bottom: var(--spacing-md); /* Remove extra padding if bottom nav not shown */
+            }
+        }
+
         @media (max-width: 1024px) {
             .container { max-width: 960px; }
             .main-controls .btn-panel { font-size: 0.9em; padding: 0.6rem 0.8rem; }
@@ -953,13 +1232,15 @@
             .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
             .dashboard-archive-stock-wrapper > .low-stock-section-standalone { flex: 1 1 45%; }
             .local-invoices-list, .low-stock-section-standalone .product-list-grid, #productListContainerdata {
-                 max-height: 300px; /* Adjust fixed heights for tablets */
+                max-height: 300px; /* Adjust fixed heights for tablets */
             }
         }
+
         @media (max-width: 768px) {
-            body { padding: var(--spacing-sm); }
+            body { padding: var(--spacing-sm); padding-bottom: calc(var(--spacing-sm) + 60px); } /* Adjust for mobile bottom nav */
+            .main-controls { display: none; } /* Hide top nav on mobile */
+            .bottom-nav { display: flex; } /* Show bottom nav on mobile */
             .container { max-width: 100%; }
-            .main-controls .btn-panel { flex: 1 1 48%; max-width: none; font-size: 0.9em; padding: 0.6rem 0.8rem; }
             .dashboard-view > .product-container, .dashboard-view > .client-container { min-width: unset; flex: 1 1 100%; }
             .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
             .dashboard-archive-stock-wrapper > .low-stock-section-standalone { flex: 1 1 100%; }
@@ -981,10 +1262,9 @@
             .stat-card-list { flex-direction: column; }
             .stat-card-list > div { flex: 1 1 100%; }
         }
+
         @media (max-width: 480px) {
-            body { padding: var(--spacing-sm); }
-            .main-controls { flex-direction: column; align-items: stretch; }
-            .main-controls .btn-panel { flex: 1 1 100%; max-width: none; font-size: 1em; padding: 0.75rem 1rem; }
+            body { padding: var(--spacing-sm); padding-bottom: calc(var(--spacing-sm) + 60px); }
             .button-container { flex-direction: column; }
             .btn, .btn1, .btn2, .btn-delete, .btn-edit, .btn-add-to-local { flex: 1 1 100%; }
             .quantity-controls { flex-wrap: wrap; justify-content: center; }
@@ -1007,121 +1287,157 @@
             .toast .icon { font-size: 1.2em; }
         }
     </style>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <!-- Removed firebase-auth.js as per user's request for simpler config -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <!-- JsPDF and html2canvas for PDF generation (already present) -->
+    <!-- JsPDF and html2canvas for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
 </head>
 <body>
-    <header class="main-controls">
-        <button type="button" class="btn-panel" id="showDashboardButton">الرئيسية (الإدارة)</button>
-        <button type="button" class="btn-panel" id="showFirebaseDataButton">بيانات Firebase</button>
+    <!-- شريط التنقل العلوي (لشاشات الكمبيوتر اللوحي والكمبيوتر المكتبي) -->
+    <header class="main-controls" id="desktopNav">
+        <button type="button" class="btn-panel" id="showDashboardButton"><span class="icon">🏠</span>الرئيسية (الإدارة)</button>
+        <button type="button" class="btn-panel" id="showFirebaseDataButton"><span class="icon">📊</span>بيانات Firebase</button>
     </header>
+
     <main class="container">
+        <!-- لوحة التحكم الرئيسية: إدارة المنتجات، إنشاء الفواتير، أرشيف، مخزون منخفض -->
         <section id="mainDashboardView" class="dashboard-view fade-in-section">
             <h1>لوحة التحكم الرئيسية</h1>
+
+            <!-- قسم إدارة المنتجات -->
             <section class="product-container" id="productFormContainer">
-                <h2>إدارة المنتجات</h2>
+                <h2><span class="icon">📦</span>إدارة المنتجات</h2>
                 <form id="productForm">
                     <div class="form-group">
                         <label for="productName" class="required">Nom du produit</label>
                         <input type="text" id="productName" required placeholder="Nom du produit" autocomplete="on">
-                        <span class="validation-error-message">اسم المنتج مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>اسم المنتج مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="purchasePrice" class="required">Prix d'achat (DH)</label>
                         <input type="number" id="purchasePrice" required placeholder="Prix d'achat" autocomplete="on" min="0" step="0.01">
-                        <span class="validation-error-message">سعر الشراء مطلوب (غير سالب).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>سعر الشراء مطلوب (غير سالب).
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="sellingPrice" class="required">Prix de vente (DH)</label>
                         <input type="number" id="sellingPrice" required placeholder="Prix de vente" autocomplete="on" min="0" step="0.01">
-                        <span class="validation-error-message">سعر البيع مطلوب (غير سالب).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>سعر البيع مطلوب (غير سالب).
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="supplierName" class="required">Nom du fournisseur</label>
                         <input type="text" id="supplierName" required placeholder="Nom du fournisseur" autocomplete="on">
-                        <span class="validation-error-message">اسم المورد مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>اسم المورد مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="supplierAddress" class="required">Adresse du fournisseur</label>
                         <input type="text" id="supplierAddress" required placeholder="Adresse du fournisseur" autocomplete="on">
-                        <span class="validation-error-message">عنوان المورد مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>عنوان المورد مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="supplierPhone" class="required">Téléphone du fournisseur</label>
                         <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="tel" pattern="[0-9]{10}" inputmode="numeric">
-                        <span class="validation-error-message">رقم هاتف المورد مطلوب (10 أرقام).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>رقم هاتف المورد مطلوب (10 أرقام).
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="productQuantity">Quantité initiale en stock</label>
                         <input type="number" id="productQuantity" placeholder="Quantité" value="0" min="0">
                     </div>
                     <div class="button-container">
-                        <button type="submit" class="btn" id="addProduct">إضافة منتج</button>
-                        <button type="submit" class="btn" id="saveEditProduct">تعديل المنتج</button>
+                        <button type="submit" class="btn" id="addProduct"><span class="icon">➕</span>إضافة منتج</button>
+                        <button type="submit" class="btn" id="saveEditProduct" style="display: none;"><span class="icon">✏️</span>تعديل المنتج</button>
                     </div>
                 </form>
             </section>
+
+            <!-- قسم إنشاء الفواتير -->
             <section class="client-container" id="clientFormContainer">
-                <h2>إنشاء الفواتير</h2>
+                <h2><span class="icon">📝</span>إنشاء الفواتير</h2>
                 <form id="invoiceForm">
                     <div class="form-group">
                         <label for="invoiceDate" class="required">Date de la facture</label>
                         <input type="text" id="invoiceDate" required placeholder="Date de la facture" readonly>
-                        <span class="validation-error-message">تاريخ الفاتورة مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>تاريخ الفاتورة مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="customerName" class="required">Nom du client</label>
                         <input type="text" id="customerName" required placeholder="Nom du client" autocomplete="on" value="CLIENT">
-                        <span class="validation-error-message">اسم العميل مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>اسم العميل مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="invoiceOwner" class="required">Nom du Propriétaire de la facture</label>
                         <input type="text" id="invoiceOwner" required placeholder="Nom du Propriétaire de la facture" autocomplete="on">
-                        <span class="validation-error-message">اسم مالك الفاتورة مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>اسم مالك الفاتورة مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="invoiceOwnerAddress" class="required">Adresse du propriétaire de la facture</label>
                         <input type="text" id="invoiceOwnerAddress" required placeholder="Adresse du propriétaire de la facture" autocomplete="on">
-                        <span class="validation-error-message">عنوان مالك الفاتورة مطلوب.</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>عنوان مالك الفاتورة مطلوب.
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="invoiceOwnerPhone" class="required">Téléphone du propriétaire de la facture</label>
                         <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678" autocomplete="tel" pattern="[0-9]{10}" inputmode="numeric">
-                        <span class="validation-error-message">رقم هاتف مالك الفاتورة مطلوب (10 أرقام).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>رقم هاتف مالك الفاتورة مطلوب (10 أرقام).
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="tva">TVA (%)</label>
                         <input type="number" id="tva" required placeholder="TVA" value="0" min="0" max="100">
-                        <span class="validation-error-message">نسبة TVA مطلوبة (بين 0 و 100).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>نسبة TVA مطلوبة (بين 0 و 100).
+                        </span>
                     </div>
                     <div class="form-group">
                         <label for="invoiceCommissionPercentage">Taux de commission de la facture (%)</label>
                         <input type="number" id="invoiceCommissionPercentage" placeholder="مثال: 10" value="0" min="0" max="100" step="0.01">
-                        <span class="validation-error-message">نسبة العمولة للفاتورة (بين 0 و 100).</span>
+                        <span class="validation-error-message">
+                            <span class="icon">⚠️</span>نسبة العمولة للفاتورة (بين 0 و 100).
+                        </span>
                     </div>
                     <div class="button-container">
-                        <button type="button" class="btn" id="createInvoiceButton">إنشاء الفاتورة وعرضها</button>
+                        <button type="button" class="btn" id="createInvoiceButton"><span class="icon">✅</span>إنشاء الفاتورة وعرضها</button>
                     </div>
                 </form>
             </section>
+
+            <!-- أرشيف الفواتير المحلية وقسم المخزون المنخفض (أفقيًا) -->
             <div class="dashboard-archive-stock-wrapper">
                 <section class="local-archive-container-embedded" id="localInvoiceArchive">
-                    <h2>أرشيف الفواتير المحلية</h2>
+                    <h2><span class="icon">🗄️</span>أرشيف الفواتير المحلية</h2>
                     <div class="form-group">
                         <label for="searchLocalInvoice" class="sr-only">البحث في الفواتير المحلية</label>
-                        <input type="text" id="searchLocalInvoice" placeholder="البحث في الفواتير المحلية (العميل، المالك، التاريخ، المنتجات)">
+                        <input type="text" id="searchLocalInvoice" placeholder="البحث في الفواتير المحلية">
                     </div>
                     <div class="local-invoices-list product-list-grid" id="localInvoicesList">
                         <p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>
                     </div>
                 </section>
+
                 <section class="low-stock-section-standalone" id="lowStockProductsContainer">
-                    <h2>تتبع المخزون</h2>
+                    <h2><span class="icon">📉</span>تتبع المخزون</h2>
                     <div class="form-group">
                         <label for="searchProduct" class="sr-only">البحث عن منتج</label>
                         <input type="text" id="searchProduct" placeholder="البحث عن منتج">
@@ -1131,21 +1447,26 @@
                     </div>
                 </section>
             </div>
+
+            <!-- المنتجات المحفوظة -->
             <section class="saved-products" id="savedProductsDisplay">
                 <div class="divider"></div>
-                <h2>المنتجات المحفوظة</h2>
+                <h2><span class="icon">🛒</span>المنتجات المحفوظة</h2>
                 <div class="saved-products3 product-list-grid" id="savedProductsList"></div>
             </section>
         </section>
+
+        <!-- عرض الفاتورة (مخفي افتراضيًا) -->
         <article class="invoice fade-in-section" id="invoiceDisplay" hidden>
-            <button type="button" class="btn" id="savePdfButton">تحديث المخزون (بعد الفاتورة)</button>
+            <button type="button" class="btn" id="savePdfButton"><span class="icon">📦</span>تحديث المخزون (بعد الفاتورة)</button>
             <h1>DEVIS</h1>
             <section class="invoice-header">
-                <h2>تفاصيل العميل</h2>
+                <h2><span class="icon">👤</span>تفاصيل العميل</h2>
                 <p>Nom du client: <span id="displayCustomerName"></span></p>
                 <p>Propriétaire de la facture: <span id="displayInvoiceOwner"></span></p>
                 <p>Date de la facture: <time datetime="" id="displayInvoiceDate"></time></p>
             </section>
+
             <div class="table-responsive">
                 <table class="invoice-table" id="invoiceDetails">
                     <thead>
@@ -1161,8 +1482,9 @@
                     </tbody>
                 </table>
             </div>
+
             <div class="invoice-header1">
-                <h2>ملخص الفاتورة</h2>
+                <h2><span class="icon">📊</span>ملخص الفاتورة</h2>
                 <table>
                     <tfoot>
                         <tr>
@@ -1188,19 +1510,24 @@
                     </tfoot>
                 </table>
             </div>
+
             <footer class="invoice-footer">
                 <p>Adresse: <span id="displayInvoiceOwnerAddressFooter"></span></p>
                 <p>Téléphone: <span id="displayInvoiceOwnerPhoneFooter"></span></p>
             </footer>
+
             <div class="button-container">
-                <button type="button" class="btn" id="printButton">طباعة الفاتورة</button>
+                <button type="button" class="btn" id="printButton"><span class="icon">🖨️</span>طباعة الفاتورة</button>
             </div>
         </article>
+
+        <!-- بيانات Firebase والإحصائيات (مخفي افتراضيًا) -->
         <section class="firebase-stats-combined-container fade-in-section" id="firebaseProductsDisplay" hidden>
             <h1>بيانات Firebase والإحصائيات</h1>
             <div class="firebase-content-wrapper">
+                <!-- قسم الإحصائيات -->
                 <section class="statistics-section">
-                    <h2>إحصائيات المبيعات التفصيلية</h2>
+                    <h2><span class="icon">📈</span>إحصائيات المبيعات التفصيلية</h2>
                     <div class="stats-grid">
                         <div class="stat-card">
                             <h3>إجمالي سعر الشراء</h3>
@@ -1248,7 +1575,7 @@
                                     مجموع سعر المنتجات الأكثر مبيعاً: <span id="mostSellingTotalPriceValue">0.00 DH</span>
                                 </p>
                             </div>
-                            <div id="dynamicStatsListContainer" style="flex: 1 1 100%;">
+                            <div id="dynamicStatsListContainer" style="flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: var(--spacing-md);">
                                 <!-- Dynamic content for top lists will be rendered here -->
                                 <div>
                                     <h3>المنتجات الأكثر مبيعاً</h3>
@@ -1278,8 +1605,10 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- قسم قائمة منتجات Firebase -->
                 <section class="firebase-product-list-wrapper">
-                    <h2>قائمة منتجات Firebase (<span id="firebaseProductListCount">0</span>)</h2>
+                    <h2><span class="icon">☁️</span>قائمة منتجات Firebase (<span id="firebaseProductListCount">0</span>)</h2>
                     <div class="combined-firebase-filter-controls">
                         <div class="form-group">
                             <label for="commonPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
@@ -1296,7 +1625,27 @@
             </div>
         </section>
     </main>
+
+    <!-- شريط التنقل السفلي (لشاشات الموبايل) -->
+    <nav class="bottom-nav" id="mobileNav">
+        <button type="button" class="nav-button" id="mobileShowDashboardButton">
+            <span class="icon">🏠</span>
+            <span>الرئيسية</span>
+        </button>
+        <button type="button" class="nav-button" id="mobileShowFirebaseDataButton">
+            <span class="icon">📊</span>
+            <span>البيانات</span>
+        </button>
+        <button type="button" class="nav-button" id="mobileCreateInvoiceButton">
+            <span class="icon">📝</span>
+            <span>فاتورة</span>
+        </button>
+    </nav>
+
+    <!-- حاوية الإشعارات -->
     <div id="toast-container"></div>
+
+    <!-- نافذة التأكيد المنبثقة -->
     <div id="confirm-modal-overlay" hidden>
         <div id="confirm-modal-dialog">
             <h3 id="confirm-modal-title">تأكيد الإجراء</h3>
@@ -1307,36 +1656,46 @@
             </div>
         </div>
     </div>
+
     <script>
-        // Firebase configuration as provided by the user
+        // Firebase configuration (uses the one provided by the user)
         const firebaseConfig = {
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
         };
+
         // Initialize Firebase App
         let firebaseApp;
+        let database;
         try {
             firebaseApp = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
         } catch (e) {
             console.error("Firebase initialization failed:", e);
-            // Optionally, disable Firebase-dependent features or show a persistent error message
+            // Show a persistent error message or disable Firebase-dependent features
+            showToast("فشل تهيئة Firebase. قد لا تعمل الميزات المتعلقة بالبيانات السحابية.", 'error');
         }
 
-        const database = firebase.database();
         // __app_id is a global variable provided by the Canvas environment.
         // It's used as part of the database path to isolate data for this specific app instance.
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-
-        // ====== Global UI Elements (unchanged from your original code) ======
+        // ====== Global UI Elements ======
         const mainDashboardView = document.getElementById('mainDashboardView');
         const productFormContainer = document.getElementById('productFormContainer');
         const clientFormContainer = document.getElementById('clientFormContainer');
         const invoiceDisplay = document.getElementById('invoiceDisplay');
         const firebaseProductsDisplay = document.getElementById('firebaseProductsDisplay');
         const lowStockProductsContainer = document.getElementById('lowStockProductsContainer');
-        const showDashboardButton = document.getElementById('showDashboardButton');
-        const showFirebaseDataButton = document.getElementById('showFirebaseDataButton');
-        const navButtons = [ showDashboardButton, showFirebaseDataButton ];
+
+        const desktopShowDashboardButton = document.getElementById('showDashboardButton');
+        const desktopShowFirebaseDataButton = document.getElementById('showFirebaseDataButton');
+        const desktopNavButtons = [desktopShowDashboardButton, desktopShowFirebaseDataButton];
+
+        const mobileShowDashboardButton = document.getElementById('mobileShowDashboardButton');
+        const mobileShowFirebaseDataButton = document.getElementById('mobileShowFirebaseDataButton');
+        const mobileCreateInvoiceButton = document.getElementById('mobileCreateInvoiceButton');
+        const mobileNavButtons = [mobileShowDashboardButton, mobileShowFirebaseDataButton, mobileCreateInvoiceButton];
+
         const productForm = document.getElementById('productForm');
         const productNameInput = document.getElementById('productName');
         const purchasePriceInput = document.getElementById('purchasePrice');
@@ -1345,6 +1704,7 @@
         const supplierAddressInput = document.getElementById('supplierAddress');
         const supplierPhoneInput = document.getElementById('supplierPhone');
         const productQuantityInput = document.getElementById('productQuantity');
+
         const invoiceForm = document.getElementById('invoiceForm');
         const customerNameInput = document.getElementById('customerName');
         const invoiceOwnerInput = document.getElementById('invoiceOwner');
@@ -1353,10 +1713,12 @@
         const invoiceDateInput = document.getElementById('invoiceDate');
         const tvaInput = document.getElementById('tva');
         const invoiceCommissionPercentageInput = document.getElementById('invoiceCommissionPercentage');
+
         const addProductButton = document.getElementById('addProduct');
         const saveEditProductButton = document.getElementById('saveEditProduct');
         const savedProductsList = document.getElementById('savedProductsList');
         const searchProductInput = document.getElementById('searchProduct');
+
         const commonPhoneDropdown = document.getElementById('commonPhoneDropdown');
         const commonSearchInput = document.getElementById('commonSearchInput');
         const firebaseProductListCountSpan = document.getElementById('firebaseProductListCount');
@@ -1364,10 +1726,11 @@
         const lowStockProductsList = document.getElementById('lowStockProductsList');
         const localInvoicesList = document.getElementById('localInvoicesList');
         const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
-        const commonFilterSelect = document.getElementById('commonFilterSelect'); // New filter select
-        const mostSellingTotalPriceDisplay = document.getElementById('mostSellingTotalPrice'); // Element to show total price
-        const mostSellingTotalPriceValue = document.getElementById('mostSellingTotalPriceValue'); // Span for total price value
-        const dynamicStatsListContainer = document.getElementById('dynamicStatsListContainer'); // Container for dynamic lists
+
+        const commonFilterSelect = document.getElementById('commonFilterSelect');
+        const mostSellingTotalPriceDisplay = document.getElementById('mostSellingTotalPrice');
+        const mostSellingTotalPriceValue = document.getElementById('mostSellingTotalPriceValue');
+        const dynamicStatsListContainer = document.getElementById('dynamicStatsListContainer');
 
         const toastContainer = document.getElementById('toast-container');
         const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
@@ -1376,6 +1739,7 @@
         const confirmYesBtn = document.getElementById('confirm-yes-btn');
         const confirmNoBtn = document.getElementById('confirm-no-btn');
         let confirmResolve;
+
         let allFirebaseInvoicesData = [];
         let allFirebaseProducts = [];
         let allLocalInvoices = [];
@@ -1384,15 +1748,13 @@
 
         // ====== Initial Setup on Window Load ======
         window.addEventListener('load', () => {
-            // No auth logic needed here based on user's simple firebaseConfig
-            // The __app_id is used for namespacing data in Realtime Database as requested.
-
             const now = new Date();
             const formattedDate = now.toLocaleDateString('ar-MA', { year: 'numeric', month: '2-digit', day: '2-digit' });
             const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
             invoiceDateInput.value = `${formattedDate} ${formattedTime}`;
             document.getElementById('displayInvoiceDate').setAttribute('datetime', now.toISOString());
 
+            // Load saved form values from localStorage
             const savedInvoiceOwner = localStorage.getItem('invoiceOwner');
             const savedInvoiceOwnerPhone = localStorage.getItem('invoiceOwnerPhone');
             const savedInvoiceOwnerAddress = localStorage.getItem('invoiceOwnerAddress');
@@ -1400,6 +1762,7 @@
             const savedSupplierAddress = localStorage.getItem('supplierAddress');
             const savedSupplierPhone = localStorage.getItem('supplierPhone');
             const savedInvoiceCommission = localStorage.getItem('invoiceCommissionPercentage');
+            const savedTVA = localStorage.getItem('tva');
 
             if (savedInvoiceOwner) invoiceOwnerInput.value = savedInvoiceOwner;
             if (savedInvoiceOwnerPhone) invoiceOwnerPhoneInput.value = savedInvoiceOwnerPhone;
@@ -1408,26 +1771,32 @@
             if (savedSupplierAddress) supplierAddressInput.value = savedSupplierAddress;
             if (savedSupplierPhone) supplierPhoneInput.value = savedSupplierPhone;
             if (savedInvoiceCommission) invoiceCommissionPercentageInput.value = savedInvoiceCommission;
+            if (savedTVA) tvaInput.value = savedTVA;
 
             displayLocalInvoices();
             displayLowStockProducts();
             displaySavedProducts();
 
-            // Set initial view to Dashboard
+            // Set initial view to Dashboard and activate corresponding button
             showSection(mainDashboardView);
-            setActiveButton(showDashboardButton);
+            // Check screen size to activate correct button type
+            if (window.innerWidth <= 768) {
+                setActiveButton(mobileShowDashboardButton, mobileNavButtons);
+            } else {
+                setActiveButton(desktopShowDashboardButton, desktopNavButtons);
+            }
             mainContainer.classList.remove('full-width');
             resetProductFormAndButtons();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // ====== UI Management Functions (largely unchanged, but adjusted for new elements/visibility) ======
+        // ====== UI Management Functions ======
         function hideAllSections() {
             const sectionsToHide = [mainDashboardView, invoiceDisplay, firebaseProductsDisplay];
             sectionsToHide.forEach(section => {
                 if (section.classList.contains('visible')) {
                     section.classList.remove('visible');
-                    setTimeout(() => { section.hidden = true; }, 500);
+                    setTimeout(() => { section.hidden = true; }, 500); // Wait for transition
                 }
             });
         }
@@ -1436,6 +1805,7 @@
             return new Promise(resolve => {
                 hideAllSections();
                 sectionToShow.hidden = false;
+                // Timeout to allow display: block to apply before transition
                 setTimeout(() => {
                     sectionToShow.classList.add('visible');
                     resolve();
@@ -1443,18 +1813,20 @@
             });
         }
 
-        function setActiveButton(activeBtn) {
-            navButtons.forEach(btn => { btn.classList.remove('active'); });
+        function setActiveButton(activeBtn, buttonGroup) {
+            buttonGroup.forEach(btn => { btn.classList.remove('active'); });
             activeBtn.classList.add('active');
         }
 
         function resetValidationMessages(form) {
-            const fields = form.querySelectorAll('input[required], textarea[required]');
+            const fields = form.querySelectorAll('input[required], textarea[required], select[required]');
             fields.forEach(field => {
-                field.style.borderColor = '';
+                field.classList.remove('error'); // Remove error class
+                field.style.borderColor = ''; // Reset border color
                 const errorMessageSpan = field.nextElementSibling;
                 if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
                     errorMessageSpan.style.display = 'none';
+                    errorMessageSpan.textContent = ''; // Clear message
                 }
             });
         }
@@ -1463,9 +1835,9 @@
             const toast = document.createElement('div');
             toast.classList.add('toast', type);
             let iconHtml = '';
-            if (type === 'success') { iconHtml = '<span class="icon">&#10004;</span>'; }
-            else if (type === 'error') { iconHtml = '<span class="icon">&#10006;</span>'; }
-            else if (type === 'info') { iconHtml = '<span class="icon">&#8505;</span>'; }
+            if (type === 'success') { iconHtml = '<span class="icon">✔</span>'; }
+            else if (type === 'error') { iconHtml = '<span class="icon">✖</span>'; }
+            else if (type === 'info') { iconHtml = '<span class="icon">ℹ</span>'; }
             toast.innerHTML = `${iconHtml}<span>${message}</span>`;
             toastContainer.appendChild(toast);
             setTimeout(() => { toast.remove(); }, 4000);
@@ -1478,6 +1850,7 @@
                 confirmModalMessage.textContent = message;
                 confirmModalOverlay.hidden = false;
                 confirmModalOverlay.classList.add('active');
+
                 const handleYes = () => {
                     confirmModalOverlay.classList.remove('active');
                     confirmModalOverlay.hidden = true;
@@ -1485,6 +1858,7 @@
                     confirmNoBtn.removeEventListener('click', handleNo);
                     resolve(true);
                 };
+
                 const handleNo = () => {
                     confirmModalOverlay.classList.remove('active');
                     confirmModalOverlay.hidden = true;
@@ -1492,15 +1866,16 @@
                     confirmNoBtn.removeEventListener('click', handleNo);
                     resolve(false);
                 };
+
                 confirmYesBtn.addEventListener('click', handleYes);
                 confirmNoBtn.addEventListener('click', handleNo);
             });
         }
 
-        // ====== Section Display Event Listeners (adjusted for unified design & Firebase path) ======
-        showDashboardButton.addEventListener('click', async () => {
+        // ====== Section Display Event Listeners ======
+        desktopShowDashboardButton.addEventListener('click', async () => {
             await showSection(mainDashboardView);
-            setActiveButton(showDashboardButton);
+            setActiveButton(desktopShowDashboardButton, desktopNavButtons);
             mainContainer.classList.remove('full-width');
             displayLocalInvoices();
             displayLowStockProducts();
@@ -1509,15 +1884,14 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        showFirebaseDataButton.addEventListener('click', async () => {
+        desktopShowFirebaseDataButton.addEventListener('click', async () => {
             await showSection(firebaseProductsDisplay);
-            setActiveButton(showFirebaseDataButton);
+            setActiveButton(desktopShowFirebaseDataButton, desktopNavButtons);
             mainContainer.classList.add('full-width');
             commonSearchInput.value = '';
             commonFilterSelect.value = 'none'; // Reset general filter
             mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
 
-            // Check if database is initialized before calling Firebase functions
             if (database) {
                 populateCommonDropdown(); // Populates dropdown with unique phone numbers from Firebase
                 fetchAndDisplayCombinedFirebaseData(); // Fetches all Firebase data and applies filters
@@ -1529,40 +1903,87 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        // ====== Form Validation Helper (unchanged) ======
+        // Mobile Nav Buttons
+        mobileShowDashboardButton.addEventListener('click', async () => {
+            await showSection(mainDashboardView);
+            setActiveButton(mobileShowDashboardButton, mobileNavButtons);
+            mainContainer.classList.remove('full-width');
+            displayLocalInvoices();
+            displayLowStockProducts();
+            displaySavedProducts();
+            resetProductFormAndButtons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        mobileShowFirebaseDataButton.addEventListener('click', async () => {
+            await showSection(firebaseProductsDisplay);
+            setActiveButton(mobileShowFirebaseDataButton, mobileNavButtons);
+            mainContainer.classList.add('full-width');
+            commonSearchInput.value = '';
+            commonFilterSelect.value = 'none'; // Reset general filter
+            mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
+
+            if (database) {
+                populateCommonDropdown();
+                fetchAndDisplayCombinedFirebaseData();
+            } else {
+                showToast("قاعدة بيانات Firebase غير مهيأة. لا يمكن جلب بيانات Firebase.", 'error');
+                firebaseProductListContainer.innerHTML = '<p class="empty-list-message">تعذر الاتصال بقاعدة بيانات Firebase.</p>';
+                dynamicStatsListContainer.innerHTML = '<p class="empty-list-message">تعذر الاتصال بقاعدة بيانات Firebase.</p>';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        mobileCreateInvoiceButton.addEventListener('click', async () => {
+            await showSection(mainDashboardView); // Go to dashboard
+            setActiveButton(mobileCreateInvoiceButton, mobileNavButtons); // Activate this button to indicate invoice focus
+            mainContainer.classList.remove('full-width');
+            window.scrollTo({ top: clientFormContainer.offsetTop, behavior: 'smooth' }); // Scroll to invoice form
+            resetAllProductQuantities(); // Clear any previously selected quantities
+            displaySavedProducts(); // Refresh products list
+            showToast("يرجى تحديد المنتجات والكميات للفاتورة.", 'info');
+        });
+
+
+        // ====== Form Validation Helper ======
         function checkFields(form) {
             let allFieldsFilled = true;
             const fields = form.querySelectorAll('input[required], textarea[required], select[required]');
             fields.forEach(field => {
                 const errorMessageSpan = field.nextElementSibling;
                 const fieldValue = field.value.trim();
+
+                field.classList.remove('error'); // Clear previous error state
+                if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
+                    errorMessageSpan.style.display = 'none';
+                    errorMessageSpan.textContent = ''; // Clear previous message
+                }
+
                 if (!fieldValue) {
                     allFieldsFilled = false;
-                    field.style.borderColor = 'var(--whatsapp-error-red)';
-                    if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
-                        errorMessageSpan.style.display = 'block';
-                        errorMessageSpan.textContent = field.placeholder + ' مطلوب.';
+                    field.classList.add('error');
+                    if (errorMessageSpan) {
+                        errorMessageSpan.textContent = `⚠️ ${field.placeholder || field.labels[0].textContent} مطلوب.`;
+                        errorMessageSpan.style.display = 'flex';
                     }
-                }
-                else if (field.type === 'number') {
+                } else if (field.type === 'number') {
                     const numValue = parseFloat(fieldValue);
                     if (field.id === 'purchasePrice' || field.id === 'sellingPrice' || field.id === 'productQuantity') {
                         if (isNaN(numValue) || numValue < 0) {
                             allFieldsFilled = false;
-                            field.style.borderColor = 'var(--whatsapp-error-red)';
-                            if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
-                                errorMessageSpan.textContent = 'القيمة يجب أن تكون رقماً موجباً.';
-                                errorMessageSpan.style.display = 'block';
+                            field.classList.add('error');
+                            if (errorMessageSpan) {
+                                errorMessageSpan.textContent = '⚠️ القيمة يجب أن تكون رقماً موجباً.';
+                                errorMessageSpan.style.display = 'flex';
                             }
                         }
-                    }
-                    else if (field.id === 'tva' || field.id === 'invoiceCommissionPercentage') {
+                    } else if (field.id === 'tva' || field.id === 'invoiceCommissionPercentage') {
                         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
                             allFieldsFilled = false;
-                            field.style.borderColor = 'var(--whatsapp-error-red)';
-                            if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
-                                errorMessageSpan.textContent = 'النسبة يجب أن تكون بين 0 و 100.';
-                                errorMessageSpan.style.display = 'block';
+                            field.classList.add('error');
+                            if (errorMessageSpan) {
+                                errorMessageSpan.textContent = '⚠️ النسبة يجب أن تكون بين 0 و 100.';
+                                errorMessageSpan.style.display = 'flex';
                             }
                         }
                     }
@@ -1570,29 +1991,24 @@
                     const regex = new RegExp(field.pattern);
                     if (!regex.test(fieldValue)) {
                         allFieldsFilled = false;
-                        field.style.borderColor = 'var(--whatsapp-error-red)';
-                        if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
-                            errorMessageSpan.textContent = 'صيغة رقم الهاتف غير صحيحة (10 أرقام).';
-                            errorMessageSpan.style.display = 'block';
+                        field.classList.add('error');
+                        if (errorMessageSpan) {
+                            errorMessageSpan.textContent = '⚠️ صيغة رقم الهاتف غير صحيحة (10 أرقام).';
+                            errorMessageSpan.style.display = 'flex';
                         }
-                    }
-                }
-                else {
-                    field.style.borderColor = '';
-                    if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
-                        errorMessageSpan.style.display = 'none';
                     }
                 }
             });
             return allFieldsFilled;
         }
 
-        // ====== Product Management (Local Storage) - Adjusted for unified editing flow ======
+        // ====== Product Management (Local Storage) ======
         async function handleProductFormSubmission(productId = null) {
             if (!checkFields(productForm)) {
                 showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
                 return;
             }
+
             const name = productNameInput.value.trim();
             const purchasePrice = parseFloat(purchasePriceInput.value);
             const sellingPrice = parseFloat(sellingPriceInput.value);
@@ -1601,12 +2017,16 @@
             const supplierPhone = supplierPhoneInput.value.trim();
             const stockQuantity = parseInt(productQuantityInput.value);
             const date = new Date().toLocaleDateString('ar-MA');
+
+            // Save supplier info to localStorage (as it's often re-used)
             localStorage.setItem('supplierName', supplierName);
             localStorage.setItem('supplierAddress', supplierAddress);
             localStorage.setItem('supplierPhone', supplierPhone);
+
             let products = JSON.parse(localStorage.getItem('savedProducts')) || [];
             let isEditing = productId !== null;
             let productIndex = -1;
+
             if (isEditing) {
                 productIndex = products.findIndex(p => p.id == productId);
                 if (productIndex === -1) {
@@ -1615,22 +2035,28 @@
                     return;
                 }
             }
+
+            // Check for duplicate product (same name AND supplier phone)
             const duplicateCheck = products.some((p, idx) =>
                 (isEditing ? idx !== productIndex : true) &&
                 p.name.toLowerCase() === name.toLowerCase() &&
                 p.supplierPhone === supplierPhone
             );
+
             if (duplicateCheck) {
                 showToast("المنتج موجود بالفعل بنفس الاسم ورقم هاتف المورد.", 'info');
                 return;
             }
+
             let confirmTitle = isEditing ? "تأكيد التعديل" : "تأكيد الإضافة";
             let confirmMessage = isEditing ? "هل أنت متأكد من أنك تريد تعديل هذا المنتج؟" : "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟";
             const confirmed = await showConfirmModal(confirmTitle, confirmMessage);
+
             if (!confirmed) {
                 showToast(isEditing ? "تم إلغاء تعديل المنتج." : "تم إلغاء إضافة المنتج.", 'info');
                 return;
             }
+
             if (isEditing) {
                 products[productIndex].name = name;
                 products[productIndex].purchasePrice = purchasePrice;
@@ -1639,28 +2065,29 @@
                 products[productIndex].supplierAddress = supplierAddress;
                 products[productIndex].supplierPhone = supplierPhone;
                 products[productIndex].stockQuantity = stockQuantity;
-                products[productIndex].date = date;
+                products[productIndex].date = date; // Update date on edit
                 showToast("تم تحديث المنتج بنجاح.", 'success');
             } else {
                 const newProduct = {
-                    id: Date.now(),
+                    id: Date.now(), // Unique ID
                     name,
                     purchasePrice,
                     sellingPrice,
-                    commissionPercentage: 0,
+                    commissionPercentage: 0, // Default to 0 for products, invoice sets overall
                     supplierName,
                     supplierAddress,
                     supplierPhone,
                     stockQuantity,
                     date,
-                    quantity: 0,
-                    minStockQuantity: 0,
-                    isLocal: true
+                    quantity: 0, // Quantity selected for current invoice
+                    minStockQuantity: 0, // Minimum stock for alerts
+                    isLocal: true // Flag to indicate it's a locally added product
                 };
                 products.push(newProduct);
                 showToast("المنتج تم إضافته بنجاح.", 'success');
             }
-            products.sort((a, b) => a.name.localeCompare(b.name));
+
+            products.sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
             localStorage.setItem('savedProducts', JSON.stringify(products));
             displaySavedProducts();
             displayLowStockProducts();
@@ -1688,10 +2115,17 @@
 
         async function editProduct(productId) {
             await showSection(mainDashboardView); // Ensure dashboard is visible
-            setActiveButton(showDashboardButton);
+            // Activate corresponding button based on screen size
+            if (window.innerWidth <= 768) {
+                setActiveButton(mobileShowDashboardButton, mobileNavButtons);
+            } else {
+                setActiveButton(desktopShowDashboardButton, desktopNavButtons);
+            }
             mainContainer.classList.remove('full-width');
+
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             const productToEdit = savedProducts.find(p => p.id == productId);
+
             if (productToEdit) {
                 productNameInput.value = productToEdit.name;
                 purchasePriceInput.value = productToEdit.purchasePrice;
@@ -1700,7 +2134,7 @@
                 supplierAddressInput.value = productToEdit.supplierAddress;
                 supplierPhoneInput.value = productToEdit.supplierPhone;
                 productQuantityInput.value = productToEdit.stockQuantity;
-                
+
                 addProductButton.style.display = 'none';
                 saveEditProductButton.style.display = 'block';
                 saveEditProductButton.dataset.editingId = productId;
@@ -1724,6 +2158,7 @@
                 showToast("تم إلغاء حذف المنتج.", 'info');
             }
         }
+
         searchProductInput.addEventListener('input', displaySavedProducts);
 
         function resetAllProductQuantities() {
@@ -1736,6 +2171,7 @@
             const searchTerm = searchProductInput.value.toLowerCase();
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             savedProductsList.innerHTML = '';
+
             const filteredProducts = savedProducts
                 .filter(product => product.name.toLowerCase().includes(searchTerm))
                 .sort((a, b) => {
@@ -1745,25 +2181,32 @@
                     const minStockQuantityB = b.minStockQuantity || 0;
                     const quantityA = a.quantity || 0;
                     const quantityB = b.quantity || 0;
+
+                    // Priority: Insufficient > Out of Stock > Low Stock > Selected for Invoice > Positive Stock > Default
                     const statusA = getProductStatusPriority(quantityA, stockQuantityA, minStockQuantityA);
                     const statusB = getProductStatusPriority(quantityB, stockQuantityB, minStockQuantityB);
+
                     if (statusA !== statusB) { return statusA - statusB; }
-                    if (a.isLocal && !b.isLocal) return -1;
+                    if (a.isLocal && !b.isLocal) return -1; // Local products first (if priority is same)
                     if (!a.isLocal && b.isLocal) return 1;
-                    return stockQuantityB - stockQuantityA || a.name.localeCompare(b.name);
+                    return stockQuantityB - stockQuantityA || a.name.localeCompare(b.name); // Then by stock, then alphabetically
                 });
+
             if (filteredProducts.length === 0) {
                 savedProductsList.innerHTML = '<p class="empty-list-message">لا توجد منتجات محفوظة لعرضها.</p>';
                 return;
             }
+
             filteredProducts.forEach((product) => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'product';
                 if (product.isLocal) { productDiv.classList.add('is-local'); }
+
                 const quantityToDisplay = product.quantity || 0;
                 const stockQuantityToDisplay = product.stockQuantity || 0;
                 const minStockQuantityToDisplay = product.minStockQuantity || 0;
                 updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay);
+
                 productDiv.innerHTML = `
                     <div class="product-details">
                         <p><strong>الاسم:</strong> ${product.name}</p>
@@ -1791,8 +2234,8 @@
                         <button type="button" onclick="adjustQuantity(${product.id}, -1)">-</button>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="btn-delete" onclick="deleteProduct(${product.id})">حذف</button>
-                        <button type="button" class="btn-edit" data-product-id="${product.id}">تعديل</button>
+                        <button type="button" class="btn-delete" onclick="deleteProduct(${product.id})"><span class="icon">🗑️</span>حذف</button>
+                        <button type="button" class="btn-edit" data-product-id="${product.id}"><span class="icon">✏️</span>تعديل</button>
                     </div>
                 `;
                 productDiv.querySelector('.btn-edit').addEventListener('click', (event) => {
@@ -1807,29 +2250,39 @@
         function displayLowStockProducts() {
             lowStockProductsList.innerHTML = '';
             const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+            // Filter for low stock (stock < minStock AND stock > 0) or out of stock (stock === 0)
             const lowStockItems = savedProducts.filter(p => (p.stockQuantity || 0) < (p.minStockQuantity || 0) && (p.stockQuantity || 0) > 0);
             const outOfStockItems = savedProducts.filter(p => (p.stockQuantity || 0) === 0);
+
             if (lowStockItems.length === 0 && outOfStockItems.length === 0) {
                 lowStockProductsList.innerHTML = '<p class="empty-list-message">لا توجد منتجات في المخزون المنخفض أو نفدت حالياً.</p>';
             } else {
-                const combinedLowStock = [...lowStockItems, ...outOfStockItems];
-                combinedLowStock.sort((a, b) => a.name.localeCompare(b.name));
+                // Combine and sort out of stock first, then low stock, then alphabetically
+                const combinedLowStock = [...outOfStockItems, ...lowStockItems];
+                combinedLowStock.sort((a, b) => {
+                    const statusA = (a.stockQuantity || 0) === 0 ? 0 : 1; // 0 for out of stock, 1 for low stock
+                    const statusB = (b.stockQuantity || 0) === 0 ? 0 : 1;
+                    if (statusA !== statusB) return statusA - statusB;
+                    return a.name.localeCompare(b.name);
+                });
+
                 combinedLowStock.forEach(product => {
                     const productDiv = document.createElement('div');
                     productDiv.classList.add('product');
                     if ((product.stockQuantity || 0) < (product.minStockQuantity || 0) && (product.stockQuantity || 0) > 0) {
-                        productDiv.classList.add('status-min-positive');
+                        productDiv.classList.add('status-min-positive'); // Low stock (positive quantity)
                     } else if ((product.stockQuantity || 0) === 0) {
-                        productDiv.classList.add('status-insufficient');
+                        productDiv.classList.add('status-insufficient'); // Out of stock (zero quantity)
                     }
+
                     productDiv.innerHTML = `
                         <div class="product-details">
                             <p><strong>المنتج:</strong> ${product.name}</p>
-                            <p><strong>المخزون الحالي:</strong> ${product.stockQuantity || 0} ${ (product.stockQuantity || 0) === 0 ? '(نفد)' : '' }</p>
+                            <p><strong>المخزون الحالي:</strong> ${product.stockQuantity || 0} ${ (product.stockQuantity || 0) === 0 ? '<span class="icon">❌</span>(نفد)' : '' }</p>
                             <p><strong>الحد الأدنى للمخزون:</strong> ${product.minStockQuantity || 0}</p>
                         </div>
                         <div class="product-actions">
-                            <button type="button" class="btn1" data-product-id="${product.id}">تعديل</button>
+                            <button type="button" class="btn1" data-product-id="${product.id}"><span class="icon">✏️</span>تعديل</button>
                         </div>
                     `;
                     productDiv.querySelector('.btn1').addEventListener('click', (event) => {
@@ -1842,30 +2295,38 @@
             }
         }
 
-        function getProductStatusPriority(quantity, stock, minStock) {
-            if (quantity > 0 && stock < quantity) return 1;
-            if (stock === 0) return 2;
-            if (stock > 0 && stock < minStock) return 3;
-            if (quantity > 0) return 4;
-            if (stock > 0) return 5;
-            return 6;
+        // Helper function to determine product card status priority for sorting and styling
+        function getProductStatusPriority(quantitySelected, stockQuantity, minStockQuantity) {
+            // Lower number means higher priority (appears first)
+            if (quantitySelected > 0 && stockQuantity < quantitySelected) return 1; // Selected but insufficient stock
+            if (stockQuantity === 0) return 2; // Out of stock
+            if (stockQuantity > 0 && stockQuantity < minStockQuantity) return 3; // Low stock (below min)
+            if (quantitySelected > 0) return 4; // Selected for invoice (sufficient stock)
+            if (stockQuantity > 0) return 5; // Positive stock
+            return 6; // Default / no specific status
         }
 
-        function updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, minStockQuantityToDisplay) {
+        // Update CSS classes for product card based on stock/quantity status
+        function updateProductDivClass(productDiv, quantitySelected, stockQuantity, minStockQuantity) {
+            // Preserve isLocal and isLocalMatch classes
             const isLocalClass = productDiv.classList.contains('is-local') ? 'is-local' : '';
             const isLocalMatchClass = productDiv.classList.contains('is-local-match') ? 'is-local-match' : '';
+
+            // Reset all status classes
             productDiv.className = 'product';
             if (isLocalClass) { productDiv.classList.add(isLocalClass); }
             if (isLocalMatchClass) { productDiv.classList.add(isLocalMatchClass); }
-            if (quantityToDisplay > 0 && stockQuantityToDisplay < quantityToDisplay) {
+
+            // Apply new status classes based on logic
+            if (quantitySelected > 0 && stockQuantity < quantitySelected) {
                 productDiv.classList.add('status-insufficient');
-            } else if (stockQuantityToDisplay < minStockQuantityToDisplay && stockQuantityToDisplay === 0) {
+            } else if (stockQuantity < minStockQuantity && stockQuantity === 0) {
                 productDiv.classList.add('status-min-zero');
-            } else if (stockQuantityToDisplay < minStockQuantityToDisplay) {
+            } else if (stockQuantity < minStockQuantity) {
                 productDiv.classList.add('status-min-positive');
-            } else if (quantityToDisplay > 0) {
+            } else if (quantitySelected > 0) {
                 productDiv.classList.add('status-selected-sufficient');
-            } else if (stockQuantityToDisplay > 0) {
+            } else if (stockQuantity > 0) {
                 productDiv.classList.add('status-stock-positive');
             } else {
                 productDiv.classList.add('status-default');
@@ -1897,7 +2358,7 @@
                 const quantityToDisplay = savedProducts[productIndex].quantity || 0;
                 const minStockQuantityToDisplay = savedProducts[productIndex].minStockQuantity || 0;
                 updateProductDivClass(productDiv, quantityToDisplay, newStockQuantity, minStockQuantityToDisplay);
-                displayLowStockProducts();
+                displayLowStockProducts(); // Re-render low stock list
             }
         }
 
@@ -1954,54 +2415,68 @@
                 const quantityToDisplay = savedProducts[productIndex].quantity || 0;
                 const stockQuantityToDisplay = savedProducts[productIndex].stockQuantity || 0;
                 updateProductDivClass(productDiv, quantityToDisplay, stockQuantityToDisplay, newMinQuantity);
-                displayLowStockProducts();
+                displayLowStockProducts(); // Re-render low stock list
             }
         }
 
         /* --- Invoice Generation and Display --- */
         document.getElementById('createInvoiceButton').addEventListener('click', async function (e) {
             e.preventDefault();
+
+            // Save TVA to localStorage as well
+            localStorage.setItem('tva', tvaInput.value);
+
             if (checkFields(invoiceForm)) {
                 let totalHTBeforeCommission = 0;
                 let totalProfit = 0;
                 let totalCommission = 0;
                 let productNumber = 1;
                 const detailsTbody = document.getElementById('displayDetails');
-                detailsTbody.innerHTML = '';
+                detailsTbody.innerHTML = ''; // Clear previous invoice details
+
                 let allSavedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
                 let selectedProductsForInvoice = allSavedProducts.filter(p => (p.quantity || 0) > 0);
+
                 if (selectedProductsForInvoice.length === 0) {
-                    const confirmed = await showConfirmModal("تحديد المنتجات", "لم يتم تحديد أي منتجات للفاتورة. هل تريد إضافة كل المنتجات الموجودة بكمية 1؟");
+                    const confirmed = await showConfirmModal(
+                        "تحديد المنتجات",
+                        "لم يتم تحديد أي منتجات للفاتورة. هل تريد إضافة كل المنتجات الموجودة بكمية 1 (إذا كان المخزون متوفراً)؟"
+                    );
                     if (confirmed) {
                         allSavedProducts.forEach(product => {
                             if (product.stockQuantity > 0 && (product.quantity || 0) === 0) {
-                                product.quantity = 1;
+                                product.quantity = 1; // Set quantity to 1 if not already selected and stock available
                             }
                         });
-                        localStorage.setItem('savedProducts', JSON.stringify(allSavedProducts));
-                        selectedProductsForInvoice = allSavedProducts.filter(p => p.quantity > 0);
+                        localStorage.setItem('savedProducts', JSON.stringify(allSavedProducts)); // Update localStorage
+                        selectedProductsForInvoice = allSavedProducts.filter(p => p.quantity > 0); // Re-filter
+                        if (selectedProductsForInvoice.length === 0) {
+                            showToast("لا توجد منتجات لتضمينها في الفاتورة بعد التحديث.", 'info');
+                            return;
+                        }
                     } else {
                         showToast("لم يتم إنشاء الفاتورة لعدم وجود منتجات مختارة.", 'info');
                         return;
                     }
                 }
-                if (selectedProductsForInvoice.length === 0) {
-                    showToast("لا توجد منتجات لتضمينها في الفاتورة بعد التحديث.", 'info');
-                    return;
-                }
+
                 const invoiceCommissionRate = parseFloat(invoiceCommissionPercentageInput.value) || 0;
                 localStorage.setItem('invoiceCommissionPercentage', invoiceCommissionRate);
+
                 selectedProductsForInvoice.forEach((productData) => {
                     const quantity = productData.quantity;
                     const sellingPrice = parseFloat(productData.sellingPrice);
                     const purchasePrice = parseFloat(productData.purchasePrice);
                     const itemHT = sellingPrice * quantity;
                     totalHTBeforeCommission += itemHT;
+
                     const profitPerUnitBeforeCommission = (sellingPrice - purchasePrice) || 0;
                     const commissionPerUnit = profitPerUnitBeforeCommission * (invoiceCommissionRate / 100);
                     const actualProfitPerUnit = profitPerUnitBeforeCommission - commissionPerUnit;
+
                     totalProfit += actualProfitPerUnit * quantity;
                     totalCommission += commissionPerUnit * quantity;
+
                     const productDetails = document.createElement('tr');
                     productDetails.innerHTML = `
                         <td>${productNumber++}</td>
@@ -2012,10 +2487,12 @@
                     `;
                     detailsTbody.appendChild(productDetails);
                 });
+
                 const finalTotalHT = totalHTBeforeCommission - totalCommission;
                 const tvaRate = parseFloat(tvaInput.value) / 100;
                 const tva = (finalTotalHT * tvaRate).toFixed(2);
                 const totalTTC = (finalTotalHT + parseFloat(tva)).toFixed(2);
+
                 document.getElementById('displayCustomerName').textContent = customerNameInput.value;
                 document.getElementById('displayInvoiceOwner').textContent = invoiceOwnerInput.value;
                 document.getElementById('displayInvoiceDate').textContent = invoiceDateInput.value;
@@ -2026,29 +2503,36 @@
                 document.getElementById('displayTotalTTC').textContent = totalTTC + ' DH';
                 document.getElementById('displayInvoiceOwnerPhoneFooter').textContent = invoiceOwnerPhoneInput.value;
                 document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceOwnerAddressInput.value;
+
                 await showSection(invoiceDisplay);
                 mainContainer.classList.remove('full-width');
-                document.getElementById('savePdfButton').style.display = 'block';
+                document.getElementById('savePdfButton').style.display = 'block'; // Show stock update button
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                // Save frequently used invoice details to localStorage
                 localStorage.setItem('invoiceOwner', invoiceOwnerInput.value);
                 localStorage.setItem('invoiceOwnerPhone', invoiceOwnerPhoneInput.value);
                 localStorage.setItem('invoiceOwnerAddress', invoiceOwnerAddressInput.value);
+
+                // Prepare invoice data for Firebase and local archive
                 const productsToSaveToFirebase = [];
                 selectedProductsForInvoice.forEach((productData) => {
                     const profitPerUnitBeforeCommissionFirebase = (parseFloat(productData.sellingPrice) - parseFloat(productData.purchasePrice)) || 0;
                     const commissionPerUnitFirebase = profitPerUnitBeforeCommissionFirebase * (invoiceCommissionRate / 100);
                     const actualProfitPerUnitFirebase = profitPerUnitBeforeCommissionFirebase - commissionPerUnitFirebase;
+
                     productsToSaveToFirebase.push({
                         ...productData,
-                        quantityUsed: productData.quantity,
+                        quantityUsed: productData.quantity, // Renamed for clarity in Firebase
                         profitPerUnit: actualProfitPerUnitFirebase.toFixed(2),
                         commissionPerUnit: commissionPerUnitFirebase.toFixed(2)
                     });
                 });
+
                 const invoiceDataToSave = {
                     id: Date.now(),
                     date: invoiceDateInput.value,
-                    isoDate: new Date().toISOString(),
+                    isoDate: new Date().toISOString(), // For consistent sorting
                     customerName: customerNameInput.value,
                     ownerName: invoiceOwnerInput.value,
                     ownerAddress: invoiceOwnerAddressInput.value,
@@ -2061,12 +2545,15 @@
                     totalProfit: totalProfit.toFixed(2),
                     totalCommission: totalCommission.toFixed(2)
                 };
+
                 if (invoiceCommissionRate > 0) {
                     invoiceDataToSave.invoiceCommissionRate = invoiceCommissionRate;
                 }
-                // Save to Firebase Realtime Database (using 'alldata/{phone_number}' directly)
+
+                // Save to Firebase Realtime Database using the specified path
                 // The appId is used as the first level node for namespacing your app's data.
-                const firebasePath = `alldata/${invoiceDataToSave.ownerPhone}`;
+                // Firebase path: /{appId}/alldata/{ownerPhone}/{invoiceId}
+                const firebasePath = `${appId}/alldata/${invoiceDataToSave.ownerPhone}`;
                 if (database) {
                     const alldataRef = database.ref(firebasePath);
                     alldataRef.push(invoiceDataToSave)
@@ -2075,66 +2562,94 @@
                 } else {
                     showToast("لم يتم تهيئة قاعدة بيانات Firebase. لا يمكن حفظ الفاتورة.", 'error');
                 }
-                saveInvoiceToLocalStorage(invoiceDataToSave);
+
+                saveInvoiceToLocalStorage(invoiceDataToSave); // Save to local archive
             } else {
                 showToast("يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", 'error');
             }
         });
 
+        // Event listener for updating stock after invoice confirmation
         document.getElementById('savePdfButton').addEventListener('click', async function() {
-            const productsInInvoice = document.querySelectorAll('#invoiceDetails tbody tr');
-            const savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
+            const productsInInvoiceRows = document.querySelectorAll('#invoiceDetails tbody tr');
+            let savedProducts = JSON.parse(localStorage.getItem('savedProducts')) || [];
             let hasInsufficientStock = false;
             let productsToUpdate = [];
-            productsInInvoice.forEach((row) => {
+
+            // First, check for insufficient stock
+            productsInInvoiceRows.forEach((row) => {
                 const productName = row.cells[1].textContent;
                 const quantityUsed = parseInt(row.cells[3].textContent);
                 const productData = savedProducts.find(p => p.name === productName);
+
                 if (productData) {
                     const currentStock = parseInt(productData.stockQuantity || 0);
                     if (currentStock < quantityUsed) {
                         hasInsufficientStock = true;
                         showToast(`تنبيه: كمية غير كافية للمنتج "${productName}". المخزون المتاح: ${currentStock}`, 'error');
-                        return;
+                        // Do not return here, allow other warnings to show
                     }
-                    productsToUpdate.push({ productName, quantityUsed });
+                    productsToUpdate.push({ productName, quantityUsed }); // Add to list for update if all checks pass
                 }
             });
-            if (hasInsufficientStock) { return; }
+
+            if (hasInsufficientStock) {
+                showToast("يرجى مراجعة المنتجات ذات المخزون غير الكافي قبل التحديث.", 'error');
+                return; // Stop the process if any product has insufficient stock
+            }
+
             const confirmed = await showConfirmModal("تأكيد تحديث المخزون", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة؟");
             if (confirmed) {
                 productsToUpdate.forEach(({ productName, quantityUsed }) => {
                     const productDataIndex = savedProducts.findIndex(p => p.name === productName);
                     if (productDataIndex !== -1) {
                         savedProducts[productDataIndex].stockQuantity -= quantityUsed;
+                        // Ensure stock doesn't go below zero
+                        if (savedProducts[productDataIndex].stockQuantity < 0) {
+                            savedProducts[productDataIndex].stockQuantity = 0;
+                        }
                     }
                 });
+
                 localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
                 showToast('تم تحديث المخزون بنجاح.', 'success');
-                resetAllProductQuantities();
-                showDashboardButton.click();
+                resetAllProductQuantities(); // Reset quantities selected for invoice
+                // Go back to dashboard view after update
+                if (window.innerWidth <= 768) {
+                    mobileShowDashboardButton.click();
+                } else {
+                    desktopShowDashboardButton.click();
+                }
             } else {
                 showToast("تم إلغاء تحديث المخزون.", 'info');
             }
         });
 
-        let originalViewportContent = '';
+
+        // Print button functionality
+        let originalViewportContent = ''; // To store original viewport meta content
         document.getElementById('printButton').addEventListener('click', function() {
             const viewportMeta = document.querySelector('meta[name="viewport"]');
             if (viewportMeta) {
                 originalViewportContent = viewportMeta.getAttribute('content');
+                // Temporarily set viewport for better print layout (e.g., desktop-like width)
                 viewportMeta.setAttribute('content', 'width=1024');
             }
+
+            // Hide buttons before printing
             this.style.display = 'none';
             document.getElementById('savePdfButton').style.display = 'none';
+            // Trigger browser print dialog
             window.print();
+
+            // Restore buttons and original viewport after a short delay
             setTimeout(() => {
                 document.getElementById('savePdfButton').style.display = 'block';
                 this.style.display = 'block';
                 if (viewportMeta && originalViewportContent) {
                     viewportMeta.setAttribute('content', originalViewportContent);
                 }
-            }, 500);
+            }, 500); // Small delay to ensure print dialog closes
         });
 
         /* --- Firebase Data Display and Statistics (Combined) --- */
@@ -2143,23 +2658,27 @@
                 showToast("قاعدة بيانات Firebase غير جاهزة لملء أرقام الهواتف.", 'info');
                 return;
             }
-            const alldataRef = database.ref(`alldata`); // Changed path
+
+            // Reference to the main data node under the app ID
+            const alldataRef = database.ref(`${appId}/alldata`);
             alldataRef.once('value', (snapshot) => {
                 const data = snapshot.val();
-                commonPhoneDropdown.innerHTML = '';
+                commonPhoneDropdown.innerHTML = ''; // Clear existing options
                 const allOption = document.createElement('option');
                 allOption.value = 'all';
                 allOption.textContent = 'عرض الكل';
                 commonPhoneDropdown.appendChild(allOption);
+
                 const phoneNumbers = new Set();
                 if (data) {
                     for (const phoneKey in data) {
                         if (data.hasOwnProperty(phoneKey)) {
-                            phoneNumbers.add(phoneKey);
+                            phoneNumbers.add(phoneKey); // Each top-level key is a phone number
                         }
                     }
                 }
-                const sortedPhoneNumbers = Array.from(phoneNumbers).sort();
+
+                const sortedPhoneNumbers = Array.from(phoneNumbers).sort(); // Sort phone numbers
                 sortedPhoneNumbers.forEach(phoneNumber => {
                     const option = document.createElement('option');
                     option.value = phoneNumber;
@@ -2176,7 +2695,8 @@
                 showToast("قاعدة بيانات Firebase غير جاهزة لجلب البيانات.", 'info');
                 return;
             }
-            const alldataRef = database.ref(`alldata`); // Changed path
+
+            const alldataRef = database.ref(`${appId}/alldata`); // Corrected path
             let snapshot;
             try {
                 snapshot = await alldataRef.once('value');
@@ -2188,21 +2708,26 @@
             const data = snapshot.val();
             allFirebaseProducts = [];
             allFirebaseInvoicesData = [];
+
             if (data) {
+                // Iterate through each phone number (top-level key)
                 for (const phoneKey in data) {
                     if (data.hasOwnProperty(phoneKey)) {
-                        const phoneData = data[phoneKey];
+                        const phoneData = data[phoneKey]; // This contains multiple invoices for one phone number
+                        // Iterate through each invoice under this phone number
                         for (const invoiceKey in phoneData) {
                             if (phoneData.hasOwnProperty(invoiceKey) && phoneData[invoiceKey].products) {
                                 const invoiceDetails = phoneData[invoiceKey];
                                 allFirebaseInvoicesData.push({ id: invoiceKey, firebasePhoneKey: phoneKey, ...invoiceDetails }); // Store full invoice for stats
+
+                                // Extract individual products from the invoice
                                 invoiceDetails.products.forEach((product, index) => {
                                     allFirebaseProducts.push({
-                                        id: `${invoiceKey}-${index}`, // Unique ID for displaying in grid
+                                        id: `${invoiceKey}-${index}`, // Unique ID for displaying in grid (invoiceKey + product index)
                                         ...product,
                                         invoiceDate: invoiceDetails.date,
                                         customerName: invoiceDetails.customerName,
-                                        ownerName: invoiceDetails.ownerName,
+                                        ownerName: invoiceDetails.ownerName, // Original owner for the invoice
                                         ownerAddress: invoiceDetails.ownerAddress,
                                         ownerPhone: invoiceDetails.ownerPhone,
                                         totalHT: invoiceDetails.totalHT,
@@ -2217,7 +2742,7 @@
                     }
                 }
             }
-            applyCombinedFilters();
+            applyCombinedFilters(); // Apply filters once all data is loaded
         }
 
         function findLocalProductMatch(firebaseProduct) {
@@ -2233,6 +2758,7 @@
             const selectedPhoneNumber = commonPhoneDropdown.value;
             const selectedStatsFilter = commonFilterSelect.value;
 
+            // Filter products for the Firebase Product List section
             const filteredProducts = allFirebaseProducts.filter(product => {
                 const matchesSearchInput = searchTerm ?
                     (product.name && product.name.toLowerCase().includes(searchTerm)) ||
@@ -2241,17 +2767,23 @@
                     (product.supplierName && product.supplierName.toLowerCase().includes(searchTerm)) ||
                     (product.ownerPhone && product.ownerPhone.includes(searchTerm))
                     : true;
+
                 const matchesPhoneNumber = (selectedPhoneNumber === 'all' || product.ownerPhone === selectedPhoneNumber);
+
                 return matchesSearchInput && matchesPhoneNumber;
             });
+
             firebaseProductListCountSpan.textContent = filteredProducts.length;
+            // Sort by date (newest first)
             filteredProducts.sort((a, b) => {
-                const dateA = new Date(a.isoDate || a.invoiceDate);
+                const dateA = new Date(a.isoDate || a.invoiceDate); // Use isoDate if available, fallback to invoiceDate
                 const dateB = new Date(b.isoDate || b.invoiceDate);
-                return dateB - dateA;
+                return dateB - dateA; // Descending order (newest first)
             });
+
             displayFirebaseProducts(filteredProducts);
 
+            // Filter invoices for statistics section
             let filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
                 const matchesSearchInput = searchTerm ?
                     (invoice.customerName && invoice.customerName.toLowerCase().includes(searchTerm)) ||
@@ -2259,9 +2791,12 @@
                     (invoice.products && invoice.products.some(p => p.name.toLowerCase().includes(searchTerm))) ||
                     (invoice.ownerPhone && invoice.ownerPhone.includes(searchTerm))
                     : true;
+
                 const matchesPhoneNumber = (selectedPhoneNumber === 'all' || invoice.ownerPhone === selectedPhoneNumber);
+
                 return matchesSearchInput && matchesPhoneNumber;
             });
+
             displayStatistics(filteredInvoices, selectedStatsFilter);
         }
 
@@ -2271,14 +2806,17 @@
                 firebaseProductListContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات لعرضها.</p>';
                 return;
             }
+
             products.forEach(product => {
                 const productDiv = document.createElement('div');
                 productDiv.classList.add('product');
                 const matchingLocalProduct = findLocalProductMatch(product);
                 if (matchingLocalProduct) { productDiv.classList.add('is-local-match'); }
+
                 const purchasePrice = parseFloat(product.purchasePrice || 0);
                 const sellingPrice = parseFloat(product.sellingPrice || 0);
                 const quantityUsed = parseInt(product.quantityUsed || 0);
+
                 productDiv.innerHTML = `
                     <div class="product-details">
                         <p><strong>الاسم:</strong> ${product.name}</p>
@@ -2295,7 +2833,7 @@
                         <input type="number" value="${quantityUsed}" min="0" readonly>
                     </div>
                     <div class="product-actions">
-                        <button type="button" class="btn-edit btn-add-to-local" data-firebase-product-id="${product.id}">تعديل (محلي)</button>
+                        <button type="button" class="btn-edit btn-add-to-local" data-firebase-product-id="${product.id}"><span class="icon">📝</span>تعديل (محلي)</button>
                     </div>
                 `;
                 productDiv.querySelector('.btn-add-to-local').addEventListener('click', (event) => {
@@ -2313,7 +2851,7 @@
                 const existingLocalProduct = findLocalProductMatch(firebaseProduct);
                 if (existingLocalProduct) {
                     showToast(`المنتج "${firebaseProduct.name}" موجود بالفعل محلياً. يتم تحميله للتعديل.`, 'info');
-                    await editProduct(existingLocalProduct.id);
+                    await editProduct(existingLocalProduct.id); // Go to dashboard and pre-fill form
                 } else {
                     const confirmed = await showConfirmModal(
                         "إضافة منتج محلي",
@@ -2327,10 +2865,10 @@
                             name: firebaseProduct.name,
                             purchasePrice: parseFloat(firebaseProduct.purchasePrice || 0),
                             sellingPrice: parseFloat(firebaseProduct.sellingPrice || 0),
-                            supplierName: firebaseProduct.supplierName || firebaseProduct.ownerName || 'N/A',
+                            supplierName: firebaseProduct.supplierName || firebaseProduct.ownerName || 'N/A', // Use ownerName if supplierName is missing
                             supplierAddress: firebaseProduct.ownerAddress || 'N/A',
-                            supplierPhone: firebaseProduct.ownerPhone,
-                            stockQuantity: 0,
+                            supplierPhone: firebaseProduct.ownerPhone, // Use ownerPhone as supplier phone for firebase imported
+                            stockQuantity: 0, // Default to 0 for new local product from Firebase
                             date: new Date().toLocaleDateString('ar-MA'),
                             quantity: 0,
                             minStockQuantity: 0,
@@ -2340,9 +2878,9 @@
                         savedProducts.sort((a, b) => a.name.localeCompare(b.name));
                         localStorage.setItem('savedProducts', JSON.stringify(savedProducts));
                         showToast(`تم إضافة "${newLocalProduct.name}" إلى المنتجات المحلية بنجاح.`, 'success');
-                        await editProduct(newLocalProductId);
-                        displaySavedProducts();
-                        displayLowStockProducts();
+                        await editProduct(newLocalProductId); // Go to dashboard and pre-fill form
+                        displaySavedProducts(); // Refresh saved products list
+                        displayLowStockProducts(); // Refresh low stock list
                     } else {
                         showToast(`تم إلغاء إضافة "${firebaseProduct.name}" إلى المنتجات المحلية.`, 'info');
                     }
@@ -2366,10 +2904,10 @@
             let totalPurchaseCostAllProducts = 0;
             let totalSellingPriceAllProducts = 0;
 
-            const productSales = {};
-            const customerActivity = {};
-            const invoiceOwnerActivity = {};
-            const supplierActivity = {};
+            const productSales = {}; // { productName: { quantitySold: X, totalRevenue: Y } }
+            const customerActivity = {}; // { customerName: { invoiceCount: X, totalProfit: Y, totalTTC: Z } }
+            const invoiceOwnerActivity = {}; // { ownerName: { invoiceCount: X, totalProfit: Y, totalTTC: Z } }
+            const supplierActivity = {}; // { supplierName: { totalPurchaseCost: X, productsCount: Y } }
 
             invoices.forEach(invoice => {
                 totalSalesHT += parseFloat(invoice.totalHT || 0);
@@ -2384,7 +2922,7 @@
                         const quantityUsed = parseInt(product.quantityUsed || 0);
                         const purchasePrice = parseFloat(product.purchasePrice || 0);
                         const sellingPrice = parseFloat(product.sellingPrice || 0);
-                        const supplierName = product.supplierName || invoice.ownerName || 'N/A';
+                        const supplierName = product.supplierName || invoice.ownerName || 'N/A'; // Use invoice owner as supplier if product supplier missing
 
                         totalPurchaseCostAllProducts += purchasePrice * quantityUsed;
                         totalSellingPriceAllProducts += sellingPrice * quantityUsed;
@@ -2402,6 +2940,7 @@
                         supplierActivity[supplierName].productsCount += quantityUsed;
                     });
                 }
+
                 const customer = invoice.customerName || 'N/A';
                 const invoiceProfit = parseFloat(invoice.totalProfit || 0);
                 const invoiceTTC = parseFloat(invoice.totalTTC || 0);
@@ -2422,6 +2961,7 @@
                 invoiceOwnerActivity[owner].totalTTC += invoiceTTC;
             });
 
+            // Update main stat cards
             document.getElementById('totalPurchaseCost').textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
             document.getElementById('totalSellingPrice').textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
             document.getElementById('totalCommission').textContent = `${totalOverallCommission.toFixed(2)} DH`;
@@ -2430,172 +2970,65 @@
             document.getElementById('totalTVA').textContent = `${totalTVA.toFixed(2)} DH`;
             document.getElementById('totalSalesTTC').textContent = `${totalSalesTTC.toFixed(2)} DH`;
 
+            // Handle dynamic lists based on filterType
             dynamicStatsListContainer.innerHTML = '';
-            mostSellingTotalPriceDisplay.classList.add('hidden');
+            mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
+
+            const renderList = (listId, data, prop, unit, altProp, altUnit, isPurchase = false) => {
+                const listWrapper = document.createElement('div');
+                let title;
+                if (listId === 'topSellingProductsList') title = 'المنتجات الأكثر مبيعاً';
+                else if (listId === 'topCustomersList') title = 'العملاء الأكثر نشاطاً';
+                else if (listId === 'topInvoiceOwnersList') title = 'أصحاب الفواتير الأكثر نشاطاً';
+                else if (listId === 'topSuppliersList') title = 'الموردون الأكثر نشاطاً';
+
+                listWrapper.innerHTML = `<h3>${title}</h3><ul id="${listId}" class="scrollable-list-in-card"></ul>`;
+                dynamicStatsListContainer.appendChild(listWrapper);
+
+                const listEl = document.getElementById(listId);
+                if (data.length > 0) {
+                    data.forEach(([name, stats]) => {
+                        const li = document.createElement('li');
+                        const value1 = isPurchase ? stats[prop].toFixed(2) : stats[prop];
+                        const value2 = isPurchase ? stats[altProp] : stats[altProp].toFixed(2);
+
+                        li.innerHTML = `
+                            <span><strong>${name}</strong></span>
+                            <span>${isPurchase ? `شراء: ${value1} ${unit} (${value2} ${altUnit})` : `${value1} ${unit} - ${value2} ${altUnit}`}</span>
+                        `;
+                        li.dataset.searchTerm = name;
+                        li.addEventListener('click', () => {
+                            commonSearchInput.value = li.dataset.searchTerm;
+                            applyCombinedFilters();
+                        });
+                        listEl.appendChild(li);
+                    });
+                } else {
+                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
+                }
+            };
 
             if (filterType === 'topSellingProducts') {
-                const topSellingProductsList = document.createElement('div');
-                topSellingProductsList.innerHTML = `<h3>المنتجات الأكثر مبيعاً</h3><ul id="topSellingProductsList" class="scrollable-list-in-card"></ul>`;
-                dynamicStatsListContainer.appendChild(topSellingProductsList);
-
                 const sortedProducts = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 5);
-                const listEl = document.getElementById('topSellingProductsList');
-                if (sortedProducts.length > 0) {
-                    let currentMostSellingTotalPrice = 0;
-                    sortedProducts.forEach(([name, stats]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span><strong>${name}</strong></span>
-                            <span>${stats.quantitySold} وحدات (${stats.totalRevenue.toFixed(2)} DH)</span>
-                        `;
-                        li.dataset.searchTerm = name;
-                        li.addEventListener('click', () => {
-                            commonSearchInput.value = li.dataset.searchTerm;
-                            applyCombinedFilters();
-                        });
-                        listEl.appendChild(li);
-                        currentMostSellingTotalPrice += stats.totalRevenue;
-                    });
-                    mostSellingTotalPriceValue.textContent = currentMostSellingTotalPrice.toFixed(2) + ' DH';
-                    mostSellingTotalPriceDisplay.classList.remove('hidden');
-                } else {
-                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
-                }
+                renderList('topSellingProductsList', sortedProducts, 'quantitySold', 'وحدات', 'totalRevenue', 'DH');
+                let currentMostSellingTotalPrice = sortedProducts.reduce((sum, [, stats]) => sum + stats.totalRevenue, 0);
+                mostSellingTotalPriceValue.textContent = currentMostSellingTotalPrice.toFixed(2) + ' DH';
+                mostSellingTotalPriceDisplay.classList.remove('hidden');
             } else if (filterType === 'topCustomers') {
-                const topCustomersList = document.createElement('div');
-                topCustomersList.innerHTML = `<h3>العملاء الأكثر نشاطاً</h3><ul id="topCustomersList" class="scrollable-list-in-card"></ul>`;
-                dynamicStatsListContainer.appendChild(topCustomersList);
-
                 const sortedCustomers = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 5);
-                const listEl = document.getElementById('topCustomersList');
-                if (sortedCustomers.length > 0) {
-                    sortedCustomers.forEach(([name, stats]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span><strong>${name}</strong></span>
-                            <span>${stats.invoiceCount} فواتير - ${stats.totalTTC.toFixed(2)} DH</span>
-                        `;
-                        li.dataset.searchTerm = name;
-                        li.addEventListener('click', () => {
-                            commonSearchInput.value = li.dataset.searchTerm;
-                            applyCombinedFilters();
-                        });
-                        listEl.appendChild(li);
-                    });
-                } else {
-                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
-                }
+                renderList('topCustomersList', sortedCustomers, 'invoiceCount', 'فواتير', 'totalTTC', 'DH');
             } else if (filterType === 'topSuppliers') {
-                const topSuppliersList = document.createElement('div');
-                topSuppliersList.innerHTML = `<h3>الموردون الأكثر نشاطاً</h3><ul id="topSuppliersList" class="scrollable-list-in-card"></ul>`;
-                dynamicStatsListContainer.appendChild(topSuppliersList);
-
                 const sortedSuppliers = Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 5);
-                const listEl = document.getElementById('topSuppliersList');
-                if (sortedSuppliers.length > 0) {
-                    sortedSuppliers.forEach(([name, stats]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span><strong>${name}</strong></span>
-                            <span>شراء: ${stats.totalPurchaseCost.toFixed(2)} DH (${stats.productsCount} منتج)</span>
-                        `;
-                        li.dataset.searchTerm = name;
-                        li.addEventListener('click', () => {
-                            commonSearchInput.value = li.dataset.searchTerm;
-                            applyCombinedFilters();
-                        });
-                        listEl.appendChild(li);
-                    });
-                } else {
-                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
-                }
+                renderList('topSuppliersList', sortedSuppliers, 'totalPurchaseCost', 'DH', 'productsCount', 'منتج', true);
             } else if (filterType === 'topInvoiceOwners') {
-                const topInvoiceOwnersList = document.createElement('div');
-                topInvoiceOwnersList.innerHTML = `<h3>أصحاب الفواتير الأكثر نشاطاً</h3><ul id="topInvoiceOwnersList" class="scrollable-list-in-card"></ul>`;
-                dynamicStatsListContainer.appendChild(topInvoiceOwnersList);
-
                 const sortedInvoiceOwners = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 5);
-                const listEl = document.getElementById('topInvoiceOwnersList');
-                if (sortedInvoiceOwners.length > 0) {
-                    sortedInvoiceOwners.forEach(([name, stats]) => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <span><strong>${name}</strong></span>
-                            <span>${stats.invoiceCount} فواتير - ${stats.totalProfit.toFixed(2)} DH ربح</span>
-                        `;
-                        li.dataset.searchTerm = name;
-                        li.addEventListener('click', () => {
-                            commonSearchInput.value = li.dataset.searchTerm;
-                            applyCombinedFilters();
-                        });
-                        listEl.appendChild(li);
-                    });
-                } else {
-                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
-                }
+                renderList('topInvoiceOwnersList', sortedInvoiceOwners, 'invoiceCount', 'فواتير', 'totalProfit', 'DH ربح');
             } else {
                 // Default view (all lists) if 'none' is selected
-                const defaultListsHtml = `
-                    <div>
-                        <h3>المنتجات الأكثر مبيعاً</h3>
-                        <ul id="topSellingProductsList" class="scrollable-list-in-card">
-                            <li>لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>العملاء الأكثر نشاطاً</h3>
-                        <ul id="topCustomersList" class="scrollable-list-in-card">
-                            <li>لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>أصحاب الفواتير الأكثر نشاطاً</h3>
-                        <ul id="topInvoiceOwnersList" class="scrollable-list-in-card">
-                            <li>لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>الموردون الأكثر نشاطاً</h3>
-                        <ul id="topSuppliersList" class="scrollable-list-in-card">
-                            <li>لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                `;
-                dynamicStatsListContainer.innerHTML = defaultListsHtml;
-
-                // Populate all default lists (same logic as before for each list)
-                const allListsPopulated = {
-                    topSellingProductsList: { data: Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 5), prop: 'quantitySold', unit: 'وحدات', altProp: 'totalRevenue', altUnit: 'DH' },
-                    topCustomersList: { data: Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 5), prop: 'invoiceCount', unit: 'فواتير', altProp: 'totalTTC', altUnit: 'DH' },
-                    topInvoiceOwnersList: { data: Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 5), prop: 'invoiceCount', unit: 'فواتير', altProp: 'totalProfit', altUnit: 'DH ربح' },
-                    topSuppliersList: { data: Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 5), prop: 'totalPurchaseCost', unit: 'DH', altProp: 'productsCount', altUnit: 'منتج', isPurchase: true }
-                };
-
-                for (const listId in allListsPopulated) {
-                    const { data, prop, unit, altProp, altUnit, isPurchase } = allListsPopulated[listId];
-                    const listEl = document.getElementById(listId);
-                    listEl.innerHTML = '';
-                    if (data.length > 0) {
-                        data.forEach(([name, stats]) => {
-                            const li = document.createElement('li');
-                            const value1 = isPurchase ? stats[prop].toFixed(2) : stats[prop];
-                            const value2 = isPurchase ? stats[altProp] : stats[altProp].toFixed(2);
-
-                            li.innerHTML = `
-                                <span><strong>${name}</strong></span>
-                                <span>${isPurchase ? `شراء: ${value1} ${unit} (${value2} ${altUnit})` : `${value1} ${unit} - ${value2} ${altUnit}`}</span>
-                            `;
-                            li.dataset.searchTerm = name;
-                            li.addEventListener('click', () => {
-                                commonSearchInput.value = li.dataset.searchTerm;
-                                applyCombinedFilters();
-                            });
-                            listEl.appendChild(li);
-                        });
-                    } else {
-                        listEl.innerHTML = '<li>لا توجد بيانات</li>';
-                    }
-                }
+                renderList('topSellingProductsList', Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 5), 'quantitySold', 'وحدات', 'totalRevenue', 'DH');
+                renderList('topCustomersList', Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 5), 'invoiceCount', 'فواتير', 'totalTTC', 'DH');
+                renderList('topInvoiceOwnersList', Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 5), 'invoiceCount', 'فواتير', 'totalProfit', 'DH ربح');
+                renderList('topSuppliersList', Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 5), 'totalPurchaseCost', 'DH', 'productsCount', 'منتج', true);
             }
         }
 
@@ -2612,6 +3045,7 @@
             allLocalInvoices = JSON.parse(localStorage.getItem('localInvoices')) || [];
             localInvoicesList.innerHTML = '';
             const searchTerm = searchLocalInvoiceInput.value.toLowerCase();
+
             const filteredInvoices = allLocalInvoices.filter(invoice => {
                 const matchesSearch = searchTerm ?
                     (invoice.customerName && invoice.customerName.toLowerCase().includes(searchTerm)) ||
@@ -2621,11 +3055,14 @@
                     : true;
                 return matchesSearch;
             });
+
             if (filteredInvoices.length === 0) {
                 localInvoicesList.innerHTML = '<p class="empty-list-message">لا توجد فواتير محفوظة محلياً.</p>';
                 return;
             }
-            filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
+
+            filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date)); // Sort by date (newest first)
+
             filteredInvoices.forEach(invoice => {
                 const invoiceDiv = document.createElement('div');
                 invoiceDiv.classList.add('local-invoice-item');
@@ -2638,8 +3075,8 @@
                         <p><strong>الربح:</strong> ${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</p>
                     </div>
                     <div class="invoice-actions">
-                        <button type="button" class="btn1" onclick="viewLocalInvoiceDetails(${invoice.id})">عرض التفاصيل</button>
-                        <button type="button" class="btn-delete" onclick="deleteLocalInvoice(${invoice.id})">حذف</button>
+                        <button type="button" class="btn1" onclick="viewLocalInvoiceDetails(${invoice.id})"><span class="icon">🔍</span>عرض التفاصيل</button>
+                        <button type="button" class="btn-delete" onclick="deleteLocalInvoice(${invoice.id})"><span class="icon">🗑️</span>حذف</button>
                     </div>
                 `;
                 localInvoicesList.appendChild(invoiceDiv);
@@ -2651,7 +3088,8 @@
             if (invoiceToView) {
                 await showSection(invoiceDisplay);
                 mainContainer.classList.remove('full-width');
-                document.getElementById('savePdfButton').style.display = 'none';
+                document.getElementById('savePdfButton').style.display = 'none'; // Hide stock update button when viewing archived
+                // Populate invoice details
                 document.getElementById('displayCustomerName').textContent = invoiceToView.customerName;
                 document.getElementById('displayInvoiceOwner').textContent = invoiceToView.ownerName;
                 document.getElementById('displayInvoiceDate').textContent = invoiceToView.date;
@@ -2663,8 +3101,9 @@
                 document.getElementById('displayTotalTTC').textContent = parseFloat(invoiceToView.totalTTC || 0).toFixed(2) + ' DH';
                 document.getElementById('displayInvoiceOwnerPhoneFooter').textContent = invoiceToView.ownerPhone;
                 document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceToView.ownerAddress;
+
                 const detailsTbody = document.getElementById('displayDetails');
-                detailsTbody.innerHTML = '';
+                detailsTbody.innerHTML = ''; // Clear previous details
                 let productNumber = 1;
                 invoiceToView.products.forEach(productData => {
                     const productDetails = document.createElement('tr');
@@ -2695,7 +3134,19 @@
                 showToast("تم إلغاء حذف الفاتورة.", 'info');
             }
         }
+
         searchLocalInvoiceInput.addEventListener('input', displayLocalInvoices);
+
+        // Ensure functions are globally accessible if used directly in HTML onclick attributes
+        window.adjustStock = adjustStock;
+        window.updateStockFromInput = updateStockFromInput;
+        window.adjustQuantity = adjustQuantity;
+        window.updateQuantityFromInput = updateQuantityFromInput;
+        window.adjustMinQuantity = adjustMinQuantity;
+        window.updateMinStockFromInput = updateMinStockFromInput;
+        window.deleteProduct = deleteProduct;
+        window.viewLocalInvoiceDetails = viewLocalInvoiceDetails;
+        window.deleteLocalInvoice = deleteLocalInvoice;
     </script>
 </body>
 </html>
