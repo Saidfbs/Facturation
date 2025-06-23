@@ -222,9 +222,10 @@
         .client-container,
         .invoice,
         .saved-products,
-        .firebase-stats-combined-container,
         .local-archive-container-embedded,
-        .low-stock-section-standalone {
+        .low-stock-section-standalone,
+        .statistics-section,
+        .firebase-product-list-wrapper {
             border: 1px solid var(--whatsapp-border-light);
             padding: var(--spacing-lg);
             border-radius: var(--border-radius-md);
@@ -237,6 +238,18 @@
             box-sizing: border-box;
             width: 100%;
         }
+
+        /* Specific style for the main Firebase stats container to be transparent */
+        .firebase-stats-combined-container {
+            background-color: transparent; /* Make background transparent */
+            box-shadow: none; /* Remove direct shadow */
+            border: none; /* Remove direct border */
+            padding: 0; /* Remove padding if children have it */
+            display: flex; /* Make it a flex container for its direct sections */
+            flex-direction: column; /* Stack its sections vertically */
+            gap: var(--spacing-md); /* Gap between its internal sections */
+        }
+
 
         /* Class to apply for animation when hiding/showing. */
         .fade-in-section {
@@ -307,7 +320,8 @@
         .dashboard-view h3,
         .statistics-section h3,
         .low-stock-section-standalone h3,
-        .stat-card h3 {
+        .firebase-product-list-wrapper h3,
+        #dynamicStatsListContainer > div h3 {
             color: var(--whatsapp-green-light);
             margin-top: var(--spacing-lg);
             margin-bottom: var(--spacing-md);
@@ -317,6 +331,15 @@
             text-align: center;
             width: 100%; /* Ensure it takes full width of its parent */
         }
+        /* Specific override for stat-card h3 - small, no border, dark text */
+        .stat-card h3 {
+            margin: 0 0 var(--spacing-sm) 0;
+            font-size: 1.1em;
+            color: var(--whatsapp-green-dark);
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
 
         /* Specific override for low stock warning sub-heading if needed */
         .low-stock-section-standalone h3 {
@@ -356,36 +379,13 @@
             margin-top: var(--spacing-md);
         }
 
-        /* Firebase/Stats Combined Container Layout */
-        .firebase-stats-combined-container {
-            flex-grow: 1; /* Allow to fill vertical space */
-        }
-
+        /* Firebase/Stats Combined Container Layout - this is the wrapper of statistics and product list */
         .firebase-content-wrapper {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-md);
+            gap: var(--spacing-md); /* Gap between stats section and firebase product list */
             width: 100%;
-            flex-grow: 1;
-        }
-
-        .firebase-content-wrapper > .statistics-section {
-            background-color: var(--whatsapp-bubble-received); /* Lighter background for stats section itself */
-            border-radius: var(--border-radius-md);
-            padding: var(--spacing-lg);
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-            flex-shrink: 0;
-            overflow-y: visible; /* Content can scroll if larger than available space */
-        }
-
-        .firebase-content-wrapper > .firebase-product-list-wrapper {
-            background-color: var(--whatsapp-bubble-sent); /* Slightly lighter background for list wrapper */
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-md);
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
+            flex-grow: 1; /* Allow it to fill vertical space */
         }
 
         /* Style for Firebase product list filters (now inside firebase-product-list-wrapper) */
@@ -402,7 +402,6 @@
         /* Unified Scrollable List Containers */
         .saved-products3,
         .local-invoices-list,
-        #productListContainerdata,
         .low-stock-section-standalone .product-list-grid,
         .scrollable-list-in-card {
             flex-grow: 1;
@@ -418,7 +417,14 @@
             background-color: var(--whatsapp-text-light); /* Unified list background */
             padding: var(--spacing-md);
             box-sizing: border-box;
-            max-height: none; /* Let content or flex-grow define height */
+            /* Removed max-height here for general usage */
+        }
+
+        /* Specific styles for #productListContainerdata (Firebase Products List) to show all items */
+        #productListContainerdata {
+            max-height: none; /* Remove max-height to show all items */
+            overflow-y: visible; /* Ensure no internal scroll for this specific list */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Maintain grid layout */
         }
 
         /* Specific max-height for dashboard lists if needed, but generally let content flow */
@@ -431,25 +437,58 @@
             max-height: 350px; /* Example fixed height for archive section for visual balance */
         }
 
-        #productListContainerdata {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            max-height: 500px; /* Example fixed height for Firebase product list */
-        }
-
         .low-stock-section-standalone .product-list-grid {
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             max-height: 350px; /* Example fixed height for low stock section for visual balance */
         }
 
+        /* Specific styling for UL elements inside dynamic stat cards */
         .scrollable-list-in-card {
-            grid-template-columns: 1fr; /* Single column for stat lists */
+            grid-template-columns: 1fr; /* Single column for list items within these stat lists */
             max-height: 150px; /* Example fixed height for stats lists */
             padding-left: var(--spacing-xs); /* Padding for scrollbar on left in RTL */
             border: 1px solid var(--whatsapp-border-light);
             border-radius: var(--border-radius-sm);
-            background-color: var(--whatsapp-bubble-sent); /* A slightly different background for stat lists */
+            background-color: var(--whatsapp-bubble-sent); /* A slightly different background for stat lists UL */
             margin-top: var(--spacing-sm);
+            display: flex; /* Override grid for UL, make it flex to stack LIs */
+            flex-direction: column;
         }
+
+        /* Styling for the container of the filter dropdown within stat-card-list */
+        .stat-card-filter-wrapper {
+            background-color: var(--whatsapp-text-light); /* White background for filter card */
+            border: 1px solid var(--whatsapp-border-light);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            box-shadow: var(--box-shadow-light);
+            box-sizing: border-box;
+            flex: 1 1 100%; /* Ensure it spans full width in its flex parent */
+            display: flex;
+            flex-direction: column;
+            margin-bottom: var(--spacing-md); /* Space below the filter wrapper */
+        }
+
+        /* Make #dynamicStatsListContainer a grid for its *own* children (the individual stat list cards) */
+        #dynamicStatsListContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive 2+ columns */
+            gap: var(--spacing-md);
+            flex: 1 1 auto; /* Allow it to take available space in its parent .stat-card-list */
+        }
+
+        /* Styling for the individual dynamic list cards (e.g., top products, top customers) */
+        #dynamicStatsListContainer > div {
+            background-color: var(--whatsapp-text-light); /* White background for individual list cards */
+            border: 1px solid var(--whatsapp-bubble-received);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            box-shadow: var(--box-shadow-light);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
 
         .button-container {
             display: flex;
@@ -569,7 +608,7 @@
         }
 
         .btn1:hover, .btn2:hover { background-color: #1DA851; transform: translateY(-1px); box-shadow: var(--box-shadow-medium); }
-        .btn1:active, .btn2:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
+        .btn1:active { transform: translateY(0); box-shadow: var(--box-shadow-light); }
 
         .btn-delete {
             background-color: var(--whatsapp-error-red);
@@ -686,11 +725,11 @@
             margin: var(--spacing-lg) 0;
         }
 
-        /* Unified Product/Item Cards */
+        /* Unified Product/Item Cards - applies to products in saved lists, low stock, and firebase lists */
         .product, .local-invoice-item {
             border: 1px solid var(--whatsapp-border-light);
             padding: var(--spacing-md);
-            border-radius: var(--border-radius-md); /* Slightly smaller for lists */
+            border-radius: var(--border-radius-md); /* Consistent rounded corners */
             background-color: var(--whatsapp-text-light); /* White background for items */
             box-shadow: var(--box-shadow-light);
             transition: all 0.2s ease-in-out;
@@ -936,6 +975,7 @@
             box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
         }
 
+        /* Override for filters within Firebase product list wrapper to be transparent */
         .firebase-product-list-wrapper > .combined-firebase-filter-controls {
             background-color: transparent;
             box-shadow: none;
@@ -955,6 +995,7 @@
             display: none;
         }
 
+        /* Select element styling (for dropdowns) */
         .combined-firebase-filter-controls select {
             width: 100%;
             padding: 0.6rem 0.8rem;
@@ -966,12 +1007,12 @@
             color: var(--whatsapp-text-dark);
             outline: none;
             text-align: right;
-            appearance: none;
+            appearance: none; /* Remove default arrow */
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231F2C34%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%00-13.2-5.4H18.6c-5%200-9.3%201.8-13.2%205.4A17.6%2017.6%200%200%000%2082.7c0%204.6%201.8%208.9%205.4%2012.8l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095.5a17.6%2017.6%200%200%005.4-12.8c0-4.6-1.8-8.9-5.4-12.8z%22/%3E%3C/svg%3E');
             background-repeat: no-repeat;
             background-position: left 10px center;
             background-size: 12px;
-            padding-left: 30px;
+            padding-left: 30px; /* Space for custom arrow */
             padding-right: 0.8rem;
         }
 
@@ -990,14 +1031,15 @@
 
         /* Specific style for list-containing stat cards to span full grid width */
         .stat-card-list {
-            grid-column: 1 / -1;
-            display: flex;
+            grid-column: 1 / -1; /* Make it span full width of stats-grid */
+            display: flex; /* Still a flex container for filter wrapper and dynamic lists */
             flex-wrap: wrap;
-            gap: var(--spacing-md);
-            align-items: stretch;
+            gap: var(--spacing-md); /* Gap between filter wrapper and dynamic lists container */
+            align-items: flex-start; /* Align items to the start of the cross axis */
             width: 100%;
         }
 
+        /* Individual stat cards */
         .stat-card {
             background-color: var(--whatsapp-text-light);
             border: 1px solid var(--whatsapp-bubble-received);
@@ -1012,41 +1054,6 @@
             flex: 1 1 auto; /* Allow stat cards to grow/shrink */
         }
 
-        /* Specific style for the list containers within stat-card-list */
-        .stat-card-list > div {
-            flex: 1 1 calc(33% - var(--spacing-md)); /* For 3 columns, adjust for gap */
-            min-width: 250px;
-            background-color: var(--whatsapp-text-light);
-            border: 1px solid var(--whatsapp-bubble-received);
-            border-radius: var(--border-radius-md);
-            padding: var(--spacing-md);
-            box-shadow: var(--box-shadow-light);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Media query adjustments for stat-card-list */
-        @media (min-width: 1025px) {
-            .stat-card-list > div {
-                flex: 1 1 calc(25% - var(--spacing-md) * 3 / 4);
-            }
-        }
-
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .stat-card-list > div {
-                flex: 1 1 calc(50% - var(--spacing-md) / 2);
-            }
-        }
-
-        .stat-card h3 {
-            margin: 0 0 var(--spacing-sm) 0;
-            font-size: 1.1em;
-            color: var(--whatsapp-green-dark);
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
         .stat-card p {
             font-size: 1.5em;
             font-weight: bold;
@@ -1054,6 +1061,7 @@
             margin: 0;
         }
 
+        /* Styling for list items within scrollable cards (e.g., top selling products list) */
         .scrollable-list-in-card li {
             background-color: var(--whatsapp-text-light); /* White background for list items */
             padding: 6px 10px;
@@ -1228,11 +1236,16 @@
             .stats-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
             .stat-card h3 { font-size: 1em; }
             .stat-card p { font-size: 1.4em; }
-            .scrollable-list-in-card { max-height: 100px; }
+            /* This is for UL list within dynamic stat cards, not the card itself */
+            .scrollable-list-in-card { max-height: 100px; } /* Smaller max-height for tablets */
             .dashboard-archive-stock-wrapper > .local-archive-container-embedded,
             .dashboard-archive-stock-wrapper > .low-stock-section-standalone { flex: 1 1 45%; }
-            .local-invoices-list, .low-stock-section-standalone .product-list-grid, #productListContainerdata {
+            .local-invoices-list, .low-stock-section-standalone .product-list-grid {
                 max-height: 300px; /* Adjust fixed heights for tablets */
+            }
+            /* Adjust dynamic stats list container for smaller desktop/tablet */
+            #dynamicStatsListContainer {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Allow smaller min width for 2 columns */
             }
         }
 
@@ -1249,7 +1262,8 @@
             .invoice-table th, .invoice-table td { padding: 0.5rem; font-size: 0.8em; }
             .saved-products3, .local-invoices-list, #productListContainerdata {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                max-height: calc(100vh - 200px); /* Dynamic height for main lists on smaller screens */
+                max-height: none; /* Removed max height for mobile to show all */
+                overflow-y: visible; /* Ensure no internal scroll on mobile */
             }
             .stat-card p { font-size: 1.3em; }
             .statistics-section h2 { font-size: 1.5em; }
@@ -1259,8 +1273,11 @@
             .scrollable-list-in-card { max-height: 150px; }
             .low-stock-section-standalone .product-list-grid { max-height: 250px; }
             .quantity-controls input { width: 60px; margin: 0 5px; }
-            .stat-card-list { flex-direction: column; }
-            .stat-card-list > div { flex: 1 1 100%; }
+            .stat-card-list { flex-direction: column; } /* Forces filter and dynamic list container to stack */
+            .stat-card-list > div { flex: 1 1 100%; } /* Makes filter wrapper and dynamicStatsListContainer take full width */
+            #dynamicStatsListContainer {
+                grid-template-columns: 1fr; /* Single column on very small screens */
+            }
         }
 
         @media (max-width: 480px) {
@@ -1272,7 +1289,8 @@
             .stats-grid { grid-template-columns: 1fr; }
             .saved-products3, .product-list-grid, .local-invoices-list, #productListContainerdata {
                 grid-template-columns: 1fr;
-                max-height: 300px;
+                max-height: none; /* Ensure no max-height even on smallest mobile */
+                overflow-y: visible; /* No internal scroll */
             }
             .dashboard-view h1, .firebase-stats-combined-container h1 { font-size: 1.8em; }
             .dashboard-view h2, .firebase-stats-combined-container h2 { font-size: 1.5em; }
@@ -1559,7 +1577,7 @@
                         </div>
                         <div class="stat-card-list">
                             <!-- New filter dropdown for most active/selling -->
-                            <div class="stat-card" style="flex: 1 1 100%; min-width: unset; box-shadow: none; border: none; padding: 0; background-color: transparent;">
+                            <div class="stat-card-filter-wrapper">
                                 <div class="form-group" style="width: 100%; margin-bottom: 0;">
                                     <label for="commonFilterSelect" class="sr-only">تصفية الإحصائيات</label>
                                     <select id="commonFilterSelect" style="text-align: right;">
@@ -1575,8 +1593,9 @@
                                     مجموع سعر المنتجات الأكثر مبيعاً: <span id="mostSellingTotalPriceValue">0.00 DH</span>
                                 </p>
                             </div>
-                            <div id="dynamicStatsListContainer" style="flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: var(--spacing-md);">
+                            <div id="dynamicStatsListContainer">
                                 <!-- Dynamic content for top lists will be rendered here -->
+                                <!-- These divs are now the grid items -->
                                 <div>
                                     <h3>المنتجات الأكثر مبيعاً</h3>
                                     <ul id="topSellingProductsList" class="scrollable-list-in-card">
@@ -1778,7 +1797,6 @@
             displaySavedProducts();
 
             // Set initial view to Dashboard and activate corresponding button
-            showSection(mainDashboardView);
             // Check screen size to activate correct button type
             if (window.innerWidth <= 768) {
                 setActiveButton(mobileShowDashboardButton, mobileNavButtons);
@@ -1821,7 +1839,7 @@
         function resetValidationMessages(form) {
             const fields = form.querySelectorAll('input[required], textarea[required], select[required]');
             fields.forEach(field => {
-                field.classList.remove('error'); // Remove error class
+                field.classList.remove('error'); // Clear previous error state
                 field.style.borderColor = ''; // Reset border color
                 const errorMessageSpan = field.nextElementSibling;
                 if (errorMessageSpan && errorMessageSpan.classList.contains('validation-error-message')) {
@@ -2975,7 +2993,7 @@
             mostSellingTotalPriceDisplay.classList.add('hidden'); // Hide total price initially
 
             const renderList = (listId, data, prop, unit, altProp, altUnit, isPurchase = false) => {
-                const listWrapper = document.createElement('div');
+                const listWrapper = document.createElement('div'); // This div will be a grid item
                 let title;
                 if (listId === 'topSellingProductsList') title = 'المنتجات الأكثر مبيعاً';
                 else if (listId === 'topCustomersList') title = 'العملاء الأكثر نشاطاً';
