@@ -1089,6 +1089,46 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.3);
         }
+
+        /* Adjustments for search input with clear button */
+        .search-input-wrapper {
+            position: relative;
+            display: flex; /* To align input and clear button */
+            align-items: center;
+            gap: var(--spacing-xs); /* Gap between input and button */
+            margin-bottom: var(--spacing-md);
+        }
+
+        .search-input-wrapper input {
+            margin-bottom: 0; /* Remove default margin-bottom from form-group rule */
+        }
+
+        .clear-search-btn {
+            background-color: var(--error-color);
+            color: var(--text-light);
+            border: none;
+            border-radius: var(--border-radius-pill);
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: var(--shadow-subtle);
+            flex-shrink: 0; /* Prevent button from shrinking */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 45px; /* Match input height */
+        }
+
+        .clear-search-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-1px);
+        }
+        body.dark-mode .clear-search-btn:hover {
+            background-color: #e57373;
+        }
+
         /* Filter controls in Firebase section */
         .combined-firebase-filter-controls {
             display: flex;
@@ -1506,7 +1546,7 @@
             }
             .main-controls,
             .bottom-nav,
-            .button-container,
+            /* Remove .button-container to allow buttons to be handled individually or re-added as needed for print */
             .theme-switch-wrapper { /* Hide navigation and unnecessary buttons, and theme toggle */
                 display: none !important;
             }
@@ -1547,6 +1587,10 @@
             /* Hide icons if not essential for print */
             .icon {
                 display: none;
+            }
+            /* Ensure buttons are hidden on print */
+            .invoice-actions-print-group button {
+                display: none !important;
             }
         }
     </style>
@@ -1713,7 +1757,6 @@
         </section>
         <!-- عرض الفاتورة (مخفي افتراضيًا) -->
         <article class="invoice fade-in-section" id="invoiceDisplay" hidden>
-            <button type="button" class="btn" id="savePdfButton"><span class="icon">📦</span>تحديث المخزون (بعد الفاتورة)</button>
             <h1>DEVIS</h1>
             <section class="invoice-header">
                 <h2><span class="icon">👤</span>تفاصيل العميل</h2>
@@ -1767,7 +1810,9 @@
                 <p>Adresse: <span id="displayInvoiceOwnerAddressFooter"></span></p>
                 <p>Téléphone: <span id="displayInvoiceOwnerPhoneFooter"></span></p>
             </footer>
-            <div class="button-container">
+            <!-- زر تحديث المخزون وزر الطباعة جنبًا إلى جنب -->
+            <div class="button-container invoice-actions-print-group">
+                <button type="button" class="btn" id="savePdfButton"><span class="icon">📦</span>تحديث المخزون (بعد الفاتورة)</button>
                 <button type="button" class="btn" id="printButton"><span class="icon">🖨️</span>طباعة الفاتورة</button>
             </div>
         </article>
@@ -1838,6 +1883,9 @@
                             </div>
                         </div>
                     </div>
+                    
+  <button type="button" class="clear-search-btn" id="clearCommonSearchInput"><span class="icon">✖</span>مسح</button>                 
+                    
                 </section>
                 <!-- قسم قائمة منتجات Firebase -->
                 <section class="firebase-product-list-wrapper">
@@ -1849,10 +1897,11 @@
                                 <!-- Existing phone number dropdown (unchanged) -->
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group search-input-wrapper">
                             <label for="commonSearchInput" class="sr-only">البحث في بيانات Firebase</label>
                             <input type="text" id="commonSearchInput" placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions">
                             <datalist id="allSearchOptions"></datalist>
+                            
                         </div>
                     </div>
                     <div class="saved-products3 product-list-grid" id="productListContainerdata"></div>
@@ -1957,6 +2006,7 @@
         
         const commonPhoneDropdown = document.getElementById('commonPhoneDropdown');
         const commonSearchInput = document.getElementById('commonSearchInput');
+        const clearCommonSearchInputButton = document.getElementById('clearCommonSearchInput'); // New clear button
         const allSearchOptionsDatalist = document.getElementById('allSearchOptions'); // Added datalist element
         const firebaseProductListCountSpan = document.getElementById('firebaseProductListCount');
         const firebaseProductListContainer = document.getElementById('productListContainerdata');
@@ -1964,10 +2014,7 @@
         const localInvoicesList = document.getElementById('localInvoicesList');
         const searchLocalInvoiceInput = document.getElementById('searchLocalInvoice');
         
-        // Removed commonFilterSelect and related elements from here
         const dynamicStatsListContainer = document.getElementById('dynamicStatsListContainer');
-
-        // Removed mostSellingTotalPriceDisplay and mostSellingTotalPriceValue as their display was tied to the removed filter
         
         const toastContainer = document.getElementById('toast-container');
         const confirmModalOverlay = document.getElementById('confirm-modal-overlay');
@@ -2029,8 +2076,6 @@
                 document.body.classList.remove('dark-mode');
                 themeToggle.checked = false;
             }
-            
-            // commonFilterSelect is removed, so no initial value setting needed here.
         });
         // ====== UI Management Functions ======
         function hideAllSections() {
@@ -2121,8 +2166,6 @@
             setActiveButton(desktopShowFirebaseDataButton, desktopNavButtons);
             mainContainer.classList.add('full-width'); // Make full width for Firebase data view
             commonSearchInput.value = ''; // Clear search input
-            // Removed commonFilterSelect.value = 'all-stats';
-            // Removed mostSellingTotalPriceDisplay.classList.add('hidden');
             if (database) {
                 populateCommonDropdown(); // Populates dropdown with unique phone numbers from Firebase
                 fetchAndDisplayCombinedFirebaseData(); // Fetch and display all products, and stats
@@ -2149,8 +2192,6 @@
             setActiveButton(mobileShowFirebaseDataButton, mobileNavButtons);
             mainContainer.classList.add('full-width'); // Make full width for Firebase data view
             commonSearchInput.value = ''; // Clear search input
-            // Removed commonFilterSelect.value = 'all-stats';
-            // Removed mostSellingTotalPriceDisplay.classList.add('hidden');
             if (database) {
                 populateCommonDropdown();
                 fetchAndDisplayCombinedFirebaseData(); // Fetch and display all products, and stats
@@ -2692,7 +2733,8 @@
             document.getElementById('displayInvoiceOwnerAddressFooter').textContent = invoiceOwnerAddressInput.value;
             await showSection(invoiceDisplay);
             mainContainer.classList.add('full-width'); // Make full width for Invoice display
-            document.getElementById('savePdfButton').style.display = 'block'; // Show stock update button for new invoice
+            // Show stock update button for new invoice (now managed by isNewInvoice flag)
+            document.getElementById('savePdfButton').style.display = 'block'; 
             isNewInvoice = true; // Set flag for new invoice
             window.scrollTo({ top: 0, behavior: 'smooth' });
             // Save frequently used invoice details to localStorage
@@ -2809,18 +2851,21 @@
                 // Temporarily set viewport for better print layout (e.g., desktop-like width)
                 viewportMeta.setAttribute('content', 'width=1024');
             }
-            // Hide buttons before printing
-            this.style.display = 'none';
-            document.getElementById('savePdfButton').style.display = 'none';
+            // Hide buttons before printing using the new class for print styles
+            const invoicePrintGroup = document.querySelector('.invoice-actions-print-group');
+            if (invoicePrintGroup) {
+                invoicePrintGroup.style.display = 'none'; // Temporarily hide for print
+            }
+
             // Trigger browser print dialog
             window.print();
             // Restore buttons and original viewport after a short delay
             setTimeout(() => {
-                // Only show savePdfButton if it's a new invoice
-                if (isNewInvoice) { 
-                    document.getElementById('savePdfButton').style.display = 'block';
+                // Restore display of the button group
+                if (invoicePrintGroup) {
+                    invoicePrintGroup.style.display = 'flex'; // Restore to flex display
                 }
-                this.style.display = 'block';
+
                 if (viewportMeta && originalViewportContent) {
                     viewportMeta.setAttribute('content', originalViewportContent);
                 }
@@ -2950,7 +2995,6 @@
         function applyCombinedFilters() {
             const searchTerm = commonSearchInput.value.toLowerCase();
             const selectedPhoneNumber = commonPhoneDropdown.value;
-            // Removed selectedStatsFilter as commonFilterSelect is removed. Default to 'all-stats' behavior.
             const selectedStatsFilter = 'all-stats'; 
             // Filter products for the Firebase Product List section (using searchTerm and phoneNumber filter)
             const filteredProducts = allFirebaseProducts.filter(product => {
@@ -3093,11 +3137,12 @@
         // Event listeners for common search and filter dropdown
         commonPhoneDropdown.addEventListener('change', () => applyCombinedFilters()); // Always apply filters to both sections
         
-        // commonFilterSelect is removed, so this event listener is removed.
-        // commonFilterSelect.addEventListener('change', () => {
-        //     commonSearchInput.value = ''; // Clear the search input when filter type changes
-        //     applyCombinedFilters(); // Apply combined filters
-        // });
+        // New: Event listener for clear search button
+        clearCommonSearchInputButton.addEventListener('click', () => {
+            commonSearchInput.value = ''; // Clear the input
+            applyCombinedFilters(); // Re-apply filters to refresh the list
+            showToast("تم مسح حقل البحث وتحديث القائمة.", 'info');
+        });
 
         commonSearchInput.addEventListener('input', () => applyCombinedFilters()); // Always apply filters to both sections
         /* --- Statistics and Tracking --- */
@@ -3170,7 +3215,6 @@
             document.getElementById('totalSalesTTC').textContent = `${totalSalesTTC.toFixed(2)} DH`;
             // Handle dynamic lists: Since commonFilterSelect is removed, always display all four lists.
             dynamicStatsListContainer.innerHTML = '';
-            // mostSellingTotalPriceDisplay is removed, so no hide/show logic needed.
             const listsConfig = {
                 topSellingProducts: {
                     title: 'المنتجات الأكثر مبيعاً',
@@ -3287,7 +3331,8 @@
             if (invoiceToView) {
                 await showSection(invoiceDisplay);
                 mainContainer.classList.add('full-width'); // Make full width for Invoice display
-                document.getElementById('savePdfButton').style.display = 'none'; // Hide stock update button when viewing archived
+                // Hide stock update button when viewing archived
+                document.getElementById('savePdfButton').style.display = 'none'; 
                 isNewInvoice = false; // Set flag to false for archived invoice
                 // Populate invoice details
                 document.getElementById('displayCustomerName').textContent = invoiceToView.customerName;
