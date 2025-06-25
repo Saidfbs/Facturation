@@ -246,12 +246,15 @@
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* هذا هو التعديل الرئيسي لجعل "أرشيف الفواتير المحلية" دائماً بعرض محدود ومتوسط */
+        /* حاوية الأرشيف المحلي تأخذ العرض الكامل والارتفاع الممكن */
         .local-archive-container {
-            max-width: 700px; /* تحديد أقصى عرض للحاوية بأكملها (يمكن تعديل القيمة) */
-            margin-left: auto; /* توسيط الحاوية أفقياً */
-            margin-right: auto;
-            /* مع width: 100% من الأنماط العامة، ستكون متجاوبة (تصغر على الشاشات الصغيرة) */
+            max-width: 100%; /* تأخذ العرض الكامل للمساحة المتاحة */
+            margin-left: 0; /* إزالة التوسيط للحاوية الرئيسية نفسها */
+            margin-right: 0;
+            padding-left: var(--spacing-md); /* حشوة داخلية للحاوية */
+            padding-right: var(--spacing-md);
+            flex-grow: 1; /* لتأخذ كل الارتفاع المتاح */
+            overflow-y: auto; /* للسماح بالتمرير داخل هذا القسم إذا كان المحتوى طويلاً */
         }
 
         /* نمط خاص للحاوية المدمجة لإحصائيات Firebase الرئيسية (غلاف شفاف) */
@@ -368,7 +371,7 @@
             flex-grow: 1; 
         }
         /* نمط لمرشحات قائمة منتجات Firebase (الآن داخل firebase-product-list-wrapper) */
-        .firebase-product-list-wrapper > .combined-firebase-filter-controls {
+        .firebase-product-list-list-wrapper > .combined-firebase-filter-controls {
             margin-bottom: var(--spacing-md);
             background-color: transparent;
             box-shadow: none;
@@ -403,12 +406,12 @@
         #productListContainerdata {
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         }
-        /* أنماط القوائم التي يجب أن يكون لها ارتفاع ثابت وقابلة للتمرير (الفواتير المحلية) */
+        /* أنماط قائمة الفواتير المحلية (الآن شبكة متعددة الأعمدة) */
         .local-invoices-list {
-            flex-grow: 1;
-            overflow-y: auto;
+            flex-grow: 1; /* تأخذ الارتفاع المتاح داخل local-archive-container */
+            overflow-y: auto; /* السماح بالتمرير داخل القائمة إذا تجاوز المحتوى الارتفاع */
             padding-right: var(--spacing-sm);
-            margin-top: var(--spacing-sm);
+            margin-top: var(--spacing-md); 
             -webkit-overflow-scrolling: touch;
             display: grid;
             gap: var(--spacing-md);
@@ -418,14 +421,14 @@
             background-color: var(--background-card);
             padding: var(--spacing-md);
             box-sizing: border-box;
-            max-height: 450px; /* يمكن تعديل هذا الارتفاع حسب الحاجة */
+            max-height: none; /* إزالة أقصى ارتفاع ثابت، للسماح لها بالتمدد عمودياً */
             scrollbar-width: thin;
             scrollbar-color: var(--primary-blue-light) var(--background-body);
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             
-            /* هذا يضمن عموداً واحداً دائماً */
-            grid-template-columns: 1fr;
-            justify-items: center; /* لتوسيط العناصر داخل العمود */
+            /* السماح بـ 2-3 أعمدة بناءً على عرض العنصر (كل فاتورة 300 بكسل كحد أدنى) */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            justify-items: stretch; /* تجعل البطاقات تمتد لملء عرض خلايا الشبكة */
         }
         .local-invoices-list::-webkit-scrollbar {
             width: 8px;
@@ -891,11 +894,9 @@
             line-height: 1.4;
             cursor: pointer;
             position: relative;
-            overflow: hidden;
             box-sizing: border-box;
-            /* تحديد أقصى عرض للبطاقة نفسها (لتجنب التمدد المفرط داخل العمود الواحد) */
-            max-width: 500px; /* يمكنك تعديل هذا الرقم لضبط عرض البطاقة الفردية */
-            margin: 0 auto; /* توسيط البطاقة الفردية داخل العمود */
+            /* تم إزالة overflow: hidden من هنا للسماح بتمدد المحتوى داخلياً */
+            /* تم إزالة max-width و margin: auto هنا. ستقوم الشبكة بالتحكم في الحجم والتوسيط */
         }
         .local-invoice-item:hover {
             transform: translateY(-8px) scale(1.02);
@@ -919,15 +920,15 @@
             margin-top: var(--spacing-sm);
             margin-bottom: var(--spacing-sm);
             font-size: 0.8em;
+            /* إزالة overflow-x: auto من هنا */
         }
         .local-invoice-item .invoice-mini-table th,
         .local-invoice-item .invoice-mini-table td {
             border: 1px solid var(--border-color);
             padding: 4px 6px;
             text-align: right;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis; /* اقتطاع النص الطويل */
+            white-space: normal; /* السماح بالتفاف النص */
+            word-break: break-word; /* لكسر الكلمات الطويلة جداً */
         }
         .local-invoice-item .invoice-mini-table th {
             background-color: var(--primary-blue-light);
@@ -1475,9 +1476,9 @@
                 max-height: none;
                 overflow-y: visible;
             }
+            /* القائمة المحلية على الشاشات الصغيرة - عمود واحد */
             .local-invoices-list { 
-                /* هذا يضمن عموداً واحداً دائماً */
-                grid-template-columns: 1fr; 
+                grid-template-columns: 1fr; /* عمود واحد على الشاشات الصغيرة جداً */
                 max-height: 200px; /* ارتفاع مقيد على الجوال لتجنب التمرير الزائد */
                 overflow-y: auto;
             }
@@ -1845,6 +1846,9 @@
             <div class="firebase-content-wrapper">
                 <!-- قسم الإحصائيات -->
                 <section class="statistics-section">
+                    
+                    <button type="button" class="clear-search-btn" id="clearCommonSearchInput"><span class="icon">✖</span>مسح</button>
+                    
                     <h2><span class="icon">📈</span>إحصائيات المبيعات التفصيلية</h2>
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -1919,7 +1923,7 @@
                     <div class="search-input-wrapper">
                         <input type="text" id="commonSearchInput" placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions">
                         <datalist id="allSearchOptions"></datalist>
-                        <button type="button" class="clear-search-btn" id="clearCommonSearchInput"><span class="icon">✖</span>مسح</button>
+                        
                     </div>
                 </section>
                 <!-- قسم قائمة منتجات Firebase -->
@@ -3503,7 +3507,8 @@
                 // بناء محتوى الفاتورة المصغرة
                 let productsTableHtml = '';
                 if (invoice.products && invoice.products.length > 0) {
-                    const productsToShow = invoice.products.slice(0, 3); // تحديد 3 منتجات فقط للعرض المصغر
+                    // عرض جميع المنتجات دون تقطيع
+                    const productsToDisplay = invoice.products; 
                     productsTableHtml = `
                         <div class="table-responsive">
                             <table class="invoice-mini-table">
@@ -3515,14 +3520,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${productsToShow.map(product => `
+                                    ${productsToDisplay.map(product => `
                                         <tr>
                                             <td>${product.name || 'N/A'}</td>
                                             <td>${product.quantityUsed || 0}</td>
                                             <td>${(parseFloat(product.sellingPrice || 0) * (product.quantityUsed || 0)).toFixed(2)} DH</td>
                                         </tr>
                                     `).join('')}
-                                    ${invoice.products.length > 3 ? `<tr><td colspan="3" style="text-align:center;">... والمزيد (${invoice.products.length - 3})</td></tr>` : ''}
                                 </tbody>
                             </table>
                         </div>
