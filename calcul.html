@@ -2,1981 +2,1509 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة كهربائية متكاملة - الإصدار المحسن</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <meta name="viewport" >
+    <title>بيانات Firebase والإحصائيات (مستقل)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* Ethereal Harmony Color Palette (copied for self-containment) */
         :root {
-            --main-color: #004e92;
-            --accent-color: #000428;
-            --background: #f1f4f9;
-            --white: #ffffff;
-            --border-radius: 12px;
-            --error-color: #e63946;
-            --success-color: #2a9d8f;
+            --primary-bg-light: hsla(220, 10%, 97%, 1);
+            --card-bg-white: hsla(0, 0%, 100%, 1);
+            --primary-blue-dark: hsla(210, 29%, 29%, 1);
+            --accent-blue: hsla(205, 78%, 42%, 1);
+            --accent-green: hsla(120, 50%, 50%, 1);
+            --accent-orange: hsla(45, 80%, 65%, 1);
+            --accent-red: hsla(0, 70%, 55%, 1);
+            --text-primary-dark: hsla(210, 10%, 15%, 1);
+            --text-secondary-gray: hsla(210, 5%, 40%, 1);
+            --text-light: hsla(0, 0%, 100%, 1);
+            --border-light: hsla(210, 5%, 90%, 1);
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --border-radius-small: 6px;
+            --border-radius-medium: 10px;
+            --border-radius-large: 14px;
+            --border-radius-pill: 999px;
+            --shadow-subtle: 0 2px 5px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.12);
+            --shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.18);
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
+        html,
         body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--background);
+            height: 100%;
             margin: 0;
-            padding: 20px;
-            line-height: 1.6;
+            padding: var(--spacing-md);
+            font-family: 'Cairo', sans-serif;
             direction: rtl;
-            text-align: right;
+            background-color: var(--primary-bg-light);
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            flex-direction: column;
             box-sizing: border-box;
+            color: var(--text-primary-dark);
+            font-size: 16px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .container {
-            max-width: 900px;
+        /* Specific styles for the Firebase section and its children */
+        .firebase-stats-combined-container {
+            background-color: transparent;
+            box-shadow: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            flex-grow: 1;
             width: 100%;
-            background-color: var(--white);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            margin: 0;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
+            /* Ensure it takes full width */
+            max-width: 1200px;
+            /* Match main container for consistency */
+            margin: 0 auto;
+            /* Center it */
+        }
+
+        .firebase-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .main-title {
+            width: 100%;
+            text-align: center;
+            color: var(--primary-blue-dark);
+            margin-bottom: var(--spacing-xl);
+            font-size: 2.4em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-light);
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+        }
+
+        .section-title {
+            width: 100%;
+            text-align: center;
+            color: var(--primary-blue-dark);
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            font-size: 2em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+        }
+
+        .section-title .icon {
+            font-size: 1.3em;
+            line-height: 1;
+            color: var(--accent-blue);
+        }
+
+        .list-subtitle {
+            color: var(--primary-blue-dark);
+            margin-top: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            font-size: 1.6em;
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-light);
+            text-align: center;
+            width: 100%;
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+        }
+
+        .card-container {
+            border: 1px solid var(--border-light);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-medium);
+            background-color: var(--card-bg-white);
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
             box-sizing: border-box;
+            width: 100%;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .stat-card-list {
+            grid-column: 1 / -1;
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--main-color);
+            gap: var(--spacing-md);
+            align-items: stretch;
             width: 100%;
+        }
+
+        .stat-card {
+            background: var(--card-bg-white);
+            border: 2px solid var(--border-light);
+            border-radius: var(--border-radius-medium);
+            padding: var(--spacing-md);
+            text-align: center;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            flex: 1 1 auto;
+            transition: all 0.3s ease-in-out;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 80px;
+            height: 80px;
+            background-color: var(--accent-blue);
+            border-radius: var(--border-radius-pill);
+            opacity: 0.1;
+            transform: scale(0);
+            transition: transform 0.5s ease;
+            z-index: 0;
+        }
+
+        .stat-card:hover::before {
+            transform: scale(1);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 var(--spacing-sm) 0;
+            font-size: 1.2em;
+            color: var(--text-secondary-gray);
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .stat-card p {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--primary-blue-dark);
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .scrollable-list-in-card {
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-small);
+            background-color: var(--primary-bg-light);
+            margin-top: var(--spacing-sm);
+            display: flex;
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: var(--spacing-xs);
+            justify-content: flex-start;
+            align-items: stretch;
+            padding: var(--spacing-md);
+            list-style: none;
+            margin-right: 0;
+            margin-left: 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-blue) var(--primary-bg-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            min-height: 150px;
+            overflow-y: hidden;
             flex-shrink: 0;
         }
 
-        .header h1 {
-            color: var(--main-color);
-            margin-bottom: 10px;
-        }
-
-        .section {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-grow: 1;
-            flex-basis: calc(33.33% - 13.33px); /* 3 أعمدة مع حساب الفجوة */
-            max-width: calc(33.33% - 13.33px);
-            margin-bottom: 0;
-        }
-        
-        h2 {
-            background: linear-gradient(to left, var(--main-color), var(--accent-color));
-            color: var(--white);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            user-select: none;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%; /* لملء المساحة المخصصة في .section */
-            height: 180px; /* ارتفاع ثابت لجعل الأزرار مربعة */
-            box-sizing: border-box;
-            font-size: 1.1em;
-            font-weight: 600;
-        }
-
-        h2 .icon {
-            font-size: 2.5em;
-            margin-bottom: 5px;
-            line-height: 1;
-        }
-
-        h2 .text {
-            font-size: 0.85em;
-            line-height: 1.2;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        h2:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            animation: fadeInModal 0.3s ease-out;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: var(--white);
-            margin: auto;
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 600px;
-            position: relative;
-            animation: slideIn 0.3s ease-out;
-            max-height: 90vh;
+        .scrollable-list-in-card.has-more-items {
+            max-height: 204px;
             overflow-y: auto;
         }
 
-        .close-button {
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            cursor: pointer;
-            transition: color 0.3s ease;
+        .scrollable-list-in-card::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .close-button:hover,
-        .close-button:focus {
-            color: var(--error-color);
-            text-decoration: none;
-            cursor: pointer;
+        .scrollable-list-in-card::-webkit-scrollbar-track {
+            background: var(--primary-bg-light);
+            border-radius: 10px;
         }
 
-        @keyframes fadeInModal {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .scrollable-list-in-card::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 10px;
+            border: 2px solid var(--primary-bg-light);
+            transition: background-color 0.3s ease;
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        .scrollable-list-in-card::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-blue-dark);
         }
 
-        .calculator {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 10px;
-            padding: 0;
-            background-color: transparent;
-            border-radius: 0;
-            border: none;
-            animation: none;
-        }
-
-        .calculator-description {
-            background-color: #e7f3ff;
-            padding: 10px 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            border-right: 3px solid var(--main-color);
-        }
-
-        .input-group {
+        .scrollable-list-in-card li {
+            background-color: var(--card-bg-white);
+            padding: 8px 12px;
+            border-radius: var(--border-radius-small);
+            border: 1px solid var(--border-light);
             display: flex;
             flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-group label {
-            font-weight: 600;
-            color: var(--main-color);
-        }
-
-        .calculator input,
-        .calculator select,
-        .calculator button {
-            padding: 12px;
-            font-size: 1em;
+            justify-content: center;
+            align-items: flex-end;
             width: 100%;
-            border: 1px solid #ccc;
-            border-radius: var(--border-radius);
             box-sizing: border-box;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.2s ease;
             text-align: right;
-        }
-
-        .calculator input:focus,
-        .calculator select:focus {
-            border-color: var(--main-color);
-            box-shadow: 0 0 0 2px rgba(0, 78, 146, 0.2);
-            outline: none;
-        }
-
-        .calculator input.error {
-            border-color: var(--error-color);
-        }
-
-        button {
-            background-color: var(--main-color);
-            color: var(--white);
-            border: none;
+            box-shadow: var(--shadow-subtle);
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease, border-color 0.3s ease;
+        }
+
+        .scrollable-list-in-card li:hover {
+            background-color: hsla(210, 30%, 96%, 1);
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-1px);
+        }
+
+        .scrollable-list-in-card li span {
+            display: block;
+            text-align: right;
+            white-space: normal;
+            word-break: break-word;
+        }
+
+        .scrollable-list-in-card li span:first-child {
+            font-weight: bold;
+            color: var(--primary-blue-dark);
+            margin-bottom: var(--spacing-xs);
+            font-size: 1.1em;
+        }
+
+        .scrollable-list-in-card li span:last-child {
+            font-weight: normal;
+            font-size: 0.95em;
+            color: var(--text-secondary-gray);
+            flex-shrink: 0;
+        }
+
+        #dynamicStatsListContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-md);
+            flex: 1 1 auto;
+        }
+
+        #dynamicStatsListContainer>div {
+            background-color: var(--card-bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-medium);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-subtle);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-input {
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius-large);
+            border: 1px solid var(--border-light);
+            width: 100%;
+            margin-bottom: var(--spacing-md);
+            background-color: var(--card-bg-white);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            color: var(--text-primary-dark);
+            outline: none;
+            text-align: right;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+            padding-left: 45px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237f8c8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
+            background-repeat: no-repeat;
+            background-position: left 15px center;
+            background-size: 18px;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px hsla(205, 78%, 42%, 0.3);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .search-input-wrapper input {
+            margin-bottom: 0;
+        }
+
+        .clear-search-btn {
+            background-color: var(--accent-red);
+            color: var(--text-light);
+            border: none;
+            border-radius: var(--border-radius-pill);
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: var(--shadow-subtle);
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 5px;
+            height: 45px;
         }
 
-        button:hover {
-            background-color: var(--accent-color);
-            transform: translateY(-2px);
+        .clear-search-btn:hover {
+            background-color: hsla(350, 70%, 45%, 1);
+            transform: translateY(-1px);
         }
 
-        button:active {
-            transform: translateY(0);
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            width: 100%;
+            padding: var(--spacing-sm);
+            background-color: var(--primary-bg-light);
+            border-radius: var(--border-radius-medium);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .result {
-            background-color: #e7f3ff;
-            padding: 15px;
-            border-radius: var(--border-radius);
-            font-weight: bold;
-            margin-top: 10px;
+        .firebase-product-list-wrapper>.filter-controls {
+            background-color: transparent;
+            box-shadow: none;
+            padding-top: 0;
+            padding-left: 0;
+            padding-right: 0;
+            border-radius: 0;
+        }
+
+        .filter-controls .form-group {
+            flex: 1 1 48%;
+            min-width: 250px;
+            margin-bottom: 0;
+        }
+
+        .filter-controls .form-group label {
+            display: none;
+        }
+
+        .filter-controls select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            box-sizing: border-box;
+            background-color: var(--card-bg-white);
+            border-radius: var(--border-radius-small);
+            border: 1px solid var(--border-light);
+            font-size: 1em;
+            color: var(--text-primary-dark);
+            outline: none;
             text-align: right;
-            font-size: 1.1em;
-            border-left: 4px solid var(--main-color);
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237f8c8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: left 10px center;
+            background-size: 12px;
+            padding-left: 30px;
+            padding-right: 0.8rem;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
-        .result ul {
-            list-style: none;
-            padding: 0;
-            margin: 10px 0;
+        .filter-controls select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px hsla(205, 78%, 42%, 0.3);
         }
 
-        .result ul li {
-            margin-bottom: 8px;
-            padding-right: 15px;
-            position: relative;
-            font-weight: normal;
-            font-size: 0.95em;
+        .product-list-grid {
+            display: grid;
+            gap: var(--spacing-md);
+            align-content: start;
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-medium);
+            background-color: var(--card-bg-white);
+            padding: var(--spacing-md);
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            overflow-y: visible;
+            max-height: none;
+            padding-right: 0;
+            margin-top: var(--spacing-sm);
+            -webkit-overflow-scrolling: touch;
         }
 
-        .result ul li::before {
-            content: "•";
-            color: var(--main-color);
-            position: absolute;
-            right: 0;
-            top: 0;
-            font-size: 1.2em;
+        .product-list-grid.invoice-cards-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            justify-items: stretch;
+        }
+
+        .mini-invoice-card {
+            border: 1px solid var(--border-light);
+            border-right: 5px solid var(--accent-blue);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-medium);
+            background-color: var(--card-bg-white);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+            text-align: right;
+            font-size: 0.85em;
             line-height: 1.4;
+            cursor: pointer;
+            /* Keep cursor pointer for general card click */
+            position: relative;
+            box-sizing: border-box;
         }
 
-        .result.success {
-            background-color: #e8f8f6;
-            border-left-color: var(--success-color);
+        .mini-invoice-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-strong);
+            border-right-color: var(--accent-green);
         }
 
-        .result.error {
-            background-color: #fee8e9;
-            border-left-color: var(--error-color);
+        .mini-invoice-card .invoice-mini-header p,
+        .mini-invoice-card .invoice-mini-footer p {
+            margin: 2px 0;
+            color: var(--text-primary-dark);
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, .3);
+        .mini-invoice-card .invoice-mini-header p strong {
+            color: var(--primary-blue-dark);
+            font-size: 1.1em;
+        }
+
+        .mini-product-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.8em;
+            width: 100%;
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-small);
+            padding: var(--spacing-xs);
+            box-sizing: border-box;
+            background-color: var(--primary-bg-light);
+        }
+
+        .mini-product-item-header,
+        .mini-product-item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1.5fr;
+            gap: var(--spacing-xs);
+            align-items: center;
+            padding: 4px 6px;
+            text-align: right;
+        }
+
+        .mini-product-item-header {
+            background-color: var(--primary-blue-dark);
+            color: var(--text-light);
+            font-weight: bold;
+            border-radius: var(--border-radius-small);
+        }
+
+        .mini-product-item-row {
+            background-color: var(--card-bg-white);
+            border: 1px solid var(--border-light);
+            border-radius: var(--border-radius-small);
+        }
+
+        .mini-product-item-row:nth-child(even) {
+            background-color: var(--primary-bg-light);
+        }
+
+        .mini-product-item-row div {
+            white-space: normal;
+            word-break: break-word;
+            text-align: right;
+            color: var(--text-secondary-gray);
+        }
+
+        .mini-product-item-row div:first-child {
+            color: var(--text-primary-dark);
+        }
+
+        .mini-invoice-card .invoice-mini-footer {
+            border-top: 1px dashed var(--border-light);
+            padding-top: var(--spacing-sm);
+            text-align: right;
+            margin-top: var(--spacing-sm);
+        }
+
+        .mini-invoice-card .invoice-mini-footer p strong {
+            color: var(--accent-green);
+            font-size: 1.1em;
+        }
+
+        .mini-invoice-card .invoice-actions {
+            display: none;
+            /* Hide actions container */
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+
+        .mini-invoice-card .invoice-actions .btn-secondary-light {
+            flex: 0 0 auto;
+            width: fit-content;
+            padding: 0.5rem 1rem;
+            height: auto;
+            font-size: 0.8em;
+            margin-top: 0;
+            background-color: var(--primary-blue-dark);
+            background-image: linear-gradient(135deg, var(--primary-blue-dark), hsla(210, 29%, 22%, 1));
+        }
+
+        .mini-invoice-card .invoice-actions .btn-secondary-light:hover {
+            background-image: linear-gradient(135deg, hsla(210, 29%, 22%, 1), var(--primary-blue-dark));
+        }
+
+        .loader {
+            border: 4px solid var(--border-light);
+            border-top: 4px solid var(--accent-blue);
             border-radius: 50%;
-            border-top-color: var(--white);
-            animation: spin 1s ease-in-out infinite;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        .loader.active {
+            display: block;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
+        /* Toast styles (for this self-contained section) */
+        #toast-container-firebase {
+            position: fixed;
+            bottom: var(--spacing-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            pointer-events: none;
+            align-items: center;
+            width: auto;
+            max-width: 90vw;
+            box-sizing: border-box;
+            padding: var(--spacing-md);
+        }
 
+        .toast-firebase {
+            background-color: var(--card-bg-white);
+            color: var(--text-primary-dark);
+            padding: 15px 20px;
+            border-radius: var(--border-radius-medium);
+            box-shadow: var(--shadow-medium);
+            min-width: 250px;
+            max-width: 350px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeinout 4s forwards;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border-light);
+            direction: rtl;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .toast-firebase.success {
+            border-right: 5px solid var(--accent-green);
+            border-left: none;
+        }
+
+        .toast-firebase.error {
+            border-right: 5px solid var(--accent-red);
+            border-left: none;
+        }
+
+        .toast-firebase.info {
+            border-right: 5px solid var(--accent-blue);
+            border-left: none;
+        }
+
+        .toast-firebase .icon {
+            font-size: 1.5em;
+            line-height: 1;
+        }
+
+        .toast-firebase.success .icon {
+            color: var(--accent-green);
+        }
+
+        .toast-firebase.error .icon {
+            color: var(--accent-red);
+        }
+
+        .toast-firebase.info .icon {
+            color: var(--accent-blue);
+        }
+
+        @keyframes fadeinout {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            90% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+        }
+
+        /* Responsive adjustments for this section */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            }
+
+            .stat-card h3 {
+                font-size: 1em;
+            }
+
+            .stat-card p {
+                font-size: 1.4em;
+            }
+
+            #dynamicStatsListContainer {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 1.8em;
+            }
+
+            .section-title {
+                font-size: 1.5em;
+            }
+
+            .stat-card p {
+                font-size: 1.3em;
+            }
+
+            .statistics-section .section-title {
+                font-size: 1.5em;
+            }
+
+            #dynamicStatsListContainer {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-controls .form-group {
+                min-width: unset;
+                flex: 1 1 100%;
+            }
+
+            .stat-card-list {
+                flex-direction: column;
+            }
+
+            .stat-card-list>div {
+                flex: 1 1 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 1.8em;
+            }
+
+            .section-title {
+                font-size: 1.5em;
+            }
+
+            .stat-card h3 {
+                font-size: 0.9em;
+            }
+
+            .stat-card p {
+                font-size: 1.2em;
+            }
+        }
+
+        /* Styles for Firebase Product Cards */
+        .firebase-product-card {
+            border: 1px solid var(--border-light);
+            border-right: 5px solid var(--accent-blue);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-medium);
+            background-color: var(--card-bg-white);
+            box-shadow: var(--shadow-subtle);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+            text-align: right;
+            font-size: 0.85em;
+            line-height: 1.4;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .firebase-product-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-strong);
+            border-right-color: var(--accent-green);
+        }
+
+        .firebase-product-card p {
+            margin: 2px 0;
+            color: var(--text-primary-dark);
+        }
+
+        .firebase-product-card p strong {
+            color: var(--primary-blue-dark);
+            font-size: 1.1em;
+        }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
 </head>
 <body>
-
-    <div class="container">
-        <div class="header">
-            <h1>⚡ الحاسبة الكهربائية المتكاملة</h1>
-            <p>أداة متكاملة لحل جميع حساباتك الكهربائية والهندسية</p>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-percentage-calculator">
-                <span class="icon">📊</span>
-                <span class="text">حساب النسبة المئوية</span>
-            </h2>
-            <div id="modal-percentage-calculator" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>📊 حساب النسبة المئوية</h2>
-                    <div class="calculator" id="percentage-calculator">
-                        <div class="calculator-description">
-                            حساب النسبة المئوية لقيمة معينة من عدد أصلي.
-                        </div>
-                        <div class="input-group">
-                            <label for="original-number">العدد الأصلي</label>
-                            <input type="number" id="original-number" placeholder="أدخل العدد الأصلي" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="percentage-value">النسبة المئوية المطلوبة (%)</label>
-                            <input type="number" id="percentage-value" placeholder="أدخل النسبة المئوية" min="0" max="100">
-                        </div>
-                        <button id="calculate-percentage-btn">احسب الناتج</button>
-                        <div class="result" id="percentage-result">الناتج: ...</div>
+    <section class="firebase-stats-combined-container fade-in-section" id="firebaseProductsDisplay">
+        <h1 class="main-title">بيانات Firebase والإحصائيات</h1>
+        <div class="firebase-content-wrapper">
+            <section class="statistics-section card-container">
+                <h2 class="section-title"><span class="icon"><i class="fas fa-chart-pie"></i></span>إحصائيات
+                    المبيعات التفصيلية</h2>
+                <div class="filter-controls" style="background-color: transparent; box-shadow: none; padding:0;">
+                    <div class="form-group">
+                        <label for="commonPhoneDropdown" class="sr-only">تصفية الكل حسب رقم الهاتف</label>
+                        <select id="commonPhoneDropdown"></select>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-unit-converter">
-                <span class="icon">🔌</span>
-                <span class="text">محول الوحدات الكهربائية</span>
-            </h2>
-            <div id="modal-unit-converter" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>🔌 محول الوحدات الكهربائية</h2>
-                    <div class="calculator" id="unit-converter">
-                        <div class="calculator-description">
-                            أدخل قيمة بوحدة معينة (كيلوواط، كيلو فولت أمبير، حصان، أو أمبير) مع الجهد، الطور، ومعامل
-                            القدرة، وسنقوم بتحويلها إلى الوحدات الأخرى.
-                        </div>
-                        <div class="input-group">
-                            <label for="uc-voltage">الجهد (V)</label>
-                            <input type="number" id="uc-voltage" placeholder="مثال: 230 أو 400" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="uc-phase">الطور</label>
-                            <select id="uc-phase">
-                                <option value="single">أحادي الطور</option>
-                                <option value="three">ثلاثي الطور</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="uc-power-factor">معامل القدرة (cos φ)</label>
-                            <input type="number" id="uc-power-factor" value="0.8" step="0.01" min="0.1" max="1"
-                                placeholder="مثال: 0.8">
-                        </div>
-                        <div class="input-group">
-                            <label for="uc-input-value">القيمة المدخلة</label>
-                            <input type="number" id="uc-input-value" placeholder="أدخل القيمة" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="uc-input-unit">وحدة القيمة المدخلة</label>
-                            <select id="uc-input-unit">
-                                <option value="kw">كيلوواط (kW)</option>
-                                <option value="kva">كيلو فولت أمبير (kVA)</option>
-                                <option value="hp">حصان (HP)</option>
-                                <option value="amp">أمبير (Amp)</option>
-                            </select>
-                        </div>
-                        <button id="convert-unit-btn">تحويل</button>
-                        <div class="result" id="uc-result">
-                            <p>النتائج: ...</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>إجمالي سعر الشراء</h3>
+                        <p id="totalPurchaseCost">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي سعر البيع</h3>
+                        <p id="totalSellingPrice">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي العمولة</h3>
+                        <p id="totalCommission">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي الأرباح</h3>
+                        <p id="totalProfit">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي المبيعات (HT)</h3>
+                        <p id="totalSalesHT">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي TVA</h3>
+                        <p id="totalTVA">0.00 DH</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>إجمالي المبيعات (TTC)</h3>
+                        <p id="totalSalesTTC">0.00 DH</p>
+                    </div>
+                    <div class="stat-card-list">
+                        <div id="dynamicStatsListContainer">
+                            <div>
+                                <h3 class="list-subtitle">المنتجات الأكثر مبيعاً</h3>
+                                <ul id="topSellingProductsList" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="list-subtitle">العملاء الأكثر نشاطاً</h3>
+                                <ul id="topCustomersList" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="list-subtitle">أصحاب الفواتير الأكثر نشاطاً</h3>
+                                <ul id="topInvoiceOwnersList" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="list-subtitle">الموردون الأكثر نشاطاً</h3>
+                                <ul id="topSuppliersList" class="scrollable-list-in-card">
+                                    <li>لا توجد بيانات</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-solar-panels">
-                <span class="icon">☀️</span>
-                <span class="text">حساب عدد الألواح الشمسية لمضخة</span>
-            </h2>
-            <div id="modal-solar-panels" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>☀️ حساب عدد الألواح الشمسية لمضخة</h2>
-                    <div class="calculator" id="solar-panels-calculator">
-                        <div class="calculator-description">
-                            حساب عدد الألواح الشمسية المطلوبة لتشغيل مضخة بناءً على قدرتها بالكيلوواط، مع الأخذ في الاعتبار جهد و طور المضخة (للمعلومات)، و معامل أداء الألواح وكفاءة المحول.
-                        </div>
-                        <div class="input-group">
-                            <label for="pump-voltage">جهد المضخة (V)</label>
-                            <input type="number" id="pump-voltage" placeholder="جهد المضخة بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="pump-power-kw">قدرة المضخة (kW)</label>
-                            <input type="number" id="pump-power-kw" placeholder="أدخل قدرة المضخة بالكيلوواط" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="pump-phase">طور المضخة</label>
-                            <select id="pump-phase">
-                                <option value="single">أحادي الطور</option>
-                                <option value="three">ثلاثي الطور</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="pump-power-factor">معامل قدرة المضخة (cos φ)</label>
-                            <input type="number" id="pump-power-factor" value="0.8" step="0.01" min="0.1" max="1" placeholder="مثال: 0.8">
-                        </div>
-                        <div class="input-group">
-                            <label for="panel-voltage">جهد اللوح الشمسي (Vmp)</label>
-                            <input type="number" id="panel-voltage" placeholder="جهد اللوح بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="panel-current">تيار اللوح الشمسي (Imp)</label>
-                            <input type="number" id="panel-current" placeholder="تيار اللوح بالأمبير" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="solar-performance-factor">عامل أداء الألواح (%)</label>
-                            <input type="number" id="solar-performance-factor" value="80" min="50" max="100" step="1"
-                                placeholder="مثال: 80 (80%)">
-                        </div>
-                        <div class="input-group">
-                            <label for="inverter-efficiency">كفاءة المحول (Inverter Efficiency %)</label>
-                            <input type="number" id="inverter-efficiency" value="90" min="50" max="100" step="1"
-                                placeholder="مثال: 90 (90%)">
-                        </div>
-                        <div class="input-group">
-                            <label for="ideal-series-voltage">التوتر المثالي للألواح على التوالي (V)</label>
-                            <input type="number" id="ideal-series-voltage" placeholder="مثال: 300V" min="1">
-                        </div>
-                        <button id="calculate-solar-panels-btn">احسب الألواح</button>
-                        <div class="result" id="solar-panels-result">النتائج: ...</div>
+                <div class="search-input-wrapper">
+                    <button type="button" class="clear-search-btn" id="clearCommonSearchInput"><span
+                            class="icon"><i class="fas fa-times-circle"></i></span>مسح</button>
+                    <input type="text" id="commonSearchInput" class="search-input"
+                        placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions">
+                    <datalist id="allSearchOptions"></datalist>
+                </div>
+            </section>
+            <section class="firebase-product-list-wrapper card-container">
+                <h2 class="section-title"><span class="icon"><i class="fas fa-boxes"></i></span>قائمة منتجات Firebase
+                    (<span id="firebaseProductListCount">0</span>)</h2>
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="productPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
+                        <select id="productPhoneDropdown"></select>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-pulley-calculator">
-                <span class="icon">⚙️</span>
-                <span class="text">حساب سرعة أو قطر البكرة</span>
-            </h2>
-            <div id="modal-pulley-calculator" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>⚙️ حساب سرعة أو قطر البكرة</h2>
-                    <div class="calculator" id="pulley-calculator">
-                        <div class="calculator-description">
-                            احسب السرعة أو القطر المجهول للبكرة بناءً على ثلاثة قيم معلومة.
-                        </div>
-                        <div class="input-group">
-                            <label for="pulley-d1">قطر البكرة الأولى (مم)</label>
-                            <input type="number" id="pulley-d1" placeholder="قطر البكرة الأولى (اتركه فارغاً إذا كان مجهولاً)"
-                                min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="pulley-rpm1">سرعة البكرة الأولى (RPM)</label>
-                            <input type="number" id="pulley-rpm1" placeholder="سرعة البكرة الأولى (اتركه فارغاً إذا كان مجهولاً)"
-                                min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="pulley-d2">قطر البكرة الثانية (مم)</label>
-                            <input type="number" id="pulley-d2" placeholder="قطر البكرة الثانية (اتركه فارغاً إذا كان مجهولاً)"
-                                min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="pulley-rpm2">سرعة البكرة الثانية (RPM)</label>
-                            <input type="number" id="pulley-rpm2" placeholder="سرعة البكرة الثانية (اتركه فارغاً إذا كان مجهولاً)"
-                                min="0">
-                        </div>
-                        <button id="calculate-pulley-btn">احسب المجهول</button>
-                        <div class="result" id="pulley-result">النتائج: ...</div>
+                <div class="product-list-grid" id="firebaseProductsContainer">
+                    <p class="empty-list-message">لا توجد منتجات لعرضها.</p>
+                </div>
+                <div class="loader" id="firebaseProductsLoader"></div>
+            </section>
+            <section class="firebase-invoice-list-wrapper card-container">
+                <h2 class="section-title"><span class="icon"><i class="fas fa-cloud"></i></span>قائمة فواتير
+                    Firebase (<span id="firebaseInvoiceListCount">0</span>)</h2>
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="invoicePhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف</label>
+                        <select id="invoicePhoneDropdown"></select>
                     </div>
                 </div>
-            </div>
+                <div class="product-list-grid invoice-cards-grid" id="firebaseInvoicesContainer"></div>
+                <div class="loader" id="firebaseInvoicesLoader"></div>
+            </section>
         </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-battery-calculator">
-                <span class="icon">🔋</span>
-                <span class="text">حاسبة سعة البطارية</span>
-            </h2>
-            <div id="modal-battery-calculator" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>🔋 حاسبة سعة البطارية</h2>
-                    <div class="calculator" id="battery-calculator">
-                        <div class="calculator-description">
-                            حساب سعة البطارية المطلوبة بالأمبير-ساعة بناءً على متطلبات الجهاز وجهد البطارية، مع مراعاة
-                            عمق التفريغ وكفاءة البطارية، ونوع الجهاز (DC/AC)، وطوره ومعامل قدرته وكفاءة المحول (لأحمال
-                            التيار المتردد).
-                        </div>
-                        <div class="input-group">
-                            <label for="battery-device-type">نوع الجهاز</label>
-                            <select id="battery-device-type">
-                                <option value="dc">تيار مستمر (DC)</option>
-                                <option value="ac">تيار متردد (AC)</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="device-voltage">جهد الجهاز (V)</label>
-                            <input type="number" id="device-voltage" placeholder="توتر الجهاز بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="device-current">تيار الجهاز (A)</label>
-                            <input type="number" id="device-current" placeholder="تيار الجهاز بالأمبير" min="0.1">
-                        </div>
-
-                        <div class="input-group battery-ac-only" style="display: none;">
-                            <label for="battery-device-phase">طور الجهاز</label>
-                            <select id="battery-device-phase">
-                                <option value="single">أحادي الطور</option>
-                                <option value="three">ثلاثي الطور</option>
-                            </select>
-                        </div>
-                        <div class="input-group battery-ac-only" style="display: none;">
-                            <label for="battery-device-power-factor">معامل قدرة الجهاز (cos φ)</label>
-                            <input type="number" id="battery-device-power-factor" value="0.8" step="0.01" min="0.1"
-                                max="1" placeholder="مثال: 0.8">
-                        </div>
-                        <div class="input-group battery-ac-only" style="display: none;">
-                            <label for="inverter-efficiency-battery">كفاءة المحول (Inverter Efficiency %)</label>
-                            <input type="number" id="inverter-efficiency-battery" value="90" min="50" max="100" step="1"
-                                placeholder="مثال: 90 (90%)">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="operation-duration">مدة التشغيل (بالساعات)</label>
-                            <input type="number" id="operation-duration" placeholder="مدة التشغيل بالساعات" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="battery-voltage">توتر البطارية (V)</label>
-                            <input type="number" id="battery-voltage" placeholder="توتر البطارية بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="battery-dod">عمق التفريغ الأقصى (%)</label>
-                            <input type="number" id="battery-dod" value="80" min="10" max="100" step="1"
-                                placeholder="مثال: 80 (80%)">
-                        </div>
-                        <div class="input-group">
-                            <label for="battery-efficiency">كفاءة البطارية (%)</label>
-                            <input type="number" id="battery-efficiency" value="90" min="50" max="100" step="1"
-                                placeholder="مثال: 90 (90%)">
-                        </div>
-                        <button id="calculate-battery-btn">احسب السعة</button>
-                        <div class="result" id="battery-result">النتائج: ...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-flow-converter">
-                <span class="icon">💧</span>
-                <span class="text">تحويل وحدات التدفق</span>
-            </h2>
-            <div id="modal-flow-converter" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>💧 تحويل وحدات التدفق</h2>
-                    <div class="calculator" id="flow-converter">
-                        <div class="calculator-description">
-                            تحويل معدل التدفق بين متر مكعب في الساعة ولتر في الثانية.
-                        </div>
-                        <div class="input-group">
-                            <label for="flow-input-value">القيمة</label>
-                            <input type="number" id="flow-input-value" placeholder="أدخل القيمة للتحويل" min="0">
-                        </div>
-                        <div class="input-group">
-                            <label for="flow-conversion-type">نوع التحويل</label>
-                            <select id="flow-conversion-type">
-                                <option value="m3h-to-lps">من م³/ساعة إلى لتر/ثانية</option>
-                                <option value="lps-to-m3h">من لتر/ثانية إلى م³/ساعة</option>
-                            </select>
-                        </div>
-                        <button id="convert-flow-btn">تحويل</button>
-                        <div class="result" id="flow-result">النتيجة: ...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-tank-calculator">
-                <span class="icon">🧱</span>
-                <span class="text">حساب سعة الخزان والتدفق</span>
-            </h2>
-            <div id="modal-tank-calculator" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>🧱 حساب سعة الخزان والتدفق</h2>
-                    <div class="calculator" id="tank-calculator">
-                        <div class="calculator-description">
-                            حساب سعة الخزان ومدة تفريغه بناءً على الأبعاد وشكل الخزان ومعدل التدفق.
-                        </div>
-                        <div class="input-group">
-                            <label for="tank-shape">شكل الخزان</label>
-                            <select id="tank-shape">
-                                <option value="cube">مكعب</option>
-                                <option value="cylinder">أسطواني</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="tank-length">الطول (متر) / القطر (متر)</label>
-                            <input type="number" id="tank-length" placeholder="للمكعب: الطول / للأسطواني: القطر"
-                                min="0.1">
-                        </div>
-                        <div class="input-group" id="tank-width-group">
-                            <label for="tank-width">العرض (متر)</label>
-                            <input type="number" id="tank-width" placeholder="العرض بالمتر" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="tank-height">الارتفاع (متر)</label>
-                            <input type="number" id="tank-height" placeholder="الارتفاع بالمتر" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="tank-flow-rate">تدفق المياه (م³/ساعة)</label>
-                            <input type="number" id="tank-flow-rate" placeholder="معدل تدفق المياه لتفريغ الخزان"
-                                min="0.1">
-                        </div>
-                        <button id="calculate-tank-btn">احسب السعة والوقت</button>
-                        <div class="result" id="tank-result">النتائج: ...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-resistance-voltage-drop">
-                <span class="icon">📏</span>
-                <span class="text">حاسبة مساحة مقطع الموصل (فقد الجهد)</span>
-            </h2>
-            <div id="modal-resistance-voltage-drop" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>📏 حاسبة مساحة مقطع الموصل (فقد الجهد)</h2>
-                    <div class="calculator" id="resistance-voltage-drop">
-                        <div class="calculator-description">
-                            احسب مساحة المقطع العرضي المطلوبة للموصل لضمان أن فقد الجهد لا يتجاوز النسبة المسموح بها، مع
-                            مراعاة نوع الطور ومعامل القدرة.
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-voltage">الجهد الكهربائي (V)</label>
-                            <input type="number" id="rvd-voltage" placeholder="الجهد بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-current">التيار الكهربائي (A)</label>
-                            <input type="number" id="rvd-current" placeholder="التيار بالأمبير" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-phase">نوع الطور</label>
-                            <select id="rvd-phase">
-                                <option value="single">أحادي الطور</option>
-                                <option value="three">ثلاثي الطور</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-power-factor">معامل القدرة (cos φ)</label>
-                            <input type="number" id="rvd-power-factor" value="0.8" step="0.01" min="0.1" max="1"
-                                placeholder="مثال: 0.8">
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-material">نوع المادة</label>
-                            <select id="rvd-material">
-                                <option value="copper">نحاس (0.0172 Ω·mm²/m)</option>
-                                <option value="aluminum">ألمنيوم (0.0282 Ω·mm²/m)</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-length">طول الموصل (متر) - (طول في اتجاه واحد)</label>
-                            <input type="number" id="rvd-length" placeholder="طول الكابل بالمتر" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="rvd-allowed-voltage-drop-percentage">الحد الأقصى لفقد الجهد المسموح به (%)</label>
-                            <input type="number" id="rvd-allowed-voltage-drop-percentage" value="3" min="0.1" max="10"
-                                step="0.1" placeholder="مثال: 3 (3%)">
-                        </div>
-                        <button id="calculate-rvd-btn">احسب مساحة المقطع</button>
-                        <div class="result" id="rvd-result">النتائج: ...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2 class="section-title" data-modal-target="modal-capacitor-calculator">
-                <span class="icon">⚡</span>
-                <span class="text">حساب سعة المكثف لتحسين معامل القدرة</span>
-            </h2>
-            <div id="modal-capacitor-calculator" class="modal">
-                <div class="modal-content">
-                    <span class="close-button">&times;</span>
-                    <h2>⚡ حساب سعة المكثف لتحسين معامل القدرة</h2>
-                    <div class="calculator" id="capacitor-calculator">
-                        <div class="calculator-description">
-                            حساب سعة المكثف المطلوبة (µF) لتحسين معامل القدرة في الدوائر الكهربائية، مع إمكانية تحديد
-                            التردد ونوع الطور.
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-voltage">جهد التشغيل (V)</label>
-                            <input type="number" id="cap-voltage" placeholder="جهد التشغيل بالفولت" min="1">
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-phase">نوع الطور</label>
-                            <select id="cap-phase">
-                                <option value="single">أحادي الطور</option>
-                                <option value="three">ثلاثي الطور</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-real-power">القدرة الحقيقية (kW)</label>
-                            <input type="number" id="cap-real-power" placeholder="القدرة بالكيلوواط" min="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-current-pf">معامل القدرة الحالي (cos φ)</label>
-                            <input type="number" id="cap-current-pf" placeholder="مثال: 0.7" min="0.1" max="0.99"
-                                step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-desired-pf">معامل القدرة المستهدف (cos φ^)</label>
-                            <input type="number" id="cap-desired-pf" placeholder="مثال: 0.95" min="0.1" max="0.99"
-                                step="0.01">
-                        </div>
-                        <div class="input-group">
-                            <label for="cap-frequency">التردد (Hz)</label>
-                            <input type="number" id="cap-frequency" value="50" min="1" step="1"
-                                placeholder="مثال: 50 أو 60">
-                        </div>
-                        <button id="calculate-capacitor-btn">احسب السعة</button>
-                        <div class="result" id="capacitor-result">السعة المطلوبة: ...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
+    </section>
+    <div id="toast-container-firebase"></div>
+    <datalist id="allSearchOptions"></datalist>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const sectionTitles = document.querySelectorAll(".section-title");
-            const modals = document.querySelectorAll(".modal");
-            const closeButtons = document.querySelectorAll(".close-button");
+        // Firebase Configuration (must match your project)
+        const firebaseConfig = {
+            databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
+        };
+        let firebaseApp;
+        let database;
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+            UI.showToast("فشل تهيئة Firebase. قد لا تعمل ميزات البيانات السحابية.", 'error');
+        }
 
-            function displayResult(elementId, message, isSuccess) {
-                const resultElement = document.getElementById(elementId);
-                if (!resultElement) {
-                    console.error(`Result element with ID '${elementId}' not found.`);
+        // App ID (use __app_id if available in your environment, otherwise provide a default)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // Global Data Stores for this section
+        let allFirebaseInvoicesData = []; // Stores invoices after mapping to local keys
+        let allFirebaseProductsData = []; // Stores products after mapping to local keys
+
+        // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
+        // Define mapping from local JavaScript object keys to French keys for Firebase
+        const KEY_MAPPING_TO_FIREBASE = {
+            // Product Keys (fields within the product object)
+            id: 'id', // Keep ID as is for Firebase path
+            name: 'nom',
+            purchasePrice: 'prixAchat',
+            sellingPrice: 'prixVente',
+            supplierName: 'nomFournisseur',
+            supplierAddress: 'adresseFournisseur',
+            supplierPhone: 'telephoneFournisseur',
+            stockQuantity: 'quantiteStock',
+            date: 'dateCreationProduit', // Specific for product creation date
+            quantity: 'quantiteSelectionnee', // Quantity selected for invoice (transient local state)
+            isLocal: 'estLocal', // Whether it's a locally managed product
+            // Invoice Keys (fields within the invoice object)
+            date: 'dateFacture', // Formatted date string for display
+            isoDate: 'dateIsoFacture', // ISO string for sorting
+            customerName: 'nomClient',
+            ownerName: 'nomProprietaire',
+            ownerAddress: 'adresseProprietaire',
+            ownerPhone: 'telephoneProprietaire', // Used in path and as data
+            products: 'produits', // Array of products within invoice
+            totalHT: 'totalHT',
+            totalHTBeforeCommission: 'totalHTAvantCommission',
+            tva: 'tva',
+            totalTTC: 'totalTTC',
+            totalProfit: 'profitTotal',
+            totalCommission: 'commissionTotale',
+            invoiceCommissionRate: 'tauxCommissionFacture',
+            // Product within Invoice Keys (fields within product objects inside the invoice's products array)
+            quantityUsed: 'quantiteUtilisee' // Quantity used in a specific invoice item
+        };
+
+        // Create reverse mapping for converting from Firebase French keys back to local keys
+        const KEY_MAPPING_FROM_FIREBASE = {};
+        for (const localKey in KEY_MAPPING_TO_FIREBASE) {
+            KEY_MAPPING_FROM_FIREBASE[KEY_MAPPING_TO_FIREBASE[localKey]] = localKey;
+        }
+
+        /**
+         * Maps an object's keys from local JavaScript names to French names for Firebase.
+         * Keys not found in KEY_MAPPING_TO_FIREBASE are passed through as is (e.g., 'id').
+         * Handles nested 'products' array within an invoice object recursively.
+         * @param {object} obj - The object with local keys to map.
+         * @returns {object} A new object with keys mapped to French for Firebase.
+         */
+        function mapToFirebaseKeys(obj) {
+            if (obj === null || typeof obj !== 'object') {
+                return obj;
+            }
+
+            const newObj = {};
+            for (const key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    if (key === 'products' && Array.isArray(obj[key])) {
+                        // Recursively map keys for products array within an invoice
+                        newObj[KEY_MAPPING_TO_FIREBASE[key] || key] = obj[key].map(p => mapToFirebaseKeys(p));
+                    } else {
+                        // Map key if a mapping exists, otherwise use the original key
+                        newObj[KEY_MAPPING_TO_FIREBASE[key] || key] = obj[key];
+                    }
+                }
+            }
+            return newObj;
+        }
+
+        /**
+         * Maps an object's keys from French Firebase names back to local JavaScript names.
+         * Keys not found in KEY_MAPPING_FROM_FIREBASE are passed through as is.
+         * Handles nested 'produits' array within an invoice object recursively.
+         * @param {object} fbObj - The object with French Firebase keys to map.
+         * @returns {object} A new object with keys mapped back to local JavaScript names.
+         */
+        function mapFromFirebaseKeys(fbObj) {
+            if (fbObj === null || typeof fbObj !== 'object') {
+                return fbObj;
+            }
+
+            const newObj = {};
+            for (const fbKey in fbObj) {
+                if (fbObj.hasOwnProperty(fbKey)) {
+                    // Find the local key that maps to this Firebase key
+                    const localKey = KEY_MAPPING_FROM_FIREBASE[fbKey];
+                    if (fbKey === 'produits' && Array.isArray(fbObj[fbKey])) {
+                        // Recursively map keys for 'produits' array
+                        newObj[localKey || fbKey] = fbObj[fbKey].map(p => mapFromFirebaseKeys(p));
+                    } else {
+                        // Map key if a reverse mapping exists, otherwise use the original Firebase key
+                        newObj[localKey || fbKey] = fbObj[fbKey];
+                    }
+                }
+            }
+            return newObj;
+        }
+
+        // ====== UI Elements References for this section ======
+        let UIElements; // Declare UIElements here, assign inside window.onload
+
+        // ====== UI Utility Functions (minimal set for this section) ======
+        const UI = {
+            showToast: (message, type) => {
+                const toast = document.createElement('div');
+                toast.classList.add('toast-firebase', type); // Use specific class for this module's toasts
+                let iconHtml = '';
+                if (type === 'success') { iconHtml = '<span class="icon"><i class="fas fa-check"></i></span>'; }
+                else if (type === 'error') { iconHtml = '<span class="icon"><i class="fas fa-times"></i></span>'; }
+                else if (type === 'info') { iconHtml = '<span class="icon"><i class="fas fa-info-circle"></i></span>'; }
+                toast.innerHTML = `${iconHtml}<span>${message}</span>`;
+                UIElements.toastContainer.appendChild(toast);
+                setTimeout(() => { toast.remove(); }, 4000);
+            },
+            toggleGeneralLoader: (loaderElement, isLoading) => {
+                if (loaderElement) {
+                    loaderElement.classList.toggle('active', isLoading);
+                }
+            },
+            populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
+                const uniqueValues = new Set();
+                sourceArray.forEach(item => {
+                    if (item && item[propertyName]) {
+                        uniqueValues.add(item[propertyName].trim());
+                    }
+                });
+                datalistElement.innerHTML = '';
+                Array.from(uniqueValues).sort().forEach(value => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    datalistElement.appendChild(option);
+                });
+            }
+        };
+
+        // ====== Firebase Data & Statistics Logic (extracted) ======
+        const FirebaseData = {
+            init: () => {
+                // Now UIElements are guaranteed to be defined
+                UIElements.commonSearchInput.addEventListener('input', FirebaseData.applyCombinedFilters);
+                UIElements.clearCommonSearchInputButton.addEventListener('click', FirebaseData.clearAndFilter);
+
+                // Event listeners for phone dropdowns
+                UIElements.commonPhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
+                UIElements.productPhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
+                UIElements.invoicePhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
+
+                // Ensure search input has style
+                UIElements.commonSearchInput.classList.add('search-input');
+            },
+            // Populates phone number dropdowns from Firebase data structure
+            populatePhoneDropdowns: (phoneNumbers) => {
+                const dropdowns = [
+                    UIElements.commonPhoneDropdown,
+                    UIElements.productPhoneDropdown,
+                    UIElements.invoicePhoneDropdown
+                ];
+                dropdowns.forEach(dropdown => {
+                    dropdown.innerHTML = '<option value="all">عرض الكل</option>';
+                    Array.from(phoneNumbers).sort().forEach(phoneNumber => {
+                        const option = document.createElement('option');
+                        option.value = phoneNumber;
+                        option.textContent = phoneNumber;
+                        dropdown.appendChild(option);
+                    });
+                });
+            },
+            // Fetches all data (invoices and products) from Firebase
+            fetchAndDisplayCombinedFirebaseData: async () => {
+                UI.toggleGeneralLoader(UIElements.firebaseLoader, true);
+                UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
+                UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
+
+                if (!database) {
+                    UI.showToast("قاعدة بيانات Firebase غير جاهزة لجلب البيانات.", 'info');
+                    UI.toggleGeneralLoader(UIElements.firebaseLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
                     return;
                 }
-                resultElement.innerHTML = message;
-                resultElement.className = `result ${isSuccess ? 'success' : 'error'}`;
-            }
 
-            function saveCalculatorState(calculatorId, data) {
+                const alldataRef = database.ref(`${appId}/alldata`);
+
                 try {
-                    localStorage.setItem(calculatorId + '_state', JSON.stringify(data));
-                    // console.log(`State of ${calculatorId} saved:`, data); // For debugging
-                } catch (e) {
-                    console.error("Error saving data to localStorage:", e);
-                }
-            }
+                    const snapshot = await alldataRef.once('value');
+                    const data = snapshot.val();
 
-            function loadCalculatorState(calculatorId) {
-                try {
-                    const storedData = localStorage.getItem(calculatorId + '_state');
-                    if (storedData) {
-                        // console.log(`State of ${calculatorId} loaded:`, JSON.parse(storedData)); // For debugging
-                        return JSON.parse(storedData);
-                    }
-                } catch (e) {
-                    console.error("Error loading data from Local Storage:", e);
-                }
-                return null;
-            }
-            
-            function populateInputs(calculatorId, inputsData, targetElement) {
-                // console.log(`Populating inputs for ${calculatorId}`); // For debugging
-                // console.log('Inputs data:', inputsData); // For debugging
-                if (!targetElement || !inputsData) return;
+                    allFirebaseInvoicesData = [];
+                    // Using a Map to handle unique products, avoiding duplicates from different sources
+                    const uniqueProductsMap = new Map();
+                    const uniquePhoneNumbers = new Set();
 
-                const currentDefaultValues = {
-                    'unit-converter': {
-                        'uc-power-factor': "0.8",
-                        'uc-input-unit': "kw",
-                        'uc-phase': "single"
-                    },
-                    'tank-calculator': {
-                        'tank-shape': "cube"
-                    },
-                    'resistance-voltage-drop': {
-                        'rvd-material': "copper",
-                        'rvd-allowed-voltage-drop-percentage': "3",
-                        'rvd-phase': "single",
-                        'rvd-power-factor': "0.8"
-                    },
-                    'flow-converter': {
-                        'flow-conversion-type': "m3h-to-lps"
-                    },
-                    'capacitor-calculator': {
-                        'cap-current-pf': "0.7",
-                        'cap-desired-pf': "0.95",
-                        'cap-frequency': "50",
-                        'cap-phase': "single"
-                    },
-                    'solar-panels-calculator': {
-                        'solar-performance-factor': "80",
-                        'inverter-efficiency': "90",
-                        'pump-voltage': "230",
-                        'pump-phase': "single",
-                        'pump-power-factor': "0.8",
-                        'ideal-series-voltage': ""
-                    },
-                    'battery-calculator': {
-                        'battery-dod': "80",
-                        'battery-efficiency': "90",
-                        'battery-device-type': "dc",
-                        'battery-device-phase': "single",
-                        'battery-device-power-factor': "0.8",
-                        'inverter-efficiency-battery': "90"
-                    },
-                    'pulley-calculator': {
-                        'pulley-d1': "",
-                        'pulley-rpm1': "",
-                        'pulley-d2': "",
-                        'pulley-rpm2': ""
-                    }
-                };
+                    if (data) {
+                        for (const phoneKey in data) {
+                            if (data.hasOwnProperty(phoneKey)) {
+                                uniquePhoneNumbers.add(phoneKey); // Collect all phone numbers
+                                const phoneData = data[phoneKey];
 
-                // First, apply default values if they exist for the current calculator
-                if (currentDefaultValues[calculatorId]) {
-                    for (const defaultKey in currentDefaultValues[calculatorId]) {
-                        const defaultInputElement = targetElement.querySelector(`#${defaultKey}`);
-                        if (defaultInputElement) {
-                            defaultInputElement.value = currentDefaultValues[calculatorId][defaultKey];
-                        }
-                    }
-                }
+                                // Process Invoices
+                                if (phoneData.invoices) {
+                                    for (const invoiceFirebaseKey in phoneData.invoices) {
+                                        if (phoneData.invoices.hasOwnProperty(invoiceFirebaseKey)) {
+                                            const invoiceDetails = mapFromFirebaseKeys(phoneData.invoices[invoiceFirebaseKey]);
+                                            // Ensure id is present or create a stable one for the invoice
+                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey;
 
-                // Then, populate fields with saved data, overriding defaults if saved data exists
-                for (const key in inputsData) {
-                    let inputElementId = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                                            allFirebaseInvoicesData.push({
+                                                firebaseId: invoiceFirebaseKey, // Firebase's unique key for this invoice
+                                                firebasePhoneKey: phoneKey, // The phone key under which this invoice is
+                                                ...invoiceDetails
+                                            });
 
-                    // Special handling for some IDs that don't follow direct conversion pattern
-                    if (calculatorId === 'unit-converter') {
-                        if (key === 'voltage') inputElementId = 'uc-voltage';
-                        else if (key === 'inputValue') inputElementId = 'uc-input-value';
-                        else if (key === 'inputUnit') inputElementId = 'uc-input-unit';
-                        else if (key === 'powerFactor') inputElementId = 'uc-power-factor';
-                        else if (key === 'phase') inputElementId = 'uc-phase';
-                    } else if (calculatorId === 'solar-panels-calculator') {
-                        if (key === 'pumpPowerKw') inputElementId = 'pump-power-kw';
-                        else if (key === 'pumpVoltage') inputElementId = 'pump-voltage';
-                        else if (key === 'pumpPhase') inputElementId = 'pump-phase';
-                        else if (key === 'pumpPowerFactor') inputElementId = 'pump-power-factor';
-                        else if (key === 'panelVoltage') inputElementId = 'panel-voltage';
-                        else if (key === 'panelCurrent') inputElementId = 'panel-current';
-                        else if (key === 'solarPerformanceFactor') inputElementId = 'solar-performance-factor';
-                        else if (key === 'inverterEfficiency') inputElementId = 'inverter-efficiency';
-                        else if (key === 'idealSeriesVoltage') inputElementId = 'ideal-series-voltage';
-                    } else if (calculatorId === 'battery-calculator') {
-                        if (key === 'deviceType') inputElementId = 'battery-device-type';
-                        else if (key === 'devicePhase') inputElementId = 'battery-device-phase';
-                        else if (key === 'devicePowerFactor') inputElementId = 'battery-device-power-factor';
-                        else if (key === 'inverterEfficiencyBattery') inputElementId = 'inverter-efficiency-battery';
-                        else if (key === 'deviceVoltage') inputElementId = 'device-voltage';
-                        else if (key === 'deviceCurrent') inputElementId = 'device-current';
-                        else if (key === 'operationDuration') inputElementId = 'operation-duration';
-                        else if (key === 'batteryVoltage') inputElementId = 'battery-voltage';
-                        else if (key === 'dod') inputElementId = 'battery-dod';
-                        else if (key === 'efficiency') inputElementId = 'battery-efficiency';
-                    } else if (calculatorId === 'percentage-calculator') {
-                        if (key === 'originalNumber') inputElementId = 'original-number';
-                        else if (key === 'percentageValue') inputElementId = 'percentage-value';
-                    } else if (calculatorId === 'capacitor-calculator') {
-                        if (key === 'voltage') inputElementId = 'cap-voltage';
-                        else if (key === 'realPowerKW') inputElementId = 'cap-real-power';
-                        else if (key === 'currentPF') inputElementId = 'cap-current-pf';
-                        else if (key === 'desiredPF') inputElementId = 'cap-desired-pf';
-                        else if (key === 'frequency') inputElementId = 'cap-frequency';
-                        else if (key === 'phase') inputElementId = 'cap-phase';
-                    } else if (calculatorId === 'flow-converter') {
-                        if (key === 'inputValue') inputElementId = 'flow-input-value';
-                        else if (key === 'conversionType') inputElementId = 'flow-conversion-type';
-                    } else if (calculatorId === 'tank-calculator') {
-                        if (key === 'tankShape') inputElementId = 'tank-shape';
-                        else if (key === 'lengthOrDiameter') inputElementId = 'tank-length';
-                        else if (key === 'width') inputElementId = 'tank-width';
-                        else if (key === 'height') inputElementId = 'tank-height';
-                        else if (key === 'flowRateM3H') inputElementId = 'tank-flow-rate';
-                    } else if (calculatorId === 'resistance-voltage-drop') {
-                        if (key === 'voltage') inputElementId = 'rvd-voltage';
-                        else if (key === 'current') inputElementId = 'rvd-current';
-                        else if (key === 'material') inputElementId = 'rvd-material';
-                        else if (key === 'length') inputElementId = 'rvd-length';
-                        else if (key === 'allowedVoltageDropPercentage') inputElementId = 'rvd-allowed-voltage-drop-percentage';
-                        else if (key === 'phase') inputElementId = 'rvd-phase';
-                        else if (key === 'powerFactor') inputElementId = 'rvd-power-factor';
-                    } else if (calculatorId === 'pulley-calculator') {
-                        if (key === 'd1') inputElementId = 'pulley-d1';
-                        else if (key === 'rpm1') inputElementId = 'pulley-rpm1';
-                        else if (key === 'd2') inputElementId = 'pulley-d2';
-                        else if (key === 'rpm2') inputElementId = 'pulley-rpm2';
-                    }
+                                            // Process products within this invoice
+                                            if (invoiceDetails.products && Array.isArray(invoiceDetails.products)) {
+                                                invoiceDetails.products.forEach((product, index) => {
+                                                    // Generate a more robust ID for products coming from invoices if they don't have one
+                                                    // This ensures uniqueness for product display in case original IDs are missing or conflicting
+                                                    const productId = product.id || `${phoneKey}-${invoiceFirebaseKey}-${index}`;
 
-                    const inputElement = targetElement.querySelector(`#${inputElementId}`);
-                    // console.log(`Attempting to set ${inputElementId} to ${inputsData[key]}`); // For debugging
-                    if (inputElement && (inputElement.type === 'number' || inputElement.type === 'text' || inputElement.tagName === 'SELECT') && inputsData[key] !== null && inputsData[key] !== undefined) {
-                        inputElement.value = inputsData[key];
-                    }
-                }
-
-                // Manually dispatch change events for select fields that affect other field visibility
-                if (calculatorId === 'tank-calculator') {
-                    const tankShapeSelect = targetElement.querySelector('#tank-shape');
-                    if (tankShapeSelect) {
-                        const event = new Event('change');
-                        tankShapeSelect.dispatchEvent(event);
-                    }
-                }
-                if (calculatorId === 'battery-calculator') {
-                    const deviceTypeSelect = targetElement.querySelector('#battery-device-type');
-                    if (deviceTypeSelect) {
-                        const event = new Event('change');
-                        deviceTypeSelect.dispatchEvent(event);
-                    }
-                }
-            }
-
-            const calculatorFunctions = {
-                "unit-converter": {
-                    calculate: function () {
-                        const voltage = parseFloat(document.getElementById("uc-voltage").value);
-                        const phase = document.getElementById("uc-phase").value;
-                        const powerFactor = parseFloat(document.getElementById("uc-power-factor").value);
-                        const inputValue = parseFloat(document.getElementById("uc-input-value").value);
-                        const inputUnit = document.getElementById("uc-input-unit").value;
-
-                        if (isNaN(voltage) || voltage <= 0) { displayResult("uc-result", "الرجاء إدخال جهد صحيح وموجب.", false); return; }
-                        if (isNaN(powerFactor) || powerFactor <= 0.1 || powerFactor > 1) { displayResult("uc-result", "معامل القدرة يجب أن يكون بين 0.1 و 1.", false); return; }
-                        if (isNaN(inputValue) || inputValue < 0) { displayResult("uc-result", "الرجاء إدخال قيمة صحيحة وموجبة للتحويل.", false); return; }
-
-                        const sqrt3 = Math.sqrt(3);
-                        const HP_TO_KW_FACTOR = 0.7457;
-
-                        let kw = 0, kva = 0, hp = 0, amp = 0;
-                        let basePowerWatts = 0;
-                        let baseApparentPowerVA = 0;
-
-                        switch (inputUnit) {
-                            case 'kw':
-                                basePowerWatts = inputValue * 1000;
-                                baseApparentPowerVA = basePowerWatts / powerFactor;
-                                break;
-                            case 'kva':
-                                baseApparentPowerVA = inputValue * 1000;
-                                basePowerWatts = baseApparentPowerVA * powerFactor;
-                                break;
-                            case 'hp':
-                                basePowerWatts = inputValue * HP_TO_KW_FACTOR * 1000;
-                                baseApparentPowerVA = basePowerWatts / powerFactor;
-                                break;
-                            case 'amp':
-                                if (phase === "single") {
-                                    baseApparentPowerVA = voltage * inputValue;
-                                } else {
-                                    baseApparentPowerVA = sqrt3 * voltage * inputValue;
+                                                    uniqueProductsMap.set(productId, {
+                                                        id: productId,
+                                                        firebasePhoneKey: phoneKey,
+                                                        invoiceId: invoiceFirebaseKey, // Link to its invoice
+                                                        invoiceDate: invoiceDetails.date,
+                                                        customerName: invoiceDetails.customerName,
+                                                        ownerName: invoiceDetails.ownerName,
+                                                        ownerPhone: invoiceDetails.ownerPhone,
+                                                        ...product // Contains product details with local keys
+                                                    });
+                                                });
+                                            }
+                                        }
+                                    }
                                 }
-                                basePowerWatts = baseApparentPowerVA * powerFactor;
-                                break;
-                        }
 
-                        kw = basePowerWatts / 1000;
-                        kva = baseApparentPowerVA / 1000;
-                        hp = kw / HP_TO_KW_FACTOR;
-
-                        if (voltage === 0) {
-                            displayResult("uc-result", "خطأ في الجهد الكهربائي. لا يمكن أن يكون صفرًا.", false); return;
-                        }
-                        if (phase === "single") {
-                            amp = baseApparentPowerVA / voltage;
-                        } else {
-                            if (sqrt3 * voltage === 0) {
-                                displayResult("uc-result", "خطأ في الجهد الكهربائي للطور الثلاثي. لا يمكن أن يكون صفرًا.", false); return;
-                            }
-                            amp = baseApparentPowerVA / (sqrt3 * voltage);
-                        }
-
-                        const resultMessage = `
-                            <p><strong>قيمة الإدخال الأصلية:</strong> ${inputValue.toFixed(2)} ${inputUnit.toUpperCase()}</p>
-                            <p><strong>الجهد المستخدم:</strong> ${voltage.toFixed(0)} V, <strong>الطور:</strong> ${phase === "single" ? "أحادي" : "ثلاثي"}, <strong>معامل القدرة:</strong> ${powerFactor.toFixed(2)}</p>
-                            <h3>النتائج المحوّلة:</h3>
-                            <ul>
-                                <li>القدرة الحقيقية (Real Power): <strong>${kw.toFixed(2)} kW</strong></li>
-                                <li>القدرة الظاهرية (Apparent Power): <strong>${kva.toFixed(2)} kVA</strong></li>
-                                <li>القدرة بالحصان (Horsepower): <strong>${hp.toFixed(2)} HP</strong></li>
-                                <li>التيار الكهربائي (Current): <strong>${amp.toFixed(2)} A</strong></li>
-                            </ul>
-                            <p><small>ملاحظة: تُحسب القدرة بالحصان بناءً على 1 حصان = 0.7457 كيلوواط.</small></p>
-                        `;
-                        displayResult("uc-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                voltage: voltage,
-                                phase: phase,
-                                powerFactor: powerFactor,
-                                inputValue: inputValue,
-                                inputUnit: inputUnit
-                            }
-                        };
-                        saveCalculatorState("unit-converter", dataToSave);
-                    },
-                },
-
-                "solar-panels-calculator": {
-                    calculate: function () {
-                        const pumpPowerKw = parseFloat(document.getElementById("pump-power-kw").value);
-                        const pumpVoltage = parseFloat(document.getElementById("pump-voltage").value);
-                        const pumpPhase = document.getElementById("pump-phase").value;
-                        const pumpPowerFactor = parseFloat(document.getElementById("pump-power-factor").value);
-                        
-                        const idealSeriesVoltage = parseFloat(document.getElementById("ideal-series-voltage").value);
-                        const panelVoltage = parseFloat(document.getElementById("panel-voltage").value);
-                        const panelCurrent = parseFloat(document.getElementById("panel-current").value);
-                        const solarPerformanceFactor = parseFloat(document.getElementById("solar-performance-factor").value) / 100;
-                        const inverterEfficiency = parseFloat(document.getElementById("inverter-efficiency").value) / 100;
-
-                        if (isNaN(pumpPowerKw) || pumpPowerKw <= 0) { displayResult("solar-panels-result", "الرجاء إدخال قدرة مضخة صحيحة وموجبة بالكيلوواط.", false); return; }
-                        if (isNaN(pumpVoltage) || pumpVoltage <= 0) { displayResult("solar-panels-result", "الرجاء إدخال جهد مضخة صحيح وموجب.", false); return; }
-                        if (isNaN(pumpPowerFactor) || pumpPowerFactor <= 0.1 || pumpPowerFactor > 1) { displayResult("solar-panels-result", "معامل قدرة المضخة يجب أن يكون بين 0.1 و 1.", false); return; }
-
-                        if (isNaN(panelVoltage) || panelVoltage <= 0) { displayResult("solar-panels-result", "الرجاء إدخال جهد لوح شمسي صحيح وموجب.", false); return; }
-                        if (isNaN(panelCurrent) || panelCurrent <= 0) { displayResult("solar-panels-result", "الرجاء إدخال تيار لوح شمسي صحيح وموجب.", false); return; }
-                        if (isNaN(solarPerformanceFactor) || solarPerformanceFactor <= 0 || solarPerformanceFactor > 1) { displayResult("solar-panels-result", "عامل أداء الألواح يجب أن يكون بين 50% و 100%.", false); return; }
-                        if (isNaN(inverterEfficiency) || inverterEfficiency <= 0 || inverterEfficiency > 1) { displayResult("solar-panels-result", "كفاءة المحول يجب أن تكون بين 50% و 100%.", false); return; }
-                        if (isNaN(idealSeriesVoltage) || idealSeriesVoltage <= 0) { displayResult("solar-panels-result", "الرجاء إدخال التوتر المثالي للألواح على التوالي صحيح وموجب.", false); return; }
-
-                        const pumpRealPowerWatts = pumpPowerKw * 1000;
-
-                        let actualPumpCurrentAC;
-                        const sqrt3 = Math.sqrt(3);
-                        if (pumpPhase === "single") {
-                            if (pumpVoltage * pumpPowerFactor === 0) {
-                                displayResult("solar-panels-result", "خطأ: لا يمكن حساب تيار المضخة (AC). جهد المضخة أو معامل القدرة لا يمكن أن يكون صفرًا.", false); return;
-                            }
-                            actualPumpCurrentAC = pumpRealPowerWatts / (pumpVoltage * pumpPowerFactor);
-                        } else {
-                            if (sqrt3 * pumpVoltage * pumpPowerFactor === 0) {
-                                displayResult("solar-panels-result", "خطأ: لا يمكن حساب تيار المضخة (AC). جهد المضخة أو معامل القدرة لا يمكن أن يكون صفرًا للطور الثلاثي.", false); return;
-                            }
-                            actualPumpCurrentAC = pumpRealPowerWatts / (sqrt3 * pumpVoltage * pumpPowerFactor);
-                        }
-
-                        const nominalPanelPower = panelVoltage * panelCurrent;
-                        if (nominalPanelPower === 0) {
-                            displayResult("solar-panels-result", "خطأ: قدرة اللوح الشمسي الاسمية لا يمكن أن تكون صفرًا. الرجاء التحقق من جهد وتيار اللوح.", false);
-                            return;
-                        }
-
-                        if (inverterEfficiency * solarPerformanceFactor === 0) {
-                            displayResult("solar-panels-result", "خطأ: كفاءة المحول أو عامل أداء الألواح لا يمكن أن يكون صفرًا للحساب الكلي.", false);
-                            return;
-                        }
-                        const totalRequiredDcPowerAfterLosses = pumpRealPowerWatts / (inverterEfficiency * solarPerformanceFactor);
-
-                        const totalPanelsNeeded = Math.ceil(totalRequiredDcPowerAfterLosses / nominalPanelPower);
-
-                        if (panelVoltage === 0) {
-                            displayResult("solar-panels-result", "خطأ: جهد اللوح الواحد لا يمكن أن يكون صفرًا لحساب عدد الألواح في السلسلة.", false);
-                            return;
-                        }
-                        const panelsInSeries = Math.ceil(idealSeriesVoltage / panelVoltage);
-                        if (panelsInSeries === 0) {
-                               displayResult("solar-panels-result", "خطأ: عدد الألواح في السلسلة لا يمكن أن يكون صفرًا. تأكد من أن الجهد المثالي للسلسلة أكبر من جهد اللوح الواحد.", false);
-                               return;
-                        }
-
-                        const parallelStrings = Math.ceil(totalPanelsNeeded / panelsInSeries);
-
-                        const actualTotalPanelsInArray = panelsInSeries * parallelStrings;
-                        const actualSystemVoltageDC = panelsInSeries * panelVoltage;
-                        const actualSystemCurrentDC = parallelStrings * panelCurrent;
-                        const actualSystemTotalPower = actualTotalPanelsInArray * nominalPanelPower;
-
-                        const resultMessage = `
-                        <h3>قدرة النظام الشمسي الفعلية المركبة:</h3>
-                            <ul>
-                                <li><strong>العدد الفعلي الكلي للألواح في المصفوفة:</strong> ${actualTotalPanelsInArray} لوح</li>
-                                <li><strong>عدد الألواح في السلسلة الواحدة (Series):</strong> ${panelsInSeries} لوح</li>
-                                <li><strong>عدد السلاسل المتوازية (Parallel Strings):</strong> ${parallelStrings} سلسلة</li>
-                                <li><strong>الجهد الكلي للسلسلة (Vmp_array):</strong> <strong>${actualSystemVoltageDC.toFixed(2)} V</strong></li>
-                                <li><strong>التيار الكلي للسلاسل (Imp_array):</strong> <strong>${actualSystemCurrentDC.toFixed(2)} A</strong></li>
-                                <li><strong>جهد المضخة المدخل:</strong> ${pumpVoltage} V</li>
-                                <li><strong>تيار المضخة المقدر (AC):</strong> <strong>${actualPumpCurrentAC.toFixed(2)} A</strong> <small></small></li>
-                                <li><strong>مجموع القدرة الاسمية الفعلية للنظام:</strong> <strong>${actualSystemTotalPower.toFixed(2)} W</strong></li>
-                            </ul>
-                            <hr>
-                            <h3>ملخص الحسابات:</h3>
-                            <ul>
-                                <li><strong>القدرة الحقيقية للمضخة المطلوبة:</strong> ${pumpRealPowerWatts.toFixed(2)} W</li>
-                                <li><strong>قدرة اللوح الواحد الاسمية:</strong> ${nominalPanelPower.toFixed(2)} W </li>
-                                <li><strong>عامل أداء الألواح:</strong> ${solarPerformanceFactor * 100}%</li>
-                                <li><strong>كفاءة المحول:</strong> ${inverterEfficiency * 100}%</li>
-                                <li><strong>القدرة الإجمالية المطلوبة من الألواح (DC) بعد الخسائر:</strong> ${totalRequiredDcPowerAfterLosses.toFixed(2)} W</li>
-                                <li><strong>العدد الإجمالي للألواح الشمسية المطلوبة:</strong> <span style="color: var(--success-color); font-size: 1.2em;">${totalPanelsNeeded} لوح</span></li>
-                                <li><strong>القدرة الاسمية الإجمالية للألواح المطلوبة (الحد الأدنى):</strong> ${totalPanelsNeeded * nominalPanelPower.toFixed(2)} W</li>
-                            </ul>
-                        `;
-                        displayResult("solar-panels-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                pumpPowerKw: pumpPowerKw,
-                                pumpVoltage: pumpVoltage,
-                                pumpPhase: pumpPhase,
-                                pumpPowerFactor: pumpPowerFactor,
-                                panelVoltage: panelVoltage,
-                                panelCurrent: panelCurrent,
-                                solarPerformanceFactor: parseFloat(document.getElementById("solar-performance-factor").value),
-                                inverterEfficiency: parseFloat(document.getElementById("inverter-efficiency").value),
-                                idealSeriesVoltage: idealSeriesVoltage
-                            }
-                        };
-                        saveCalculatorState("solar-panels-calculator", dataToSave);
-                    },
-                },
-
-                "battery-calculator": {
-                    calculate: function () {
-                        const deviceType = document.getElementById("battery-device-type").value;
-                        const deviceVoltage = parseFloat(document.getElementById("device-voltage").value);
-                        const deviceCurrent = parseFloat(document.getElementById("device-current").value);
-                        const operationDuration = parseFloat(document.getElementById("operation-duration").value);
-                        const batteryVoltage = parseFloat(document.getElementById("battery-voltage").value);
-                        const dod = parseFloat(document.getElementById("battery-dod").value) / 100;
-                        const efficiency = parseFloat(document.getElementById("battery-efficiency").value) / 100;
-
-                        const devicePhase = document.getElementById("battery-device-phase").value;
-                        const devicePowerFactor = parseFloat(document.getElementById("battery-device-power-factor").value);
-                        const inverterEfficiencyBattery = parseFloat(document.getElementById("inverter-efficiency-battery").value) / 100;
-
-                        if (isNaN(deviceVoltage) || deviceVoltage <= 0) { displayResult("battery-result", "الرجاء إدخال جهد جهاز صحيح وموجب.", false); return; }
-                        if (isNaN(deviceCurrent) || deviceCurrent <= 0) { displayResult("battery-result", "الرجاء إدخال تيار جهاز صحيح وموجب.", false); return; }
-                        if (isNaN(operationDuration) || operationDuration <= 0) { displayResult("battery-result", "الرجاء إدخال مدة تشغيل صحيحة وموجبة.", false); return; }
-                        if (isNaN(batteryVoltage) || batteryVoltage <= 0) { displayResult("battery-result", "الرجاء إدخال توتر بطارية صحيح وموجب.", false); return; }
-                        if (isNaN(dod) || dod <= 0 || dod > 1) { displayResult("battery-result", "عمق التفريغ الأقصى يجب أن يكون بين 10% و 100%.", false); return; }
-                        if (isNaN(efficiency) || efficiency <= 0 || efficiency > 1) { displayResult("battery-result", "كفاءة البطارية يجب أن تكون بين 50% و 100%.", false); return; }
-
-                        const sqrt3 = Math.sqrt(3);
-
-                        let devicePowerWatts;
-                        let energyRequiredFromBatteryWh_before_battery_losses;
-
-                        if (deviceType === "dc") {
-                            devicePowerWatts = deviceVoltage * deviceCurrent;
-                            energyRequiredFromBatteryWh_before_battery_losses = devicePowerWatts * operationDuration;
-                        } else {
-                            if (isNaN(devicePowerFactor) || devicePowerFactor <= 0.1 || devicePowerFactor > 1) { displayResult("battery-result", "معامل قدرة الجهاز يجب أن يكون بين 0.1 و 1.", false); return; }
-                            if (isNaN(inverterEfficiencyBattery) || inverterEfficiencyBattery <= 0 || inverterEfficiencyBattery > 1) { displayResult("battery-result", "كفاءة المحول يجب أن تكون بين 50% و 100%.", false); return; }
-
-                            if (devicePhase === "single") {
-                                devicePowerWatts = deviceVoltage * deviceCurrent * devicePowerFactor;
-                            } else {
-                                devicePowerWatts = sqrt3 * deviceVoltage * deviceCurrent * devicePowerFactor;
-                            }
-
-                            if (inverterEfficiencyBattery === 0) {
-                                displayResult("battery-result", "خطأ: كفاءة المحول للبطارية لا يمكن أن تكون صفرًا.", false); return;
-                            }
-                            energyRequiredFromBatteryWh_before_battery_losses = (devicePowerWatts * operationDuration) / inverterEfficiencyBattery;
-                        }
-
-                        let nominalBatteryWhCapacity = 0;
-                        if (dod > 0 && efficiency > 0) {
-                            nominalBatteryWhCapacity = energyRequiredFromBatteryWh_before_battery_losses / dod / efficiency;
-                        } else {
-                            displayResult("battery-result", "خطأ: عمق التفريغ أو كفاءة البطارية لا يمكن أن يكون صفرًا.", false); return;
-                        }
-
-                        let nominalBatteryAhCapacity = 0;
-                        if (batteryVoltage > 0) {
-                            nominalBatteryAhCapacity = nominalBatteryWhCapacity / batteryVoltage;
-                        } else {
-                            displayResult("battery-result", "خطأ: توتر البطارية لا يمكن أن يكون صفرًا.", false); return;
-                        }
-
-                        const usableBatteryWhCapacity = nominalBatteryWhCapacity * dod;
-
-                        let resultMessage = `
-                            <h3>ملخص الحسابات:</h3>
-                            <ul>
-                                <li><strong>قدرة الجهاز الحقيقية:</strong> <strong>${devicePowerWatts.toFixed(2)} W</strong></li>
-                                <li><strong>إجمالي الطاقة المطلوبة لتشغيل الجهاز:</strong> <strong>${(devicePowerWatts * operationDuration).toFixed(2)} Wh</strong></li>
-                        `;
-
-                        if (deviceType === "ac") {
-                            resultMessage += `<li><strong>الطاقة المطلوبة من جانب DC من البطارية:</strong> <strong>${energyRequiredFromBatteryWh_before_battery_losses.toFixed(2)} Wh</strong> (بعد ضياع المحول بنسبة ${((1 - inverterEfficiencyBattery) * 100).toFixed(1)}%)</li>`;
-                        } else {
-                            resultMessage += `<li><strong>الطاقة المطلوبة من البطارية (نقطة التحميل DC):</strong> <strong>${energyRequiredFromBatteryWh_before_battery_losses.toFixed(2)} Wh</strong></li>`;
-                        }
-
-                        resultMessage += `
-                                <li><strong>السعة الفعلية للبطارية التي يمكن استخدامها (Usable Capacity):</strong> <strong>${usableBatteryWhCapacity.toFixed(2)} Wh</strong> (بناءً على عمق التفريغ ${dod * 100}%)</li>
-                            </ul>
-                            <h3>النتائج النهائية:</h3>
-                            <p><strong>السعة الاسمية المطلوبة للبطارية: <span style="color: var(--success-color); font-size: 1.2em;">${nominalBatteryAhCapacity.toFixed(2)} Ah</span></strong></p>
-                            <p><strong>القدرة الإجمالية للبطارية (Wh): <span style="color: var(--success-color); font-size: 1.1em;">${nominalBatteryWhCapacity.toFixed(2)} Wh</span></strong></p>
-                        `;
-
-                        displayResult("battery-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                deviceType: deviceType,
-                                deviceVoltage: deviceVoltage,
-                                deviceCurrent: deviceCurrent,
-                                operationDuration: operationDuration,
-                                batteryVoltage: batteryVoltage,
-                                dod: parseFloat(document.getElementById("battery-dod").value),
-                                efficiency: parseFloat(document.getElementById("battery-efficiency").value),
-                                devicePhase: deviceType === 'ac' ? devicePhase : null,
-                                devicePowerFactor: deviceType === 'ac' ? parseFloat(document.getElementById("battery-device-power-factor").value) : null,
-                                inverterEfficiencyBattery: deviceType === 'ac' ? parseFloat(document.getElementById("inverter-efficiency-battery").value) : null
-                            }
-                        };
-                        saveCalculatorState("battery-calculator", dataToSave);
-                    },
-                },
-
-                "percentage-calculator": {
-                    calculate: function () {
-                        const originalNumber = parseFloat(document.getElementById("original-number").value);
-                        const percentageValue = parseFloat(document.getElementById("percentage-value").value);
-
-                        if (isNaN(originalNumber) || originalNumber < 0) { displayResult("percentage-result", "الرجاء إدخال عدد أصلي صحيح وموجب.", false); return; }
-                        if (isNaN(percentageValue) || percentageValue < 0 || percentageValue > 100) { displayResult("percentage-result", "النسبة المئوية يجب أن تكون بين 0 و 100.", false); return; }
-
-                        const calculatedValue = (originalNumber * percentageValue) / 100;
-                        const addedValue = originalNumber + calculatedValue;
-                        const subtractedValue = originalNumber - calculatedValue;
-
-                        const resultMessage = `
-                            <h3>ملخص الحسابات:</h3>
-                            <ul>
-                                <li><strong>العدد الأصلي:</strong> ${originalNumber.toFixed(2)}</li>
-                                <li><strong>النسبة المئوية المدخلة:</strong> ${percentageValue.toFixed(2)}%</li>
-                                <li><strong>القيمة المحسوبة (${percentageValue.toFixed(2)}% من ${originalNumber.toFixed(2)}):</strong> ${calculatedValue.toFixed(2)}</li>
-                            </ul>
-                            <hr>
-                            <h3>النتائج التفصيلية:</h3>
-                            <ul>
-                                <li>إذا أضفنا النسبة المئوية: <strong><span style="color: var(--success-color); font-size: 1.2em;">${addedValue.toFixed(2)}</span></strong> ( ${originalNumber.toFixed(2)} + ${calculatedValue.toFixed(2)} )</li>
-                                <li>إذا خصمنا النسبة المئوية: <strong><span style="color: var(--success-color); font-size: 1.2em;">${subtractedValue.toFixed(2)}</span></strong> ( ${originalNumber.toFixed(2)} - ${calculatedValue.toFixed(2)} )</li>
-                                <li>القيمة المئوية فقط: <strong><span style="color: var(--success-color); font-size: 1.2em;">${calculatedValue.toFixed(2)}</span></strong></li>
-                            </ul>
-                        `;
-                        displayResult("percentage-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                originalNumber: originalNumber,
-                                percentageValue: percentageValue
-                            }
-                        };
-                        saveCalculatorState("percentage-calculator", dataToSave);
-                    },
-                },
-
-                "capacitor-calculator": {
-                    calculate: function () {
-                        const voltage = parseFloat(document.getElementById("cap-voltage").value);
-                        const phase = document.getElementById("cap-phase").value;
-                        const realPowerKW = parseFloat(document.getElementById("cap-real-power").value);
-                        const currentPF = parseFloat(document.getElementById("cap-current-pf").value);
-                        const desiredPF = parseFloat(document.getElementById("cap-desired-pf").value);
-                        const frequency = parseFloat(document.getElementById("cap-frequency").value);
-
-                        if (isNaN(voltage) || voltage <= 0) { displayResult("capacitor-result", "الرجاء إدخال جهد تشغيل صحيح وموجب.", false); return; }
-                        if (isNaN(realPowerKW) || realPowerKW <= 0) { displayResult("capacitor-result", "الرجاء إدخال قدرة حقيقية صحيحة وموجبة.", false); return; }
-                        if (isNaN(currentPF) || currentPF <= 0.1 || currentPF >= 1) { displayResult("capacitor-result", "معامل القدرة الحالي يجب أن يكون بين 0.1 و 0.99.", false); return; }
-                        if (isNaN(desiredPF) || desiredPF <= 0.1 || desiredPF >= 1) { displayResult("capacitor-result", "معامل القدرة المستهدف يجب أن يكون بين 0.1 و 0.99. ويجب أن يكون أكبر من الحالي.", false); return; }
-                        if (desiredPF <= currentPF) { displayResult("capacitor-result", "معامل القدرة المستهدف يجب أن يكون أكبر من معامل القدرة الحالي لتحسينه.", false); return; }
-                        if (isNaN(frequency) || frequency <= 0) { displayResult("capacitor-result", "الرجاء إدخال تردد صحيح وموجب.", false); return; }
-
-                        const realPowerWatts = realPowerKW * 1000;
-
-                        const angle1 = Math.acos(currentPF);
-                        const angle2 = Math.acos(desiredPF);
-
-                        const reactivePower1 = realPowerWatts * Math.tan(angle1);
-                        const reactivePower2 = realPowerWatts * Math.tan(angle2);
-
-                        const qCompensation = reactivePower1 - reactivePower2;
-
-                        let resultMessage;
-
-                        if (phase === "single") {
-                            if (voltage === 0 || frequency === 0) {
-                                displayResult("capacitor-result", "لا يمكن حساب السعة. تأكد من أن الجهد والتردد صحيحين وموجبين.", false); return;
-                            }
-                            const capacitorValueFarads = qCompensation / (2 * Math.PI * frequency * Math.pow(voltage, 2));
-                            const capacitorValueMicroFarads = capacitorValueFarads * 1e6;
-
-                            resultMessage = `
-                                <h3>ملخص الحسابات:</h3>
-                                <ul>
-                                    <li><strong>القدرة الحقيقية (P):</strong> ${realPowerKW.toFixed(2)} kW</li>
-                                    <li><strong>معامل القدرة الحالي (cos φ<sub>1</sub>):</strong> ${currentPF.toFixed(2)} (زاوية φ<sub>1</sub>: ${(angle1 * 180 / Math.PI).toFixed(2)}&deg;)</li>
-                                    <li><strong>معامل القدرة المستهدف (cos φ<sub>2</sub>):</strong> ${desiredPF.toFixed(2)} (زاوية φ<sub>2</sub>: ${(angle2 * 180 / Math.PI).toFixed(2)}&deg;)</li>
-                                    <li><strong>التردد (f):</strong> ${frequency.toFixed(0)} Hz</li>
-                                    <li><strong>الجهد (V):</strong> ${voltage.toFixed(0)} V</li>
-                                </ul>
-                                <h4>القدرة التفاعلية المطلوبة للتعويض (Qc):</h4>
-                                <p>
-                                    القدرة التفاعلية الحالية (Q<sub>1</sub>) = ${reactivePower1.toFixed(2)} Var<br>
-                                    القدرة التفاعلية المستهدفة (Q<sub>2</sub>) = ${reactivePower2.toFixed(2)} Var<br>
-                                    فرق القدرة التفاعلية (Qc) = Q<sub>1</sub> - Q<sub>2</sub> = <strong>${qCompensation.toFixed(2)} Var</strong>
-                                </p>
-                                <h3>النتائج النهائية:</h3>
-                                <p>بناءً على نظام <strong>أحادي الطور</strong>:</p>
-                                <p><strong>السعة المطلوبة للمكثف: <span style="color: var(--success-color); font-size: 1.2em;">${capacitorValueMicroFarads.toFixed(2)} µF</span></strong></p>
-                                <p><small>ملاحظة: القيمة المحسوبة هي لمكثف واحد.</small></p>
-                            `;
-                        } else {
-                            if (voltage === 0 || frequency === 0) {
-                                displayResult("capacitor-result", "لا يمكن حساب السعة. تأكد من أن الجهد والتردد صحيحين وموجبين.", false); return;
-                            }
-                            const C_delta_per_phase_farads = qCompensation / (3 * 2 * Math.PI * frequency * Math.pow(voltage, 2));
-                            const C_delta_per_phase_microFarads = C_delta_per_phase_farads * 1e6;
-
-                            const V_phase = voltage / Math.sqrt(3);
-                            if (V_phase === 0) {
-                                displayResult("capacitor-result", "خطأ في حساب جهد الطور. تأكد من صحة الجهد المدخل.", false); return;
-                            }
-                            const C_star_per_phase_farads = qCompensation / (3 * 2 * Math.PI * frequency * Math.pow(V_phase, 2));
-                            const C_star_per_phase_microFarads = C_star_per_phase_farads * 1e6;
-
-                            resultMessage = `
-                                <h3>ملخص الحسابات:</h3>
-                                <ul>
-                                    <li><strong>القدرة الحقيقية (P):</strong> ${realPowerKW.toFixed(2)} kW</li>
-                                    <li><strong>معامل القدرة الحالي (cos φ<sub>1</sub>):</strong> ${currentPF.toFixed(2)} (زاوية φ<sub>1</sub>: ${(angle1 * 180 / Math.PI).toFixed(2)}&deg;)</li>
-                                    <li><strong>معامل القدرة المستهدف (cos φ<sub>2</sub>):</strong> ${desiredPF.toFixed(2)} (زاوية φ<sub>2</sub>: ${(angle2 * 180 / Math.PI).toFixed(2)}&deg;)</li>
-                                    <li><strong>التردد (f):</strong> ${frequency.toFixed(0)} Hz</li>
-                                    <li><strong>جهد الخط (V<sub>L</sub>):</strong> ${voltage.toFixed(0)} V</li>
-                                </ul>
-                                <h4>القدرة التفاعلية المطلوبة للتعويض (Qc):</h4>
-                                <p>
-                                    القدرة التفاعلية الحالية (Q<sub>1</sub>) = ${reactivePower1.toFixed(2)} Var<br>
-                                    القدرة التفاعلية المستهدفة (Q<sub>2</sub>) = ${reactivePower2.toFixed(2)} Var<br>
-                                    فرق القدرة التفاعلية (Qc) = Q<sub>1</sub> - Q<sub>2</sub> = <strong>${qCompensation.toFixed(2)} Var</strong>
-                                </p>
-                                <h3>النتائج النهائية:</h3>
-                                <p>بناءً على نظام <strong>ثلاثي الطور</strong>:</p>
-                                <p>لتحقيق تحسين معامل القدرة، ستحتاج إلى إجمالي <strong>${qCompensation.toFixed(2)} Var</strong> من القدرة التفاعلية.</p>
-                                <h4>خيارات التوصيل (لكل طور):</h4>
-                                <ul>
-                                    <li><strong>للتوصيل دلتا (Δ):</strong> كل مكثف يجب أن تكون سعته <strong>${C_delta_per_phase_microFarads.toFixed(2)} µF</strong>.<br>
-                                        <small>(ثلاث مكثفات متصلة بين الخطوط، جهد كل مكثف = جهد الخط ${voltage.toFixed(0)}V)</small></li>
-                                    <li><strong>للتوصيل ستار (Y):</strong> كل مكثف يجب أن تكون سعته <strong>${C_star_per_phase_microFarads.toFixed(2)} µF</strong>.<br>
-                                        <small>(ثلاث مكثفات متصلة بين الخطوط ونقطة النجمة، جهد كل مكثف = جهد الطور ${V_phase.toFixed(0)}V)</small></li>
-                                </ul>
-                                <p><small>ملاحظة: توصيل دلتا هو الأكثر شيوعاً لتحسين معامل القدرة في الأحمال الصناعية.</small></p>
-                            `;
-                        }
-
-                        displayResult("capacitor-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                voltage: voltage,
-                                phase: phase,
-                                realPowerKW: realPowerKW,
-                                currentPF: currentPF,
-                                desiredPF: desiredPF,
-                                frequency: frequency
-                            }
-                        };
-                        saveCalculatorState("capacitor-calculator", dataToSave);
-                    },
-                },
-
-                "flow-converter": {
-                    calculate: function () {
-                        const inputValue = parseFloat(document.getElementById("flow-input-value").value);
-                        const conversionType = document.getElementById("flow-conversion-type").value;
-
-                        if (isNaN(inputValue) || inputValue < 0) { displayResult("flow-result", "الرجاء إدخال قيمة صحيحة وموجبة للتحويل.", false); return; }
-
-                        let result = 0;
-                        let unitFrom = "";
-                        let unitTo = "";
-                        let explanation = "";
-
-                        if (conversionType === "m3h-to-lps") {
-                            result = (inputValue * 1000) / 3600;
-                            unitFrom = "م³/ساعة";
-                            unitTo = "لتر/ثانية";
-                            explanation = " (بضرب القيمة في 1000 للتحويل إلى لتر، ثم القسمة على 3600 للتحويل إلى ثانية)";
-                        } else {
-                            result = (inputValue * 3600) / 1000;
-                            unitFrom = "لتر/ثانية";
-                            unitTo = "م³/ساعة";
-                            explanation = " (بضرب القيمة في 3600 للتحويل إلى ساعة، ثم القسمة على 1000 للتحويل إلى متر مكعب)";
-                        }
-
-                        const resultMessage = `
-                            <h3>ملخص الحسابات:</h3>
-                            <ul>
-                                <li><strong>القيمة المدخلة:</strong> ${inputValue.toFixed(2)} ${unitFrom}</li>
-                                <li><strong>نوع التحويل:</strong> من ${unitFrom} إلى ${unitTo}</li>
-                            </ul>
-                            <h3>النتيجة: <strong><span style="color: var(--success-color); font-size: 1.2em;">${result.toFixed(2)} ${unitTo}</span></strong></h3>
-                            <p><small>كيف تم الحساب: ${explanation}</small></p>
-                        `;
-                        displayResult("flow-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                inputValue: inputValue,
-                                conversionType: conversionType
-                            }
-                        };
-                        saveCalculatorState("flow-converter", dataToSave);
-                    },
-                },
-
-                "tank-calculator": {
-                    calculate: function () {
-                        const tankShape = document.getElementById("tank-shape").value;
-                        const lengthOrDiameter = parseFloat(document.getElementById("tank-length").value);
-                        const width = parseFloat(document.getElementById("tank-width").value);
-                        const height = parseFloat(document.getElementById("tank-height").value);
-                        const flowRateM3H = parseFloat(document.getElementById("tank-flow-rate").value);
-
-                        if (isNaN(lengthOrDiameter) || lengthOrDiameter <= 0) { displayResult("tank-result", "الرجاء إدخال قيمة صحيحة وموجبة للطول أو القطر.", false); return; }
-                        if (isNaN(height) || height <= 0) { displayResult("tank-result", "الرجاء إدخال قيمة صحيحة وموجبة للارتفاع.", false); return; }
-                        if (isNaN(flowRateM3H) || flowRateM3H <= 0) { displayResult("tank-result", "الرجاء إدخال معدل تدفق صحيح وموجب.", false); return; }
-
-                        let volume = 0;
-
-                        if (tankShape === "cube") {
-                            if (isNaN(width) || width <= 0) { displayResult("tank-result", "الرجاء إدخال قيمة صحيحة وموجبة للعرض للخزان المكعب.", false); return; }
-                            volume = lengthOrDiameter * width * height;
-                        } else {
-                            volume = Math.PI * Math.pow(lengthOrDiameter / 2, 2) * height;
-                        }
-
-                        if (volume === 0) {
-                            displayResult("tank-result", "خطأ في حساب سعة الخزان. تأكد من أن الأبعاد صحيحة وموجبة.", false); return;
-                        }
-                        const timeToEmptyHours = volume / flowRateM3H;
-                        const timeToEmptyMinutes = timeToEmptyHours * 60;
-
-                        const resultMessage = `
-                            <h3>ملخص الحسابات:</h3>
-                            <ul>
-                                <li><strong>شكل الخزان:</strong> ${tankShape === 'cube' ? 'مكعب' : 'أسطواني'}</li>
-                                <li><strong>الأبعاد:</strong> ${lengthOrDiameter.toFixed(2)} م (الطول/القطر) ${tankShape === 'cube' ? ' x ' + width.toFixed(2) + ' م (العرض)' : ''} x ${height.toFixed(2)} م (الارتفاع)</li>
-                                <li><strong>معدل التدفق:</strong> ${flowRateM3H.toFixed(2)} متر مكعب/ساعة</li>
-                            </ul>
-                            <h3>النتائج النهائية:</h3>
-                            <ul>
-                                <li><strong>السعة الكلية للخزان: <span style="color: var(--success-color); font-size: 1.2em;">${volume.toFixed(2)} متر مكعب (م³)</span></strong></li>
-                                <li><strong>الوقت اللازم لتفريغ الخزان: <span style="color: var(--success-color); font-size: 1.2em;">${timeToEmptyMinutes.toFixed(2)} دقيقة</span></strong></li>
-                            </ul>
-                            <p><small>ملاحظة: 1 متر مكعب يعادل 1000 لتر. هذا الحساب يفترض تدفقًا ثابتًا.</small></p>
-                        `;
-
-                        displayResult("tank-result", resultMessage, true);
-                        const dataToSave = {
-                            inputs: {
-                                tankShape: tankShape,
-                                lengthOrDiameter: lengthOrDiameter,
-                                width: width,
-                                height: height,
-                                flowRateM3H: flowRateM3H
-                            }
-                        };
-                        saveCalculatorState("tank-calculator", dataToSave);
-                    },
-                },
-
-                "resistance-voltage-drop": {
-                    calculate: function () {
-                        const voltage = parseFloat(document.getElementById("rvd-voltage").value);
-                        const current = parseFloat(document.getElementById("rvd-current").value);
-                        const phase = document.getElementById("rvd-phase").value;
-                        const powerFactor = parseFloat(document.getElementById("rvd-power-factor").value);
-                        const material = document.getElementById("rvd-material").value;
-                        const length = parseFloat(document.getElementById("rvd-length").value);
-                        const allowedVoltageDropPercentage = parseFloat(document.getElementById("rvd-allowed-voltage-drop-percentage").value);
-
-                        let resistivity;
-                        let materialName = "";
-                        if (material === "copper") {
-                            resistivity = 0.0172;
-                            materialName = "النحاس (0.0172 Ω·mm²/m)";
-                        } else {
-                            resistivity = 0.0282;
-                            materialName = "الألمنيوم (0.0282 Ω·mm²/m)";
-                        }
-
-                        if (isNaN(voltage) || voltage <= 0) { displayResult("rvd-result", "الرجاء إدخال جهد كهربائي صحيح وموجب.", false); return; }
-                        if (isNaN(current) || current <= 0) { displayResult("rvd-result", "الرجاء إدخال تيار كهربائي صحيح وموجب.", false); return; }
-                        if (isNaN(length) || length <= 0) { displayResult("rvd-result", "الرجاء إدخال طول موصل صحيح وموجب.", false); return; }
-                        if (isNaN(allowedVoltageDropPercentage) || allowedVoltageDropPercentage <= 0 || allowedVoltageDropPercentage > 100) { displayResult("rvd-result", "الحد الأقصى لفقد الجهد المسموح به يجب أن يكون بين 0.1% و 100%.", false); return; }
-                        if (isNaN(powerFactor) || powerFactor <= 0.1 || powerFactor > 1) { displayResult("rvd-result", "معامل القدرة يجب أن يكون بين 0.1 و 1.", false); return; }
-
-                        const maxAllowedVoltageDrop = (allowedVoltageDropPercentage / 100) * voltage;
-
-                        if (current === 0 || maxAllowedVoltageDrop === 0) {
-                            displayResult("rvd-result", "لا يمكن حساب مساحة المقطع. تأكد من أن التيار والجهد المسموح به لفقد الجهد موجبان وغير صفريين.", false);
-                            return;
-                        }
-
-                        let requiredArea;
-                        if (phase === "single") {
-                            requiredArea = (2 * resistivity * length * current * powerFactor) / maxAllowedVoltageDrop;
-                        } else {
-                            requiredArea = (Math.sqrt(3) * resistivity * length * current * powerFactor) / maxAllowedVoltageDrop;
-                        }
-
-                        if (isNaN(requiredArea) || requiredArea <= 0 || !isFinite(requiredArea)) {
-                            displayResult("rvd-result", "حدث خطأ في حساب مساحة المقطع. تأكد من صحة المدخلات وأن النتائج منطقية (تجنب القيم الصغيرة جداً أو الكبيرة جداً).", false);
-                            return;
-                        }
-
-                        let resultMessage = `
-                            <h3>ملخص المدخلات:</h3>
-                            <ul>
-                                <li><strong>الجهد الكهربائي:</strong> ${voltage.toFixed(0)} V</li>
-                                <li><strong>التيار الكهربائي:</strong> ${current.toFixed(2)} A</li>
-                                <li><strong>نوع الطور:</strong> ${phase === 'single' ? 'أحادي' : 'ثلاثي'}</li>
-                                <li><strong>معامل القدرة:</strong> ${powerFactor.toFixed(2)}</li>
-                                <li><strong>مادة الموصل:</strong> ${materialName}</li>
-                                <li><strong>طول الموصل (اتجاه واحد):</strong> ${length.toFixed(1)} متر</li>
-                                <li><strong>الحد الأقصى لفقد الجهد المسموح به:</strong> ${allowedVoltageDropPercentage.toFixed(1)}%</li>
-                            </ul>
-                            <h3>النتائج النهائية:</h3>
-                            <ul>
-                                <li>الجهد الأقصى المسموح بفقده: <strong>${maxAllowedVoltageDrop.toFixed(2)} V</strong></li>
-                                <li><strong>مساحة المقطع العرضي المطلوبة للموصل: <span style="color: var(--success-color); font-size: 1.2em;">${requiredArea.toFixed(2)} mm²</span></strong></li>
-                            </ul>
-                            <p><small>ملاحظة: هذا الحساب يوفر الحد الأدنى لمساحة المقطع. يوصى باختيار مقطع عرضي قياسي أكبر قليلاً لضمان الأداء الأمثل.</small></p>
-                        `;
-
-                        displayResult("rvd-result", resultMessage, true);
-
-                        const dataToSave = {
-                            inputs: {
-                                voltage: voltage,
-                                current: current,
-                                material: material,
-                                length: length,
-                                allowedVoltageDropPercentage: allowedVoltageDropPercentage,
-                                phase: phase,
-                                powerFactor: powerFactor
-                            }
-                        };
-                        saveCalculatorState("resistance-voltage-drop", dataToSave);
-                    },
-                },
-
-                "pulley-calculator": {
-                    calculate: function () {
-                        const d1 = parseFloat(document.getElementById("pulley-d1").value);
-                        const rpm1 = parseFloat(document.getElementById("pulley-rpm1").value);
-                        const d2 = parseFloat(document.getElementById("pulley-d2").value);
-                        const rpm2 = parseFloat(document.getElementById("pulley-rpm2").value);
-
-                        let knownInputsCount = 0;
-                        if (!isNaN(d1) && d1 > 0) knownInputsCount++;
-                        if (!isNaN(rpm1) && rpm1 > 0) knownInputsCount++;
-                        if (!isNaN(d2) && d2 > 0) knownInputsCount++;
-                        if (!isNaN(rpm2) && rpm2 > 0) knownInputsCount++;
-
-                        if (knownInputsCount !== 3) {
-                            displayResult("pulley-result", "الرجاء إدخال ثلاث قيم معلومة فقط (موجبة وغير صفرية) وترك حقل واحد فارغًا للمجهول.", false);
-                            return;
-                        }
-
-                        let unknownValue;
-                        let unknownType = "";
-                        let resultMessage = "";
-
-                        if (isNaN(d1) || d1 <= 0) {
-                            if (rpm1 > 0 && d2 > 0 && rpm2 > 0) {
-                                unknownValue = (d2 * rpm2) / rpm1;
-                                unknownType = "قطر البكرة الأولى (D1)";
-                                resultMessage = `
-                                    <p><strong>القيم المدخلة:</strong> D2=${d2} مم, RPM1=${rpm1} RPM, RPM2=${rpm2} RPM</p>
-                                    <h3>القيمة المجهولة: <strong>${unknownType} = <span style="color: var(--success-color); font-size: 1.2em;">${unknownValue.toFixed(2)} مم</span></strong></h3>
-                                    <p><small>معادلة البكرات: D1 × RPM1 = D2 × RPM2</small></p>
-                                `;
-                            }
-                        } else if (isNaN(rpm1) || rpm1 <= 0) {
-                            if (d1 > 0 && d2 > 0 && rpm2 > 0) {
-                                unknownValue = (d2 * rpm2) / d1;
-                                unknownType = "سرعة البكرة الأولى (RPM1)";
-                                resultMessage = `
-                                    <p><strong>القيم المدخلة:</strong> D1=${d1} مم, D2=${d2} مم, RPM2=${rpm2} RPM</p>
-                                    <h3>القيمة المجهولة: <strong>${unknownType} = <span style="color: var(--success-color); font-size: 1.2em;">${unknownValue.toFixed(2)} RPM</span></strong></h3>
-                                    <p><small>معادلة البكرات: D1 × RPM1 = D2 × RPM2</small></p>
-                                `;
-                            }
-                        } else if (isNaN(d2) || d2 <= 0) {
-                            if (d1 > 0 && rpm1 > 0 && rpm2 > 0) {
-                                unknownValue = (d1 * rpm1) / rpm2;
-                                unknownType = "قطر البكرة الثانية (D2)";
-                                resultMessage = `
-                                    <p><strong>القيم المدخلة:</strong> D1=${d1} مم, RPM1=${rpm1} RPM, RPM2=${rpm2} RPM</p>
-                                    <h3>القيمة المجهولة: <strong>${unknownType} = <span style="color: var(--success-color); font-size: 1.2em;">${unknownValue.toFixed(2)} مم</span></strong></h3>
-                                    <p><small>معادلة البكرات: D1 × RPM1 = D2 × RPM2</small></p>
-                                `;
-                            }
-                        } else if (isNaN(rpm2) || rpm2 <= 0) {
-                            if (d1 > 0 && rpm1 > 0 && d2 > 0) {
-                                unknownValue = (d1 * rpm1) / d2;
-                                unknownType = "سرعة البكرة الثانية (RPM2)";
-                                resultMessage = `
-                                    <p><strong>القيم المدخلة:</strong> D1=${d1} مم, RPM1=${rpm1} RPM, D2=${d2} مم</p>
-                                    <h3>القيمة المجهولة: <strong>${unknownType} = <span style="color: var(--success-color); font-size: 1.2em;">${unknownValue.toFixed(2)} RPM</span></strong></h3>
-                                    <p><small>معادلة البكرات: D1 × RPM1 = D2 × RPM2</small></p>
-                                `;
+                                // Process standalone Products (if they exist directly under phoneKey)
+                                // This assumes products are stored directly under `/alldata/{phone}/products`
+                                if (phoneData.products) {
+                                    for (const productId in phoneData.products) {
+                                        if (phoneData.products.hasOwnProperty(productId)) {
+                                            const productDetails = mapFromFirebaseKeys(phoneData.products[productId]);
+                                            // Add or update product in the uniqueProductsMap
+                                            uniqueProductsMap.set(productId, {
+                                                id: productId, // Use the actual product ID from Firebase
+                                                firebasePhoneKey: phoneKey, // The phone key under which it was found
+                                                ...productDetails
+                                            });
+                                        }
+                                    }
+                                }
                             }
                         }
+                    }
 
-                        if (isNaN(unknownValue) || unknownValue <= 0 || !isFinite(unknownValue)) {
-                            displayResult("pulley-result", "حدث خطأ في الحساب. تأكد من إدخال ثلاث قيم صحيحة وموجبة وتجنب قسمة على صفر.", false);
-                            return;
-                        }
+                    // Convert Map values back to an array for display
+                    allFirebaseProductsData = Array.from(uniqueProductsMap.values());
 
-                        displayResult("pulley-result", resultMessage, true);
+                    // Populate phone dropdowns with collected numbers
+                    FirebaseData.populatePhoneDropdowns(uniquePhoneNumbers);
 
-                        const dataToSave = {
-                            inputs: {
-                                d1: document.getElementById("pulley-d1").value === '' ? null : d1,
-                                rpm1: document.getElementById("pulley-rpm1").value === '' ? null : rpm1,
-                                d2: document.getElementById("pulley-d2").value === '' ? null : d2,
-                                rpm2: document.getElementById("pulley-rpm2").value === '' ? null : rpm2
-                            }
-                        };
-                        saveCalculatorState("pulley-calculator", dataToSave);
-                    },
+                    // Populate datalist for search within this module
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'name');
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'customerName');
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'ownerName');
+                    // Add phone numbers to search options from the unique set
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, Array.from(uniquePhoneNumbers).map(p => ({ value: p })), 'value');
+
+                    FirebaseData.applyCombinedFilters(); // Apply filters after fetching data
+                    UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
+                } catch (error) {
+                    UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
+                    console.error("Failed to fetch Firebase data:", error);
+                } finally {
+                    UI.toggleGeneralLoader(UIElements.firebaseLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
                 }
-            };
+            },
+            // Applies search and phone filters to both invoices and products
+            applyCombinedFilters: () => {
+                const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
+                const selectedInvoicePhoneNumber = UIElements.invoicePhoneDropdown.value;
+                const selectedProductPhoneNumber = UIElements.productPhoneDropdown.value;
+                const selectedCommonPhoneNumber = UIElements.commonPhoneDropdown.value; // Get value from the new dropdown
 
-            sectionTitles.forEach(title => {
-                title.addEventListener("click", function () {
-                    const modalId = this.dataset.modalTarget;
-                    const targetModal = document.getElementById(modalId);
-                    const calculatorId = targetModal.querySelector('.calculator').id;
+                // Filter Invoices
+                const filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
+                    const matchesSearch = searchTerm ?
+                        ((invoice.customerName || '').toLowerCase().includes(searchTerm) ||
+                            (invoice.ownerName || '').toLowerCase().includes(searchTerm) ||
+                            (invoice.ownerPhone && invoice.ownerPhone.includes(searchTerm)) ||
+                            (invoice.products && invoice.products.some(p => (p.name || '').toLowerCase().includes(searchTerm) || (p.supplierName || '').toLowerCase().includes(searchTerm))))
+                        : true;
 
-                    if (targetModal) {
-                        targetModal.classList.add("active");
-                        const inputsInModal = targetModal.querySelectorAll('input, select');
-                        inputsInModal.forEach(input => {
-                            input.classList.remove("error");
+                    const matchesInvoicePhone = (selectedInvoicePhoneNumber === 'all' || invoice.ownerPhone === selectedInvoicePhoneNumber);
+                    const matchesCommonPhone = (selectedCommonPhoneNumber === 'all' || invoice.ownerPhone === selectedCommonPhoneNumber);
+
+                    return matchesSearch && matchesInvoicePhone && matchesCommonPhone;
+                });
+
+                // Filter Products
+                const filteredProducts = allFirebaseProductsData.filter(product => {
+                    const matchesSearch = searchTerm ?
+                        ((product.name || '').toLowerCase().includes(searchTerm) ||
+                            (product.supplierName || '').toLowerCase().includes(searchTerm) ||
+                            (product.supplierPhone && product.supplierPhone.includes(searchTerm)) ||
+                            (product.customerName || '').toLowerCase().includes(searchTerm) || // Products can also be linked to customer via invoice
+                            (product.ownerName || '').toLowerCase().includes(searchTerm) ||
+                            (product.ownerPhone && product.ownerPhone.includes(searchTerm)))
+                        : true;
+
+                    const matchesProductPhone = (selectedProductPhoneNumber === 'all' || product.firebasePhoneKey === selectedProductPhoneNumber);
+                    const matchesCommonPhone = (selectedCommonPhoneNumber === 'all' || product.firebasePhoneKey === selectedCommonPhoneNumber);
+
+
+                    return matchesSearch && matchesProductPhone && matchesCommonPhone;
+                });
+
+                UIElements.firebaseInvoiceListCountSpan.textContent = filteredInvoices.length;
+                UIElements.firebaseProductListCountSpan.textContent = filteredProducts.length;
+
+                filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
+                filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort products by name
+
+                FirebaseData.displayFirebaseInvoices(filteredInvoices);
+                FirebaseData.displayFirebaseProducts(filteredProducts); // Display filtered products
+                FirebaseData.displayStatistics(filteredInvoices); // Statistics based on filtered invoices
+            },
+            clearAndFilter: () => {
+                UIElements.commonSearchInput.value = '';
+                UIElements.commonPhoneDropdown.value = 'all';
+                UIElements.productPhoneDropdown.value = 'all';
+                UIElements.invoicePhoneDropdown.value = 'all';
+                FirebaseData.applyCombinedFilters();
+                UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
+            },
+            // Displays invoices in the dedicated container
+            displayFirebaseInvoices: (invoices) => {
+                UIElements.firebaseInvoicesContainer.innerHTML = '';
+                if (invoices.length === 0) {
+                    UIElements.firebaseInvoicesContainer.innerHTML = '<p class="empty-list-message">لا توجد فواتير لعرضها.</p>';
+                    return;
+                }
+                invoices.forEach(invoice => {
+                    const invoiceDiv = document.createElement('div');
+                    invoiceDiv.classList.add('mini-invoice-card');
+                    invoiceDiv.dataset.invoiceId = invoice.id;
+                    invoiceDiv.dataset.firebasePhoneKey = invoice.firebasePhoneKey;
+                    let productsListHtml = '<p style="text-align: center; font-style: italic; color: var(--text-secondary-gray);">لا توجد منتجات في هذه الفاتورة.</p>';
+                    if (invoice.products && invoice.products.length > 0) {
+                        productsListHtml = `
+                            <div class="mini-product-list">
+                                <div class="mini-product-item-header">
+                                    <div>المنتج</div>
+                                    <div>الكمية</div>
+                                    <div>الإجمالي (HT)</div>
+                                </div>
+                                ${invoice.products.map(product => `
+                                    <div class="mini-product-item-row">
+                                        <div>${product.name || 'N/A'}</div>
+                                        <div>${product.quantityUsed || 0}</div>
+                                        <div>${(parseFloat(product.sellingPrice || 0) * (product.quantityUsed || 0)).toFixed(2)} DH</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    invoiceDiv.innerHTML = `
+                        <div class="invoice-mini-header">
+                            <p><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
+                            <p><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
+                            <p><strong>التاريخ:</strong> ${invoice.date || 'N/A'}</p>
+                            <p><strong>الهاتف:</strong> ${invoice.ownerPhone || 'N/A'}</p>
+                        </div>
+                        ${productsListHtml}
+                        <div class="invoice-mini-footer">
+                            <p><strong>الإجمالي (TTC):</strong> ${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</p>
+                            <p><strong>الربح:</strong> ${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</p>
+                        </div>
+                    `;
+                    UIElements.firebaseInvoicesContainer.appendChild(invoiceDiv);
+                });
+            },
+            // NEW: Displays products in the dedicated container
+            displayFirebaseProducts: (products) => {
+                UIElements.firebaseProductsContainer.innerHTML = '';
+                if (products.length === 0) {
+                    UIElements.firebaseProductsContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات لعرضها.</p>';
+                    return;
+                }
+                products.forEach(product => {
+                    const productDiv = document.createElement('div');
+                    productDiv.classList.add('firebase-product-card'); // Use a distinct class for product cards
+                    productDiv.dataset.productId = product.id;
+                    productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
+                    productDiv.innerHTML = `
+                        <p><strong>الاسم:</strong> ${product.name || 'N/A'}</p>
+                        <p><strong>سعر الشراء:</strong> ${parseFloat(product.purchasePrice || 0).toFixed(2)} DH</p>
+                        <p><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
+                        <p><strong>المورد:</strong> ${product.supplierName || 'N/A'}</p>
+                        <p><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
+                        <p><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
+                        ${product.invoiceDate ? `<p><strong>تاريخ آخر فاتورة:</strong> ${product.invoiceDate}</p>` : ''}
+                        ${product.customerName ? `<p><strong>عميل آخر فاتورة:</strong> ${product.customerName}</p>` : ''}
+                        ${product.ownerName ? `<p><strong>مالك آخر فاتورة:</strong> ${product.ownerName}</p>` : ''}
+                    `;
+                    UIElements.firebaseProductsContainer.appendChild(productDiv);
+                });
+            },
+            // Calculates and displays various statistics based on filtered invoices
+            displayStatistics: (invoices) => {
+                let totalSalesHT = 0;
+                let totalTVA = 0;
+                let totalSalesTTC = 0;
+                let totalOverallProfit = 0;
+                let totalOverallCommission = 0;
+                let totalPurchaseCostAllProducts = 0;
+                let totalSellingPriceAllProducts = 0;
+
+                const productSales = {}; // { productName: { quantitySold, totalRevenue } }
+                const customerActivity = {}; // { customerName: { invoiceCount, totalProfit, totalTTC } }
+                const invoiceOwnerActivity = {}; // { ownerName: { invoiceCount, totalProfit, totalTTC } }
+                const supplierActivity = {}; // { supplierName: { totalPurchaseCost, productsCount } }
+
+                invoices.forEach(invoice => {
+                    totalSalesHT += parseFloat(invoice.totalHT || 0);
+                    totalTVA += parseFloat(invoice.tva || 0);
+                    totalSalesTTC += parseFloat(invoice.totalTTC || 0);
+                    totalOverallProfit += parseFloat(invoice.totalProfit || 0);
+                    totalOverallCommission += parseFloat(invoice.totalCommission || 0);
+
+                    if (invoice.products) {
+                        invoice.products.forEach(product => {
+                            const productName = product.name || 'N/A';
+                            const quantityUsed = parseInt(product.quantityUsed || 0);
+                            const purchasePrice = parseFloat(product.purchasePrice || 0);
+                            const sellingPrice = parseFloat(product.sellingPrice || 0);
+                            // Use product.supplierName from product object, fallback to invoice owner if product doesn't have it
+                            const supplierName = product.supplierName || invoice.ownerName || 'N/A';
+
+                            totalPurchaseCostAllProducts += purchasePrice * quantityUsed;
+                            totalSellingPriceAllProducts += sellingPrice * quantityUsed;
+
+                            productSales[productName] = (productSales[productName] || { quantitySold: 0, totalRevenue: 0 });
+                            productSales[productName].quantitySold += quantityUsed;
+                            productSales[productName].totalRevenue += sellingPrice * quantityUsed;
+
+                            supplierActivity[supplierName] = (supplierActivity[supplierName] || { totalPurchaseCost: 0, productsCount: 0 });
+                            supplierActivity[supplierName].totalPurchaseCost += purchasePrice * quantityUsed;
+                            supplierActivity[supplierName].productsCount += quantityUsed;
                         });
-                        loadAndDisplayCalculatorState(calculatorId, targetModal);
                     }
+
+                    const customer = invoice.customerName || 'N/A';
+                    const invoiceProfit = parseFloat(invoice.totalProfit || 0);
+                    const invoiceTTC = parseFloat(invoice.totalTTC || 0);
+                    const owner = invoice.ownerName || 'N/A';
+
+                    customerActivity[customer] = (customerActivity[customer] || { invoiceCount: 0, totalProfit: 0, totalTTC: 0 });
+                    customerActivity[customer].invoiceCount += 1;
+                    customerActivity[customer].totalProfit += invoiceProfit;
+                    customerActivity[customer].totalTTC += invoiceTTC;
+
+                    invoiceOwnerActivity[owner] = (invoiceOwnerActivity[owner] || { invoiceCount: 0, totalProfit: 0, totalTTC: 0 });
+                    invoiceOwnerActivity[owner].invoiceCount += 1;
+                    invoiceOwnerActivity[owner].totalProfit += invoiceProfit;
+                    invoiceOwnerActivity[owner].totalTTC += invoiceTTC;
                 });
-            });
 
-            closeButtons.forEach(button => {
-                button.addEventListener("click", function () {
-                    const modal = this.closest(".modal");
-                    if (modal) {
-                        modal.classList.remove("active");
-                    }
-                });
-            });
+                // Update display elements
+                UIElements.totalPurchaseCost.textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
+                UIElements.totalSellingPrice.textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
+                UIElements.totalCommission.textContent = `${totalOverallCommission.toFixed(2)} DH`;
+                UIElements.totalProfit.textContent = `${totalOverallProfit.toFixed(2)} DH`;
+                UIElements.totalSalesHT.textContent = `${totalSalesHT.toFixed(2)} DH`;
+                UIElements.totalTVA.textContent = `${totalTVA.toFixed(2)} DH`;
+                UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
 
-            modals.forEach(modal => {
-                modal.addEventListener("click", function (event) {
-                    if (event.target === modal) {
-                        modal.classList.remove("active");
-                    }
-                });
-            });
+                // Prepare data for top lists
+                const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 10).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue }));
+                const topCustomersData = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalTTC }));
+                const topInvoiceOwnersData = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalProfit }));
+                const topSuppliersData = Object.entries(supplierActivity).sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost).slice(0, 10).map(([name, stats]) => ({ name, value: stats.totalPurchaseCost, secondaryValue: stats.productsCount }));
 
-            document.querySelectorAll(".calculator button").forEach(button => {
-                button.addEventListener("click", function () {
-                    const calculatorId = this.closest(".calculator").id;
-                    const originalText = this.innerHTML;
-
-                    this.innerHTML = `<span class="loading"></span> ${originalText}`;
-                    this.disabled = true;
-
-                    const inputs = this.closest('.calculator').querySelectorAll('input[type="number"], select');
-                    let allInputsValid = true;
-
-                    inputs.forEach(input => {
-                        if (input.type === 'number') {
-                            if (calculatorId === 'pulley-calculator') {
-                                if (input.value !== '' && (isNaN(parseFloat(input.value)) || parseFloat(input.value) <= 0)) {
-                                    input.classList.add("error");
-                                    allInputsValid = false;
-                                } else {
-                                    input.classList.remove("error");
-                                }
-                            } else {
-                                const value = parseFloat(input.value);
-                                const min = parseFloat(input.min);
-                                const max = parseFloat(input.max);
-                                if (isNaN(value) || (input.hasAttribute('min') && value < min) || (input.hasAttribute('max') && value > max)) {
-                                    input.classList.add("error");
-                                    allInputsValid = false;
-                                } else {
-                                    input.classList.remove("error");
-                                }
-                            }
-                        } else if (input.checkValidity && !input.checkValidity()) {
-                            input.classList.add("error");
-                            allInputsValid = false;
-                        } else {
-                            input.classList.remove("error");
-                        }
+                // Render top lists
+                FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} DH`);
+                FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} DH`);
+                FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} DH`);
+                FirebaseData.renderSimpleList(UIElements.topSuppliersList, topSuppliersData, (item) => item.name, (item) => `الشراء: ${item.value.toFixed(2)} DH - المنتجات: ${item.secondaryValue}`);
+            },
+            // Generic function to render simple lists (e.g., top products, customers)
+            renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn) => {
+                listEl.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span><strong>${primaryTextFn(item)}</strong></span><span>${secondaryTextFn(item)}</span>`;
+                        // Add data-searchTerm for direct search functionality on click
+                        li.dataset.searchTerm = primaryTextFn(item); // Use primary text for search term
+                        li.addEventListener('click', () => {
+                            UIElements.commonSearchInput.value = li.dataset.searchTerm;
+                            FirebaseData.applyCombinedFilters();
+                        });
+                        listEl.appendChild(li);
                     });
-
-                    if (calculatorId === 'pulley-calculator') {
-                        let emptyCount = 0;
-                        inputs.forEach(input => {
-                            if (input.id.startsWith('pulley-') && input.value === '') {
-                                emptyCount++;
-                            }
-                        });
-                        if (emptyCount !== 1) {
-                            displayResult(this.closest('.calculator').querySelector('.result').id, "الرجاء ترك حقل واحد فقط فارغاً للمجهول في حاسبة البكرة.", false);
-                            allInputsValid = false;
-                            inputs.forEach(input => {
-                                if (input.value === '') {
-                                    input.classList.add("error");
-                                }
-                            });
-                        } else {
-                            inputs.forEach(input => {
-                                if (input.value === '') {
-                                    input.classList.remove("error");
-                                }
-                            });
-                        }
-                    }
-
-                    setTimeout(() => {
-                        if (allInputsValid && calculatorFunctions[calculatorId]) {
-                            calculatorFunctions[calculatorId].calculate();
-                        } else if (!allInputsValid) {
-                            displayResult(this.closest('.calculator').querySelector('.result').id, "الرجاء تصحيح الأخطاء في الإدخالات المحددة.", false);
-                        } else {
-                            console.error(`Calculation function for ID '${calculatorId}' not found.`);
-                        }
-                        this.innerHTML = originalText;
-                        this.disabled = false;
-                    }, 300);
-                });
-            });
-
-            document.querySelectorAll("input[type='number']").forEach(input => {
-                input.addEventListener("input", function () {
-                    this.classList.remove("error");
-
-                    if (this.closest('.calculator').id === 'pulley-calculator' || (this.closest('.calculator').id === 'tank-calculator' && this.id === 'tank-width' && this.disabled)) {
-                        return;
-                    }
-
-                    const value = parseFloat(this.value);
-                    const min = parseFloat(this.min);
-                    const max = parseFloat(this.max);
-                    let isValid = true;
-
-                    if (this.value === '') {
-                        isValid = true;
-                    } else if (isNaN(value)) {
-                        isValid = false;
-                    } else if (this.hasAttribute('min') && value < min) {
-                        isValid = false;
-                    } else if (this.hasAttribute('max') && value > max) {
-                        isValid = false;
-                    }
-
-                    if (!isValid) {
-                        this.classList.add("error");
-                    } else {
-                        this.classList.remove("error");
-                    }
-                });
-            });
-
-            const tankShapeSelect = document.getElementById('tank-shape');
-            const tankWidthInput = document.getElementById('tank-width');
-            const tankWidthGroup = document.getElementById('tank-width-group');
-            
-            if (tankShapeSelect && tankWidthInput && tankWidthGroup) {
-                tankShapeSelect.addEventListener('change', function () {
-                    if (this.value === 'cube') {
-                        tankWidthGroup.style.display = 'flex';
-                        tankWidthInput.disabled = false;
-                        tankWidthInput.setAttribute('required', 'required');
-                    } else {
-                        tankWidthGroup.style.display = 'flex';
-                        tankWidthInput.disabled = true;
-                        tankWidthInput.removeAttribute('required');
-                        tankWidthInput.classList.remove("error");
-                    }
-                });
-                const event = new Event('change');
-                tankShapeSelect.dispatchEvent(event);
-            }
-
-            const batteryDeviceTypeSelect = document.getElementById('battery-device-type');
-            const batteryACFields = document.querySelectorAll('.battery-ac-only');
-
-            if (batteryDeviceTypeSelect && batteryACFields.length > 0) {
-                batteryDeviceTypeSelect.addEventListener('change', function () {
-                    if (this.value === 'ac') {
-                        batteryACFields.forEach(group => group.style.display = 'flex');
-                        document.getElementById('battery-device-phase').setAttribute('required', 'required');
-                        document.getElementById('battery-device-power-factor').setAttribute('required', 'required');
-                        document.getElementById('inverter-efficiency-battery').setAttribute('required', 'required');
-                    } else {
-                        batteryACFields.forEach(group => {
-                            group.style.display = 'none';
-                            const input = group.querySelector('input, select');
-                            if (input) {
-                                if (input.id === 'battery-device-power-factor') {
-                                    input.value = '0.8';
-                                } else if (input.id === 'inverter-efficiency-battery') {
-                                    input.value = '90';
-                                } else if (input.id === 'battery-device-phase') {
-                                    input.value = 'single';
-                                } else {
-                                    input.value = '';
-                                }
-                                input.classList.remove("error");
-                                input.removeAttribute('required');
-                            }
-                        });
-                    }
-                });
-                const event = new Event('change');
-                batteryDeviceTypeSelect.dispatchEvent(event);
-            }
-
-            const defaultValues = {
-                'unit-converter': {
-                    'uc-power-factor': "0.8",
-                    'uc-input-unit': "kw",
-                    'uc-phase': "single"
-                },
-                'tank-calculator': {
-                    'tank-shape': "cube"
-                },
-                'resistance-voltage-drop': {
-                    'rvd-material': "copper",
-                    'rvd-allowed-voltage-drop-percentage': "3",
-                    'rvd-phase': "single",
-                    'rvd-power-factor': "0.8"
-                },
-                'flow-converter': {
-                    'flow-conversion-type': "m3h-to-lps"
-                },
-                'capacitor-calculator': {
-                    'cap-current-pf': "0.7",
-                    'cap-desired-pf': "0.95",
-                    'cap-frequency': "50",
-                    'cap-phase': "single"
-                },
-                'solar-panels-calculator': {
-                    'solar-performance-factor': "80",
-                    'inverter-efficiency': "90",
-                    'pump-voltage': "230",
-                    'pump-phase': "single",
-                    'pump-power-factor': "0.8",
-                    'ideal-series-voltage': ""
-                },
-                'battery-calculator': {
-                    'battery-dod': "80",
-                    'battery-efficiency': "90",
-                    'battery-device-type': "dc",
-                    'battery-device-phase': "single",
-                    'battery-device-power-factor': "0.8",
-                    'inverter-efficiency-battery': "90"
-                },
-                'pulley-calculator': {
-                    'pulley-d1': "",
-                    'pulley-rpm1': "",
-                    'pulley-d2': "",
-                    'pulley-rpm2': ""
-                }
-            };
-
-            function loadAndDisplayCalculatorState(calculatorId, targetElement) {
-                // console.log(`Loading and displaying state for ${calculatorId}`); // For debugging
-                const resultElement = targetElement.querySelector('.result');
-
-                const savedState = loadCalculatorState(calculatorId);
-                if (savedState && savedState.inputs) {
-                    // console.log('Found saved state, populating inputs...'); // For debugging
-                    populateInputs(calculatorId, savedState.inputs, targetElement);
+                    listEl.classList.toggle('has-more-items', listEl.children.length > 3);
                 } else {
-                    // console.log('No saved state, applying defaults.'); // For debugging
-                    const inputs = targetElement.querySelectorAll('input[type="number"], select');
-                    inputs.forEach(input => {
-                        const defaultValue = defaultValues[calculatorId] ? defaultValues[calculatorId][input.id] : undefined;
-                        if (defaultValue !== undefined) {
-                            input.value = defaultValue;
-                        } else {
-                            if (calculatorId === 'pulley-calculator' && (input.id === 'pulley-d1' || input.id === 'pulley-rpm1' || input.id === 'pulley-d2' || input.id === 'pulley-rpm2')) {
-                                input.value = '';
-                            } else {
-                                input.value = "";
-                            }
-                        }
-                        input.classList.remove("error");
-                    });
-                }
-
-                if (resultElement) {
-                    let initialResultText = "النتائج: ...";
-                    if (calculatorId === 'percentage-calculator') {
-                        initialResultText = "الناتج: ...";
-                    } else if (calculatorId === 'capacitor-calculator') {
-                        initialResultText = "السعة المطلوبة: ...";
-                    } else if (calculatorId === 'flow-converter') {
-                        initialResultText = "النتيجة: ...";
-                    } else if (calculatorId === 'unit-converter') {
-                        initialResultText = '<p>النتائج:</p><ul><li>kW: <span>...</span></li><li>kVA: <span>...</span></li><li>HP: <span>...</span></li><li>Ampere: <span>...</span></li></ul>';
-                    } else if (calculatorId === 'battery-calculator') {
-                        initialResultText = 'النتائج: ...';
-                    }
-
-                    resultElement.innerHTML = initialResultText;
-                    resultElement.className = "result";
-                }
-
-                if (calculatorId === 'tank-calculator' && tankShapeSelect) {
-                    const event = new Event('change');
-                    tankShapeSelect.dispatchEvent(event);
-                }
-                if (calculatorId === 'battery-calculator' && batteryDeviceTypeSelect) {
-                    const event = new Event('change');
-                    batteryDeviceTypeSelect.dispatchEvent(event);
+                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
+                    listEl.classList.remove('has-more-items');
                 }
             }
+        };
+
+        // ====== Initialization on Window Load for this section ======
+        window.addEventListener('load', () => {
+            // Initialize UIElements after the DOM is fully loaded
+            UIElements = {
+                firebaseProductsDisplay: document.getElementById('firebaseProductsDisplay'),
+                // Make sure this ID matches your HTML for the new dropdown
+                commonPhoneDropdown: document.getElementById('commonPhoneDropdown'), 
+                productPhoneDropdown: document.getElementById('productPhoneDropdown'),
+                invoicePhoneDropdown: document.getElementById('invoicePhoneDropdown'),
+                commonSearchInput: document.getElementById('commonSearchInput'),
+                clearCommonSearchInputButton: document.getElementById('clearCommonSearchInput'),
+                allSearchOptionsDatalist: document.getElementById('allSearchOptions'),
+                firebaseProductListCountSpan: document.getElementById('firebaseProductListCount'),
+                firebaseInvoiceListCountSpan: document.getElementById('firebaseInvoiceListCount'),
+                firebaseProductsContainer: document.getElementById('firebaseProductsContainer'),
+                firebaseInvoicesContainer: document.getElementById('firebaseInvoicesContainer'),
+                firebaseLoader: document.getElementById('firebaseLoader'),
+                firebaseProductsLoader: document.getElementById('firebaseProductsLoader'),
+                firebaseInvoicesLoader: document.getElementById('firebaseInvoicesLoader'),
+                totalPurchaseCost: document.getElementById('totalPurchaseCost'),
+                totalSellingPrice: document.getElementById('totalSellingPrice'),
+                totalCommission: document.getElementById('totalCommission'),
+                totalProfit: document.getElementById('totalProfit'),
+                totalSalesHT: document.getElementById('totalSalesHT'),
+                totalTVA: document.getElementById('totalTVA'),
+                totalSalesTTC: document.getElementById('totalSalesTTC'),
+                dynamicStatsListContainer: document.getElementById('dynamicStatsListContainer'),
+                topSellingProductsList: document.getElementById('topSellingProductsList'),
+                topCustomersList: document.getElementById('topCustomersList'),
+                topInvoiceOwnersList: document.getElementById('topInvoiceOwnersList'),
+                topSuppliersList: document.getElementById('topSuppliersList'),
+                toastContainer: document.getElementById('toast-container-firebase'),
+            };
+            FirebaseData.init(); // Initialize event listeners
+            FirebaseData.fetchAndDisplayCombinedFirebaseData(); // Fetch and display all data
+
+            // Initially display the section (it's standalone)
+            UIElements.firebaseProductsDisplay.hidden = false;
         });
     </script>
-
 </body>
 </html>
