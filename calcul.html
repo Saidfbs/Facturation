@@ -1,580 +1,104 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بيانات Firebase والإحصائيات - لوحة معلومات</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
+        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        /* Ethereal Harmony Color Palette (copied for self-containment) */
+        /* Professional Dashboard Color Palette (CSS Variables) */
         :root {
-            --primary-bg-light: hsla(220, 10%, 97%, 1);
-            --card-bg-white: hsla(0, 0%, 100%, 1);
-            --primary-blue-dark: hsla(210, 29%, 29%, 1);
-            --accent-blue: hsla(205, 78%, 42%, 1);
-            --accent-green: hsla(120, 50%, 50%, 1);
-            --accent-orange: hsla(45, 80%, 65%, 1);
-            --accent-red: hsla(0, 70%, 55%, 1);
-            --text-primary-dark: hsla(210, 10%, 15%, 1);
-            --text-secondary-gray: hsla(210, 5%, 40%, 1);
-            --text-light: hsla(0, 0%, 100%, 1);
-            --border-light: hsla(210, 5%, 90%, 1);
-            --spacing-xs: 4px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
-            --spacing-xl: 32px;
-            --border-radius-small: 6px;
-            --border-radius-medium: 10px;
-            --border-radius-large: 14px;
-            --border-radius-pill: 999px;
-            --shadow-subtle: 0 2px 5px rgba(0, 0, 0, 0.08);
-            --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.12);
-            --shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.18);
+            --dashboard-bg-primary: hsl(210, 10%, 97%); /* Very light off-white/gray */
+            --dashboard-card-bg: hsl(0, 0%, 100%);    /* Pure white for cards */
+            --dashboard-primary-blue: hsl(210, 29%, 29%); /* Deep professional blue */
+            --dashboard-accent-blue: hsl(205, 78%, 42%); /* Vibrant accent blue */
+            --dashboard-accent-green: hsl(120, 50%, 50%); /* Clear success green */
+            --dashboard-accent-orange: hsl(45, 80%, 65%); /* Soft orange for distinction */
+            --dashboard-accent-red: hsl(0, 70%, 55%);   /* Standard error red */
+            --dashboard-text-dark: hsl(210, 10%, 15%);  /* Dark gray for primary text */
+            --dashboard-text-secondary: hsl(210, 5%, 40%); /* Medium gray for secondary text */
+            --dashboard-border-light: hsl(210, 5%, 90%); /* Light gray border */
+            --dashboard-hover-bg: hsl(210, 30%, 96%); /* Light hover background */
+            --dashboard-shadow-subtle: 0 2px 5px rgba(0, 0, 0, 0.08);
+            --dashboard-shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.12);
+            --dashboard-shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.18);
         }
-        [hidden] {
-            display: none !important;
-        }
-        html,
+
         body {
-            height: 100%;
-            margin: 0;
-            padding: var(--spacing-md);
             font-family: 'Cairo', sans-serif;
-            direction: rtl;
-            background-color: var(--primary-bg-light);
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            color: var(--text-primary-dark);
-            font-size: 16px;
+            direction: rtl; /* Ensure right-to-left direction */
+            background-color: var(--dashboard-bg-primary);
+            color: var(--dashboard-text-dark);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        /* Specific styles for the Firebase section and its children */
-        .firebase-stats-combined-container {
-            background-color: transparent;
-            box-shadow: none;
-            border: none;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-            flex-grow: 1;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .firebase-content-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-md);
-            width: 100%;
-            flex-grow: 1;
-        }
-        .main-title {
-            width: 100%;
-            text-align: center;
-            color: var(--primary-blue-dark);
-            margin-bottom: var(--spacing-xl);
-            font-size: 2.4em;
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 2px solid var(--border-light);
-            transition: color 0.3s ease, border-bottom-color 0.3s ease;
-        }
-        .section-title {
-            width: 100%;
-            text-align: center;
-            color: var(--primary-blue-dark);
-            margin-top: var(--spacing-lg);
-            margin-bottom: var(--spacing-md);
-            font-size: 2em;
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 2px solid var(--border-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            transition: color 0.3s ease, border-bottom-color 0.3s ease;
-        }
-        .section-title .icon {
-            font-size: 1.3em;
-            line-height: 1;
-            color: var(--accent-blue);
-        }
-        .list-subtitle {
-            color: var(--primary-blue-dark);
-            margin-top: var(--spacing-lg);
-            margin-bottom: var(--spacing-md);
-            font-size: 1.6em;
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 1px solid var(--border-light);
-            text-align: center;
-            width: 100%;
-            transition: color 0.3s ease, border-bottom-color 0.3s ease;
-        }
-        .card-container {
-            border: 1px solid var(--border-light);
-            padding: var(--spacing-lg);
-            border-radius: var(--border-radius-medium);
-            background-color: var(--card-bg-white);
-            box-shadow: var(--shadow-subtle);
-            margin-bottom: 0;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            width: 100%;
-            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
-        }
-        .stat-card-list {
-            grid-column: 1 / -1;
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--spacing-md);
-            align-items: stretch;
-            width: 100%;
-        }
-        .stat-card {
-            background: var(--card-bg-white);
-            border: 2px solid var(--border-light);
-            border-radius: var(--border-radius-medium);
-            padding: var(--spacing-md);
-            text-align: center;
-            box-shadow: var(--shadow-subtle);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            flex: 1 1 auto;
-            transition: all 0.3s ease-in-out;
-            overflow: hidden;
-            position: relative;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: var(--shadow-medium);
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -20px;
-            left: -20px;
-            width: 80px;
-            height: 80px;
-            background-color: var(--accent-blue);
-            border-radius: var(--border-radius-pill);
-            opacity: 0.1;
-            transform: scale(0);
-            transition: transform 0.5s ease;
-            z-index: 0;
-        }
-        .stat-card:hover::before {
-            transform: scale(1);
-        }
-        .stat-card h3 {
-            margin: 0 0 var(--spacing-sm) 0;
-            font-size: 1.2em;
-            color: var(--text-secondary-gray);
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .stat-card p {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--primary-blue-dark);
-            margin: 0;
-            position: relative;
-            z-index: 1;
-            font-variant-numeric: tabular-nums;
-        }
-        .scrollable-list-in-card {
-            border: 1px solid var(--border-light);
-            border-radius: var(--border-radius-small);
-            background-color: var(--primary-bg-light);
-            margin-top: var(--spacing-sm);
-            display: flex;
-            flex-direction: column;
-            flex-wrap: nowrap;
-            gap: var(--spacing-xs);
-            justify-content: flex-start;
-            align-items: stretch;
-            padding: var(--spacing-md);
-            list-style: none;
-            margin-right: 0;
-            margin-left: 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-blue) var(--primary-bg-light);
-            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            min-height: 150px;
-            overflow-y: hidden;
-            flex-shrink: 0;
-        }
-        .scrollable-list-in-card.has-more-items {
-            max-height: 204px;
-            overflow-y: auto;
-        }
-        .scrollable-list-in-card::-webkit-scrollbar {
+
+        /* Custom scrollbar for better aesthetics */
+        .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
-        .scrollable-list-in-card::-webkit-scrollbar-track {
-            background: var(--primary-bg-light);
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: var(--dashboard-bg-primary);
             border-radius: 10px;
         }
-        .scrollable-list-in-card::-webkit-scrollbar-thumb {
-            background: var(--accent-blue);
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: var(--dashboard-accent-blue);
             border-radius: 10px;
-            border: 2px solid var(--primary-bg-light);
-            transition: background-color 0.3s ease;
+            border: 2px solid var(--dashboard-bg-primary);
         }
-        .scrollable-list-in-card::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-blue-dark);
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: var(--dashboard-primary-blue);
         }
-        .scrollable-list-in-card li {
-            background-color: var(--card-bg-white);
-            padding: 8px 12px;
-            border-radius: var(--border-radius-small);
-            border: 1px solid var(--border-light);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-end;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: right;
-            box-shadow: var(--shadow-subtle);
-            cursor: pointer;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease, border-color 0.3s ease;
+
+        /* Hide number input arrows */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
-        .scrollable-list-in-card li:hover {
-            background-color: hsla(210, 30%, 96%, 1);
-            box-shadow: var(--shadow-medium);
-            transform: translateY(-1px);
+
+        input[type="number"] {
+            -moz-appearance: textfield;
         }
-        .scrollable-list-in-card li span {
-            display: block;
-            text-align: right;
-            white-space: normal;
-            word-break: break-word;
+
+        /* Toast specific animations */
+        @keyframes fadeinout {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            10% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            90% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
         }
-        .scrollable-list-in-card li span:first-child {
-            font-weight: bold;
-            color: var(--primary-blue-dark);
-            margin-bottom: var(--spacing-xs);
-            font-size: 1.1em;
+
+        .toast-firebase.animate-fade {
+            animation: fadeinout 4s forwards;
         }
-        .scrollable-list-in-card li span:last-child {
-            font-weight: normal;
-            font-size: 0.95em;
-            color: var(--text-secondary-gray);
-            flex-shrink: 0;
-        }
-        #dynamicStatsListContainer {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: var(--spacing-md);
-            flex: 1 1 auto;
-        }
-        #dynamicStatsListContainer > div {
-            background-color: var(--card-bg-white);
-            border: 1px solid var(--border-light);
-            border-radius: var(--border-radius-medium);
-            padding: var(--spacing-md);
-            box-shadow: var(--shadow-subtle);
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .search-input {
-            padding: 0.8rem 1rem;
-            border-radius: var(--border-radius-large);
-            border: 1px solid var(--border-light);
-            width: 100%;
-            margin-bottom: var(--spacing-md);
-            background-color: var(--card-bg-white);
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            color: var(--text-primary-dark);
-            outline: none;
-            text-align: right;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
-            padding-left: 45px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237f8c8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>');
-            background-repeat: no-repeat;
-            background-position: left 15px center;
-            background-size: 18px;
-        }
-        .search-input:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px hsla(205, 78%, 42%, 0.3);
-        }
-        .search-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            margin-bottom: var(--spacing-md);
-        }
-        .search-input-wrapper input {
-            margin-bottom: 0;
-        }
-        .clear-search-btn {
-            background-color: var(--accent-red);
-            color: var(--text-light);
-            border: none;
-            border-radius: var(--border-radius-pill);
-            padding: 0.5rem 0.8rem;
-            cursor: pointer;
-            font-size: 0.8em;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-            box-shadow: var(--shadow-subtle);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            height: 45px;
-        }
-        .clear-search-btn:hover {
-            background-color: hsla(350, 70%, 45%, 1);
-            transform: translateY(-1px);
-        }
-        .filter-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--spacing-sm);
-            margin-bottom: var(--spacing-md);
-            width: 100%;
-            padding: var(--spacing-sm);
-            background-color: var(--primary-bg-light);
-            border-radius: var(--border-radius-medium);
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .firebase-product-list-wrapper > .filter-controls,
-        .firebase-invoice-product-list-wrapper > .filter-controls { /* Added for new section */
-            background-color: transparent;
-            box-shadow: none;
-            padding-top: 0;
-            padding-left: 0;
-            padding-right: 0;
-            border-radius: 0;
-        }
-        .filter-controls .form-group {
-            flex: 1 1 48%;
-            min-width: 250px;
-            margin-bottom: 0;
-        }
-        .filter-controls .form-group label {
-            display: none;
-        }
-        .filter-controls select {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            box-sizing: border-box;
-            background-color: var(--card-bg-white);
-            border-radius: var(--border-radius-small);
-            border: 1px solid var(--border-light);
-            font-size: 1em;
-            color: var(--text-primary-dark);
-            outline: none;
-            text-align: right;
-            appearance: none;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%237f8c8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
-            background-repeat: no-repeat;
-            background-position: left 10px center;
-            background-size: 12px;
-            padding-left: 30px;
-            padding-right: 0.8rem;
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-        }
-        .filter-controls select:focus {
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 2px hsla(205, 78%, 42%, 0.3);
-        }
-        .product-list-grid {
-            display: grid;
-            gap: var(--spacing-md);
-            align-content: start;
-            border: 1px solid var(--border-light);
-            border-radius: var(--border-radius-medium);
-            background-color: var(--card-bg-white);
-            padding: var(--spacing-md);
-            box-sizing: border-box;
-            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-            overflow-y: visible;
-            max-height: none;
-            padding-right: 0;
-            margin-top: var(--spacing-sm);
-            -webkit-overflow-scrolling: touch;
-        }
-        .product-list-grid.invoice-cards-grid {
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            justify-items: stretch;
-        }
-        /* New: Styles for Firebase Invoice Product Cards */
-        .firebase-invoice-product-card {
-            border: 1px solid var(--border-light);
-            border-right: 5px solid var(--accent-orange); /* Distinct color for this list */
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-medium);
-            background-color: var(--card-bg-white);
-            box-shadow: var(--shadow-subtle);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: stretch;
-            text-align: right;
-            font-size: 0.85em;
-            line-height: 1.4;
-            position: relative;
-            box-sizing: border-box;
-        }
-        .firebase-invoice-product-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-strong);
-            border-right-color: var(--accent-red); /* Example hover effect */
-        }
-        .firebase-invoice-product-card p {
-            margin: 2px 0;
-            color: var(--text-primary-dark);
-        }
-        .firebase-invoice-product-card p strong {
-            color: var(--primary-blue-dark);
-            font-size: 1.1em;
-        }
-        .mini-invoice-card {
-            border: 1px solid var(--border-light);
-            border-right: 5px solid var(--accent-blue);
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-medium);
-            background-color: var(--card-bg-white);
-            box-shadow: var(--shadow-subtle);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: stretch;
-            text-align: right;
-            font-size: 0.85em;
-            line-height: 1.4;
-            cursor: pointer;
-            position: relative;
-            box-sizing: border-box;
-        }
-        .mini-invoice-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-strong);
-            border-right-color: var(--accent-green);
-        }
-        .mini-invoice-card .invoice-mini-header p,
-        .mini-invoice-card .invoice-mini-footer p {
-            margin: 2px 0;
-            color: var(--text-primary-dark);
-        }
-        .mini-invoice-card .invoice-mini-header p strong {
-            color: var(--primary-blue-dark);
-            font-size: 1.1em;
-        }
-        .mini-product-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-xs);
-            margin-top: var(--spacing-sm);
-            margin-bottom: var(--spacing-sm);
-            font-size: 0.8em;
-            width: 100%;
-            border: 1px solid var(--border-light);
-            border-radius: var(--border-radius-small);
-            padding: var(--spacing-xs);
-            box-sizing: border-box;
-            background-color: var(--primary-bg-light);
-        }
-        .mini-product-item-header,
-        .mini-product-item-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1.5fr;
-            gap: var(--spacing-xs);
-            align-items: center;
-            padding: 4px 6px;
-            text-align: right;
-        }
-        .mini-product-item-header {
-            background-color: var(--primary-blue-dark);
-            color: var(--text-light);
-            font-weight: bold;
-            border-radius: var(--border-radius-small);
-        }
-        .mini-product-item-row {
-            background-color: var(--card-bg-white);
-            border: 1px solid var(--border-light);
-            border-radius: var(--border-radius-small);
-        }
-        .mini-product-item-row:nth-child(even) {
-            background-color: var(--primary-bg-light);
-        }
-        .mini-product-item-row div {
-            white-space: normal;
-            word-break: break-word;
-            text-align: right;
-            color: var(--text-secondary-gray);
-        }
-        .mini-product-item-row div:first-child {
-            color: var(--text-primary-dark);
-        }
-        .mini-invoice-card .invoice-mini-footer {
-            border-top: 1px dashed var(--border-light);
-            padding-top: var(--spacing-sm);
-            text-align: right;
-            margin-top: var(--spacing-sm);
-        }
-        .mini-invoice-card .invoice-mini-footer p strong {
-            color: var(--accent-green);
-            font-size: 1.1em;
-        }
-        .mini-invoice-card .invoice-actions {
-            display: none;
-            justify-content: center;
-            gap: var(--spacing-sm);
-            margin-top: var(--spacing-sm);
-        }
-        .mini-invoice-card .invoice-actions .btn-secondary-light {
-            flex: 0 0 auto;
-            width: fit-content;
-            padding: 0.5rem 1rem;
-            height: auto;
-            font-size: 0.8em;
-            margin-top: 0;
-            background-color: var(--primary-blue-dark);
-            background-image: linear-gradient(135deg, var(--primary-blue-dark), hsla(210, 29%, 22%, 1));
-        }
-        .mini-invoice-card .invoice-actions .btn-secondary-light:hover {
-            background-image: linear-gradient(135deg, hsla(210, 29%, 22%, 1), var(--primary-blue-dark));
-        }
-        .loader {
-            border: 4px solid var(--border-light);
-            border-top: 4px solid var(--accent-blue);
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none;
-        }
-        .loader.active {
-            display: block;
-        }
+
+        /* Loader animation */
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
@@ -583,308 +107,192 @@
                 transform: rotate(360deg);
             }
         }
-        /* Toast styles (for this self-contained section) */
-        #toast-container-firebase {
-            position: fixed;
-            bottom: var(--spacing-lg);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 10px;
-            pointer-events: none;
-            align-items: center;
-            width: auto;
-            max-width: 90vw;
-            box-sizing: border-box;
-            padding: var(--spacing-md);
-        }
-        .toast-firebase {
-            background-color: var(--card-bg-white);
-            color: var(--text-primary-dark);
-            padding: 15px 20px;
-            border-radius: var(--border-radius-medium);
-            box-shadow: var(--shadow-medium);
-            min-width: 250px;
-            max-width: 350px;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeinout 4s forwards;
-            pointer-events: auto;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid var(--border-light);
-            direction: rtl;
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-        }
-        .toast-firebase.success {
-            border-right: 5px solid var(--accent-green);
-            border-left: none;
-        }
-        .toast-firebase.error {
-            border-right: 5px solid var(--accent-red);
-            border-left: none;
-        }
-        .toast-firebase.info {
-            border-right: 5px solid var(--accent-blue);
-            border-left: none;
-        }
-        .toast-firebase .icon {
-            font-size: 1.5em;
-            line-height: 1;
-        }
-        .toast-firebase.success .icon {
-            color: var(--accent-green);
-        }
-        .toast-firebase.error .icon {
-            color: var(--accent-red);
-        }
-        .toast-firebase.info .icon {
-            color: var(--accent-blue);
-        }
-        @keyframes fadeinout {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            10% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            90% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-        }
-        /* Responsive adjustments for this section */
-        @media (max-width: 1024px) {
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            }
-            .stat-card h3 {
-                font-size: 1em;
-            }
-            .stat-card p {
-                font-size: 1.4em;
-            }
-            #dynamicStatsListContainer {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            }
-        }
-        @media (max-width: 768px) {
-            .main-title {
-                font-size: 1.8em;
-            }
-            .section-title {
-                font-size: 1.5em;
-            }
-            .stat-card p {
-                font-size: 1.3em;
-            }
-            .statistics-section .section-title {
-                font-size: 1.5em;
-            }
-            #dynamicStatsListContainer {
-                grid-template-columns: 1fr;
-            }
-            .filter-controls .form-group {
-                min-width: unset;
-                flex: 1 1 100%;
-            }
-            .stat-card-list {
-                flex-direction: column;
-            }
-            .stat-card-list > div {
-                flex: 1 1 100%;
-            }
-        }
-        @media (max-width: 480px) {
-            .main-title {
-                font-size: 1.8em;
-            }
-            .section-title {
-                font-size: 1.5em;
-            }
-            .stat-card h3 {
-                font-size: 0.9em;
-            }
-            .stat-card p {
-                font-size: 1.2em;
-            }
-        }
-        /* Styles for Firebase Product Cards */
-        .firebase-product-card {
-            border: 1px solid var(--border-light);
-            border-right: 5px solid var(--accent-blue);
-            padding: var(--spacing-md);
-            border-radius: var(--border-radius-medium);
-            background-color: var(--card-bg-white);
-            box-shadow: var(--shadow-subtle);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: stretch;
-            text-align: right;
-            font-size: 0.85em;
-            line-height: 1.4;
-            position: relative;
-            box-sizing: border-box;
-        }
-        .firebase-product-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: var(--shadow-strong);
-            border-right-color: var(--accent-green);
-        }
-        .firebase-product-card p {
-            margin: 2px 0;
-            color: var(--text-primary-dark);
-        }
-        .firebase-product-card p strong {
-            color: var(--primary-blue-dark);
-            font-size: 1.1em;
-        }
-        /* Grid for firebase products */
-        .product-list-grid {
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        }
-        .firebase-product-list-wrapper .product-list-grid,
-        .firebase-invoice-product-list-wrapper .product-list-grid { /* Added for new section */
-            /* Override if specific grid for firebase products is needed */
+
+        .loader {
+            animation: spin 1s linear infinite;
         }
     </style>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
 </head>
-<body>
-    <section class="firebase-stats-combined-container fade-in-section" id="firebaseProductsDisplay">
-        <h1 class="main-title">بيانات Firebase والإحصائيات</h1>
-        <div class="firebase-content-wrapper">
-            <section class="statistics-section card-container">
-                <h2 class="section-title"><span class="icon"><i class="fas fa-chart-pie"></i></span>إحصائيات
-                    المبيعات التفصيلية</h2>
-                <div class="filter-controls" style="background-color: transparent; box-shadow: none; padding:0;">
-                    <div class="form-group">
+
+<body class="p-4 flex flex-col min-h-screen">
+    <!-- Main Firebase Dashboard Container -->
+    <section id="firebaseProductsDisplay" class="w-full max-w-6xl mx-auto flex flex-col space-y-6">
+        <!-- Header with Main Title -->
+        <div class="flex justify-center items-center pb-4 border-b-2 border-dashboard-border-light mb-8">
+            <h1 class="text-4xl font-bold text-dashboard-primary-blue text-center">
+                بيانات Firebase والإحصائيات
+            </h1>
+        </div>
+
+        <!-- Content Wrapper for Sections -->
+        <div class="flex flex-col space-y-6">
+            <!-- Detailed Sales Statistics Section -->
+            <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
+                <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
+                    <i class="fas fa-chart-pie text-dashboard-accent-blue"></i> إحصائيات المبيعات التفصيلية
+                </h2>
+                <!-- Filter Controls for Statistics -->
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <div class="flex-1 min-w-[250px]">
                         <label for="commonPhoneDropdown" class="sr-only">تصفية الكل حسب رقم الهاتف</label>
-                        <select id="commonPhoneDropdown"></select>
+                        <select id="commonPhoneDropdown"
+                            class="w-full p-3 rounded-md border border-dashboard-border-light bg-dashboard-card-bg text-dashboard-text-dark focus:ring-2 focus:ring-dashboard-accent-blue focus:border-dashboard-accent-blue appearance-none bg-no-repeat bg-[length:12px_12px] bg-[position:left_10px_center]"
+                            style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%234B5563\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>');">
+                        </select>
                     </div>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <h3>إجمالي سعر الشراء</h3>
-                        <p id="totalPurchaseCost">0.00 DH</p>
+
+                <!-- Statistics Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي سعر الشراء</h3>
+                        <p id="totalPurchaseCost" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي سعر البيع</h3>
-                        <p id="totalSellingPrice">0.00 DH</p>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي سعر البيع</h3>
+                        <p id="totalSellingPrice" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي العمولة</h3>
-                        <p id="totalCommission">0.00 DH</p>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي العمولة</h3>
+                        <p id="totalCommission" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي الأرباح</h3>
-                        <p id="totalProfit">0.00 DH</p>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي الأرباح</h3>
+                        <p id="totalProfit" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي المبيعات (HT)</h3>
-                        <p id="totalSalesHT">0.00 DH</p>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي المبيعات (HT)</h3>
+                        <p id="totalSalesHT" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي TVA</h3>
-                        <p id="totalTVA">0.00 DH</p>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي TVA</h3>
+                        <p id="totalTVA" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="stat-card">
-                        <h3>إجمالي المبيعات (TTC)</h3>
-                        <p id="totalSalesTTC">0.00 DH</p>
-                    </div>
-                    <div class="stat-card-list">
-                        <div id="dynamicStatsListContainer">
-                            <div>
-                                <h3 class="list-subtitle">المنتجات الأكثر مبيعاً</h3>
-                                <ul id="topSellingProductsList" class="scrollable-list-in-card">
-                                    <li>لا توجد بيانات</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 class="list-subtitle">العملاء الأكثر نشاطاً</h3>
-                                <ul id="topCustomersList" class="scrollable-list-in-card">
-                                    <li>لا توجد بيانات</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 class="list-subtitle">أصحاب الفواتير الأكثر نشاطاً</h3>
-                                <ul id="topInvoiceOwnersList" class="scrollable-list-in-card">
-                                    <li>لا توجد بيانات</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 class="list-subtitle">الموردون الأكثر نشاطاً</h3>
-                                <ul id="topSuppliersList" class="scrollable-list-in-card">
-                                    <li>لا توجد بيانات</li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                        <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي المبيعات (TTC)</h3>
+                        <p id="totalSalesTTC" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
                 </div>
-                <div class="search-input-wrapper">
-                    <button type="button" class="clear-search-btn" id="clearCommonSearchInput"><span
-                            class="icon"><i class="fas fa-times-circle"></i></span>مسح</button>
-                    <input type="text" id="commonSearchInput" class="search-input"
-                        placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions">
+
+                <!-- Dynamic Stats Lists Container -->
+                <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <!-- Top Selling Products -->
+                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+                        <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">المنتجات الأكثر مبيعاً</h3>
+                        <ul id="topSellingProductsList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
+                            <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
+                        </ul>
+                    </div>
+                    <!-- Top Customers -->
+                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+                        <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">العملاء الأكثر نشاطاً</h3>
+                        <ul id="topCustomersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
+                            <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
+                        </ul>
+                    </div>
+                    <!-- Top Invoice Owners -->
+                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+                        <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">أصحاب الفواتير الأكثر نشاطاً</h3>
+                        <ul id="topInvoiceOwnersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
+                            <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
+                        </ul>
+                    </div>
+                    <!-- Top Suppliers -->
+                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+                        <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">الموردون الأكثر نشاطاً</h3>
+                        <ul id="topSuppliersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
+                            <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Search Input with Clear Button -->
+                <div class="relative flex items-center gap-2 mt-6">
+                    <button type="button" id="clearCommonSearchInput"
+                        class="bg-dashboard-accent-red text-white px-4 py-2 rounded-full shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-1 h-11">
+                        <i class="fas fa-times-circle"></i> مسح
+                    </button>
+                    <input type="text" id="commonSearchInput"
+                        class="flex-1 p-3 rounded-full border border-dashboard-border-light bg-dashboard-card-bg text-dashboard-text-dark focus:ring-2 focus:ring-dashboard-accent-blue focus:border-dashboard-accent-blue pr-12 text-right"
+                        placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions"
+                        style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%234B5563\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'8\'></circle><line x1=\'21\' y1=\'21\' x2=\'16.65\' y2=\'16.65\'></line></svg>'); background-repeat: no-repeat; background-position: left 15px center; background-size: 18px;">
                     <datalist id="allSearchOptions"></datalist>
                 </div>
             </section>
-            <section class="firebase-product-list-wrapper card-container">
-                <h2 class="section-title"><span class="icon"><i class="fas fa-boxes"></i></span>قائمة منتجات المخزون من Firebase
-                    (<span id="firebaseProductListCount">0</span>)</h2>
-                <div class="filter-controls">
-                    <div class="form-group">
-                        <label for="productPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف (المنتجات)</label>
-                        <select id="productPhoneDropdown" hidden></select> </div>
+
+            <!-- Firebase Inventory Products List Section -->
+            <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
+                <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
+                    <i class="fas fa-boxes text-dashboard-accent-blue"></i> قائمة منتجات المخزون من Firebase
+                    (<span id="firebaseProductListCount">0</span>)
+                </h2>
+                <div id="firebaseProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>
                 </div>
-                <div class="product-list-grid" id="firebaseProductsContainer">
-                    <p class="empty-list-message">لا توجد منتجات لعرضها.</p>
-                </div>
-                <div class="loader" id="firebaseProductsLoader"></div>
+                <div id="firebaseProductsLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
-            <section class="firebase-invoice-product-list-wrapper card-container">
-                <h2 class="section-title"><span class="icon"><i class="fas fa-receipt"></i></span>المنتجات المباعة في الفواتير
-                    (<span id="firebaseInvoiceProductListCount">0</span>)</h2>
-                <div class="filter-controls">
-                    <div class="form-group">
-                        <label for="invoiceProductPhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف (منتجات الفواتير)</label>
-                        <select id="invoiceProductPhoneDropdown" hidden></select> </div>
+
+            <!-- Firebase Invoice Products List Section -->
+            <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
+                <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
+                    <i class="fas fa-receipt text-dashboard-accent-orange"></i> المنتجات المباعة في الفواتير
+                    (<span id="firebaseInvoiceProductListCount">0</span>)
+                </h2>
+                <div id="firebaseInvoiceProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات مباعة في الفواتير لعرضها.</p>
                 </div>
-                <div class="product-list-grid" id="firebaseInvoiceProductsContainer">
-                    <p class="empty-list-message">لا توجد منتجات مباعة في الفواتير لعرضها.</p>
-                </div>
-                <div class="loader" id="firebaseInvoiceProductsLoader"></div>
+                <div id="firebaseInvoiceProductsLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
-            <section class="firebase-invoice-list-wrapper card-container">
-                <h2 class="section-title"><span class="icon"><i class="fas fa-cloud"></i></span>قائمة فواتير
-                    Firebase (<span id="firebaseInvoiceListCount">0</span>)</h2>
-                <div class="filter-controls">
-                    <div class="form-group">
-                        <label for="invoicePhoneDropdown" class="sr-only">تصفية حسب رقم الهاتف (الفواتير)</label>
-                        <select id="invoicePhoneDropdown" hidden></select> </div>
+
+            <!-- Firebase Invoice List Section -->
+            <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
+                <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud text-dashboard-accent-blue"></i> قائمة فواتير Firebase
+                    (<span id="firebaseInvoiceListCount">0</span>)
+                </h2>
+                <div id="firebaseInvoicesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>
                 </div>
-                <div class="product-list-grid invoice-cards-grid" id="firebaseInvoicesContainer"></div>
-                <div class="loader" id="firebaseInvoicesLoader"></div>
+                <div id="firebaseInvoicesLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
         </div>
     </section>
-    <div id="toast-container-firebase"></div>
-    <datalist id="allSearchOptions"></datalist>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+
+    <!-- Toast Container -->
+    <div id="toast-container-firebase" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse gap-3 items-center w-auto max-w-[90vw] p-4 box-border"></div>
+
     <script>
+        // Tailwind CSS configuration for custom colors
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dashboard-bg-primary': 'var(--dashboard-bg-primary)',
+                        'dashboard-card-bg': 'var(--dashboard-card-bg)',
+                        'dashboard-primary-blue': 'var(--dashboard-primary-blue)',
+                        'dashboard-accent-blue': 'var(--dashboard-accent-blue)',
+                        'dashboard-accent-green': 'var(--dashboard-accent-green)',
+                        'dashboard-accent-orange': 'var(--dashboard-accent-orange)',
+                        'dashboard-accent-red': 'var(--dashboard-accent-red)',
+                        'dashboard-text-dark': 'var(--dashboard-text-dark)',
+                        'dashboard-text-secondary': 'var(--dashboard-text-secondary)',
+                        'dashboard-border-light': 'var(--dashboard-border-light)',
+                        'dashboard-hover-bg': 'var(--dashboard-hover-bg)',
+                    },
+                },
+            },
+        };
+
         // Firebase Configuration (must match your project)
         const firebaseConfig = {
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
@@ -898,15 +306,15 @@
             console.error("Firebase initialization failed:", e);
             UI.showToast("فشل تهيئة Firebase. قد لا تعمل ميزات البيانات السحابية.", 'error');
         }
+
         // App ID (use __app_id if available in your environment, otherwise provide a default)
-        // Ensure __app_id is defined in your main environment or globally if used
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         // Global Data Stores for this section
         let allFirebaseInvoicesData = []; // Stores invoices after mapping to local keys
         let allFirebaseProductsData = []; // Stores products from inventoryProducts after mapping to local keys
         let allFirebaseInvoiceProductsWithDetails = []; // NEW: Stores products from invoices with customer/owner details
-        
+
         // Use a Map to quickly access original product data from inventoryProducts
         let inventoryProductsMap = new Map();
 
@@ -925,7 +333,6 @@
             date: 'dateCreationProduit', // Specific for product creation date
             quantity: 'quantiteSelectionnee', // Quantity selected for invoice (transient local state)
             isLocal: 'estLocal', // Whether it's a locally managed product
-
             // Invoice Keys (fields within the invoice object)
             date: 'dateFacture', // Formatted date string for display
             isoDate: 'dateIsoFacture', // ISO string for sorting
@@ -941,15 +348,16 @@
             totalProfit: 'profitTotal',
             totalCommission: 'commissionTotale',
             invoiceCommissionRate: 'tauxCommissionFacture',
-
             // Product within Invoice Keys (fields within product objects inside the invoice's products array)
             quantityUsed: 'quantiteUtilisee' // Quantity used in a specific invoice item
         };
+
         // Create reverse mapping for converting from Firebase French keys back to local keys
         const KEY_MAPPING_FROM_FIREBASE = {};
         for (const localKey in KEY_MAPPING_TO_FIREBASE) {
             KEY_MAPPING_FROM_FIREBASE[KEY_MAPPING_TO_FIREBASE[localKey]] = localKey;
         }
+
         /**
          * Maps an object's keys from local JavaScript names to French names for Firebase.
          * Keys not found in KEY_MAPPING_TO_FIREBASE are passed through as is (e.g., 'id').
@@ -967,7 +375,7 @@
                     // Skip 'quantity' and 'isLocal' when mapping for main products/inventory
                     // These are transient or local-only properties
                     if (key === 'quantity' || key === 'isLocal') {
-                        continue; 
+                        continue;
                     }
                     if (key === 'products' && Array.isArray(obj[key])) {
                         // Recursively map keys for products array within an invoice
@@ -980,6 +388,7 @@
             }
             return newObj;
         }
+
         /**
          * Maps an object's keys from French Firebase names back to local JavaScript names.
          * Keys not found in KEY_MAPPING_FROM_FIREBASE are passed through as is.
@@ -1007,37 +416,49 @@
             }
             return newObj;
         }
+
         // Firebase path utility (copied for this independent script)
         const FirebasePathHelper = {
             getFirebasePath: (ownerPhone, type) => {
                 const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                 if (!ownerPhone) {
                     // This function should usually be called with a specific phone, but for root access:
-                    return `${app_id}/alldata`; 
+                    return `${app_id}/alldata`;
                 }
                 // Using 'inventoryProducts' for main product collection as agreed
                 const dataPath = (type === 'products') ? 'inventoryProducts' : type;
                 return `${app_id}/alldata/${ownerPhone}/${dataPath}`;
             }
         };
+
         let UIElements; // Declared here, assigned in window.onload
-        
+
         // ====== UI Utility Functions (minimal set for this section) ======
         const UI = {
             showToast: (message, type) => {
                 const toast = document.createElement('div');
-                toast.classList.add('toast-firebase', type); // Use specific class for this module's toasts
+                toast.classList.add('toast-firebase', `bg-dashboard-card-bg`, `text-dashboard-text-dark`, `p-4`, `rounded-lg`, `shadow-lg`, `min-w-[250px]`, `max-w-[350px]`, `opacity-0`, `translate-y-5`, `animate-fade`, `flex`, `items-center`, `gap-2`, `border`, `border-dashboard-border-light`);
                 let iconHtml = '';
-                if (type === 'success') { iconHtml = '<span class="icon"><i class="fas fa-check"></i></span>'; }
-                else if (type === 'error') { iconHtml = '<span class="icon"><i class="fas fa-times"></i></span>'; }
-                else if (type === 'info') { iconHtml = '<span class="icon"><i class="fas fa-info-circle"></i></span>'; }
-                toast.innerHTML = `${iconHtml}<span>${message}</span>`;
+                let borderColorClasses = '';
+
+                if (type === 'success') {
+                    iconHtml = '<span class="text-dashboard-accent-green text-xl leading-none"><i class="fas fa-check-circle"></i></span>';
+                    borderColorClasses = 'border-r-4 border-dashboard-accent-green';
+                } else if (type === 'error') {
+                    iconHtml = '<span class="text-dashboard-accent-red text-xl leading-none"><i class="fas fa-times-circle"></i></span>';
+                    borderColorClasses = 'border-r-4 border-dashboard-accent-red';
+                } else if (type === 'info') {
+                    iconHtml = '<span class="text-dashboard-accent-blue text-xl leading-none"><i class="fas fa-info-circle"></i></span>';
+                    borderColorClasses = 'border-r-4 border-dashboard-accent-blue';
+                }
+                toast.classList.add(...borderColorClasses.split(' '));
+                toast.innerHTML = `${iconHtml}<span class="flex-1 text-right">${message}</span>`;
                 UIElements.toastContainer.appendChild(toast);
                 setTimeout(() => { toast.remove(); }, 4000);
             },
             toggleGeneralLoader: (loaderElement, isLoading) => {
                 if (loaderElement) {
-                    loaderElement.classList.toggle('active', isLoading);
+                    loaderElement.classList.toggle('hidden', !isLoading);
                 }
             },
             populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
@@ -1054,7 +475,6 @@
                     datalistElement.appendChild(option);
                 });
             },
-            // NEW: Populates a select dropdown with unique phone numbers
             populatePhoneSelect: (selectElement, phoneNumbers) => {
                 selectElement.innerHTML = '<option value="all">عرض الكل</option>';
                 Array.from(phoneNumbers).sort().forEach(phoneNumber => {
@@ -1065,91 +485,84 @@
                 });
             }
         };
+
         // ====== Firebase Data & Statistics Logic (extracted) ======
         const FirebaseData = {
             init: () => {
-                // Now UIElements are guaranteed to be defined
                 UIElements.commonSearchInput.addEventListener('input', FirebaseData.applyCombinedFilters);
                 UIElements.clearCommonSearchInputButton.addEventListener('click', FirebaseData.clearAndFilter);
                 UIElements.commonPhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
-                
-                // Ensure search input has style
-                UIElements.commonSearchInput.classList.add('search-input');
             },
-            // Populates phone number dropdowns from Firebase data structure
             populatePhoneDropdowns: (phoneNumbers) => {
-                // Only populate the common dropdown
                 UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
             },
-            // Fetches all data (invoices and products) from Firebase
             fetchAndDisplayCombinedFirebaseData: async () => {
-                UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true); // For products section
-                UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true); // For invoices section
-                UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, true); // NEW: For invoice products section
+                UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
+                UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
+                UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, true);
 
                 if (!database) {
                     UI.showToast("قاعدة بيانات Firebase غير جاهزة لجلب البيانات.", 'info');
                     UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
-                    UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false); // NEW
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                     return;
                 }
+
                 const alldataRef = database.ref(`${appId}/alldata`);
                 try {
                     const snapshot = await alldataRef.once('value');
                     const data = snapshot.val();
 
                     allFirebaseInvoicesData = [];
-                    inventoryProductsMap.clear(); // Clear previous data for master inventory products
-                    allFirebaseInvoiceProductsWithDetails = []; // NEW: Clear previous data for invoice products
+                    inventoryProductsMap.clear();
+                    allFirebaseInvoiceProductsWithDetails = [];
                     const uniquePhoneNumbers = new Set();
 
                     if (data) {
                         for (const phoneKey in data) {
                             if (data.hasOwnProperty(phoneKey)) {
-                                uniquePhoneNumbers.add(phoneKey); // Collect all phone numbers
+                                uniquePhoneNumbers.add(phoneKey);
                                 const phoneData = data[phoneKey];
 
-                                // Process Invoices
                                 if (phoneData.invoices) {
                                     for (const invoiceFirebaseKey in phoneData.invoices) {
                                         if (phoneData.invoices.hasOwnProperty(invoiceFirebaseKey)) {
                                             const invoiceDetails = mapFromFirebaseKeys(phoneData.invoices[invoiceFirebaseKey]);
-                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey; // Ensure id is present
+                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey;
                                             allFirebaseInvoicesData.push({
-                                                firebaseId: invoiceFirebaseKey, // Firebase's unique key for this invoice
-                                                firebasePhoneKey: phoneKey, // The phone key under which this invoice is
+                                                firebaseId: invoiceFirebaseKey,
+                                                firebasePhoneKey: phoneKey,
                                                 ...invoiceDetails
                                             });
-                                            // NEW: Process products within this invoice to gather enriched product data
+
                                             if (invoiceDetails.products && Array.isArray(invoiceDetails.products)) {
                                                 invoiceDetails.products.forEach((product) => {
                                                     allFirebaseInvoiceProductsWithDetails.push({
-                                                        id: product.id, // Original product ID
+                                                        id: product.id,
                                                         name: product.name,
                                                         sellingPrice: product.sellingPrice,
                                                         quantityUsed: product.quantityUsed,
-                                                        invoiceId: invoiceDetails.id, // Link to its invoice
+                                                        invoiceId: invoiceDetails.id,
                                                         invoiceDate: invoiceDetails.date,
-                                                        customerName: invoiceDetails.customerName, // Add customer name
-                                                        ownerName: invoiceDetails.ownerName,    // Add owner name
-                                                        ownerPhone: invoiceDetails.ownerPhone,   // Add owner phone
-                                                        firebasePhoneKey: phoneKey // The phone key under which this invoice is
+                                                        customerName: invoiceDetails.customerName,
+                                                        ownerName: invoiceDetails.ownerName,
+                                                        ownerPhone: invoiceDetails.ownerPhone,
+                                                        firebasePhoneKey: phoneKey
                                                     });
                                                 });
                                             }
                                         }
                                     }
                                 }
-                                // Process standalone Inventory Products (master data)
+
                                 if (phoneData.inventoryProducts) {
                                     for (const productId in phoneData.inventoryProducts) {
                                         if (phoneData.inventoryProducts.hasOwnProperty(productId)) {
                                             const productDetails = mapFromFirebaseKeys(phoneData.inventoryProducts[productId]);
-                                            // Always prioritize the master inventory data for product details
                                             inventoryProductsMap.set(productId, {
-                                                id: productId, // Use the actual product ID from Firebase
-                                                firebasePhoneKey: phoneKey, // The phone key under which it was found
+                                                id: productId,
+                                                firebasePhoneKey: phoneKey,
                                                 ...productDetails
                                             });
                                         }
@@ -1158,11 +571,9 @@
                             }
                         }
                     }
-                    // Convert Map values back to an array for display
+
                     allFirebaseProductsData = Array.from(inventoryProductsMap.values());
-                    // Populate phone dropdowns with collected numbers
                     FirebaseData.populatePhoneDropdowns(uniquePhoneNumbers);
-                    // Populate datalist for search within this module
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'name');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'supplierName');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'customerName');
@@ -1173,23 +584,22 @@
                         UIElements.allSearchOptionsDatalist.appendChild(option);
                     });
 
-                    FirebaseData.applyCombinedFilters(); // Apply filters after fetching data
+                    FirebaseData.applyCombinedFilters();
                     UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
+
                 } catch (error) {
                     UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
                     console.error("Failed to fetch Firebase data:", error);
                 } finally {
                     UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
-                    UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false); // NEW
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                 }
             },
-            // Applies search and phone filters to all lists
             applyCombinedFilters: () => {
                 const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
-                const selectedPhoneNumber = UIElements.commonPhoneDropdown.value; // Use the single common dropdown
+                const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
 
-                // Filter Invoices
                 const filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
                     const matchesSearch = searchTerm ?
                         ((invoice.customerName || '').toLowerCase().includes(searchTerm) ||
@@ -1200,7 +610,7 @@
                     const matchesPhone = (selectedPhoneNumber === 'all' || invoice.ownerPhone === selectedPhoneNumber);
                     return matchesSearch && matchesPhone;
                 });
-                // Filter Products (from inventory)
+
                 const filteredProducts = allFirebaseProductsData.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
@@ -1210,7 +620,7 @@
                     const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
                     return matchesSearch && matchesPhone;
                 });
-                // NEW: Filter Products from Invoices
+
                 const filteredInvoiceProducts = allFirebaseInvoiceProductsWithDetails.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
@@ -1224,16 +634,16 @@
 
                 UIElements.firebaseInvoiceListCountSpan.textContent = filteredInvoices.length;
                 UIElements.firebaseProductListCountSpan.textContent = filteredProducts.length;
-                UIElements.firebaseInvoiceProductListCount.textContent = filteredInvoiceProducts.length; // NEW
+                UIElements.firebaseInvoiceProductListCount.textContent = filteredInvoiceProducts.length;
 
                 filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
-                filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort products by name
-                filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); // NEW: Sort invoice products by name
+                filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
                 FirebaseData.displayFirebaseInvoices(filteredInvoices);
-                FirebaseData.displayFirebaseProducts(filteredProducts); // Display filtered inventory products
-                FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts); // NEW: Display filtered invoice products
-                FirebaseData.displayStatistics(filteredInvoices); // Statistics based on filtered invoices
+                FirebaseData.displayFirebaseProducts(filteredProducts);
+                FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts);
+                FirebaseData.displayStatistics(filteredInvoices);
             },
             clearAndFilter: () => {
                 UIElements.commonSearchInput.value = '';
@@ -1241,104 +651,102 @@
                 FirebaseData.applyCombinedFilters();
                 UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
             },
-            // Displays invoices in the dedicated container
             displayFirebaseInvoices: (invoices) => {
                 UIElements.firebaseInvoicesContainer.innerHTML = '';
                 if (invoices.length === 0) {
-                    UIElements.firebaseInvoicesContainer.innerHTML = '<p class="empty-list-message">لا توجد فواتير لعرضها.</p>';
+                    UIElements.firebaseInvoicesContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>';
                     return;
                 }
                 invoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
-                    invoiceDiv.classList.add('mini-invoice-card');
+                    invoiceDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
                     invoiceDiv.dataset.invoiceId = invoice.id;
                     invoiceDiv.dataset.firebasePhoneKey = invoice.firebasePhoneKey;
-                    let productsListHtml = '<p style="text-align: center; font-style: italic; color: var(--text-secondary-gray);">لا توجد منتجات في هذه الفاتورة.</p>';
+
+                    let productsListHtml = '<p class="text-center italic text-dashboard-text-secondary text-xs py-2">لا توجد منتجات في هذه الفاتورة.</p>';
                     if (invoice.products && invoice.products.length > 0) {
                         productsListHtml = `
-                            <div class="mini-product-list">
-                                <div class="mini-product-item-header">
+                            <div class="bg-dashboard-bg-primary p-2 rounded-md border border-dashboard-border-light mt-2 mb-2 text-xs custom-scrollbar overflow-y-auto max-h-32">
+                                <div class="grid grid-cols-3 gap-1 p-1 bg-dashboard-primary-blue text-white font-bold rounded-sm text-right">
                                     <div>المنتج</div>
                                     <div>الكمية</div>
                                     <div>الإجمالي (HT)</div>
                                 </div>
                                 ${invoice.products.map(product => `
-                                    <div class="mini-product-item-row">
-                                        <div>${product.name || 'N/A'}</div>
-                                        <div>${product.quantityUsed || 0}</div>
-                                        <div>${(parseFloat(product.sellingPrice || 0) * (product.quantityUsed || 0)).toFixed(2)} DH</div>
+                                    <div class="grid grid-cols-3 gap-1 p-1 bg-dashboard-card-bg border-b border-dashboard-border-light last:border-b-0 rounded-sm mt-1">
+                                        <div class="text-dashboard-text-dark">${product.name || 'N/A'}</div>
+                                        <div class="text-dashboard-text-secondary">${product.quantityUsed || 0}</div>
+                                        <div class="text-dashboard-text-secondary">${(parseFloat(product.sellingPrice || 0) * (product.quantityUsed || 0)).toFixed(2)} DH</div>
                                     </div>
                                 `).join('')}
                             </div>
                         `;
                     }
+
                     invoiceDiv.innerHTML = `
-                        <div class="invoice-mini-header">
-                            <p><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
-                            <p><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
-                            <p><strong>التاريخ:</strong> ${invoice.date || 'N/A'}</p>
-                            <p><strong>الهاتف:</strong> ${invoice.ownerPhone || 'N/A'}</p>
+                        <div class="mb-2">
+                            <p class="text-dashboard-text-dark"><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
+                            <p class="text-dashboard-text-dark"><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
+                            <p class="text-dashboard-text-dark"><strong>التاريخ:</strong> ${invoice.date || 'N/A'}</p>
+                            <p class="text-dashboard-text-dark"><strong>الهاتف:</strong> ${invoice.ownerPhone || 'N/A'}</p>
                         </div>
                         ${productsListHtml}
-                        <div class="invoice-mini-footer">
-                            <p><strong>الإجمالي (TTC):</strong> ${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</p>
-                            <p><strong>الربح:</strong> ${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</p>
+                        <div class="border-t border-dashed border-dashboard-border-light pt-2 mt-2 text-right">
+                            <p class="text-dashboard-text-dark"><strong>الإجمالي (TTC):</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</span></p>
+                            <p class="text-dashboard-text-dark"><strong>الربح:</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</span></p>
                         </div>
                     `;
                     UIElements.firebaseInvoicesContainer.appendChild(invoiceDiv);
                 });
             },
-            // Displays products from inventory in the dedicated container
             displayFirebaseProducts: (products) => {
                 UIElements.firebaseProductsContainer.innerHTML = '';
                 if (products.length === 0) {
-                    UIElements.firebaseProductsContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات لعرضها.</p>';
+                    UIElements.firebaseProductsContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>';
                     return;
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('firebase-product-card');
+                    productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
-                        <p><strong>الاسم:</strong> ${product.name || 'N/A'}</p>
-                        <p><strong>سعر الشراء:</strong> ${parseFloat(product.purchasePrice || 0).toFixed(2)} DH</p>
-                        <p><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
-                        <p><strong>المورد:</strong> ${product.supplierName || 'N/A'}</p>
-                        <p><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
-                        <p><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
-                        ${product.date ? `<p><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
-                        ${product.firebasePhoneKey ? `<p><strong>رقم هاتف المالك:</strong> ${product.firebasePhoneKey}</p>` : ''}
+                        <p class="text-dashboard-text-dark"><strong>الاسم:</strong> ${product.name || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>سعر الشراء:</strong> ${parseFloat(product.purchasePrice || 0).toFixed(2)} DH</p>
+                        <p class="text-dashboard-text-dark"><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
+                        <p class="text-dashboard-text-dark"><strong>المورد:</strong> ${product.supplierName || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
+                        ${product.date ? `<p class="text-dashboard-text-dark"><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
+                        ${product.firebasePhoneKey ? `<p class="text-dashboard-text-dark"><strong>رقم هاتف المالك:</strong> ${product.firebasePhoneKey}</p>` : ''}
                     `;
                     UIElements.firebaseProductsContainer.appendChild(productDiv);
                 });
             },
-            // NEW: Displays products from invoices with customer/owner details
             displayFirebaseInvoiceProducts: (products) => {
                 UIElements.firebaseInvoiceProductsContainer.innerHTML = '';
                 if (products.length === 0) {
-                    UIElements.firebaseInvoiceProductsContainer.innerHTML = '<p class="empty-list-message">لا توجد منتجات مباعة في الفواتير لعرضها.</p>';
+                    UIElements.firebaseInvoiceProductsContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات مباعة في الفواتير لعرضها.</p>';
                     return;
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('firebase-invoice-product-card'); // Use distinct class
+                    productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-orange', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-red');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.invoiceId = product.invoiceId;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
-                        <p><strong>المنتج:</strong> ${product.name || 'N/A'}</p>
-                        <p><strong>الكمية المباعة:</strong> ${product.quantityUsed || 0}</p>
-                        <p><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
-                        <p><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
-                        <p><strong>مالك الفاتورة:</strong> ${product.ownerName || 'N/A'}</p>
-                        <p><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
-                        <p><strong>رقم هاتف المالك:</strong> ${product.ownerPhone || product.firebasePhoneKey || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>المنتج:</strong> ${product.name || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>الكمية المباعة:</strong> ${product.quantityUsed || 0}</p>
+                        <p class="text-dashboard-text-dark"><strong>سعر البيع:</strong> ${parseFloat(product.sellingPrice || 0).toFixed(2)} DH</p>
+                        <p class="text-dashboard-text-dark"><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>مالك الفاتورة:</strong> ${product.ownerName || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>رقم هاتف المالك:</strong> ${product.ownerPhone || product.firebasePhoneKey || 'N/A'}</p>
                     `;
                     UIElements.firebaseInvoiceProductsContainer.appendChild(productDiv);
                 });
             },
-            // Calculates and displays various statistics based on filtered invoices
             displayStatistics: (invoices) => {
                 let totalSalesHT = 0;
                 let totalTVA = 0;
@@ -1348,10 +756,10 @@
                 let totalPurchaseCostAllProducts = 0;
                 let totalSellingPriceAllProducts = 0;
 
-                const productSales = {}; // { productName: { quantitySold, totalRevenue } }
-                const customerActivity = {}; // { customerName: { invoiceCount, totalProfit, totalTTC } }
-                const invoiceOwnerActivity = {}; // { ownerName: { invoiceCount, totalProfit, totalTTC } }
-                const supplierActivity = {}; // { supplierName: { totalPurchaseCost, productsCount } } // هذا هو الكائن الذي يهمنا
+                const productSales = {};
+                const customerActivity = {};
+                const invoiceOwnerActivity = {};
+                const supplierActivity = {};
 
                 invoices.forEach(invoice => {
                     totalSalesHT += parseFloat(invoice.totalHT || 0);
@@ -1366,11 +774,10 @@
                             const quantityUsed = parseInt(invoiceProduct.quantityUsed || 0);
                             const sellingPrice = parseFloat(invoiceProduct.sellingPrice || 0);
 
-                            // --- التعديل هنا: جلب سعر الشراء واسم المورد من بيانات المخزون الرئيسية ---
-                            const originalProduct = inventoryProductsMap.get(String(invoiceProduct.id)); // تحويل ID إلى String للتأكد من التطابق
-                            
+                            const originalProduct = inventoryProductsMap.get(String(invoiceProduct.id));
+
                             const purchasePrice = parseFloat(originalProduct ? originalProduct.purchasePrice || 0 : 0);
-                            const supplierName = (originalProduct ? originalProduct.supplierName : 'مورد غير محدد'); // استخدم اسم المورد من المنتج الأصلي
+                            const supplierName = (originalProduct ? originalProduct.supplierName : 'مورد غير محدد');
 
                             totalPurchaseCostAllProducts += purchasePrice * quantityUsed;
                             totalSellingPriceAllProducts += sellingPrice * quantityUsed;
@@ -1379,7 +786,6 @@
                             productSales[productName].quantitySold += quantityUsed;
                             productSales[productName].totalRevenue += sellingPrice * quantityUsed;
 
-                            // تجميع بيانات الموردين من المنتجات المباعة في الفواتير
                             supplierActivity[supplierName] = (supplierActivity[supplierName] || { totalPurchaseCost: 0, productsCount: 0 });
                             supplierActivity[supplierName].totalPurchaseCost += purchasePrice * quantityUsed;
                             supplierActivity[supplierName].productsCount += quantityUsed;
@@ -1402,7 +808,6 @@
                     invoiceOwnerActivity[owner].totalTTC += invoiceTTC;
                 });
 
-                // Update display elements
                 UIElements.totalPurchaseCost.textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
                 UIElements.totalSellingPrice.textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
                 UIElements.totalCommission.textContent = `${totalOverallCommission.toFixed(2)} DH`;
@@ -1410,40 +815,49 @@
                 UIElements.totalSalesHT.textContent = `${totalSalesHT.toFixed(2)} DH`;
                 UIElements.totalTVA.textContent = `${totalTVA.toFixed(2)} DH`;
                 UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
-                
-                // Prepare data for top lists
+
                 const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 10).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue }));
                 const topCustomersData = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalTTC }));
                 const topInvoiceOwnersData = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalProfit }));
                 
-                // إعداد بيانات الموردين الأكثر نشاطًا
                 const topSuppliersData = Object.entries(supplierActivity)
-                    .sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost) // الترتيب حسب إجمالي سعر الشراء تنازلياً
-                    .slice(0, 10) // أخذ أول 10 موردين
+                    .sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost)
+                    .slice(0, 10)
                     .map(([name, stats]) => ({ name, value: stats.totalPurchaseCost, secondaryValue: stats.productsCount }));
+
+                FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-box-open');
+                FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-user-friends');
+                FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-file-invoice-dollar');
                 
-                // Render top lists
-                FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`);
-                FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`);
-                FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} د.م.`);
-                
-                // عرض قائمة الموردين الأكثر نشاطًا (معيار جديد)
                 FirebaseData.renderSimpleList(
                     UIElements.topSuppliersList,
                     topSuppliersData,
                     (item) => item.name,
-                    (item) => `قيمة المشتريات: ${item.value.toFixed(2)} د.م. - عدد المنتجات: ${item.secondaryValue}`
+                    (item) => `قيمة المشتريات: ${item.value.toFixed(2)} د.م. - عدد المنتجات: ${item.secondaryValue}`,
+                    'fas fa-truck'
                 );
             },
-            // Generic function to render simple lists (e.g., top products, customers)
-            renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn) => {
+            renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn, iconClass = 'fas fa-circle') => {
                 listEl.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(item => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<span><strong>${primaryTextFn(item)}</strong></span><span>${secondaryTextFn(item)}</span>`;
-                        // Add data-searchTerm for direct search functionality on click
-                        li.dataset.searchTerm = primaryTextFn(item); // Use primary text for search term
+                        li.classList.add(
+                            'bg-dashboard-card-bg', 'p-3', 'rounded-lg', 'border', 'border-dashboard-border-light', 'shadow-sm',
+                            'flex', 'items-center', 'gap-3', 'w-full', 'text-right', 'cursor-pointer',
+                            'hover:bg-dashboard-hover-bg', 'hover:shadow-md', 'hover:translate-y-[-1px]',
+                            'transition-all', 'duration-200'
+                        );
+                        li.innerHTML = `
+                            <div class="flex-shrink-0 text-dashboard-accent-blue text-xl">
+                                <i class="${iconClass}"></i>
+                            </div>
+                            <div class="flex-grow flex flex-col items-end">
+                                <span class="font-bold text-dashboard-primary-blue text-base mb-1">${primaryTextFn(item)}</span>
+                                <span class="text-dashboard-text-secondary text-sm">${secondaryTextFn(item)}</span>
+                            </div>
+                        `;
+                        li.dataset.searchTerm = primaryTextFn(item);
                         li.addEventListener('click', () => {
                             UIElements.commonSearchInput.value = li.dataset.searchTerm;
                             FirebaseData.applyCombinedFilters();
@@ -1452,14 +866,14 @@
                     });
                     listEl.classList.toggle('has-more-items', listEl.children.length > 3);
                 } else {
-                    listEl.innerHTML = '<li>لا توجد بيانات</li>';
+                    listEl.innerHTML = '<li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>';
                     listEl.classList.remove('has-more-items');
                 }
             }
         };
+
         // ====== Initialization on Window Load for this section ======
         window.addEventListener('load', () => {
-            // Initialize UIElements after the DOM is fully loaded
             UIElements = {
                 firebaseProductsDisplay: document.getElementById('firebaseProductsDisplay'),
                 commonPhoneDropdown: document.getElementById('commonPhoneDropdown'),
@@ -1468,14 +882,14 @@
                 allSearchOptionsDatalist: document.getElementById('allSearchOptions'),
                 firebaseProductListCountSpan: document.getElementById('firebaseProductListCount'),
                 firebaseInvoiceListCountSpan: document.getElementById('firebaseInvoiceListCount'),
-                firebaseInvoiceProductListCount: document.getElementById('firebaseInvoiceProductListCount'), // NEW
+                firebaseInvoiceProductListCount: document.getElementById('firebaseInvoiceProductListCount'),
                 firebaseProductsContainer: document.getElementById('firebaseProductsContainer'),
                 firebaseInvoicesContainer: document.getElementById('firebaseInvoicesContainer'),
-                firebaseInvoiceProductsContainer: document.getElementById('firebaseInvoiceProductsContainer'), // NEW
-                firebaseLoader: document.getElementById('firebaseLoader'), // Assuming you have a general loader for the whole section
+                firebaseInvoiceProductsContainer: document.getElementById('firebaseInvoiceProductsContainer'),
+                firebaseLoader: document.getElementById('firebaseLoader'),
                 firebaseProductsLoader: document.getElementById('firebaseProductsLoader'),
                 firebaseInvoicesLoader: document.getElementById('firebaseInvoicesLoader'),
-                firebaseInvoiceProductsLoader: document.getElementById('firebaseInvoiceProductsLoader'), // NEW
+                firebaseInvoiceProductsLoader: document.getElementById('firebaseInvoiceProductsLoader'),
                 totalPurchaseCost: document.getElementById('totalPurchaseCost'),
                 totalSellingPrice: document.getElementById('totalSellingPrice'),
                 totalCommission: document.getElementById('totalCommission'),
@@ -1490,11 +904,12 @@
                 topSuppliersList: document.getElementById('topSuppliersList'),
                 toastContainer: document.getElementById('toast-container-firebase'),
             };
-            FirebaseData.init(); // Initialize event listeners
-            FirebaseData.fetchAndDisplayCombinedFirebaseData(); // Fetch and display all data
-            // Initially display the section (it's standalone)
+
+            FirebaseData.init();
+            FirebaseData.fetchAndDisplayCombinedFirebaseData();
             UIElements.firebaseProductsDisplay.hidden = false;
         });
     </script>
 </body>
-</html>ت
+
+</html>
