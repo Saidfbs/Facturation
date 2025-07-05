@@ -1,28 +1,24 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport">
     <title>بيانات Firebase والإحصائيات - لوحة معلومات</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font: Cairo -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Professional Dashboard Color Palette (CSS Variables) */
         :root {
             --dashboard-bg-primary: hsl(210, 10%, 97%); /* Very light off-white/gray */
-            --dashboard-card-bg: hsl(0, 0%, 100%);    /* Pure white for cards */
+            --dashboard-card-bg: hsl(0, 0%, 100%);     /* Pure white for cards */
             --dashboard-primary-blue: hsl(210, 29%, 29%); /* Deep professional blue */
             --dashboard-accent-blue: hsl(205, 78%, 42%); /* Vibrant accent blue */
             --dashboard-accent-green: hsl(120, 50%, 50%); /* Clear success green */
             --dashboard-accent-orange: hsl(45, 80%, 65%); /* Soft orange for distinction */
-            --dashboard-accent-red: hsl(0, 70%, 55%);   /* Standard error red */
+            --dashboard-accent-red: hsl(0, 70%, 55%);    /* Standard error red */
             --dashboard-text-dark: hsl(210, 10%, 15%);  /* Dark gray for primary text */
             --dashboard-text-secondary: hsl(210, 5%, 40%); /* Medium gray for secondary text */
             --dashboard-border-light: hsl(210, 5%, 90%); /* Light gray border */
@@ -31,7 +27,6 @@
             --dashboard-shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.12);
             --dashboard-shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.18);
         }
-
         body {
             font-family: 'Cairo', sans-serif;
             direction: rtl; /* Ensure right-to-left direction */
@@ -39,65 +34,53 @@
             color: var(--dashboard-text-dark);
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-
         /* Custom scrollbar for better aesthetics */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
-
         .custom-scrollbar::-webkit-scrollbar-track {
             background: var(--dashboard-bg-primary);
             border-radius: 10px;
         }
-
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background: var(--dashboard-accent-blue);
             border-radius: 10px;
             border: 2px solid var(--dashboard-bg-primary);
         }
-
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: var(--dashboard-primary-blue);
         }
-
         /* Hide number input arrows */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-
         input[type="number"] {
             -moz-appearance: textfield;
         }
-
         /* Toast specific animations */
         @keyframes fadeinout {
             0% {
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             10% {
                 opacity: 1;
                 transform: translateY(0);
             }
-
             90% {
                 opacity: 1;
                 transform: translateY(0);
             }
-
             100% {
                 opacity: 0;
                 transform: translateY(20px);
             }
         }
-
         .toast-firebase.animate-fade {
             animation: fadeinout 4s forwards;
         }
-
         /* Loader animation */
         @keyframes spin {
             0% {
@@ -107,34 +90,44 @@
                 transform: rotate(360deg);
             }
         }
-
         .loader {
             animation: spin 1s linear infinite;
         }
+        /* إضافة جديدة: تحسين عرض زر الحذف داخل البطاقات */
+        .delete-button {
+            background-color: var(--dashboard-accent-red);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease;
+            margin-top: 10px; /* لتباعد عن المحتوى */
+            align-self: flex-end; /* لجعله في الأسفل واليسار (بالنسبة لـ RTL) */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .delete-button:hover {
+            background-color: hsl(0, 80%, 45%);
+        }
     </style>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
 </head>
-
 <body class="p-4 flex flex-col min-h-screen">
-    <!-- Main Firebase Dashboard Container -->
     <section id="firebaseProductsDisplay" class="w-full max-w-6xl mx-auto flex flex-col space-y-6">
-        <!-- Header with Main Title -->
         <div class="flex justify-center items-center pb-4 border-b-2 border-dashboard-border-light mb-8">
             <h1 class="text-4xl font-bold text-dashboard-primary-blue text-center">
                 بيانات Firebase والإحصائيات
             </h1>
         </div>
-
-        <!-- Content Wrapper for Sections -->
         <div class="flex flex-col space-y-6">
-            <!-- Detailed Sales Statistics Section -->
             <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
                 <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
                     <i class="fas fa-chart-pie text-dashboard-accent-blue"></i> إحصائيات المبيعات التفصيلية
                 </h2>
-                <!-- Filter Controls for Statistics -->
                 <div class="flex flex-wrap gap-4 mb-6">
                     <div class="flex-1 min-w-[250px]">
                         <label for="commonPhoneDropdown" class="sr-only">تصفية الكل حسب رقم الهاتف</label>
@@ -144,8 +137,6 @@
                         </select>
                     </div>
                 </div>
-
-                <!-- Statistics Grid -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                     <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                         <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
@@ -183,31 +174,25 @@
                         <p id="totalSalesTTC" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
                 </div>
-
-                <!-- Dynamic Stats Lists Container -->
                 <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    <!-- Top Selling Products -->
                     <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
                         <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">المنتجات الأكثر مبيعاً</h3>
                         <ul id="topSellingProductsList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <!-- Top Customers -->
                     <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
                         <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">العملاء الأكثر نشاطاً</h3>
                         <ul id="topCustomersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <!-- Top Invoice Owners -->
                     <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
                         <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">أصحاب الفواتير الأكثر نشاطاً</h3>
                         <ul id="topInvoiceOwnersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <!-- Top Suppliers -->
                     <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
                         <h3 class="text-xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light">الموردون الأكثر نشاطاً</h3>
                         <ul id="topSuppliersList" class="custom-scrollbar overflow-y-auto min-h-[150px] max-h-[204px] space-y-2 pr-2">
@@ -215,8 +200,6 @@
                         </ul>
                     </div>
                 </div>
-
-                <!-- Search Input with Clear Button -->
                 <div class="relative flex items-center gap-2 mt-6">
                     <button type="button" id="clearCommonSearchInput"
                         class="bg-dashboard-accent-red text-white px-4 py-2 rounded-full shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-1 h-11">
@@ -229,8 +212,6 @@
                     <datalist id="allSearchOptions"></datalist>
                 </div>
             </section>
-
-            <!-- Firebase Inventory Products List Section -->
             <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
                 <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
                     <i class="fas fa-boxes text-dashboard-accent-blue"></i> قائمة منتجات المخزون من Firebase
@@ -241,8 +222,6 @@
                 </div>
                 <div id="firebaseProductsLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
-
-            <!-- Firebase Invoice Products List Section -->
             <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
                 <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
                     <i class="fas fa-receipt text-dashboard-accent-orange"></i> المنتجات المباعة في الفواتير
@@ -253,8 +232,6 @@
                 </div>
                 <div id="firebaseInvoiceProductsLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
-
-            <!-- Firebase Invoice List Section -->
             <section class="bg-dashboard-card-bg p-6 rounded-lg shadow-md border border-dashboard-border-light">
                 <h2 class="text-2xl font-semibold text-dashboard-primary-blue text-center pb-2 mb-4 border-b border-dashboard-border-light flex items-center justify-center gap-2">
                     <i class="fas fa-cloud text-dashboard-accent-blue"></i> قائمة فواتير Firebase
@@ -267,10 +244,7 @@
             </section>
         </div>
     </section>
-
-    <!-- Toast Container -->
     <div id="toast-container-firebase" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse gap-3 items-center w-auto max-w-[90vw] p-4 box-border"></div>
-
     <script>
         // Tailwind CSS configuration for custom colors
         tailwind.config = {
@@ -292,7 +266,6 @@
                 },
             },
         };
-
         // Firebase Configuration (must match your project)
         const firebaseConfig = {
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
@@ -306,23 +279,19 @@
             console.error("Firebase initialization failed:", e);
             UI.showToast("فشل تهيئة Firebase. قد لا تعمل ميزات البيانات السحابية.", 'error');
         }
-
         // App ID (use __app_id if available in your environment, otherwise provide a default)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
         // Global Data Stores for this section
         let allFirebaseInvoicesData = []; // Stores invoices after mapping to local keys
         let allFirebaseProductsData = []; // Stores products from inventoryProducts after mapping to local keys
-        let allFirebaseInvoiceProductsWithDetails = []; // NEW: Stores products from invoices with customer/owner details
-
+        let allFirebaseInvoiceProductsWithDetails = []; // Stores products from invoices with customer/owner details
         // Use a Map to quickly access original product data from inventoryProducts
         let inventoryProductsMap = new Map();
-
         // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
-        // Define mapping from local JavaScript object keys to French keys for Firebase
+        // IMPORTANT: These mappings MUST match the ones in your main sales application EXACTLY.
         const KEY_MAPPING_TO_FIREBASE = {
             // Product Keys (fields within the product object)
-            id: 'id', // Keep ID as is for Firebase path
+            id: 'id',
             name: 'nom',
             purchasePrice: 'prixAchat',
             sellingPrice: 'prixVente',
@@ -330,17 +299,22 @@
             supplierAddress: 'adresseFournisseur',
             supplierPhone: 'telephoneFournisseur',
             stockQuantity: 'quantiteStock',
-            date: 'dateCreationProduit', // Specific for product creation date
-            quantity: 'quantiteSelectionnee', // Quantity selected for invoice (transient local state)
-            isLocal: 'estLocal', // Whether it's a locally managed product
+            date: 'dateCreationProduit',
+            // 'quantity' and 'isLocal' are local-only in the sales app, so they are not mapped for Firebase storage.
+            // quantity: 'quantiteSelectionnee', 
+            // isLocal: 'estLocal', 
             // Invoice Keys (fields within the invoice object)
+            // Note: invoiceId is handled by Firebase path.
+            // We use 'id' in local key for invoice objects, but in Firebase it's the Firebase generated key OR the id used to set it.
+            // For mapping purposes, 'id' maps to 'id' if the sales app explicitly sets it.
+            id: 'id', // This is for the invoice ID itself.
             date: 'dateFacture', // Formatted date string for display
             isoDate: 'dateIsoFacture', // ISO string for sorting
             customerName: 'nomClient',
             ownerName: 'nomProprietaire',
             ownerAddress: 'adresseProprietaire',
             ownerPhone: 'telephoneProprietaire', // Used in path and as data
-            products: 'produits', // Array of products within invoice
+            products: 'produits', // This is the key for the array of products *within an invoice*
             totalHT: 'totalHT',
             totalHTBeforeCommission: 'totalHTAvantCommission',
             tva: 'tva',
@@ -351,44 +325,11 @@
             // Product within Invoice Keys (fields within product objects inside the invoice's products array)
             quantityUsed: 'quantiteUtilisee' // Quantity used in a specific invoice item
         };
-
         // Create reverse mapping for converting from Firebase French keys back to local keys
         const KEY_MAPPING_FROM_FIREBASE = {};
         for (const localKey in KEY_MAPPING_TO_FIREBASE) {
             KEY_MAPPING_FROM_FIREBASE[KEY_MAPPING_TO_FIREBASE[localKey]] = localKey;
         }
-
-        /**
-         * Maps an object's keys from local JavaScript names to French names for Firebase.
-         * Keys not found in KEY_MAPPING_TO_FIREBASE are passed through as is (e.g., 'id').
-         * Handles nested 'products' array within an invoice object recursively.
-         * @param {object} obj - The object with local keys to map.
-         * @returns {object} A new object with keys mapped to French for Firebase.
-         */
-        function mapToFirebaseKeys(obj) {
-            if (obj === null || typeof obj !== 'object') {
-                return obj;
-            }
-            const newObj = {};
-            for (const key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                    // Skip 'quantity' and 'isLocal' when mapping for main products/inventory
-                    // These are transient or local-only properties
-                    if (key === 'quantity' || key === 'isLocal') {
-                        continue;
-                    }
-                    if (key === 'products' && Array.isArray(obj[key])) {
-                        // Recursively map keys for products array within an invoice
-                        newObj[KEY_MAPPING_TO_FIREBASE[key] || key] = obj[key].map(p => mapToFirebaseKeys(p));
-                    } else {
-                        // Map key if a mapping exists, otherwise use the original key
-                        newObj[KEY_MAPPING_TO_FIREBASE[key] || key] = obj[key];
-                    }
-                }
-            }
-            return newObj;
-        }
-
         /**
          * Maps an object's keys from French Firebase names back to local JavaScript names.
          * Keys not found in KEY_MAPPING_FROM_FIREBASE are passed through as is.
@@ -405,9 +346,20 @@
                 if (fbObj.hasOwnProperty(fbKey)) {
                     // Find the local key that maps to this Firebase key
                     const localKey = KEY_MAPPING_FROM_FIREBASE[fbKey];
+                    
+                    // If the Firebase key is 'produits' (which maps to 'products' locally), and it's an array,
+                    // then recursively map its internal objects.
+                    // IMPORTANT: The sales app uses 'produits' for the product array within an invoice.
                     if (fbKey === 'produits' && Array.isArray(fbObj[fbKey])) {
-                        // Recursively map keys for 'produits' array
-                        newObj[localKey || fbKey] = fbObj[fbKey].map(p => mapFromFirebaseKeys(p));
+                        newObj[localKey || fbKey] = fbObj[fbKey].map(p => {
+                            const productMapped = {};
+                            for (const productFbKey in p) {
+                                if (p.hasOwnProperty(productFbKey)) {
+                                    productMapped[KEY_MAPPING_FROM_FIREBASE[productFbKey] || productFbKey] = p[productFbKey];
+                                }
+                            }
+                            return productMapped;
+                        });
                     } else {
                         // Map key if a reverse mapping exists, otherwise use the original Firebase key
                         newObj[localKey || fbKey] = fbObj[fbKey];
@@ -416,23 +368,17 @@
             }
             return newObj;
         }
-
-        // Firebase path utility (copied for this independent script)
-        const FirebasePathHelper = {
-            getFirebasePath: (ownerPhone, type) => {
-                const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                if (!ownerPhone) {
-                    // This function should usually be called with a specific phone, but for root access:
-                    return `${app_id}/alldata`;
-                }
-                // Using 'inventoryProducts' for main product collection as agreed
-                const dataPath = (type === 'products') ? 'inventoryProducts' : type;
-                return `${app_id}/alldata/${ownerPhone}/${dataPath}`;
-            }
-        };
-
+        /**
+         * Sanitizes a phone number to be used as a Firebase key.
+         * Replaces invalid characters with underscores.
+         * Must match the sanitization in the sales application.
+         * @param {string} phoneNumber - The phone number to sanitize.
+         * @returns {string} The sanitized phone number.
+         */
+        function sanitizePhoneNumber(phoneNumber) {
+            return String(phoneNumber).replace(/[.#$[\]]/g, '_');
+        }
         let UIElements; // Declared here, assigned in window.onload
-
         // ====== UI Utility Functions (minimal set for this section) ======
         const UI = {
             showToast: (message, type) => {
@@ -440,7 +386,6 @@
                 toast.classList.add('toast-firebase', `bg-dashboard-card-bg`, `text-dashboard-text-dark`, `p-4`, `rounded-lg`, `shadow-lg`, `min-w-[250px]`, `max-w-[350px]`, `opacity-0`, `translate-y-5`, `animate-fade`, `flex`, `items-center`, `gap-2`, `border`, `border-dashboard-border-light`);
                 let iconHtml = '';
                 let borderColorClasses = '';
-
                 if (type === 'success') {
                     iconHtml = '<span class="text-dashboard-accent-green text-xl leading-none"><i class="fas fa-check-circle"></i></span>';
                     borderColorClasses = 'border-r-4 border-dashboard-accent-green';
@@ -485,13 +430,32 @@
                 });
             }
         };
-
         // ====== Firebase Data & Statistics Logic (extracted) ======
         const FirebaseData = {
             init: () => {
                 UIElements.commonSearchInput.addEventListener('input', FirebaseData.applyCombinedFilters);
                 UIElements.clearCommonSearchInputButton.addEventListener('click', FirebaseData.clearAndFilter);
                 UIElements.commonPhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
+
+                // إضافة جديدة: معالجة أحداث النقر لأزرار الحذف
+                UIElements.firebaseProductsContainer.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('delete-product-button')) {
+                        const productDiv = event.target.closest('[data-product-id]');
+                        const productId = productDiv.dataset.productId;
+                        const firebasePhoneKey = productDiv.dataset.firebasePhoneKey;
+                        FirebaseData.confirmAndDeleteProduct(productId, firebasePhoneKey);
+                    }
+                });
+
+                UIElements.firebaseInvoicesContainer.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('delete-invoice-button')) {
+                        const invoiceDiv = event.target.closest('[data-invoice-id]');
+                        const invoiceId = invoiceDiv.dataset.invoiceId;
+                        const firebasePhoneKey = invoiceDiv.dataset.firebasePhoneKey;
+                        FirebaseData.confirmAndDeleteInvoice(invoiceId, firebasePhoneKey);
+                    }
+                });
+                // نهاية الإضافة الجديدة
             },
             populatePhoneDropdowns: (phoneNumbers) => {
                 UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
@@ -500,7 +464,6 @@
                 UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, true);
-
                 if (!database) {
                     UI.showToast("قاعدة بيانات Firebase غير جاهزة لجلب البيانات.", 'info');
                     UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
@@ -508,34 +471,31 @@
                     UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                     return;
                 }
-
                 const alldataRef = database.ref(`${appId}/alldata`);
                 try {
                     const snapshot = await alldataRef.once('value');
                     const data = snapshot.val();
-
                     allFirebaseInvoicesData = [];
-                    inventoryProductsMap.clear();
+                    inventoryProductsMap.clear(); // Clear existing map data
                     allFirebaseInvoiceProductsWithDetails = [];
                     const uniquePhoneNumbers = new Set();
-
                     if (data) {
                         for (const phoneKey in data) {
                             if (data.hasOwnProperty(phoneKey)) {
-                                uniquePhoneNumbers.add(phoneKey);
+                                uniquePhoneNumbers.add(phoneKey); // Add sanitized phone key
                                 const phoneData = data[phoneKey];
-
+                                // Process Invoices
                                 if (phoneData.invoices) {
                                     for (const invoiceFirebaseKey in phoneData.invoices) {
                                         if (phoneData.invoices.hasOwnProperty(invoiceFirebaseKey)) {
                                             const invoiceDetails = mapFromFirebaseKeys(phoneData.invoices[invoiceFirebaseKey]);
-                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey;
+                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey; // Use ID from data or Firebase key
                                             allFirebaseInvoicesData.push({
-                                                firebaseId: invoiceFirebaseKey,
-                                                firebasePhoneKey: phoneKey,
+                                                firebaseId: invoiceFirebaseKey, // Original Firebase key (used for deletion)
+                                                firebasePhoneKey: phoneKey, // Store sanitized phone key for filtering and deletion
                                                 ...invoiceDetails
                                             });
-
+                                            // Extract products from invoices with full details
                                             if (invoiceDetails.products && Array.isArray(invoiceDetails.products)) {
                                                 invoiceDetails.products.forEach((product) => {
                                                     allFirebaseInvoiceProductsWithDetails.push({
@@ -543,26 +503,26 @@
                                                         name: product.name,
                                                         sellingPrice: product.sellingPrice,
                                                         quantityUsed: product.quantityUsed,
-                                                        invoiceId: invoiceDetails.id,
+                                                        invoiceId: invoiceDetails.id, // Original ID from invoice
                                                         invoiceDate: invoiceDetails.date,
                                                         customerName: invoiceDetails.customerName,
                                                         ownerName: invoiceDetails.ownerName,
-                                                        ownerPhone: invoiceDetails.ownerPhone,
-                                                        firebasePhoneKey: phoneKey
+                                                        ownerPhone: invoiceDetails.ownerPhone, // Actual owner phone from invoice data
+                                                        firebasePhoneKey: phoneKey // Sanitized phone key from path
                                                     });
                                                 });
                                             }
                                         }
                                     }
                                 }
-
+                                // Process Inventory Products
                                 if (phoneData.inventoryProducts) {
                                     for (const productId in phoneData.inventoryProducts) {
                                         if (phoneData.inventoryProducts.hasOwnProperty(productId)) {
                                             const productDetails = mapFromFirebaseKeys(phoneData.inventoryProducts[productId]);
                                             inventoryProductsMap.set(productId, {
                                                 id: productId,
-                                                firebasePhoneKey: phoneKey,
+                                                firebasePhoneKey: phoneKey, // Store sanitized phone key for filtering and deletion
                                                 ...productDetails
                                             });
                                         }
@@ -571,22 +531,22 @@
                             }
                         }
                     }
-
                     allFirebaseProductsData = Array.from(inventoryProductsMap.values());
+                    // Populate dropdown and datalists
                     FirebaseData.populatePhoneDropdowns(uniquePhoneNumbers);
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'name');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'supplierName');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'customerName');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'ownerName');
+                    
+                    // Add sanitized phone numbers to the datalist for search suggestions
                     Array.from(uniquePhoneNumbers).sort().forEach(phone => {
                         const option = document.createElement('option');
                         option.value = phone;
                         UIElements.allSearchOptionsDatalist.appendChild(option);
                     });
-
-                    FirebaseData.applyCombinedFilters();
+                    FirebaseData.applyCombinedFilters(); // Apply filters to display fetched data
                     UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
-
                 } catch (error) {
                     UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
                     console.error("Failed to fetch Firebase data:", error);
@@ -596,54 +556,95 @@
                     UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                 }
             },
+            // إضافة جديدة: دالة لحذف منتج
+            confirmAndDeleteProduct: async (productId, firebasePhoneKey) => {
+                if (!confirm(`هل أنت متأكد أنك تريد حذف هذا المنتج (ID: ${productId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+                    return;
+                }
+
+                UI.showToast("جاري حذف المنتج...", 'info');
+                try {
+                    const productRef = database.ref(`${appId}/alldata/${firebasePhoneKey}/inventoryProducts/${productId}`);
+                    await productRef.remove();
+                    UI.showToast("تم حذف المنتج بنجاح!", 'success');
+                    // إعادة جلب البيانات وتحديث الواجهة
+                    FirebaseData.fetchAndDisplayCombinedFirebaseData();
+                } catch (error) {
+                    UI.showToast(`فشل حذف المنتج: ${error.message}`, 'error');
+                    console.error("Error deleting product:", error);
+                }
+            },
+
+            // إضافة جديدة: دالة لحذف فاتورة
+            confirmAndDeleteInvoice: async (invoiceFirebaseId, firebasePhoneKey) => {
+                if (!confirm(`هل أنت متأكد أنك تريد حذف هذه الفاتورة (ID: ${invoiceFirebaseId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`)) {
+                    return;
+                }
+
+                UI.showToast("جاري حذف الفاتورة...", 'info');
+                try {
+                    // مسار الفاتورة في Realtime Database
+                    const invoiceRef = database.ref(`${appId}/alldata/${firebasePhoneKey}/invoices/${invoiceFirebaseId}`);
+                    await invoiceRef.remove();
+                    UI.showToast("تم حذف الفاتورة بنجاح!", 'success');
+                    // إعادة جلب البيانات وتحديث الواجهة
+                    FirebaseData.fetchAndDisplayCombinedFirebaseData();
+                } catch (error) {
+                    UI.showToast(`فشل حذف الفاتورة: ${error.message}`, 'error');
+                    console.error("Error deleting invoice:", error);
+                }
+            },
+            // نهاية الإضافة الجديدة
+
             applyCombinedFilters: () => {
                 const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
-
+                // Filter Invoices
                 const filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
                     const matchesSearch = searchTerm ?
                         ((invoice.customerName || '').toLowerCase().includes(searchTerm) ||
                             (invoice.ownerName || '').toLowerCase().includes(searchTerm) ||
-                            (invoice.ownerPhone && invoice.ownerPhone.includes(searchTerm)) ||
-                            (invoice.products && invoice.products.some(p => (p.name || '').toLowerCase().includes(searchTerm) || (p.supplierName || '').toLowerCase().includes(searchTerm))))
+                            (invoice.ownerPhone && invoice.ownerPhone.includes(searchTerm)) || // Check actual ownerPhone
+                            (invoice.products && invoice.products.some(p => 
+                                (p.name || '').toLowerCase().includes(searchTerm) || 
+                                (p.supplierName || '').toLowerCase().includes(searchTerm))))
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || invoice.ownerPhone === selectedPhoneNumber);
+                    const matchesPhone = (selectedPhoneNumber === 'all' || invoice.firebasePhoneKey === selectedPhoneNumber); // Filter by sanitized key
                     return matchesSearch && matchesPhone;
                 });
-
+                // Filter Inventory Products
                 const filteredProducts = allFirebaseProductsData.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
                             (product.supplierName || '').toLowerCase().includes(searchTerm) ||
-                            (product.supplierPhone && product.supplierPhone.includes(searchTerm)))
+                            (product.supplierPhone && product.supplierPhone.includes(searchTerm))) // Check actual supplierPhone
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
+                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber); // Filter by sanitized key
                     return matchesSearch && matchesPhone;
                 });
-
+                // Filter Invoice Products (sold items)
                 const filteredInvoiceProducts = allFirebaseInvoiceProductsWithDetails.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
                             (product.customerName || '').toLowerCase().includes(searchTerm) ||
                             (product.ownerName || '').toLowerCase().includes(searchTerm) ||
-                            (product.ownerPhone && product.ownerPhone.includes(searchTerm)))
+                            (product.ownerPhone && product.ownerPhone.includes(searchTerm))) // Check actual ownerPhone
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
+                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber); // Filter by sanitized key
                     return matchesSearch && matchesPhone;
                 });
-
+                // Update counts
                 UIElements.firebaseInvoiceListCountSpan.textContent = filteredInvoices.length;
                 UIElements.firebaseProductListCountSpan.textContent = filteredProducts.length;
                 UIElements.firebaseInvoiceProductListCount.textContent = filteredInvoiceProducts.length;
-
+                // Sort and display
                 filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
                 filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
                 FirebaseData.displayFirebaseInvoices(filteredInvoices);
                 FirebaseData.displayFirebaseProducts(filteredProducts);
                 FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts);
-                FirebaseData.displayStatistics(filteredInvoices);
+                FirebaseData.displayStatistics(filteredInvoices); // Recalculate stats based on filtered invoices
             },
             clearAndFilter: () => {
                 UIElements.commonSearchInput.value = '';
@@ -652,17 +653,18 @@
                 UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
             },
             displayFirebaseInvoices: (invoices) => {
-                UIElements.firebaseInvoicesContainer.innerHTML = '';
+                const container = UIElements.firebaseInvoicesContainer;
+                container.innerHTML = '';
                 if (invoices.length === 0) {
-                    UIElements.firebaseInvoicesContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>';
+                    container.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>';
                     return;
                 }
                 invoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
                     invoiceDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
-                    invoiceDiv.dataset.invoiceId = invoice.id;
+                    // استخدام firebaseId للتعامل مع الحذف
+                    invoiceDiv.dataset.invoiceId = invoice.firebaseId; 
                     invoiceDiv.dataset.firebasePhoneKey = invoice.firebasePhoneKey;
-
                     let productsListHtml = '<p class="text-center italic text-dashboard-text-secondary text-xs py-2">لا توجد منتجات في هذه الفاتورة.</p>';
                     if (invoice.products && invoice.products.length > 0) {
                         productsListHtml = `
@@ -682,7 +684,6 @@
                             </div>
                         `;
                     }
-
                     invoiceDiv.innerHTML = `
                         <div class="mb-2">
                             <p class="text-dashboard-text-dark"><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
@@ -695,19 +696,24 @@
                             <p class="text-dashboard-text-dark"><strong>الإجمالي (TTC):</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</span></p>
                             <p class="text-dashboard-text-dark"><strong>الربح:</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</span></p>
                         </div>
-                    `;
-                    UIElements.firebaseInvoicesContainer.appendChild(invoiceDiv);
+                        <button class="delete-button delete-invoice-button">
+                            <i class="fas fa-trash-alt"></i> حذف الفاتورة
+                        </button>
+                        `;
+                    container.appendChild(invoiceDiv);
                 });
             },
             displayFirebaseProducts: (products) => {
-                UIElements.firebaseProductsContainer.innerHTML = '';
+                const container = UIElements.firebaseProductsContainer;
+                container.innerHTML = '';
                 if (products.length === 0) {
-                    UIElements.firebaseProductsContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>';
+                    container.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>';
                     return;
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
                     productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
+                    // استخدام ID المنتج لتحديد العنصر للحذف
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
@@ -718,20 +724,25 @@
                         <p class="text-dashboard-text-dark"><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
                         <p class="text-dashboard-text-dark"><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
                         ${product.date ? `<p class="text-dashboard-text-dark"><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
-                        ${product.firebasePhoneKey ? `<p class="text-dashboard-text-dark"><strong>رقم هاتف المالك:</strong> ${product.firebasePhoneKey}</p>` : ''}
-                    `;
-                    UIElements.firebaseProductsContainer.appendChild(productDiv);
+                        ${product.firebasePhoneKey ? `<p class="text-dashboard-text-dark"><strong>رقم هاتف المالك (في Firebase):</strong> ${product.firebasePhoneKey}</p>` : ''}
+                        <button class="delete-button delete-product-button">
+                            <i class="fas fa-trash-alt"></i> حذف المنتج
+                        </button>
+                        `;
+                    container.appendChild(productDiv);
                 });
             },
             displayFirebaseInvoiceProducts: (products) => {
-                UIElements.firebaseInvoiceProductsContainer.innerHTML = '';
+                const container = UIElements.firebaseInvoiceProductsContainer;
+                container.innerHTML = '';
                 if (products.length === 0) {
-                    UIElements.firebaseInvoiceProductsContainer.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات مباعة في الفواتير لعرضها.</p>';
+                    container.innerHTML = '<p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات مباعة في الفواتير لعرضها.</p>';
                     return;
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
                     productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-orange', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-red');
+                    // لا نضيف زر حذف هنا لأن هذه المنتجات هي جزء من الفواتير المحذوفة (لا يتم حذفها بشكل منفصل)
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.invoiceId = product.invoiceId;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
@@ -742,9 +753,9 @@
                         <p class="text-dashboard-text-dark"><strong>العميل:</strong> ${product.customerName || 'N/A'}</p>
                         <p class="text-dashboard-text-dark"><strong>مالك الفاتورة:</strong> ${product.ownerName || 'N/A'}</p>
                         <p class="text-dashboard-text-dark"><strong>تاريخ الفاتورة:</strong> ${product.invoiceDate || 'N/A'}</p>
-                        <p class="text-dashboard-text-dark"><strong>رقم هاتف المالك:</strong> ${product.ownerPhone || product.firebasePhoneKey || 'N/A'}</p>
+                        <p class="text-dashboard-text-dark"><strong>رقم هاتف المالك (في Firebase):</strong> ${product.ownerPhone || product.firebasePhoneKey || 'N/A'}</p>
                     `;
-                    UIElements.firebaseInvoiceProductsContainer.appendChild(productDiv);
+                    container.appendChild(productDiv);
                 });
             },
             displayStatistics: (invoices) => {
@@ -755,59 +766,54 @@
                 let totalOverallCommission = 0;
                 let totalPurchaseCostAllProducts = 0;
                 let totalSellingPriceAllProducts = 0;
-
-                const productSales = {};
-                const customerActivity = {};
-                const invoiceOwnerActivity = {};
-                const supplierActivity = {};
-
+                const productSales = {}; // { productName: { quantitySold, totalRevenue } }
+                const customerActivity = {}; // { customerName: { invoiceCount, totalProfit, totalTTC } }
+                const invoiceOwnerActivity = {}; // { ownerName: { invoiceCount, totalProfit, totalTTC } }
+                const supplierActivity = {}; // { supplierName: { totalPurchaseCost, productsCount } }
                 invoices.forEach(invoice => {
                     totalSalesHT += parseFloat(invoice.totalHT || 0);
                     totalTVA += parseFloat(invoice.tva || 0);
                     totalSalesTTC += parseFloat(invoice.totalTTC || 0);
                     totalOverallProfit += parseFloat(invoice.totalProfit || 0);
                     totalOverallCommission += parseFloat(invoice.totalCommission || 0);
-
                     if (invoice.products) {
                         invoice.products.forEach(invoiceProduct => {
                             const productName = invoiceProduct.name || 'N/A';
                             const quantityUsed = parseInt(invoiceProduct.quantityUsed || 0);
                             const sellingPrice = parseFloat(invoiceProduct.sellingPrice || 0);
-
-                            const originalProduct = inventoryProductsMap.get(String(invoiceProduct.id));
-
+                            
+                            // Get original product data from inventoryProductsMap to access purchasePrice and supplierName
+                            const originalProduct = inventoryProductsMap.get(String(invoiceProduct.id)); 
                             const purchasePrice = parseFloat(originalProduct ? originalProduct.purchasePrice || 0 : 0);
                             const supplierName = (originalProduct ? originalProduct.supplierName : 'مورد غير محدد');
-
                             totalPurchaseCostAllProducts += purchasePrice * quantityUsed;
                             totalSellingPriceAllProducts += sellingPrice * quantityUsed;
-
+                            // Update product sales
                             productSales[productName] = (productSales[productName] || { quantitySold: 0, totalRevenue: 0 });
                             productSales[productName].quantitySold += quantityUsed;
                             productSales[productName].totalRevenue += sellingPrice * quantityUsed;
-
+                            // Update supplier activity
                             supplierActivity[supplierName] = (supplierActivity[supplierName] || { totalPurchaseCost: 0, productsCount: 0 });
                             supplierActivity[supplierName].totalPurchaseCost += purchasePrice * quantityUsed;
                             supplierActivity[supplierName].productsCount += quantityUsed;
                         });
                     }
-
                     const customer = invoice.customerName || 'N/A';
                     const invoiceProfit = parseFloat(invoice.totalProfit || 0);
                     const invoiceTTC = parseFloat(invoice.totalTTC || 0);
                     const owner = invoice.ownerName || 'N/A';
-
+                    // Update customer activity
                     customerActivity[customer] = (customerActivity[customer] || { invoiceCount: 0, totalProfit: 0, totalTTC: 0 });
                     customerActivity[customer].invoiceCount += 1;
                     customerActivity[customer].totalProfit += invoiceProfit;
                     customerActivity[customer].totalTTC += invoiceTTC;
-
+                    // Update invoice owner activity
                     invoiceOwnerActivity[owner] = (invoiceOwnerActivity[owner] || { invoiceCount: 0, totalProfit: 0, totalTTC: 0 });
                     invoiceOwnerActivity[owner].invoiceCount += 1;
                     invoiceOwnerActivity[owner].totalProfit += invoiceProfit;
                     invoiceOwnerActivity[owner].totalTTC += invoiceTTC;
                 });
-
+                // Update main statistics display
                 UIElements.totalPurchaseCost.textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
                 UIElements.totalSellingPrice.textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
                 UIElements.totalCommission.textContent = `${totalOverallCommission.toFixed(2)} DH`;
@@ -815,20 +821,18 @@
                 UIElements.totalSalesHT.textContent = `${totalSalesHT.toFixed(2)} DH`;
                 UIElements.totalTVA.textContent = `${totalTVA.toFixed(2)} DH`;
                 UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
-
+                // Prepare data for dynamic lists
                 const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).slice(0, 10).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue }));
                 const topCustomersData = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalTTC }));
                 const topInvoiceOwnersData = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).slice(0, 10).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalProfit }));
-                
                 const topSuppliersData = Object.entries(supplierActivity)
                     .sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost)
                     .slice(0, 10)
                     .map(([name, stats]) => ({ name, value: stats.totalPurchaseCost, secondaryValue: stats.productsCount }));
-
+                // Render dynamic lists
                 FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-box-open');
                 FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-user-friends');
                 FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-file-invoice-dollar');
-                
                 FirebaseData.renderSimpleList(
                     UIElements.topSuppliersList,
                     topSuppliersData,
@@ -871,7 +875,6 @@
                 }
             }
         };
-
         // ====== Initialization on Window Load for this section ======
         window.addEventListener('load', () => {
             UIElements = {
@@ -886,7 +889,7 @@
                 firebaseProductsContainer: document.getElementById('firebaseProductsContainer'),
                 firebaseInvoicesContainer: document.getElementById('firebaseInvoicesContainer'),
                 firebaseInvoiceProductsContainer: document.getElementById('firebaseInvoiceProductsContainer'),
-                firebaseLoader: document.getElementById('firebaseLoader'),
+                // Corrected loader IDs as per HTML
                 firebaseProductsLoader: document.getElementById('firebaseProductsLoader'),
                 firebaseInvoicesLoader: document.getElementById('firebaseInvoicesLoader'),
                 firebaseInvoiceProductsLoader: document.getElementById('firebaseInvoiceProductsLoader'),
@@ -904,12 +907,10 @@
                 topSuppliersList: document.getElementById('topSuppliersList'),
                 toastContainer: document.getElementById('toast-container-firebase'),
             };
-
             FirebaseData.init();
             FirebaseData.fetchAndDisplayCombinedFirebaseData();
             UIElements.firebaseProductsDisplay.hidden = false;
         });
     </script>
 </body>
-
 </html>
