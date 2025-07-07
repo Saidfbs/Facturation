@@ -2,8 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Corrected viewport meta tag -->
     <title>بيانات Firebase والإحصائيات - لوحة معلومات احترافية</title>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Cairo for Arabic typography -->
@@ -12,6 +13,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chart.js CDN for charts (REMOVED as charts are no longer used) -->
+
     <style>
         /* Professional Dashboard Color Palette (CSS Variables) */
         :root {
@@ -29,17 +32,33 @@
             --dashboard-shadow-subtle: 0 2px 5px rgba(0, 0, 0, 0.08);
             --dashboard-shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.12);
             --dashboard-shadow-strong: 0 10px 30px rgba(0, 0, 0, 0.18);
+            /* Added RGB values for focus rings */
+            --dashboard-accent-blue-rgb: 59, 130, 246;
+            --dashboard-accent-green-rgb: 16, 185, 129;
+            --dashboard-accent-red-rgb: 239, 68, 68;
         }
+
         body {
             font-family: 'Cairo', sans-serif;
             direction: rtl; /* Ensure right-to-left direction */
-            background-color: var(--dashboard-bg-primary);
+            background: linear-gradient(to bottom right, #e0e7ff, #bfdbfe); /* Soft blue gradient background for Vista feel */
             color: var(--dashboard-text-dark);
             transition: background-color 0.3s ease, color 0.3s ease;
             min-height: 100vh; /* Ensure body takes full viewport height */
             display: flex;
             flex-direction: column;
         }
+
+        /* Windows Vista Aero Glass effect simulation */
+        .aero-glass {
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+            backdrop-filter: blur(10px); /* Blur effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Lighter border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            border-radius: 16px;
+        }
+
         /* Custom scrollbar for better aesthetics */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
@@ -57,6 +76,7 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: var(--dashboard-primary-blue);
         }
+
         /* Hide number input arrows */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
@@ -66,6 +86,7 @@
         input[type="number"] {
             -moz-appearance: textfield;
         }
+
         /* Toast specific animations */
         @keyframes fadeinout {
             0% { opacity: 0; transform: translateY(20px); }
@@ -76,6 +97,7 @@
         .toast-firebase.animate-fade {
             animation: fadeinout 4s forwards;
         }
+
         /* Loader animation */
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -84,38 +106,58 @@
         .loader {
             animation: spin 1s linear infinite;
         }
-        /* Action buttons styling */
-        .delete-button, .action-button {
-            background-color: var(--dashboard-accent-red);
-            color: white;
-            border: none;
+
+        /* Action buttons styling (Vista-like) */
+        .vista-button {
+            background: linear-gradient(to bottom, #d9e8fb 0%, #c1d9f7 100%); /* Vista blue gradient */
+            border: 1px solid #94b9e7;
+            color: #1f4f8b; /* Dark blue text */
+            font-weight: 600;
             padding: 10px 16px; /* Increased padding for better touch target */
-            border-radius: 8px; /* More rounded corners */
+            border-radius: 6px; /* Slightly less rounded than modern */
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
             cursor: pointer;
-            font-size: 0.95rem; /* Slightly larger font */
-            font-weight: 500; /* Medium weight */
-            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.1s ease;
-            box-shadow: var(--dashboard-shadow-subtle);
             display: inline-flex; /* Use inline-flex for icon alignment */
             align-items: center;
             gap: 8px; /* Increased gap for icon */
             justify-content: center;
         }
-        .delete-button:hover, .action-button:hover {
-            background-color: hsl(0, 80%, 45%);
+        .vista-button:hover {
+            background: linear-gradient(to bottom, #e0efff 0%, #c8e0ff 100%);
+            border-color: #8bb1e6;
             transform: translateY(-2px); /* More pronounced hover effect */
             box-shadow: var(--dashboard-shadow-medium);
         }
-        .delete-button:active, .action-button:active {
+        .vista-button:active {
+            background: linear-gradient(to bottom, #c1d9f7 0%, #d9e8fb 100%);
+            border-color: #7da8e0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
             transform: translateY(0);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        /* Specific styles for delete/action buttons to override vista-button if needed */
+        .delete-button {
+            background-color: var(--dashboard-accent-red);
+            color: white;
+            border: none;
+            box-shadow: var(--dashboard-shadow-subtle);
+        }
+        .delete-button:hover {
+            background-color: hsl(0, 80%, 45%);
+        }
+
         .action-button.blue {
             background-color: var(--dashboard-accent-blue);
+            color: white;
+            border: none;
+            box-shadow: var(--dashboard-shadow-subtle);
         }
         .action-button.blue:hover {
             background-color: var(--dashboard-primary-blue);
         }
+
         /* Section titles with icons */
         .section-title {
             display: flex;
@@ -133,8 +175,9 @@
             color: var(--dashboard-accent-blue);
             font-size: 1.5em; /* Make icon larger relative to text */
         }
+
         /* Input and Select field styling */
-        input[type="text"], input[type="number"], input[type="date"], select {
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
             padding: 12px; /* More padding */
             border-radius: 8px; /* More rounded */
             border: 1px solid var(--dashboard-border-light);
@@ -142,52 +185,108 @@
             color: var(--dashboard-text-dark);
             transition: all 0.2s ease;
         }
-        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus {
+        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--dashboard-accent-blue);
             box-shadow: 0 0 0 3px rgba(var(--dashboard-accent-blue-rgb), 0.2); /* Soft focus ring */
         }
+
         /* Specific styling for the commonPhoneDropdown to align with professional look */
         #commonPhoneDropdown {
-            padding-right: 40px; /* Space for custom arrow icon */
+            padding-left: 40px; /* Space for custom arrow icon (adjusted for RTL) */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%234B5563\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>');
             background-repeat: no-repeat;
-            background-position: left 15px center; /* Position for RTL */
+            background-position: right 15px center; /* Position for RTL */
             background-size: 18px;
             -webkit-appearance: none; /* Remove default arrow */
             -moz-appearance: none;
             appearance: none;
         }
+
         /* Specific styling for the commonSearchInput */
         #commonSearchInput {
-            padding-right: 50px; /* Space for custom search icon */
+            padding-left: 50px; /* Space for custom search icon (adjusted for RTL) */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%234B5563\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'8\'></circle><line x1=\'21\' y1=\'21\' x2=\'16.65\' y2=\'16.65\'></line></svg>');
             background-repeat: no-repeat;
-            background-position: left 15px center; /* Position for RTL */
+            background-position: right 15px center; /* Position for RTL */
             background-size: 20px;
         }
+
         /* Ensure the toast container is correctly positioned and styled */
         #toast-container-firebase {
             position: fixed;
             bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 1rem; /* Adjusted for RTL */
             z-index: 50;
             display: flex;
             flex-direction: column-reverse; /* New toasts appear on top */
             gap: 0.75rem;
-            align-items: center;
+            align-items: flex-end; /* Align toasts to the right for RTL */
             width: auto;
             max-width: 90vw;
             padding: 1rem;
             box-sizing: border-box;
         }
+
+        /* Modal specific styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Darker overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white */
+            backdrop-filter: blur(15px); /* Stronger blur for modal */
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 18px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px; /* Adjusted for RTL */
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #6b7280;
+            transition: color 0.2s ease;
+        }
+        .close-button:hover {
+            color: #ef4444; /* Red on hover */
+        }
     </style>
+
     <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
 </head>
 <body>
+
     <!-- Header / Navigation Bar -->
     <header class="bg-white shadow-sm py-4 px-6 md:px-10 border-b border-gray-200">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -197,7 +296,7 @@
             </h1>
             <nav>
                 <ul class="flex space-x-4 space-x-reverse">
-                    <li><a href="#firebaseProductsDisplay" class="text-gray-600 hover:text-dashboard-accent-blue font-medium transition duration-200">لوحة التحكم</a></li>
+                    <li><a href="#detailed-stats" class="text-gray-600 hover:text-dashboard-accent-blue font-medium transition duration-200">لوحة التحكم</a></li>
                     <!-- Add more navigation links if needed -->
                 </ul>
             </nav>
@@ -207,13 +306,11 @@
     <!-- Main Content Area -->
     <main class="flex-grow p-4 md:p-8">
         <div class="max-w-7xl mx-auto space-y-10">
-
             <!-- Section: Detailed Sales Statistics -->
-            <section id="detailed-stats" class="bg-dashboard-card-bg p-6 rounded-xl shadow-lg border border-dashboard-border-light">
+            <section id="detailed-stats" class="aero-glass p-6 rounded-xl shadow-lg border border-dashboard-border-light">
                 <h2 class="section-title">
                     <i class="fas fa-chart-pie"></i> إحصائيات المبيعات التفصيلية
                 </h2>
-
                 <div class="flex flex-wrap gap-4 mb-6">
                     <div class="flex-1 min-w-[250px]">
                         <label for="commonPhoneDropdown" class="sr-only">تصفية الكل حسب رقم الهاتف</label>
@@ -222,56 +319,64 @@
                         </select>
                     </div>
                 </div>
-
                 <div id="phoneActions" class="flex flex-wrap gap-4 mb-6 justify-center" style="display: none;">
-                    <button type="button" id="exportPhoneDataBtn" class="action-button blue">
+                    <button type="button" id="exportPhoneDataBtn" class="vista-button">
                         <i class="fas fa-download"></i> تصدير بيانات هذا الهاتف
                     </button>
-                    <button type="button" id="deletePhoneDataBtn" class="action-button delete-button">
+                    <button type="button" id="deletePhoneDataBtn" class="vista-button delete-button">
                         <i class="fas fa-trash-alt"></i> حذف بيانات هذا الهاتف
                     </button>
                 </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+                    <!-- Metric Cards -->
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي سعر الشراء</h3>
                         <p id="totalPurchaseCost" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي سعر البيع</h3>
                         <p id="totalSellingPrice" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي العمولة</h3>
                         <p id="totalCommission" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي الأرباح</h3>
                         <p id="totalProfit" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي المبيعات (HT)</h3>
                         <p id="totalSalesHT" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي TVA</h3>
                         <p id="totalTVA" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
-                    <div class="bg-dashboard-card-bg border-2 border-dashboard-border-light rounded-lg p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                        <div class="absolute -top-5 -left-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
+
+                    <div class="aero-glass p-4 text-center shadow-sm hover:translate-y-[-5px] hover:scale-[1.02] hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                        <div class="absolute -top-5 -right-5 w-20 h-20 bg-dashboard-accent-blue rounded-full opacity-10 transform scale-0 group-hover:scale-100 transition-transform duration-500 z-0"></div>
                         <h3 class="text-dashboard-text-secondary text-sm sm:text-base mb-2 relative z-10">إجمالي المبيعات (TTC)</h3>
                         <p id="totalSalesTTC" class="text-dashboard-primary-blue text-2xl sm:text-3xl font-bold relative z-10 font-mono">0.00 DH</p>
                     </div>
                 </div>
 
+                <!-- Removed Charts Section -->
+                <!-- The grid layout for charts is removed, so the dynamicStatsListContainer will now take full width if no other elements are next to it. -->
+
                 <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+                    <div class="aero-glass p-4 shadow-sm flex flex-col">
                         <h3 class="section-title text-xl">
                             <i class="fas fa-box-open"></i> المنتجات الأكثر مبيعاً
                         </h3>
@@ -279,7 +384,8 @@
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+
+                    <div class="aero-glass p-4 shadow-sm flex flex-col">
                         <h3 class="section-title text-xl">
                             <i class="fas fa-user-friends"></i> العملاء الأكثر نشاطاً
                         </h3>
@@ -287,7 +393,8 @@
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+
+                    <div class="aero-glass p-4 shadow-sm flex flex-col">
                         <h3 class="section-title text-xl">
                             <i class="fas fa-file-invoice-dollar"></i> أصحاب الفواتير الأكثر نشاطاً
                         </h3>
@@ -295,7 +402,8 @@
                             <li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
-                    <div class="bg-dashboard-card-bg border border-dashboard-border-light rounded-lg p-4 shadow-sm flex flex-col">
+
+                    <div class="aero-glass p-4 shadow-sm flex flex-col">
                         <h3 class="section-title text-xl">
                             <i class="fas fa-truck"></i> الموردون الأكثر نشاطاً
                         </h3>
@@ -304,10 +412,9 @@
                         </ul>
                     </div>
                 </div>
-
                 <div class="relative flex items-center gap-2 mt-6">
                     <button type="button" id="clearCommonSearchInput"
-                        class="bg-dashboard-accent-red text-white px-4 py-2 rounded-full shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-1 h-11">
+                        class="vista-button delete-button px-4 py-2 rounded-full shadow-sm flex items-center justify-center gap-1 h-11">
                         <i class="fas fa-times-circle"></i> مسح
                     </button>
                     <input type="text" id="commonSearchInput"
@@ -318,7 +425,7 @@
             </section>
 
             <!-- Section: Duplicate Products -->
-            <section id="duplicate-products" class="bg-dashboard-card-bg p-6 rounded-xl shadow-lg border border-dashboard-border-light">
+            <section id="duplicate-products" class="aero-glass p-6 rounded-xl shadow-lg border border-dashboard-border-light">
                 <h2 class="section-title">
                     <i class="fas fa-copy text-dashboard-accent-orange"></i> المنتجات المتكررة في المخزون
                     (<span id="firebaseDuplicateProductListCount">0</span>)
@@ -330,11 +437,14 @@
             </section>
 
             <!-- Section: Inventory Products List -->
-            <section id="inventory-products" class="bg-dashboard-card-bg p-6 rounded-xl shadow-lg border border-dashboard-border-light">
+            <section id="inventory-products" class="aero-glass p-6 rounded-xl shadow-lg border border-dashboard-border-light">
                 <h2 class="section-title">
                     <i class="fas fa-boxes"></i> قائمة منتجات المخزون من Firebase
                     (<span id="firebaseProductListCount">0</span>)
                 </h2>
+                <button class="vista-button bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105 mb-6" onclick="openModal('addProductModal')">
+                    ➕ إضافة منتج جديد
+                </button>
                 <div id="firebaseProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>
                 </div>
@@ -342,7 +452,7 @@
             </section>
 
             <!-- Section: Sold Products in Invoices -->
-            <section id="sold-products" class="bg-dashboard-card-bg p-6 rounded-xl shadow-lg border border-dashboard-border-light">
+            <section id="sold-products" class="aero-glass p-6 rounded-xl shadow-lg border border-dashboard-border-light">
                 <h2 class="section-title">
                     <i class="fas fa-receipt text-dashboard-accent-orange"></i> المنتجات المباعة في الفواتير
                     (<span id="firebaseInvoiceProductListCount">0</span>)
@@ -354,27 +464,124 @@
             </section>
 
             <!-- Section: Firebase Invoices List -->
-            <section id="invoices-list" class="bg-dashboard-card-bg p-6 rounded-xl shadow-lg border border-dashboard-border-light">
+            <section id="invoices-list" class="aero-glass p-6 rounded-xl shadow-lg border border-dashboard-border-light">
                 <h2 class="section-title">
                     <i class="fas fa-cloud"></i> قائمة فواتير Firebase
                     (<span id="firebaseInvoiceListCount">0</span>)
                 </h2>
+                <button class="vista-button bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-8 rounded-xl shadow-lg transition duration-300 transform hover:scale-105 mb-6" onclick="openModal('addInvoiceModal')">
+                    📝 إنشاء فاتورة جديدة
+                </button>
                 <div id="firebaseInvoicesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <p class="text-dashboard-text-secondary text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>
                 </div>
                 <div id="firebaseInvoicesLoader" class="loader w-8 h-8 border-4 border-dashboard-border-light border-t-dashboard-accent-blue rounded-full mx-auto mt-6 hidden"></div>
             </section>
-
         </div>
     </main>
 
     <!-- Toast Container -->
-    <div id="toast-container-firebase" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col-reverse gap-3 items-center w-auto max-w-[90vw] p-4 box-border"></div>
+    <div id="toast-container-firebase" class="fixed bottom-4 right-4 z-50 flex flex-col-reverse gap-3 items-end w-auto max-w-[90vw] p-4 box-border"></div>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-4 text-center text-sm mt-10">
         <p>&copy; 2024 نظام إدارة الفواتير والمنتجات. جميع الحقوق محفوظة.</p>
     </footer>
+
+    <!-- Modals for Input Forms -->
+
+    <!-- Add/Edit Product Modal -->
+    <div id="addProductModal" class="modal-overlay">
+        <div class="modal-content aero-glass">
+            <button class="close-button" onclick="closeModal('addProductModal')">✖</button>
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">إضافة/تعديل منتج</h3>
+            <form id="productForm" onsubmit="event.preventDefault(); handleProductFormSubmit();">
+                <input type="hidden" id="productId" value="">
+                <input type="hidden" id="productFirebasePhoneKey" value="">
+                <div class="mb-4">
+                    <label for="productName" class="block text-gray-700 text-sm font-bold mb-2">اسم المنتج:</label>
+                    <input type="text" id="productName" class="w-full" placeholder="أدخل اسم المنتج" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productPurchasePrice" class="block text-gray-700 text-sm font-bold mb-2">سعر الشراء (DH):</label>
+                    <input type="number" id="productPurchasePrice" class="w-full" step="0.01" placeholder="أدخل سعر الشراء" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productSellingPrice" class="block text-gray-700 text-sm font-bold mb-2">سعر البيع (DH):</label>
+                    <input type="number" id="productSellingPrice" class="w-full" step="0.01" placeholder="أدخل سعر البيع" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productSupplierName" class="block text-gray-700 text-sm font-bold mb-2">اسم المورد:</label>
+                    <input type="text" id="productSupplierName" class="w-full" placeholder="أدخل اسم المورد" required>
+                </div>
+                <div class="mb-4">
+                    <label for="productSupplierAddress" class="block text-gray-700 text-sm font-bold mb-2">عنوان المورد:</label>
+                    <input type="text" id="productSupplierAddress" class="w-full" placeholder="أدخل عنوان المورد">
+                </div>
+                <div class="mb-4">
+                    <label for="productSupplierPhone" class="block text-gray-700 text-sm font-bold mb-2">هاتف المورد:</label>
+                    <input type="text" id="productSupplierPhone" class="w-full" placeholder="أدخل هاتف المورد" required>
+                </div>
+                <div class="mb-6">
+                    <label for="productStockQuantity" class="block text-gray-700 text-sm font-bold mb-2">الكمية في المخزون:</label>
+                    <input type="number" id="productStockQuantity" class="w-full" placeholder="أدخل الكمية المتوفرة" required>
+                </div>
+                <div class="flex justify-end space-x-4 space-x-reverse">
+                    <button type="button" class="vista-button bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeModal('addProductModal')">إلغاء</button>
+                    <button type="submit" class="vista-button bg-blue-500 hover:bg-blue-600 text-white">حفظ المنتج</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Invoice Modal -->
+    <div id="addInvoiceModal" class="modal-overlay">
+        <div class="modal-content aero-glass">
+            <button class="close-button" onclick="closeModal('addInvoiceModal')">✖</button>
+            <h3 class="text-2xl font-bold text-gray-900 mb-6">إنشاء/تعديل فاتورة</h3>
+            <form id="invoiceForm" onsubmit="event.preventDefault(); handleInvoiceFormSubmit();">
+                <input type="hidden" id="invoiceId" value="">
+                <input type="hidden" id="invoiceFirebasePhoneKey" value="">
+                <div class="mb-4">
+                    <label for="invoiceCustomerName" class="block text-gray-700 text-sm font-bold mb-2">اسم العميل:</label>
+                    <input type="text" id="invoiceCustomerName" class="w-full" placeholder="أدخل اسم العميل" required>
+                </div>
+                <div class="mb-4">
+                    <label for="invoiceOwnerName" class="block text-gray-700 text-sm font-bold mb-2">اسم مالك الفاتورة:</label>
+                    <input type="text" id="invoiceOwnerName" class="w-full" placeholder="أدخل اسم مالك الفاتورة" required>
+                </div>
+                <div class="mb-4">
+                    <label for="invoiceOwnerAddress" class="block text-gray-700 text-sm font-bold mb-2">عنوان مالك الفاتورة:</label>
+                    <input type="text" id="invoiceOwnerAddress" class="w-full" placeholder="أدخل عنوان مالك الفاتورة">
+                </div>
+                <div class="mb-4">
+                    <label for="invoiceOwnerPhone" class="block text-gray-700 text-sm font-bold mb-2">هاتف مالك الفاتورة:</label>
+                    <input type="text" id="invoiceOwnerPhone" class="w-full" placeholder="أدخل هاتف مالك الفاتورة" required>
+                </div>
+                <div class="mb-4">
+                    <label for="invoiceDate" class="block text-gray-700 text-sm font-bold mb-2">تاريخ الفاتورة:</label>
+                    <input type="date" id="invoiceDate" class="w-full" required>
+                </div>
+                <div class="mb-6">
+                    <label for="invoiceCommissionRate" class="block text-gray-700 text-sm font-bold mb-2">نسبة العمولة (%):</label>
+                    <input type="number" id="invoiceCommissionRate" class="w-full" step="0.01" value="0" min="0" max="100" placeholder="أدخل نسبة العمولة">
+                </div>
+                <h4 class="text-lg font-bold text-gray-800 mb-3">منتجات الفاتورة:</h4>
+                <div id="invoiceProductsContainer" class="space-y-4 mb-6 border p-4 rounded-lg bg-gray-50 custom-scrollbar max-h-60 overflow-y-auto">
+                    <!-- Products will be dynamically added here -->
+                    <p class="text-gray-500 text-center">لا توجد منتجات مضافة بعد.</p>
+                </div>
+                <button type="button" class="vista-button bg-blue-500 hover:bg-blue-600 text-white mb-6 w-full" onclick="addInvoiceProductRow()">
+                    ➕ إضافة منتج للفاتورة
+                </button>
+                <div class="flex justify-end space-x-4 space-x-reverse">
+                    <button type="button" class="vista-button bg-gray-300 hover:bg-gray-400 text-gray-800" onclick="closeModal('addInvoiceModal')">إلغاء</button>
+                    <button type="submit" class="vista-button bg-blue-500 hover:bg-blue-600 text-white">حفظ الفاتورة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <script>
         // Tailwind CSS Configuration to extend colors with CSS variables
@@ -403,9 +610,9 @@
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
             // Add other config properties if needed, e.g., projectId, apiKey, etc.
         };
-
         let firebaseApp;
         let database;
+
         try {
             firebaseApp = firebase.initializeApp(firebaseConfig);
             database = firebase.database();
@@ -423,6 +630,7 @@
         let allFirebaseInvoiceProductsWithDetails = []; // Stores products from invoices with customer/owner details
         let inventoryProductsMap = new Map(); // Use a Map to quickly access original product data from inventoryProducts
         let allFirebaseDuplicateProducts = []; // Stores detected duplicate products
+        let currentInvoiceProducts = []; // For managing products in the invoice modal
 
         // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
         // IMPORTANT: These mappings MUST match the ones in your main sales application EXACTLY.
@@ -441,7 +649,7 @@
             // quantity: 'quantiteSelectionnee', 
             // isLocal: 'estLocal', 
             // Invoice Keys (fields within the invoice object)
-            id: 'id', // This is for the invoice ID itself.
+            // id: 'id', // This is for the invoice ID itself. (handled manually as firebase key)
             date: 'dateFacture', // Formatted date string for display (matches original app)
             isoDate: 'dateIsoFacture', // ISO string for sorting
             customerName: 'nomClient',
@@ -500,6 +708,39 @@
         }
 
         /**
+         * Maps an object's keys from local JavaScript names to French Firebase names.
+         * Keys not found in KEY_MAPPING_TO_FIREBASE are passed through as is.
+         * Handles nested 'products' array within an invoice object recursively.
+         * @param {object} localObj - The object with local JavaScript keys to map.
+         * @returns {object} A new object with keys mapped to French Firebase names.
+         */
+        function mapToFirebaseKeys(localObj) {
+            if (localObj === null || typeof localObj !== 'object') {
+                return localObj;
+            }
+            const newObj = {};
+            for (const localKey in localObj) {
+                if (localObj.hasOwnProperty(localKey)) {
+                    const fbKey = KEY_MAPPING_TO_FIREBASE[localKey];
+                    if (localKey === 'products' && Array.isArray(localObj[localKey])) {
+                        newObj[fbKey || localKey] = localObj[localKey].map(p => {
+                            const productMapped = {};
+                            for (const productLocalKey in p) {
+                                if (p.hasOwnProperty(productLocalKey)) {
+                                    productMapped[KEY_MAPPING_TO_FIREBASE[productLocalKey] || productLocalKey] = p[productLocalKey];
+                                }
+                            }
+                            return productMapped;
+                        });
+                    } else {
+                        newObj[fbKey || localKey] = localObj[localKey];
+                    }
+                }
+            }
+            return newObj;
+        }
+
+        /**
          * Sanitizes a phone number to be used as a Firebase key.
          * Replaces invalid characters with underscores.
          * Must match the sanitization in the sales application.
@@ -537,11 +778,13 @@
                 UIElements.toastContainer.appendChild(toast);
                 setTimeout(() => { toast.remove(); }, 4000);
             },
+
             toggleGeneralLoader: (loaderElement, isLoading) => {
                 if (loaderElement) {
                     loaderElement.classList.toggle('hidden', !isLoading);
                 }
             },
+
             populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
                 const uniqueValues = new Set();
                 sourceArray.forEach(item => {
@@ -556,6 +799,7 @@
                     datalistElement.appendChild(option);
                 });
             },
+
             populatePhoneSelect: (selectElement, phoneNumbers) => {
                 selectElement.innerHTML = '<option value="all">عرض الكل</option>';
                 Array.from(phoneNumbers).sort().forEach(phoneNumber => {
@@ -565,6 +809,7 @@
                     selectElement.appendChild(option);
                 });
             },
+
             showConfirmModal: (title, message) => { // Re-using from previous code for consistency
                 return new Promise(resolve => {
                     const modalOverlay = document.createElement('div');
@@ -575,8 +820,8 @@
                         <h3 class="text-2xl font-bold mb-4 text-dashboard-primary-blue">${title}</h3>
                         <p class="text-dashboard-text-secondary mb-6">${message}</p>
                         <div class="flex justify-center gap-4">
-                            <button id="confirmYesBtn" class="bg-dashboard-accent-green text-white px-6 py-2 rounded-md hover:bg-green-600 transition-colors">نعم</button>
-                            <button id="confirmNoBtn" class="bg-dashboard-accent-red text-white px-6 py-2 rounded-md hover:bg-red-600 transition-colors">لا</button>
+                            <button id="confirmYesBtn" class="vista-button bg-dashboard-accent-green text-white px-6 py-2 rounded-md hover:bg-green-600 transition-colors">نعم</button>
+                            <button id="confirmNoBtn" class="vista-button bg-dashboard-accent-red text-white px-6 py-2 rounded-md hover:bg-red-600 transition-colors">لا</button>
                         </div>
                     `;
                     modalOverlay.appendChild(modalDialog);
@@ -611,6 +856,7 @@
                 // NEW: Add event listeners for phone-specific action buttons
                 UIElements.exportPhoneDataBtn.addEventListener('click', FirebaseData.exportSelectedPhoneData);
                 UIElements.deletePhoneDataBtn.addEventListener('click', FirebaseData.deleteSelectedPhoneData);
+
                 // Add click listeners for individual product/invoice delete buttons
                 UIElements.firebaseProductsContainer.addEventListener('click', (event) => {
                     const target = event.target.closest('.delete-product-button');
@@ -621,6 +867,7 @@
                         FirebaseData.confirmAndDeleteProduct(productId, firebasePhoneKey);
                     }
                 });
+
                 UIElements.firebaseInvoicesContainer.addEventListener('click', (event) => {
                     const target = event.target.closest('.delete-invoice-button');
                     if (target) {
@@ -630,10 +877,51 @@
                         FirebaseData.confirmAndDeleteInvoice(invoiceFirebaseId, firebasePhoneKey);
                     }
                 });
+
+                // Add click listeners for individual product/invoice edit buttons
+                UIElements.firebaseProductsContainer.addEventListener('click', (event) => {
+                    const target = event.target.closest('.edit-product-button');
+                    if (target) {
+                        const productDiv = target.closest('[data-product-id]');
+                        const productId = productDiv.dataset.productId;
+                        const firebasePhoneKey = productDiv.dataset.firebasePhoneKey;
+                        console.log(`محاولة تعديل المنتج. ID: ${productId}, PhoneKey: ${firebasePhoneKey}`); // Debugging line
+                        const product = allFirebaseProductsData.find(p => p.id === productId && p.firebasePhoneKey === firebasePhoneKey);
+                        if (product) {
+                            console.log('المنتج الذي تم العثور عليه للتعديل:', product); // Debugging line
+                            populateProductModal(product);
+                            openModal('addProductModal');
+                        } else {
+                            console.log('لم يتم العثور على المنتج للتعديل:', productId, firebasePhoneKey); // Debugging line
+                            UI.showToast("لم يتم العثور على المنتج. قد تكون البيانات غير متزامنة.", 'warning');
+                        }
+                    }
+                });
+
+                UIElements.firebaseInvoicesContainer.addEventListener('click', (event) => {
+                    const target = event.target.closest('.edit-invoice-button');
+                    if (target) {
+                        const invoiceDiv = target.closest('[data-invoice-id]');
+                        const invoiceFirebaseId = invoiceDiv.dataset.invoiceId;
+                        const firebasePhoneKey = invoiceDiv.dataset.firebasePhoneKey;
+                        console.log(`محاولة تعديل الفاتورة. Firebase ID: ${invoiceFirebaseId}, PhoneKey: ${firebasePhoneKey}`); // Debugging line
+                        const invoice = allFirebaseInvoicesData.find(inv => inv.firebaseId === invoiceFirebaseId && inv.firebasePhoneKey === firebasePhoneKey);
+                        if (invoice) {
+                            console.log('الفاتورة التي تم العثور عليها للتعديل:', invoice); // Debugging line
+                            populateInvoiceModal(invoice);
+                            openModal('addInvoiceModal');
+                        } else {
+                            console.log('لم يتم العثور على الفاتورة للتعديل:', invoiceFirebaseId, firebasePhoneKey); // Debugging line
+                            UI.showToast("لم يتم العثور على الفاتورة. قد تكون البيانات غير متزامنة.", 'warning');
+                        }
+                    }
+                });
             },
+
             populatePhoneDropdowns: (phoneNumbers) => {
                 UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
             },
+
             fetchAndDisplayCombinedFirebaseData: async () => {
                 UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
@@ -648,6 +936,7 @@
                     UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); // NEW loader
                     return;
                 }
+
                 const alldataRef = database.ref(`${appId}/alldata`);
                 try {
                     const snapshot = await alldataRef.once('value');
@@ -694,9 +983,9 @@
                                         if (phoneData.invoices.hasOwnProperty(invoiceFirebaseKey)) {
                                             const invoiceDetails = mapFromFirebaseKeys(phoneData.invoices[invoiceFirebaseKey]);
                                             // Ensure a unique ID is present for the invoice itself, use Firebase key if local ID not set
-                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey;
+                                            invoiceDetails.id = invoiceDetails.id || invoiceFirebaseKey; // This ID is for display/internal use, firebaseId is the actual key
                                             allFirebaseInvoicesData.push({
-                                                firebaseId: invoiceFirebaseKey, // Original Firebase key (used for deletion)
+                                                firebaseId: invoiceFirebaseKey, // Original Firebase key (used for deletion/update)
                                                 firebasePhoneKey: phoneKey, // Store sanitized phone key for filtering and deletion
                                                 ...invoiceDetails
                                             });
@@ -751,8 +1040,12 @@
                         UIElements.allSearchOptionsDatalist.appendChild(option);
                     });
 
+                    console.log('بيانات المنتجات المجلوبة:', allFirebaseProductsData); // Debugging line
+                    console.log('بيانات الفواتير المجلوبة:', allFirebaseInvoicesData); // Debugging line
+
                     FirebaseData.applyCombinedFilters(); // Apply filters to display fetched data
                     UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
+
                 } catch (error) {
                     UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
                     console.error("Failed to fetch Firebase data:", error);
@@ -763,6 +1056,7 @@
                     UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); // NEW loader
                 }
             },
+
             // NEW: Export data for selected phone number
             exportSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
@@ -785,6 +1079,7 @@
                         UI.showToast(`لا توجد بيانات لهذا الهاتف ${selectedPhoneNumber} في Firebase.`, 'warning');
                         return;
                     }
+
                     // Map Firebase French keys to local keys for export compatibility with the first app
                     const mappedDataForExport = {};
                     if (dataToExport.inventoryProducts) {
@@ -797,6 +1092,7 @@
                     } else {
                         mappedDataForExport.invoices = [];
                     }
+
                     const exportDate = new Date().toISOString();
                     const finalExportObject = {
                         metadata: {
@@ -825,6 +1121,7 @@
                     console.error("Error exporting phone data:", error);
                 }
             },
+
             // NEW: Delete data for selected phone number
             deleteSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
@@ -849,6 +1146,7 @@
                     console.error("Error deleting phone data:", error);
                 }
             },
+
             confirmAndDeleteProduct: async (productId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذا المنتج (ID: ${productId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
@@ -865,6 +1163,7 @@
                     console.error("Error deleting product:", error);
                 }
             },
+
             confirmAndDeleteInvoice: async (invoiceFirebaseId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذه الفاتورة (ID: ${invoiceFirebaseId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
@@ -881,6 +1180,7 @@
                     console.error("Error deleting invoice:", error);
                 }
             },
+
             applyCombinedFilters: () => {
                 const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
@@ -958,12 +1258,14 @@
                 FirebaseData.displayFirebaseDuplicateProducts(filteredDuplicateProducts); // NEW display function
                 FirebaseData.displayStatistics(filteredInvoices); // Recalculate stats based on filtered invoices
             },
+
             clearAndFilter: () => {
                 UIElements.commonSearchInput.value = '';
                 UIElements.commonPhoneDropdown.value = 'all';
                 FirebaseData.applyCombinedFilters();
                 UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
             },
+
             displayFirebaseInvoices: (invoices) => {
                 const container = UIElements.firebaseInvoicesContainer;
                 container.innerHTML = '';
@@ -973,9 +1275,10 @@
                 }
                 invoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
-                    invoiceDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
+                    invoiceDiv.classList.add('aero-glass', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
                     invoiceDiv.dataset.invoiceId = invoice.firebaseId;
                     invoiceDiv.dataset.firebasePhoneKey = invoice.firebasePhoneKey;
+
                     let productsListHtml = '<p class="text-center italic text-dashboard-text-secondary text-xs py-2">لا توجد منتجات في هذه الفاتورة.</p>';
                     if (invoice.products && invoice.products.length > 0) {
                         productsListHtml = `
@@ -995,6 +1298,7 @@
                             </div>
                         `;
                     }
+
                     invoiceDiv.innerHTML = `
                         <div class="mb-2">
                             <p class="text-dashboard-text-dark"><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
@@ -1007,13 +1311,19 @@
                             <p class="text-dashboard-text-dark"><strong>الإجمالي (TTC):</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalTTC || 0).toFixed(2)} DH</span></p>
                             <p class="text-dashboard-text-dark"><strong>الربح:</strong> <span class="text-dashboard-accent-green font-bold">${parseFloat(invoice.totalProfit || 0).toFixed(2)} DH</span></p>
                         </div>
-                        <button class="delete-button delete-invoice-button mt-4">
-                            <i class="fas fa-trash-alt"></i> حذف الفاتورة
-                        </button>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="vista-button text-blue-600 hover:text-blue-800 edit-invoice-button">
+                                ✏️ تعديل
+                            </button>
+                            <button class="vista-button delete-button delete-invoice-button">
+                                🗑️ حذف
+                            </button>
+                        </div>
                     `;
                     container.appendChild(invoiceDiv);
                 });
             },
+
             displayFirebaseProducts: (products) => {
                 const container = UIElements.firebaseProductsContainer;
                 container.innerHTML = '';
@@ -1023,7 +1333,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-blue', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
+                    productDiv.classList.add('aero-glass', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-green');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
@@ -1035,13 +1345,19 @@
                         <p class="text-dashboard-text-dark"><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
                         ${product.date ? `<p class="text-dashboard-text-dark"><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
                         ${product.firebasePhoneKey ? `<p class="text-dashboard-text-dark"><strong>رقم هاتف المالك (في Firebase):</strong> ${product.firebasePhoneKey}</p>` : ''}
-                        <button class="delete-button delete-product-button mt-4">
-                            <i class="fas fa-trash-alt"></i> حذف المنتج
-                        </button>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="vista-button text-blue-600 hover:text-blue-800 edit-product-button">
+                                ✏️ تعديل
+                            </button>
+                            <button class="vista-button delete-button delete-product-button">
+                                🗑️ حذف
+                            </button>
+                        </div>
                     `;
                     container.appendChild(productDiv);
                 });
             },
+
             displayFirebaseInvoiceProducts: (products) => {
                 const container = UIElements.firebaseInvoiceProductsContainer;
                 container.innerHTML = '';
@@ -1051,7 +1367,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-orange', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-red');
+                    productDiv.classList.add('aero-glass', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-orange');
                     // No delete button here, as these are part of invoices
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.invoiceId = product.invoiceId;
@@ -1068,6 +1384,7 @@
                     container.appendChild(productDiv);
                 });
             },
+
             // NEW: Display duplicate products
             displayFirebaseDuplicateProducts: (products) => {
                 const container = UIElements.firebaseDuplicateProductsContainer;
@@ -1078,7 +1395,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('bg-dashboard-card-bg', 'border', 'border-dashboard-border-light', 'border-r-4', 'border-dashboard-accent-red', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg');
+                    productDiv.classList.add('aero-glass', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'hover:border-dashboard-accent-red');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
@@ -1090,13 +1407,14 @@
                         <p class="text-dashboard-text-dark"><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
                         ${product.date ? `<p class="text-dashboard-text-dark"><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
                         <p class="text-dashboard-text-dark"><strong>رقم هاتف المالك:</strong> ${product.firebasePhoneKey || 'N/A'}</p>
-                        <button class="delete-button delete-product-button mt-4">
-                            <i class="fas fa-trash-alt"></i> حذف هذا المنتج
+                        <button class="vista-button delete-button delete-product-button mt-4">
+                            🗑️ حذف هذا المنتج
                         </button>
                     `;
                     container.appendChild(productDiv);
                 });
             },
+
             displayStatistics: (invoices) => {
                 let totalSalesHT = 0;
                 let totalTVA = 0;
@@ -1105,6 +1423,7 @@
                 let totalOverallCommission = 0;
                 let totalPurchaseCostAllProducts = 0;
                 let totalSellingPriceAllProducts = 0;
+
                 const productSales = {}; // { productName: { quantitySold, totalRevenue } }
                 const customerActivity = {}; // { customerName: { invoiceCount, totalProfit, totalTTC } }
                 const invoiceOwnerActivity = {}; // { ownerName: { invoiceCount, totalProfit, totalTTC } }
@@ -1190,14 +1509,17 @@
                     (item) => `قيمة المشتريات: ${item.value.toFixed(2)} د.م. - عدد المنتجات: ${item.secondaryValue}`,
                     'fas fa-truck'
                 );
+
+                // Charts are removed, so no need to call initializeCharts
             },
+
             renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn, iconClass = 'fas fa-circle') => {
                 listEl.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(item => {
                         const li = document.createElement('li');
                         li.classList.add(
-                            'bg-dashboard-card-bg', 'p-3', 'rounded-lg', 'border', 'border-dashboard-border-light', 'shadow-sm',
+                            'aero-glass', 'p-3', 'rounded-lg', 'border', 'border-dashboard-border-light', 'shadow-sm',
                             'flex', 'items-center', 'gap-3', 'w-full', 'text-right', 'cursor-pointer',
                             'hover:bg-dashboard-hover-bg', 'hover:shadow-md', 'hover:translate-y-[-1px]',
                             'transition-all', 'duration-200'
@@ -1223,8 +1545,292 @@
                     listEl.innerHTML = '<li class="text-dashboard-text-secondary text-center py-2">لا توجد بيانات</li>';
                     listEl.classList.remove('has-more-items');
                 }
+            },
+
+            // Firebase Save/Update functions for modals
+            saveProduct: async (productData, productId, firebasePhoneKey) => {
+                const sanitizedPhone = sanitizePhoneNumber(productData.supplierPhone);
+                // If productId is provided, it's an update. Otherwise, it's a new push.
+                const productRef = database.ref(`${appId}/alldata/${sanitizedPhone}/inventoryProducts/${productId || ''}`);
+
+                try {
+                    if (productId) { // Update existing product
+                        await productRef.update(mapToFirebaseKeys(productData));
+                        UI.showToast("تم تحديث المنتج بنجاح!", 'success');
+                    } else { // Add new product
+                        const newProductRef = productRef.push(); // Generate new unique ID
+                        await newProductRef.set(mapToFirebaseKeys(productData));
+                        UI.showToast("تم إضافة المنتج بنجاح!", 'success');
+                    }
+                    FirebaseData.fetchAndDisplayCombinedFirebaseData(); // Re-fetch all data
+                } catch (error) {
+                    UI.showToast(`فشل حفظ المنتج: ${error.message}`, 'error');
+                    console.error("Error saving product:", error);
+                }
+            },
+
+            saveInvoice: async (invoiceData, invoiceFirebaseId, firebasePhoneKey) => {
+                const sanitizedPhone = sanitizePhoneNumber(invoiceData.ownerPhone);
+                // If invoiceFirebaseId is provided, it's an update. Otherwise, it's a new push.
+                const invoiceRef = database.ref(`${appId}/alldata/${sanitizedPhone}/invoices/${invoiceFirebaseId || ''}`);
+
+                try {
+                    if (invoiceFirebaseId) { // Update existing invoice
+                        await invoiceRef.update(mapToFirebaseKeys(invoiceData));
+                        UI.showToast("تم تحديث الفاتورة بنجاح!", 'success');
+                    } else { // Add new invoice
+                        const newInvoiceRef = invoiceRef.push(); // Generate new unique ID
+                        await newInvoiceRef.set(mapToFirebaseKeys(invoiceData));
+                        UI.showToast("تم إنشاء الفاتورة بنجاح!", 'success');
+                    }
+                    FirebaseData.fetchAndDisplayCombinedFirebaseData(); // Re-fetch all data
+                } catch (error) {
+                    UI.showToast(`فشل حفظ الفاتورة: ${error.message}`, 'error');
+                    console.error("Error saving invoice:", error);
+                }
             }
         };
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('open');
+            // Reset form when opening for new entry
+            if (modalId === 'addProductModal') {
+                document.getElementById('productForm').reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('productFirebasePhoneKey').value = '';
+            } else if (modalId === 'addInvoiceModal') {
+                document.getElementById('invoiceForm').reset();
+                document.getElementById('invoiceId').value = '';
+                document.getElementById('invoiceFirebasePhoneKey').value = '';
+                currentInvoiceProducts = []; // Clear products for new invoice
+                renderInvoiceProducts();
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
+        }
+
+        // Populate Product Modal for editing
+        function populateProductModal(product) {
+            document.getElementById('productId').value = product.id;
+            document.getElementById('productFirebasePhoneKey').value = product.firebasePhoneKey;
+            document.getElementById('productName').value = product.name || '';
+            document.getElementById('productPurchasePrice').value = product.purchasePrice || 0;
+            document.getElementById('productSellingPrice').value = product.sellingPrice || 0;
+            document.getElementById('productSupplierName').value = product.supplierName || '';
+            document.getElementById('productSupplierAddress').value = product.supplierAddress || '';
+            document.getElementById('productSupplierPhone').value = product.supplierPhone || '';
+            document.getElementById('productStockQuantity').value = product.stockQuantity || 0;
+        }
+
+        // Handle Product Form Submission
+        async function handleProductFormSubmit() {
+            const productId = document.getElementById('productId').value;
+            const productFirebasePhoneKey = document.getElementById('productFirebasePhoneKey').value; // This is the original phone key from Firebase path
+            const productData = {
+                name: document.getElementById('productName').value,
+                purchasePrice: parseFloat(document.getElementById('productPurchasePrice').value),
+                sellingPrice: parseFloat(document.getElementById('productSellingPrice').value),
+                supplierName: document.getElementById('productSupplierName').value,
+                supplierAddress: document.getElementById('productSupplierAddress').value,
+                supplierPhone: document.getElementById('productSupplierPhone').value, // This is the new/updated phone number for the product
+                stockQuantity: parseInt(document.getElementById('productStockQuantity').value),
+                date: new Date().toISOString().slice(0, 10) // Current date
+            };
+
+            // If it's an update and the phone number has changed, we need to delete the old record
+            // and create a new one under the new phone number.
+            const newSanitizedPhone = sanitizePhoneNumber(productData.supplierPhone);
+            let finalProductId = productId; // Keep the same ID if phone key doesn't change or if it's a new product
+
+            if (productId && productFirebasePhoneKey && newSanitizedPhone !== productFirebasePhoneKey) {
+                // Phone number changed for an existing product, delete old record first
+                const confirmed = await UI.showConfirmModal("تغيير رقم الهاتف", `لقد قمت بتغيير رقم هاتف المورد لهذا المنتج. سيؤدي هذا إلى حذف المنتج من رقم الهاتف القديم (${productFirebasePhoneKey}) وإعادة إنشائه تحت رقم الهاتف الجديد (${newSanitizedPhone}). هل أنت متأكد؟`);
+                if (confirmed) {
+                    try {
+                        const oldProductRef = database.ref(`${appId}/alldata/${productFirebasePhoneKey}/inventoryProducts/${productId}`);
+                        await oldProductRef.remove();
+                        UI.showToast("تم حذف المنتج من رقم الهاتف القديم بنجاح.", 'info');
+                        finalProductId = null; // Treat as a new product for the new phone key
+                    } catch (error) {
+                        UI.showToast(`فشل حذف المنتج من رقم الهاتف القديم: ${error.message}`, 'error');
+                        console.error("Error deleting old product record:", error);
+                        return; // Stop if deletion fails
+                    }
+                } else {
+                    UI.showToast("تم إلغاء عملية التحديث.", 'info');
+                    return;
+                }
+            }
+
+            await FirebaseData.saveProduct(productData, finalProductId, productFirebasePhoneKey);
+            closeModal('addProductModal');
+        }
+
+        // Populate Invoice Modal for editing
+        function populateInvoiceModal(invoice) {
+            document.getElementById('invoiceId').value = invoice.firebaseId; // Use firebaseId for actual Firebase key
+            document.getElementById('invoiceFirebasePhoneKey').value = invoice.firebasePhoneKey; // Original phone key from Firebase path
+            document.getElementById('invoiceCustomerName').value = invoice.customerName || '';
+            document.getElementById('invoiceOwnerName').value = invoice.ownerName || '';
+            document.getElementById('invoiceOwnerAddress').value = invoice.ownerAddress || '';
+            document.getElementById('invoiceOwnerPhone').value = invoice.ownerPhone || '';
+            document.getElementById('invoiceDate').value = invoice.date || new Date().toISOString().slice(0, 10);
+            document.getElementById('invoiceCommissionRate').value = invoice.invoiceCommissionRate || 0;
+            // Deep copy the products array from the invoice to currentInvoiceProducts
+            currentInvoiceProducts = invoice.products ? JSON.parse(JSON.stringify(invoice.products)) : [];
+            renderInvoiceProducts();
+        }
+
+        // Handle Invoice Form Submission
+        async function handleInvoiceFormSubmit() {
+            const invoiceFirebaseId = document.getElementById('invoiceId').value;
+            const invoiceFirebasePhoneKey = document.getElementById('invoiceFirebasePhoneKey').value; // Original phone key from Firebase path
+
+            const invoiceData = {
+                customerName: document.getElementById('invoiceCustomerName').value,
+                ownerName: document.getElementById('invoiceOwnerName').value,
+                ownerAddress: document.getElementById('invoiceOwnerAddress').value,
+                ownerPhone: document.getElementById('invoiceOwnerPhone').value, // This is the new/updated phone number for the invoice owner
+                date: document.getElementById('invoiceDate').value,
+                isoDate: new Date(document.getElementById('invoiceDate').value).toISOString(),
+                invoiceCommissionRate: parseFloat(document.getElementById('invoiceCommissionRate').value),
+                products: currentInvoiceProducts // Use the dynamically managed products
+            };
+
+            // Calculate totals (simplified for this example, adjust as per your app's logic)
+            let totalHT = 0;
+            let totalProfit = 0;
+            let totalCommission = 0;
+            invoiceData.products.forEach(p => {
+                const productTotal = (parseFloat(p.sellingPrice || 0) * parseInt(p.quantityUsed || 0));
+                totalHT += productTotal;
+                
+                // Find original purchase price from inventoryProductsMap
+                const originalProduct = inventoryProductsMap.get(String(p.id));
+                const purchasePrice = parseFloat(originalProduct ? originalProduct.purchasePrice || 0 : 0);
+                
+                const productProfit = (productTotal - (purchasePrice * parseInt(p.quantityUsed || 0)));
+                totalProfit += productProfit;
+            });
+
+            invoiceData.totalHT = totalHT;
+            invoiceData.totalHTBeforeCommission = totalHT; // Assuming no pre-commission calculation here
+            invoiceData.tva = totalHT * 0.20; // Example TVA 20%
+            invoiceData.totalTTC = totalHT + invoiceData.tva;
+            invoiceData.totalProfit = totalProfit;
+            invoiceData.totalCommission = totalHT * (invoiceData.invoiceCommissionRate / 100);
+
+            // If it's an update and the phone number has changed, we need to delete the old record
+            // and create a new one under the new phone number.
+            const newSanitizedPhone = sanitizePhoneNumber(invoiceData.ownerPhone);
+            let finalInvoiceFirebaseId = invoiceFirebaseId; // Keep the same ID if phone key doesn't change or if it's a new invoice
+
+            if (invoiceFirebaseId && invoiceFirebasePhoneKey && newSanitizedPhone !== invoiceFirebasePhoneKey) {
+                // Phone number changed for an existing invoice, delete old record first
+                const confirmed = await UI.showConfirmModal("تغيير رقم الهاتف", `لقد قمت بتغيير رقم هاتف مالك الفاتورة. سيؤدي هذا إلى حذف الفاتورة من رقم الهاتف القديم (${invoiceFirebasePhoneKey}) وإعادة إنشائها تحت رقم الهاتف الجديد (${newSanitizedPhone}). هل أنت متأكد؟`);
+                if (confirmed) {
+                    try {
+                        const oldInvoiceRef = database.ref(`${appId}/alldata/${invoiceFirebasePhoneKey}/invoices/${invoiceFirebaseId}`);
+                        await oldInvoiceRef.remove();
+                        UI.showToast("تم حذف الفاتورة من رقم الهاتف القديم بنجاح.", 'info');
+                        finalInvoiceFirebaseId = null; // Treat as a new invoice for the new phone key
+                    } catch (error) {
+                        UI.showToast(`فشل حذف الفاتورة من رقم الهاتف القديم: ${error.message}`, 'error');
+                        console.error("Error deleting old invoice record:", error);
+                        return; // Stop if deletion fails
+                    }
+                } else {
+                    UI.showToast("تم إلغاء عملية التحديث.", 'info');
+                    return;
+                }
+            }
+
+            await FirebaseData.saveInvoice(invoiceData, finalInvoiceFirebaseId, invoiceFirebasePhoneKey);
+            closeModal('addInvoiceModal');
+        }
+
+        // Invoice Product Management in Modal
+        function addInvoiceProductRow() {
+            currentInvoiceProducts.push({
+                id: '', // Will be populated from selected product
+                name: '',
+                quantityUsed: 1,
+                sellingPrice: 0
+            });
+            renderInvoiceProducts();
+        }
+
+        function removeInvoiceProductRow(index) {
+            currentInvoiceProducts.splice(index, 1);
+            renderInvoiceProducts();
+        }
+
+        function renderInvoiceProducts() {
+            const container = document.getElementById('invoiceProductsContainer');
+            container.innerHTML = '';
+            if (currentInvoiceProducts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">لا توجد منتجات مضافة بعد.</p>';
+                return;
+            }
+
+            currentInvoiceProducts.forEach((product, index) => {
+                const productRow = document.createElement('div');
+                productRow.classList.add('flex', 'flex-col', 'md:flex-row', 'items-center', 'gap-3', 'p-3', 'border', 'border-gray-200', 'rounded-lg', 'bg-white', 'shadow-sm');
+                productRow.innerHTML = `
+                    <select class="flex-grow w-full md:w-auto p-2 border rounded-md product-select" data-index="${index}" required>
+                        <option value="">اختر منتج</option>
+                        ${allFirebaseProductsData.map(p => `
+                            <option value="${p.id}" ${product.id === p.id ? 'selected' : ''}>
+                                ${p.name} (مخزون: ${p.stockQuantity})
+                            </option>
+                        `).join('')}
+                    </select>
+                    <input type="number" class="w-full md:w-24 p-2 border rounded-md quantity-input" placeholder="الكمية" value="${product.quantityUsed}" min="1" data-index="${index}" required>
+                    <input type="number" class="w-full md:w-32 p-2 border rounded-md selling-price-input" placeholder="سعر البيع" value="${product.sellingPrice}" step="0.01" data-index="${index}" required>
+                    <button type="button" class="vista-button delete-button flex-shrink-0" onclick="removeInvoiceProductRow(${index})">
+                        🗑️
+                    </button>
+                `;
+                container.appendChild(productRow);
+            });
+
+            // Add event listeners for product selection and quantity change
+            container.querySelectorAll('.product-select').forEach(select => {
+                select.addEventListener('change', (event) => {
+                    const index = parseInt(event.target.dataset.index);
+                    const selectedProductId = event.target.value;
+                    const selectedProduct = allFirebaseProductsData.find(p => p.id === selectedProductId);
+                    if (selectedProduct) {
+                        currentInvoiceProducts[index].id = selectedProduct.id;
+                        currentInvoiceProducts[index].name = selectedProduct.name;
+                        currentInvoiceProducts[index].sellingPrice = selectedProduct.sellingPrice;
+                        // Update the selling price input field in the UI
+                        event.target.closest('.flex').querySelector('.selling-price-input').value = selectedProduct.sellingPrice;
+                    } else {
+                        // If product is not found (e.g., deleted from inventory), clear values
+                        currentInvoiceProducts[index].id = '';
+                        currentInvoiceProducts[index].name = '';
+                        currentInvoiceProducts[index].sellingPrice = 0;
+                        event.target.closest('.flex').querySelector('.selling-price-input').value = 0;
+                    }
+                });
+            });
+
+            container.querySelectorAll('.quantity-input, .selling-price-input').forEach(input => {
+                input.addEventListener('input', (event) => {
+                    const index = parseInt(event.target.dataset.index);
+                    if (event.target.classList.contains('quantity-input')) {
+                        currentInvoiceProducts[index].quantityUsed = parseInt(event.target.value) || 0;
+                    } else if (event.target.classList.contains('selling-price-input')) {
+                        currentInvoiceProducts[index].sellingPrice = parseFloat(event.target.value) || 0;
+                    }
+                });
+            });
+        }
+
 
         // ====== Initialization on Window Load for this section ======
         window.addEventListener('load', () => {
@@ -1249,6 +1855,7 @@
                 firebaseInvoicesLoader: document.getElementById('firebaseInvoicesLoader'),
                 firebaseInvoiceProductsLoader: document.getElementById('firebaseInvoiceProductsLoader'),
                 firebaseDuplicateProductsLoader: document.getElementById('firebaseDuplicateProductsLoader'), // NEW loader for duplicates
+
                 totalPurchaseCost: document.getElementById('totalPurchaseCost'),
                 totalSellingPrice: document.getElementById('totalSellingPrice'),
                 totalCommission: document.getElementById('totalCommission'),
@@ -1271,8 +1878,6 @@
 
             FirebaseData.init();
             FirebaseData.fetchAndDisplayCombinedFirebaseData();
-            // The main content is now always visible as part of the page flow, no need to toggle hidden
-            // UIElements.firebaseProductsDisplay.hidden = false; 
         });
     </script>
 </body>
