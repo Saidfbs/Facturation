@@ -13,15 +13,15 @@
         /* Modern & Clean Color Palette */
         :root {
             --modern-bg-primary: #f8fafc; /* light blue-gray for main background */
-            --modern-card-bg: #ffffff;    /* pure white for cards */
+            --modern-card-bg: #ffffff;   /* pure white for cards */
             --modern-primary-accent: #4f46e5; /* Indigo 600 */
             --modern-secondary-accent: #e0e7ff; /* Indigo 100 */
             --modern-text-dark: #1f2937;  /* Gray 800 */
             --modern-text-secondary: #6b7280; /* Gray 500 */
             --modern-border-light: #e5e7eb; /* Gray 200 */
-            --modern-success: #22c55e;    /* Green 500 */
-            --modern-warning: #f59e0b;    /* Yellow 500 */
-            --modern-error: #ef4444;      /* Red 500 */
+            --modern-success: #22c55e;   /* Green 500 */
+            --modern-warning: #f59e0b;   /* Yellow 500 */
+            --modern-error: #ef4444;     /* Red 500 */
             /* RGB values for focus rings */
             --modern-primary-accent-rgb: 79, 70, 229; /* Indigo 600 RGB */
             --modern-success-rgb: 34, 197, 94; 
@@ -725,7 +725,7 @@
             }
             .app-header, #toast-container, .modal-overlay, .invoice-actions-footer, .nav-data-management-links,
             .view-section:not(.active), .search-bar-container, .product-actions-footer,
-            .card-panel-title, .section-title .fas, #dataManagementButtons { /* Hide more elements for print, including new data management buttons */
+            .card-panel-title .fas, #dataManagementButtons { /* Hide more elements for print, including new data management buttons */
                 display: none !important;
             }
             .app-container {
@@ -1087,7 +1087,6 @@
                 },
             },
         };
-
         // ====== UI Elements References ======
         const UIElements = {
             // Main Layout & Navigation
@@ -1099,7 +1098,6 @@
                 document.getElementById('showLocalArchiveButton')
             ],
             appContainer: document.querySelector('main.app-container'),
-
             // Product Form
             productForm: document.getElementById('productForm'),
             productFormContainer: document.getElementById('productFormContainer'),
@@ -1118,7 +1116,6 @@
             clearSearchProductBtn: document.getElementById('clearSearchProductBtn'),
             savedProductsLoader: document.getElementById('savedProductsLoader'),
             emptyProductsMessage: document.getElementById('emptyProductsMessage'),
-
             // Invoice Form
             invoiceForm: document.getElementById('invoiceForm'),
             clientFormContainer: document.getElementById('clientFormContainer'),
@@ -1133,7 +1130,6 @@
             updateStockAndSaveToFirebaseButton: document.getElementById('updateStockAndSaveToFirebaseButton'),
             printButton: document.getElementById('printButton'),
             cancelInvoiceButton: document.getElementById('cancelInvoiceButton'),
-
             // Invoice Display Elements
             displayCustomerName: document.getElementById('displayCustomerName'),
             displayInvoiceOwner: document.getElementById('displayInvoiceOwner'),
@@ -1147,19 +1143,16 @@
             displayTotalTTC: document.getElementById('displayTotalTTC'),
             // displayTotalProfit: document.getElementById('displayTotalProfit'), // Removed from HTML
             displayDetails: document.getElementById('displayDetails'),
-
             // Local Archive
             localInvoicesList: document.getElementById('localInvoicesList'),
             searchLocalInvoiceInput: document.getElementById('searchLocalInvoice'),
             clearSearchLocalInvoiceBtn: document.getElementById('clearSearchLocalInvoiceBtn'),
             localArchiveLoader: document.getElementById('localArchiveLoader'),
             emptyInvoicesMessage: document.getElementById('emptyInvoicesMessage'),
-
             // Data Management (Export/Import) - Now in a new div
             exportDataBtn: document.getElementById('exportDataBtn'),
             importDataInput: document.getElementById('importDataInput'),
             importDataBtn: document.getElementById('importDataBtn'),
-
             // Datalists
             productNamesDatalist: document.getElementById('productNames'),
             supplierNamesDatalist: document.getElementById('supplierNames'),
@@ -1170,7 +1163,6 @@
             invoiceOwnerAddressesDatalist: document.getElementById('invoiceOwnerAddresses'),
             invoiceOwnerPhonesDatalist: document.getElementById('invoiceOwnerPhones'),
             localInvoiceSearchOptionsDatalist: document.getElementById('localInvoiceSearchOptions'),
-
             // Modals & Toasts
             toastContainer: document.getElementById('toast-container'),
             confirmModalOverlay: document.getElementById('confirm-modal-overlay'),
@@ -1179,13 +1171,11 @@
             confirmYesBtn: document.getElementById('confirm-yes-btn'),
             confirmNoBtn: document.getElementById('confirm-no-btn'),
         };
-
         // Global Data Stores
         let allLocalInvoices = [];
         let currentInvoiceBeingProcessed = null;
         let isNewInvoice = false;
         let isTransitioning = false;
-
         // Firebase Configuration (Replace with your actual Firebase config)
         // IMPORTANT: In a Canvas environment, __firebase_config and __app_id are provided globally.
         // For local testing, you can hardcode your Firebase config here.
@@ -1193,12 +1183,10 @@
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
             // Add other config properties if needed, e.g., projectId, apiKey, etc.
         };
-
         // Use __app_id if available (in Canvas environment), otherwise use a default
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         let firebaseApp;
         let database;
-
         try {
             firebaseApp = firebase.initializeApp(firebaseConfig);
             database = firebase.database();
@@ -1207,7 +1195,6 @@
             console.error("Firebase initialization failed:", e);
             UI.showToast("فشل تهيئة Firebase. قد لا تعمل ميزات حفظ البيانات السحابية.", 'error');
         }
-
         // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
         const KEY_MAPPING_TO_FIREBASE = {
             id: 'id',
@@ -1221,7 +1208,6 @@
             date: 'dateCreationProduit', // This is for product creation date, not invoice date
             quantity: 'quantiteSelectionnee', // Quantity selected for invoice (local only)
             isLocal: 'estLocal', // To indicate if product was created locally
-
             // Invoice Keys
             invoiceId: 'id', // Re-using 'id' for invoice ID
             invoiceDate: 'dateFacture', // Human-readable date
@@ -1240,12 +1226,10 @@
             invoiceCommissionRate: 'tauxCommissionFacture',
             quantityUsed: 'quantiteUtilisee' // Quantity actually used in invoice
         };
-
         const KEY_MAPPING_FROM_FIREBASE = {};
         for (const localKey in KEY_MAPPING_TO_FIREBASE) {
             KEY_MAPPING_FROM_FIREBASE[KEY_MAPPING_TO_FIREBASE[localKey]] = localKey;
         }
-
         function mapToFirebaseKeys(obj) {
             const newObj = {};
             for (const key in obj) {
@@ -1267,7 +1251,6 @@
             }
             return newObj;
         }
-
         function mapFromFirebaseKeys(fbObj) {
             if (fbObj === null || typeof fbObj !== 'object') {
                 return fbObj;
@@ -1293,11 +1276,9 @@
             }
             return newObj;
         }
-
         // ====== UI Utility Functions ======
         const UI = {
             confirmResolve: null,
-
             // Hides all sections with a fade-out animation
             hideAllSections: (instant = false) => {
                 [UIElements.mainDashboardView, UIElements.invoiceDisplay, UIElements.localArchiveView].forEach(section => {
@@ -1317,7 +1298,6 @@
                     }
                 });
             },
-
             // Shows a specific section with a fade-in animation
             showSection: (sectionToShow) => {
                 if (isTransitioning) {
@@ -1366,7 +1346,6 @@
                     });
                 });
             },
-
             // Sets the active state for navigation buttons
             setActiveButton: (activeBtn, buttonGroup) => {
                 buttonGroup.forEach(btn => { btn.classList.remove('active'); });
@@ -1374,7 +1353,6 @@
                     activeBtn.classList.add('active');
                 }
             },
-
             // Resets validation messages and error classes on a form
             resetValidationMessages: (form) => {
                 form.querySelectorAll('.form-input.error, .form-textarea.error').forEach(field => {
@@ -1386,7 +1364,6 @@
                     }
                 });
             },
-
             // Displays a toast notification
             showToast: (message, type) => {
                 const toast = document.createElement('div');
@@ -1416,7 +1393,6 @@
                     }, 600); // Slightly longer than transition duration
                 }, 3000); // Hide after 3 seconds
             },
-
             // Displays a confirmation modal
             showConfirmModal: (title, message) => {
                 return new Promise(resolve => {
@@ -1438,7 +1414,6 @@
                     UIElements.confirmNoBtn.addEventListener('click', handleNo, { once: true });
                 });
             },
-
             // Toggles loading state for a button
             toggleButtonLoading: (button, isLoading) => {
                 const loader = button.querySelector('.loader-inline');
@@ -1454,14 +1429,12 @@
                     }
                 }
             },
-
             // Toggles visibility of a general loader (e.g., for sections)
             toggleGeneralLoader: (loaderElement, isLoading) => {
                 if (loaderElement) {
                     loaderElement.classList.toggle('active', isLoading);
                 }
             },
-
             // Updates the CSS class of a product card based on its quantity and stock
             updateProductCardClass: (productDiv, quantitySelected, stockQuantity) => {
                 productDiv.classList.remove('status-insufficient', 'status-selected-sufficient', 'status-stock-positive');
@@ -1475,7 +1448,6 @@
                     productDiv.classList.add('status-stock-positive');
                 }
             },
-
             // Populates a datalist with unique values from an array of objects
             populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
                 const uniqueValues = new Set();
@@ -1491,7 +1463,6 @@
                     datalistElement.appendChild(option);
                 });
             },
-
             // Populates all datalists used in the application
             populateAllDatalists: () => {
                 const savedProducts = DataStore.getSavedProducts();
@@ -1529,7 +1500,6 @@
                 });
             }
         };
-
         // ====== Data Storage & Manipulation (Local Storage) ======
         const DataStore = {
             getSavedProducts: () => {
@@ -1569,9 +1539,9 @@
                     // If you want a soft delete or manual sync, this should NOT be here.
                     // const ownerPhone = localStorage.getItem('invoiceOwnerPhone');
                     // if (ownerPhone && Validation.checkPhoneFormat(ownerPhone)) {
-                    //     await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
+                    //    await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
                     // } else {
-                    //     console.warn("No valid owner phone found to delete product from Firebase.");
+                    //    console.warn("No valid owner phone found to delete product from Firebase.");
                     // }
                     // --- END REMOVED ---
                 }
@@ -1629,21 +1599,18 @@
                 const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit', hour12: false }); // e.g., 14:14
                 UIElements.invoiceDateInput.value = `${formattedDate} - ${formattedTime}`;
                 UIElements.invoiceDateInput.setAttribute('data-iso-date', now.toISOString()); // Store ISO date separately
-
                 // Load from localStorage for invoice form
                 UIElements.invoiceOwnerInput.value = localStorage.getItem('invoiceOwner') || '';
                 UIElements.invoiceOwnerPhoneInput.value = localStorage.getItem('invoiceOwnerPhone') || '';
                 UIElements.invoiceOwnerAddressInput.value = localStorage.getItem('invoiceOwnerAddress') || '';
                 UIElements.tvaInput.value = localStorage.getItem('tva') || '0';
                 UIElements.invoiceCommissionAmountInput.value = localStorage.getItem('invoiceCommissionAmount') || '0';
-
                 // Load from localStorage for product form supplier fields
                 UIElements.supplierNameInput.value = localStorage.getItem('supplierName') || '';
                 UIElements.supplierAddressInput.value = localStorage.getItem('supplierAddress') || '';
                 UIElements.supplierPhoneInput.value = localStorage.getItem('supplierPhone') || '';
             }
         };
-
         // ====== Firebase Synchronization Logic (PUSH ONLY) ======
         const FirebaseSync = {
             // Function to get Firebase path based on ownerPhone and data type
@@ -1657,7 +1624,6 @@
                 const dataPath = (type === 'products') ? 'inventoryProducts' : 'invoices';
                 return `${appId}/alldata/${sanitizedPhone}/${dataPath}`;
             },
-
             // Syncs a single product to Firebase using the provided phoneIdentifier (ownerPhone)
             syncSingleProductToFirebase: async (productDataLocalKeys, phoneIdentifier) => {
                 if (!database) {
@@ -1679,7 +1645,34 @@
                     console.error(`خطأ في مزامنة المنتج "${productDataLocalKeys.name}" مع Firebase: ${error.message}`, error);
                 }
             },
+            // New function to sync all products (for a given ownerPhone)
+            syncAllProductsToFirebase: async (ownerPhoneForSync) => {
+                if (!database) {
+                    console.error("Firebase database not initialized. Skipping product sync.");
+                    return 0;
+                }
+                if (!ownerPhoneForSync || !Validation.checkPhoneFormat(ownerPhoneForSync)) {
+                    console.warn("Invalid owner phone for product sync. Skipping Firebase product sync.");
+                    return 0;
+                }
 
+                const allLocalProducts = DataStore.getSavedProducts();
+                let productsSyncedCount = 0;
+                
+                const firebaseProductPath = FirebaseSync.getFirebasePath(ownerPhoneForSync, 'products'); 
+                if (!firebaseProductPath) return 0;
+
+                for (const product of allLocalProducts) {
+                    try {
+                        const productDataFirebaseKeys = mapToFirebaseKeys(product);
+                        await database.ref(`${firebaseProductPath}/${productDataFirebaseKeys.id}`).set(productDataFirebaseKeys);
+                        productsSyncedCount++;
+                    } catch (error) {
+                        console.error(`Failed to sync product ${product.name} to Firebase during bulk sync: ${error.message}`);
+                    }
+                }
+                return productsSyncedCount;
+            },
             // Syncs a single invoice to Firebase
             syncSingleInvoiceToFirebase: async (invoiceDataLocalKeys) => {
                 if (!database) {
@@ -1701,7 +1694,6 @@
                     throw error;
                 }
             },
-
             // New function to delete a product from Firebase
             // NOTE: This function is explicitly left for potential future use or manual calls,
             // but it's NOT called by DataStore.deleteProduct as per the new requirement.
@@ -1720,7 +1712,6 @@
                     UI.showToast(`خطأ في حذف المنتج من Firebase: ${error.message}`, 'error');
                 }
             },
-
             // Full sync on load/import - uses ownerPhone from localStorage (UIElements.invoiceOwnerPhoneInput)
             syncAllLocalDataToFirebaseOnLoad: async () => {
                 DataStore.loadFormDefaults(); 
@@ -1728,32 +1719,24 @@
                 
                 if (!database) {
                     console.error("Firebase database not initialized. Skipping Firebase sync.");
-                    UI.showToast("Firebase غير جاهز. لم يتم مزامنة البيانات السحابية.", 'error');
+                    // UI.showToast("Firebase غير جاهز. لم يتم مزامنة البيانات السحابية.", 'error'); // Too many toasts on load
                     return;
                 }
+                
                 // --- Sync Products (if owner phone is valid) ---
                 if (ownerPhoneForSync && Validation.checkPhoneFormat(ownerPhoneForSync)) {
-                    const allLocalProducts = DataStore.getSavedProducts();
-                    let productsSyncedCount = 0;
-                    console.log(`Initiating sync of all ${allLocalProducts.length} local products to Firebase under owner: ${ownerPhoneForSync}`);
-                    for (const product of allLocalProducts) {
-                        try {
-                            // Pass the ownerPhone for the path
-                            await FirebaseSync.syncSingleProductToFirebase(product, ownerPhoneForSync);
-                            productsSyncedCount++;
-                        } catch (error) {
-                            console.error(`Failed to sync product ${product.name} during bulk sync: ${error.message}`);
-                        }
-                    }
+                    UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
+                    const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
                     if (productsSyncedCount > 0) {
                         UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
                     } else {
-                        UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info');
+                        // UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info'); // Avoid too many toasts on initial load
                     }
                 } else {
                     console.warn("Owner phone is invalid or empty on load. Skipping Firebase product sync.");
                     // No toast here as it might be shown for invoice owner phone validation if user tries to create invoice
                 }
+
                 // --- Sync Invoices (only if owner phone is valid) ---
                 let localInvoicesToSync = JSON.parse(localStorage.getItem('localInvoices') || '[]');
                 let invoicesSyncedCount = 0;
@@ -1779,13 +1762,12 @@
                     if (invoicesSyncedCount > 0) {
                         UI.showToast(`تمت مزامنة ${invoicesSyncedCount} فاتورة محلية مع Firebase.`, 'success');
                     } else {
-                        UI.showToast("لا توجد فواتير جديدة لمزامنتها مع Firebase تحت رقم المالك الحالي.", 'info');
+                        // UI.showToast("لا توجد فواتير جديدة لمزامنتها مع Firebase تحت رقم المالك الحالي.", 'info'); // Avoid too many toasts on initial load
                     }
                 }
                 console.log("Firebase sync on load completed.");
             }
         };
-
         // ====== Data Management (Export/Import) Logic ======
         const DataManagement = {
             exportData: () => {
@@ -1798,6 +1780,10 @@
                         exportedAt: exportDate,
                         appId: appId,
                         ownerPhone: ownerPhone || 'N/A',
+                        ownerName: localStorage.getItem('invoiceOwner') || '',
+                        ownerAddress: localStorage.getItem('invoiceOwnerAddress') || '',
+                        tva: localStorage.getItem('tva') || '0',
+                        invoiceCommissionAmount: localStorage.getItem('invoiceCommissionAmount') || '0',
                         description: "بيانات إدارة المبيعات والمخزون - نسخة احتياطية محلية"
                     },
                     products: allProducts,
@@ -1853,27 +1839,23 @@
                         // Update owner/supplier info based on imported data
                         if (importedData.metadata && importedData.metadata.ownerPhone) {
                             localStorage.setItem('invoiceOwnerPhone', importedData.metadata.ownerPhone);
-                            // Also try to update other owner fields if available in metadata or first invoice
-                            localStorage.setItem('invoiceOwner', importedData.metadata.ownerName || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].ownerName : ''));
-                            localStorage.setItem('invoiceOwnerAddress', importedData.metadata.ownerAddress || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].ownerAddress : ''));
-                            localStorage.setItem('tva', importedData.metadata.tva || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].tva : '0'));
-                            localStorage.setItem('invoiceCommissionAmount', importedData.metadata.invoiceCommissionAmount || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].totalCommission : '0'));
-
+                            localStorage.setItem('invoiceOwner', importedData.metadata.ownerName || '');
+                            localStorage.setItem('invoiceOwnerAddress', importedData.metadata.ownerAddress || '');
+                            localStorage.setItem('tva', importedData.metadata.tva || '0');
+                            localStorage.setItem('invoiceCommissionAmount', importedData.metadata.invoiceCommissionAmount || '0');
                         } else if (importedData.invoices && importedData.invoices.length > 0) {
-                             localStorage.setItem('invoiceOwnerPhone', importedData.invoices[0].ownerPhone || '');
-                             localStorage.setItem('invoiceOwner', importedData.invoices[0].ownerName || '');
-                             localStorage.setItem('invoiceOwnerAddress', importedData.invoices[0].ownerAddress || '');
-                             localStorage.setItem('tva', importedData.invoices[0].tva || '0');
-                             localStorage.setItem('invoiceCommissionAmount', importedData.invoices[0].totalCommission || '0');
+                                localStorage.setItem('invoiceOwnerPhone', importedData.invoices[0].ownerPhone || '');
+                                localStorage.setItem('invoiceOwner', importedData.invoices[0].ownerName || '');
+                                localStorage.setItem('invoiceOwnerAddress', importedData.invoices[0].ownerAddress || '');
+                                localStorage.setItem('tva', importedData.invoices[0].tva || '0');
+                                localStorage.setItem('invoiceCommissionAmount', importedData.invoices[0].totalCommission || '0');
                         }
-
                         // Try to infer supplier info from imported products if available
                         if (importedData.products && importedData.products.length > 0) {
                             localStorage.setItem('supplierName', importedData.products[0].supplierName || '');
                             localStorage.setItem('supplierAddress', importedData.products[0].supplierAddress || '');
                             localStorage.setItem('supplierPhone', importedData.products[0].supplierPhone || '');
                         }
-
                         SalesProducts.displaySavedProducts();
                         LocalArchive.displayLocalInvoices();
                         UI.populateAllDatalists();
@@ -1890,7 +1872,6 @@
                 reader.readAsText(file);
             }
         };
-
         // ====== Navigation & View Management ======
         const Navigation = {
             init: () => {
@@ -1936,7 +1917,6 @@
                 }
             }
         };
-
         // ====== Product Management Logic ======
         const SalesProducts = {
             init: () => {
@@ -2194,7 +2174,6 @@
                 }
             }
         };
-
         // ====== Invoice Creation & Display Logic ======
         const InvoiceManager = {
             init: () => {
@@ -2247,7 +2226,6 @@
                     return;
                 }
                 // --- END NEW LOGIC ---
-
                 let totalHTBeforeCommission = 0;
                 let totalProfit = 0;
                 const invoiceCommissionAmount = parseFloat(UIElements.invoiceCommissionAmountInput.value) || 0;
@@ -2287,6 +2265,7 @@
                         const currentStock = parseInt(productMatch.stockQuantity || 0);
                         if (currentStock < quantityUsedInInvoice) {
                             hasInsufficientStockWarning = true;
+                            // Changed to 'warning' type for toast
                             UI.showToast(`تنبيه: كمية "${invoiceProduct.name}" (المطلوبة: ${quantityUsedInInvoice}, المتاحة: ${currentStock}) غير كافية.`, 'warning');
                         }
                         totalHTBeforeCommission += (invoiceProduct.sellingPrice || 0) * quantityUsedInInvoice;
@@ -2308,13 +2287,11 @@
                         return;
                     }
                 }
-
                 const finalTotalHT = totalHTBeforeCommission - totalCommission;
                 const tvaRate = parseFloat(UIElements.tvaInput.value) / 100;
                 const tvaCalculated = (finalTotalHT * tvaRate).toFixed(2);
                 const totalTTC = (finalTotalHT + parseFloat(tvaCalculated)).toFixed(2);
                 totalProfit -= totalCommission; // Deduct commission from total profit
-
                 currentInvoiceBeingProcessed = {
                     id: Date.now(), // Unique ID for local storage
                     date: UIElements.invoiceDateInput.value, // Formatted date string for display
@@ -2332,7 +2309,6 @@
                     totalCommission: parseFloat(totalCommission).toFixed(2),
                     invoiceCommissionRate: parseFloat(UIElements.tvaInput.value),
                 };
-
                 console.log("Invoice data prepared:", currentInvoiceBeingProcessed); // For your review: log invoice object here
                 await InvoiceManager.displayFullInvoice(currentInvoiceBeingProcessed, true);
                 UI.toggleButtonLoading(UIElements.createInvoiceButton, false);
@@ -2415,14 +2391,12 @@
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
-
                 const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً ومزامنتها مع Firebase؟");
                 if (!confirmed) {
                     UI.showToast("تم إلغاء تحديث المخزون والحفظ.", 'info');
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
-
                 try {
                     productsToDeduct.forEach(({ productId, quantityUsed }) => {
                         const productIndex = savedProducts.findIndex(p => p.id === productId);
@@ -2479,7 +2453,6 @@
                 }
             }
         };
-
         // ====== Local Archive Logic ======
         const LocalArchive = {
             init: () => {
@@ -2596,7 +2569,6 @@
                 }
             }
         };
-
         // ====== Form Validation Logic ======
         const Validation = {
             checkPhoneFormat: (phone) => {
@@ -2651,7 +2623,6 @@
                 return allFieldsValid;
             }
         };
-
         // ====== Initialization on Window Load ======
         window.addEventListener('load', async () => {
             DataStore.loadFormDefaults();
