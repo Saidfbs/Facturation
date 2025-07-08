@@ -1662,9 +1662,19 @@
                 const firebaseProductPath = FirebaseSync.getFirebasePath(ownerPhoneForSync, 'products'); 
                 if (!firebaseProductPath) return 0;
 
+                // Clear existing products on Firebase for this owner, then push all local ones
+                try {
+                    await database.ref(firebaseProductPath).remove(); // Clear all products under this owner
+                    console.log(`Cleared existing products on Firebase for owner ${ownerPhoneForSync}.`);
+                } catch (error) {
+                    console.error(`Failed to clear products on Firebase for owner ${ownerPhoneForSync}:`, error);
+                    // Do not show toast here as it happens on load, might be too verbose.
+                }
+
                 for (const product of allLocalProducts) {
                     try {
                         const productDataFirebaseKeys = mapToFirebaseKeys(product);
+                        // Using .set() with child path to ensure individual products are updated/created
                         await database.ref(`${firebaseProductPath}/${productDataFirebaseKeys.id}`).set(productDataFirebaseKeys);
                         productsSyncedCount++;
                     } catch (error) {
@@ -1673,7 +1683,7 @@
                 }
                 return productsSyncedCount;
             },
-            // Syncs a single invoice to Firebase
+            // Syncs a single invoice to Firebase - this function is now largely unused for actual syncs, but kept for clarity if needed.
             syncSingleInvoiceToFirebase: async (invoiceDataLocalKeys) => {
                 if (!database) {
                     console.error("Firebase database not initialized. Invoice not synced.");
@@ -1694,6 +1704,48 @@
                     throw error;
                 }
             },
+            // NEW FUNCTION: Syncs all local invoices to Firebase
+            syncAllLocalInvoicesToFirebase: async (ownerPhoneForSync) => {
+                if (!database) {
+                    console.error("Firebase database not initialized. Skipping invoice sync.");
+                    return 0;
+                }
+                if (!ownerPhoneForSync || !Validation.checkPhoneFormat(ownerPhoneForSync)) {
+                    console.warn("Invalid owner phone for invoice sync. Skipping Firebase invoice sync.");
+                    return 0;
+                }
+
+                const allInvoicesToSync = JSON.parse(localStorage.getItem('localInvoices') || '[]');
+                let invoicesSyncedCount = 0;
+                
+                const firebaseInvoiceBaseRef = database.ref(FirebaseSync.getFirebasePath(ownerPhoneForSync, 'invoices'));
+                if (!firebaseInvoiceBaseRef) return 0;
+
+                // Clear existing invoices on Firebase for this owner, then push all local ones
+                try {
+                    await firebaseInvoiceBaseRef.remove(); // Clear all invoices under this owner
+                    console.log(`Cleared existing invoices on Firebase for owner ${ownerPhoneForSync}.`);
+                } catch (error) {
+                    console.error(`Failed to clear invoices on Firebase for owner ${ownerPhoneForSync}:`, error);
+                    UI.showToast(`خطأ في مسح الفواتير القديمة على Firebase.`, 'error'); // Keep this toast for critical error
+                }
+
+                for (const invoice of allInvoicesToSync) {
+                    // Only sync invoices associated with the current owner phone
+                    if (invoice.ownerPhone === ownerPhoneForSync) {
+                        try {
+                            const invoiceDataFirebaseKeys = mapToFirebaseKeys(invoice);
+                            // Using .set() with child path to ensure individual invoices are updated/created
+                            await firebaseInvoiceBaseRef.child(invoiceDataFirebaseKeys.id).set(invoiceDataFirebaseKeys);
+                            invoicesSyncedCount++;
+                        } catch (error) {
+                            console.error(`Failed to sync invoice ${invoice.id} to Firebase during bulk sync: ${error.message}`);
+                        }
+                    }
+                }
+                return invoicesSyncedCount;
+            },
+
             // New function to delete a product from Firebase
             // NOTE: This function is explicitly left for potential future use or manual calls,
             // but it's NOT called by DataStore.deleteProduct as per the new requirement.
@@ -1714,56 +1766,36 @@
             },
             // Full sync on load/import - uses ownerPhone from localStorage (UIElements.invoiceOwnerPhoneInput)
             syncAllLocalDataToFirebaseOnLoad: async () => {
-                DataStore.loadFormDefaults(); 
-                const ownerPhoneForSync = UIElements.invoiceOwnerPhoneInput.value.trim();
-                
+                DataStore.loadFormDefaults(); // Load initial form defaults, including owner phone
+                const ownerPhoneForSync = UIElements.invoiceOwnerPhoneInput.value.trim(); // Get the current owner phone
+
                 if (!database) {
                     console.error("Firebase database not initialized. Skipping Firebase sync.");
-                    // UI.showToast("Firebase غير جاهز. لم يتم مزامنة البيانات السحابية.", 'error'); // Too many toasts on load
                     return;
                 }
                 
-                // --- Sync Products (if owner phone is valid) ---
-                if (ownerPhoneForSync && Validation.checkPhoneFormat(ownerPhoneForSync)) {
-                    UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
-                    const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
-                    if (productsSyncedCount > 0) {
-                        UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
-                    } else {
-                        // UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info'); // Avoid too many toasts on initial load
-                    }
-                } else {
-                    console.warn("Owner phone is invalid or empty on load. Skipping Firebase product sync.");
-                    // No toast here as it might be shown for invoice owner phone validation if user tries to create invoice
+                if (!ownerPhoneForSync || !Validation.checkPhoneFormat(ownerPhoneForSync)) {
+                    console.warn("Owner phone is invalid or empty on load. Skipping Firebase product and invoice sync.");
+                    // No toast here as it happens on load, might be too verbose if not critical.
+                    return; 
                 }
 
-                // --- Sync Invoices (only if owner phone is valid) ---
-                let localInvoicesToSync = JSON.parse(localStorage.getItem('localInvoices') || '[]');
-                let invoicesSyncedCount = 0;
-                if (!ownerPhoneForSync || !Validation.checkPhoneFormat(ownerPhoneForSync)) {
-                    console.warn("Owner phone is invalid or empty on load. Skipping Firebase invoice sync.");
+                // --- Sync Products ---
+                UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
+                const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
+                if (productsSyncedCount > 0) {
+                    UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
                 } else {
-                    console.log(`Syncing all ${localInvoicesToSync.length} local invoices to Firebase...`);
-                    for (let i = 0; i < localInvoicesToSync.length; i++) {
-                        let invoice = localInvoicesToSync[i];
-                        // Only sync invoices associated with the current owner phone
-                        if (invoice.ownerPhone === ownerPhoneForSync) { 
-                            try {
-                                await FirebaseSync.syncSingleInvoiceToFirebase(invoice);
-                                invoicesSyncedCount++;
-                            } catch (syncError) {
-                                console.error(`Failed to sync invoice ${invoice.id} with Firebase: ${syncError.message}`);
-                                UI.showToast(`خطأ في مزامنة الفاتورة ${invoice.id} مع Firebase.`, 'error');
-                            }
-                        } else {
-                            console.log(`Invoice ${invoice.id} belongs to a different owner phone (${invoice.ownerPhone}). Skipping sync for current owner.`);
-                        }
-                    }
-                    if (invoicesSyncedCount > 0) {
-                        UI.showToast(`تمت مزامنة ${invoicesSyncedCount} فاتورة محلية مع Firebase.`, 'success');
-                    } else {
-                        // UI.showToast("لا توجد فواتير جديدة لمزامنتها مع Firebase تحت رقم المالك الحالي.", 'info'); // Avoid too many toasts on initial load
-                    }
+                    // UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info'); // Avoid too many toasts on initial load
+                }
+
+                // --- Sync Invoices ---
+                UI.showToast("جاري مزامنة الفواتير المحلية مع Firebase...", 'info');
+                const invoicesSyncedCount = await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhoneForSync);
+                if (invoicesSyncedCount > 0) {
+                    UI.showToast(`تمت مزامنة ${invoicesSyncedCount} فاتورة محلية مع Firebase.`, 'success');
+                } else {
+                    // UI.showToast("لا توجد فواتير جديدة لمزامنتها مع Firebase تحت رقم المالك الحالي.", 'info'); // Avoid too many toasts on initial load
                 }
                 console.log("Firebase sync on load completed.");
             }
@@ -2202,15 +2234,14 @@
                 }
                 
                 const ownerPhoneForInvoice = UIElements.invoiceOwnerPhoneInput.value.trim();
-                // We've already validated the phone format with checkFormFields, but keeping this explicit for clarity.
                 if (!ownerPhoneForInvoice || !Validation.checkPhoneFormat(ownerPhoneForInvoice)) {
-                    // This specific toast should ideally not be reached if checkFormFields is comprehensive
                     UI.showToast("خطأ: رقم هاتف مالك الفاتورة غير صحيح. لا يمكن المتابعة.", 'error'); 
                     UI.toggleButtonLoading(UIElements.createInvoiceButton, false);
                     return;
                 }
 
                 // --- NEW LOGIC: Sync ALL products to Firebase using ownerPhone before creating invoice ---
+                // This ensures product stock and details are up-to-date on Firebase before processing the invoice
                 try {
                     UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
                     const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForInvoice);
@@ -2360,7 +2391,8 @@
                     return;
                 }
                 // Re-check invoice owner phone validity before saving to Firebase
-                if (!Validation.checkField(UIElements.invoiceOwnerPhoneInput)) {
+                const ownerPhone = UIElements.invoiceOwnerPhoneInput.value.trim();
+                if (!ownerPhone || !Validation.checkPhoneFormat(ownerPhone)) {
                     UI.showToast("يرجى ملء حقل 'هاتف مالك الفاتورة' بشكل صحيح قبل حفظ الفاتورة على Firebase.", 'error');
                     UI.toggleButtonLoading(this, false);
                     return;
@@ -2410,8 +2442,12 @@
                     SalesProducts.displaySavedProducts();
                     DataStore.saveInvoiceToLocal(currentInvoiceBeingProcessed);
                     UI.showToast("تم تحديث المخزون وحفظ الفاتورة محلياً بنجاح.", 'success');
-                    await FirebaseSync.syncSingleInvoiceToFirebase(currentInvoiceBeingProcessed);
-                    UI.showToast("تمت مزامنة الفاتورة مع Firebase بنجاح.", 'success');
+                    
+                    // --- CHANGED: Sync ALL invoices for the current owner
+                    await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhone);
+                    // --- END CHANGED ---
+
+                    UI.showToast("تمت مزامنة الفواتير مع Firebase بنجاح.", 'success');
                     currentInvoiceBeingProcessed = null;
                     isNewInvoice = false;
                     Navigation.handleNavClick({ target: UIElements.desktopNavButtons[0] }); // Go back to dashboard
@@ -2641,7 +2677,8 @@
             LocalArchive.displayLocalInvoices();
             UI.populateAllDatalists();
             
-            // Initial sync on load (products will sync if owner phone is available)
+            // Initial sync on load (products and invoices will sync if owner phone is available)
+            // This function now handles clearing old data and pushing all current local data.
             await FirebaseSync.syncAllLocalDataToFirebaseOnLoad(); 
             const hasData = DataStore.getSavedProducts().length > 0 || JSON.parse(localStorage.getItem('localInvoices') || '[]').length > 0;
             if (hasData) {
