@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Modern & Clean Color Palette */
@@ -794,13 +794,10 @@
                         <i class="fas fa-archive"></i> أرشيف الفواتير
                     </button>
                 </div>
-                <!-- Data management links moved below the saved products section -->
-            </div>
+                </div>
         </div>
     </header>
-
     <div id="toast-container"></div>
-
     <main class="app-container">
         <section id="mainDashboardView" class="view-section active">
             <h1 class="section-title"><i class="fas fa-tachometer-alt"></i> لوحة التحكم الرئيسية</h1> 
@@ -809,7 +806,7 @@
                 <div class="card-panel" id="productFormContainer">
                     <h2 class="card-panel-title" id="productFormTitle">
                         <i class="fas fa-box"></i> إدارة المنتجات
-                    </h2>
+                    </h2> 
                     <form id="productForm">
                         <div class="form-group">
                             <label for="productName" class="form-label required">اسم المنتج:</label>
@@ -919,6 +916,19 @@
                     </form>
                 </div>
             </div>
+            
+            
+            <div id="dataManagementButtons" class="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-center mt-8 p-4 bg-modern-card-bg rounded-xl shadow-md border border-modern-border-light">
+                <button type="button" class="modern-button" id="exportDataBtn">
+                    <i class="fas fa-download"></i> تصدير (JSON)
+                </button>
+                <input type="file" id="importDataInput" accept=".json" class="hidden">
+                <button type="button" class="modern-button" id="importDataBtn">
+                    <i class="fas fa-upload"></i> استيراد (JSON)
+                </button>
+            </div>
+            
+            
             <div class="card-panel mt-8" id="savedProductsDisplay">
                 <h2 class="card-panel-title">
                     <i class="fas fa-shopping-cart"></i> المنتجات المحفوظة (سلة الفاتورة)
@@ -940,20 +950,7 @@
                 </div>
                 <div class="full-loader" id="savedProductsLoader"></div>
             </div>
-
-            <!-- New location for Data Management buttons -->
-            <div id="dataManagementButtons" class="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-center mt-8 p-4 bg-modern-card-bg rounded-xl shadow-md border border-modern-border-light">
-                <button type="button" class="modern-button" id="exportDataBtn">
-                    <i class="fas fa-download"></i> تصدير (JSON)
-                </button>
-                <input type="file" id="importDataInput" accept=".json" class="hidden">
-                <button type="button" class="modern-button" id="importDataBtn">
-                    <i class="fas fa-upload"></i> استيراد (JSON)
-                </button>
-            </div>
-
         </section>
-
         <article id="invoiceDisplay" class="view-section invoice-display-section" hidden>
             <h1 class="section-title"><i class="fas fa-receipt"></i> الفاتورة</h1>
             <div class="invoice-details-panel card-panel">
@@ -1022,7 +1019,6 @@
                 </div>
             </div>
         </article>
-
         <section id="localArchiveView" class="view-section local-archive-section" hidden>
             <h1 class="section-title"><i class="fas fa-folder-open"></i> أرشيف الفواتير المحلية</h1>
             <div class="card-panel archive-list-panel">
@@ -1048,7 +1044,6 @@
             </div>
         </section>
     </main>
-
     <div id="confirm-modal-overlay" class="modal-overlay" hidden>
         <div id="confirm-modal-content" class="modal-content">
             <h3 id="confirm-modal-title" class="modal-title">تأكيد الإجراء</h3>
@@ -1059,7 +1054,6 @@
             </div>
         </div>
     </div>
-
     <datalist id="productNames"></datalist>
     <datalist id="supplierNames"></datalist>
     <datalist id="supplierAddresses"></datalist>
@@ -1068,7 +1062,6 @@
     <datalist id="invoiceOwners"></datalist>
     <datalist id="invoiceOwnerAddresses"></datalist>
     <datalist id="invoiceOwnerPhones"></datalist>
-
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script>
@@ -1152,6 +1145,7 @@
             displayTotalAmount: document.getElementById('displayTotalAmount'),
             displayTVA: document.getElementById('displayTVA'),
             displayTotalTTC: document.getElementById('displayTotalTTC'),
+            // displayTotalProfit: document.getElementById('displayTotalProfit'), // Removed from HTML
             displayDetails: document.getElementById('displayDetails'),
 
             // Local Archive
@@ -1224,12 +1218,14 @@
             supplierAddress: 'adresseFournisseur',
             supplierPhone: 'telephoneFournisseur', // Keep this for product data but will be overridden for path
             stockQuantity: 'quantiteStock',
-            date: 'dateCreationProduit',
-            quantity: 'quantiteSelectionnee',
-            isLocal: 'estLocal',
+            date: 'dateCreationProduit', // This is for product creation date, not invoice date
+            quantity: 'quantiteSelectionnee', // Quantity selected for invoice (local only)
+            isLocal: 'estLocal', // To indicate if product was created locally
+
             // Invoice Keys
-            invoiceDate: 'dateFacture', // Changed for invoice data
-            isoDate: 'dateIsoFacture',
+            invoiceId: 'id', // Re-using 'id' for invoice ID
+            invoiceDate: 'dateFacture', // Human-readable date
+            isoDate: 'dateIsoFacture', // ISO format for consistent sorting/storage
             customerName: 'nomClient',
             ownerName: 'nomProprietaire',
             ownerAddress: 'adresseProprietaire',
@@ -1242,7 +1238,7 @@
             totalProfit: 'profitTotal',
             totalCommission: 'commissionTotale',
             invoiceCommissionRate: 'tauxCommissionFacture',
-            quantityUsed: 'quantiteUtilisee'
+            quantityUsed: 'quantiteUtilisee' // Quantity actually used in invoice
         };
 
         const KEY_MAPPING_FROM_FIREBASE = {};
@@ -1301,6 +1297,7 @@
         // ====== UI Utility Functions ======
         const UI = {
             confirmResolve: null,
+
             // Hides all sections with a fade-out animation
             hideAllSections: (instant = false) => {
                 [UIElements.mainDashboardView, UIElements.invoiceDisplay, UIElements.localArchiveView].forEach(section => {
@@ -1320,6 +1317,7 @@
                     }
                 });
             },
+
             // Shows a specific section with a fade-in animation
             showSection: (sectionToShow) => {
                 if (isTransitioning) {
@@ -1368,6 +1366,7 @@
                     });
                 });
             },
+
             // Sets the active state for navigation buttons
             setActiveButton: (activeBtn, buttonGroup) => {
                 buttonGroup.forEach(btn => { btn.classList.remove('active'); });
@@ -1375,6 +1374,7 @@
                     activeBtn.classList.add('active');
                 }
             },
+
             // Resets validation messages and error classes on a form
             resetValidationMessages: (form) => {
                 form.querySelectorAll('.form-input.error, .form-textarea.error').forEach(field => {
@@ -1386,6 +1386,7 @@
                     }
                 });
             },
+
             // Displays a toast notification
             showToast: (message, type) => {
                 const toast = document.createElement('div');
@@ -1415,6 +1416,7 @@
                     }, 600); // Slightly longer than transition duration
                 }, 3000); // Hide after 3 seconds
             },
+
             // Displays a confirmation modal
             showConfirmModal: (title, message) => {
                 return new Promise(resolve => {
@@ -1436,6 +1438,7 @@
                     UIElements.confirmNoBtn.addEventListener('click', handleNo, { once: true });
                 });
             },
+
             // Toggles loading state for a button
             toggleButtonLoading: (button, isLoading) => {
                 const loader = button.querySelector('.loader-inline');
@@ -1451,12 +1454,14 @@
                     }
                 }
             },
+
             // Toggles visibility of a general loader (e.g., for sections)
             toggleGeneralLoader: (loaderElement, isLoading) => {
                 if (loaderElement) {
                     loaderElement.classList.toggle('active', isLoading);
                 }
             },
+
             // Updates the CSS class of a product card based on its quantity and stock
             updateProductCardClass: (productDiv, quantitySelected, stockQuantity) => {
                 productDiv.classList.remove('status-insufficient', 'status-selected-sufficient', 'status-stock-positive');
@@ -1470,6 +1475,7 @@
                     productDiv.classList.add('status-stock-positive');
                 }
             },
+
             // Populates a datalist with unique values from an array of objects
             populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
                 const uniqueValues = new Set();
@@ -1485,6 +1491,7 @@
                     datalistElement.appendChild(option);
                 });
             },
+
             // Populates all datalists used in the application
             populateAllDatalists: () => {
                 const savedProducts = DataStore.getSavedProducts();
@@ -1549,21 +1556,24 @@
                 DataStore.setSavedProducts(products);
                 UI.showToast(isEditing ? "تم تحديث المنتج وحفظه محلياً بنجاح." : "تم إضافة المنتج وحفظه محلياً بنجاح.", 'success');
             },
+            // MODIFICATION HERE: Removed Firebase deletion from local product deletion
             deleteProduct: async (id) => {
                 let products = DataStore.getSavedProducts();
                 const productToDelete = products.find(product => product.id === id);
                 if (productToDelete) {
                     products = products.filter(product => product.id !== id);
                     DataStore.setSavedProducts(products);
-                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية.", 'success');
+                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. (لن يتم حذفه من Firebase تلقائياً)", 'success');
                     
-                    // Attempt to delete from Firebase as well, using the stored ownerPhone
-                    const ownerPhone = localStorage.getItem('invoiceOwnerPhone');
-                    if (ownerPhone && Validation.checkPhoneFormat(ownerPhone)) {
-                        await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
-                    } else {
-                        console.warn("No valid owner phone found to delete product from Firebase.");
-                    }
+                    // --- REMOVED: This line would delete from Firebase immediately.
+                    // If you want a soft delete or manual sync, this should NOT be here.
+                    // const ownerPhone = localStorage.getItem('invoiceOwnerPhone');
+                    // if (ownerPhone && Validation.checkPhoneFormat(ownerPhone)) {
+                    //     await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
+                    // } else {
+                    //     console.warn("No valid owner phone found to delete product from Firebase.");
+                    // }
+                    // --- END REMOVED ---
                 }
             },
             updateProductStock: (id, newStockQuantity) => {
@@ -1614,9 +1624,10 @@
             },
             loadFormDefaults: () => {
                 const now = new Date();
-                const formattedDate = now.toLocaleDateString('ar-MA', { year: 'numeric', month: '2-digit', day: '2-digit' });
-                const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit' });
-                UIElements.invoiceDateInput.value = `${formattedDate} ${formattedTime}`;
+                // Modified to use Arabic-friendly format for display while keeping ISO for internal use
+                const formattedDate = now.toLocaleDateString('ar-MA', { year: 'numeric', month: 'long', day: 'numeric' }); // e.g., ٧ يوليو ٢٠٢٥
+                const formattedTime = now.toLocaleTimeString('ar-MA', { hour: '2-digit', minute: '2-digit', hour12: false }); // e.g., 14:14
+                UIElements.invoiceDateInput.value = `${formattedDate} - ${formattedTime}`;
                 UIElements.invoiceDateInput.setAttribute('data-iso-date', now.toISOString()); // Store ISO date separately
 
                 // Load from localStorage for invoice form
@@ -1646,6 +1657,7 @@
                 const dataPath = (type === 'products') ? 'inventoryProducts' : 'invoices';
                 return `${appId}/alldata/${sanitizedPhone}/${dataPath}`;
             },
+
             // Syncs a single product to Firebase using the provided phoneIdentifier (ownerPhone)
             syncSingleProductToFirebase: async (productDataLocalKeys, phoneIdentifier) => {
                 if (!database) {
@@ -1667,6 +1679,7 @@
                     console.error(`خطأ في مزامنة المنتج "${productDataLocalKeys.name}" مع Firebase: ${error.message}`, error);
                 }
             },
+
             // Syncs a single invoice to Firebase
             syncSingleInvoiceToFirebase: async (invoiceDataLocalKeys) => {
                 if (!database) {
@@ -1688,32 +1701,10 @@
                     throw error;
                 }
             },
-            // New function to sync ALL local products to Firebase using a given phone identifier (ownerPhone)
-            syncAllProductsToFirebase: async (phoneIdentifier) => {
-                if (!database) {
-                    console.error("Firebase database not initialized. Products not synced.");
-                    UI.showToast("Firebase غير جاهز. لم يتم مزامنة المنتجات السحابية.", 'error');
-                    return 0;
-                }
-                if (!phoneIdentifier || !Validation.checkPhoneFormat(phoneIdentifier)) {
-                    console.warn("Phone identifier is invalid or empty. Skipping Firebase product sync.");
-                    return 0;
-                }
-                const allLocalProducts = DataStore.getSavedProducts();
-                let productsSyncedCount = 0;
-                console.log(`Initiating sync of all ${allLocalProducts.length} local products to Firebase under owner: ${phoneIdentifier}`);
-                for (const product of allLocalProducts) {
-                    try {
-                        // Pass the ownerPhone for the path
-                        await FirebaseSync.syncSingleProductToFirebase(product, phoneIdentifier);
-                        productsSyncedCount++;
-                    } catch (error) {
-                        console.error(`Failed to sync product ${product.name} during bulk sync: ${error.message}`);
-                    }
-                }
-                return productsSyncedCount;
-            },
+
             // New function to delete a product from Firebase
+            // NOTE: This function is explicitly left for potential future use or manual calls,
+            // but it's NOT called by DataStore.deleteProduct as per the new requirement.
             deleteProductFromFirebase: async (productId, phoneIdentifier) => {
                 if (!database || !phoneIdentifier || !Validation.checkPhoneFormat(phoneIdentifier)) {
                     console.warn("Firebase not ready or phone identifier invalid. Cannot delete product from Firebase.");
@@ -1729,6 +1720,7 @@
                     UI.showToast(`خطأ في حذف المنتج من Firebase: ${error.message}`, 'error');
                 }
             },
+
             // Full sync on load/import - uses ownerPhone from localStorage (UIElements.invoiceOwnerPhoneInput)
             syncAllLocalDataToFirebaseOnLoad: async () => {
                 DataStore.loadFormDefaults(); 
@@ -1741,12 +1733,23 @@
                 }
                 // --- Sync Products (if owner phone is valid) ---
                 if (ownerPhoneForSync && Validation.checkPhoneFormat(ownerPhoneForSync)) {
-                    const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
-                     if (productsSyncedCount > 0) {
-                         UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
-                     } else {
-                         UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info');
-                     }
+                    const allLocalProducts = DataStore.getSavedProducts();
+                    let productsSyncedCount = 0;
+                    console.log(`Initiating sync of all ${allLocalProducts.length} local products to Firebase under owner: ${ownerPhoneForSync}`);
+                    for (const product of allLocalProducts) {
+                        try {
+                            // Pass the ownerPhone for the path
+                            await FirebaseSync.syncSingleProductToFirebase(product, ownerPhoneForSync);
+                            productsSyncedCount++;
+                        } catch (error) {
+                            console.error(`Failed to sync product ${product.name} during bulk sync: ${error.message}`);
+                        }
+                    }
+                    if (productsSyncedCount > 0) {
+                        UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
+                    } else {
+                        UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info');
+                    }
                 } else {
                     console.warn("Owner phone is invalid or empty on load. Skipping Firebase product sync.");
                     // No toast here as it might be shown for invoice owner phone validation if user tries to create invoice
@@ -1850,17 +1853,27 @@
                         // Update owner/supplier info based on imported data
                         if (importedData.metadata && importedData.metadata.ownerPhone) {
                             localStorage.setItem('invoiceOwnerPhone', importedData.metadata.ownerPhone);
+                            // Also try to update other owner fields if available in metadata or first invoice
+                            localStorage.setItem('invoiceOwner', importedData.metadata.ownerName || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].ownerName : ''));
+                            localStorage.setItem('invoiceOwnerAddress', importedData.metadata.ownerAddress || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].ownerAddress : ''));
+                            localStorage.setItem('tva', importedData.metadata.tva || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].tva : '0'));
+                            localStorage.setItem('invoiceCommissionAmount', importedData.metadata.invoiceCommissionAmount || (importedData.invoices && importedData.invoices.length > 0 ? importedData.invoices[0].totalCommission : '0'));
+
                         } else if (importedData.invoices && importedData.invoices.length > 0) {
                              localStorage.setItem('invoiceOwnerPhone', importedData.invoices[0].ownerPhone || '');
                              localStorage.setItem('invoiceOwner', importedData.invoices[0].ownerName || '');
                              localStorage.setItem('invoiceOwnerAddress', importedData.invoices[0].ownerAddress || '');
+                             localStorage.setItem('tva', importedData.invoices[0].tva || '0');
+                             localStorage.setItem('invoiceCommissionAmount', importedData.invoices[0].totalCommission || '0');
                         }
+
                         // Try to infer supplier info from imported products if available
                         if (importedData.products && importedData.products.length > 0) {
                             localStorage.setItem('supplierName', importedData.products[0].supplierName || '');
                             localStorage.setItem('supplierAddress', importedData.products[0].supplierAddress || '');
                             localStorage.setItem('supplierPhone', importedData.products[0].supplierPhone || '');
                         }
+
                         SalesProducts.displaySavedProducts();
                         LocalArchive.displayLocalInvoices();
                         UI.populateAllDatalists();
@@ -1969,9 +1982,9 @@
                     supplierAddress: UIElements.supplierAddressInput.value.trim(),
                     supplierPhone: UIElements.supplierPhoneInput.value.trim(),
                     stockQuantity: parseInt(UIElements.productQuantityInput.value),
-                    date: new Date().toLocaleDateString('ar-MA'),
-                    quantity: 0,
-                    isLocal: true
+                    date: new Date().toLocaleDateString('ar-MA'), // This is the product creation date, not invoice date
+                    quantity: 0, // Quantity selected for invoice (local only, reset for new product)
+                    isLocal: true // Mark products as locally created/managed
                 };
                 // Save last used supplier info to localStorage
                 localStorage.setItem('supplierName', productData.supplierName);
@@ -2011,7 +2024,6 @@
                 UIElements.saveEditProductButton.style.display = 'none';
                 delete UIElements.saveEditProductButton.dataset.editingId;
                 UI.resetValidationMessages(UIElements.productForm);
-
                 UI.populateAllDatalists();
                 UI.toggleButtonLoading(submitBtn, false);
             },
@@ -2053,11 +2065,11 @@
                 UI.populateAllDatalists();
             },
             deleteProduct: async (id) => {
-                const confirmed = await UI.showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟ سيتم حذفه محلياً. ستتم مزامنة التغييرات عند تحديث الصفحة أو حفظ فاتورة.");
+                const confirmed = await UI.showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟ سيتم حذفه محلياً. لن يتم حذفه من Firebase تلقائياً.");
                 if (confirmed) {
-                    await DataStore.deleteProduct(id);
+                    await DataStore.deleteProduct(id); // This now only deletes locally
                     SalesProducts.displaySavedProducts();
-                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. ستتم مزامنة التغييرات عند تحديث الصفحة أو حفظ فاتورة.", 'success');
+                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية.", 'success'); // Changed message
                     UI.populateAllDatalists();
                 } else {
                     UI.showToast("تم إلغاء حذف المنتج.", 'info');
@@ -2076,7 +2088,7 @@
                 UIElements.savedProductsList.innerHTML = '';
                 const filteredProducts = savedProducts
                     .filter(product => (product.name || '').toLowerCase().includes(searchTerm) ||
-                                       (product.supplierName || '').toLowerCase().includes(searchTerm))
+                                        (product.supplierName || '').toLowerCase().includes(searchTerm))
                     .sort((a, b) => {
                         const statusA = SalesProducts.getProductStatusPriority(a.quantity || 0, a.stockQuantity || 0);
                         const statusB = SalesProducts.getProductStatusPriority(b.quantity || 0, b.stockQuantity || 0);
@@ -2305,8 +2317,8 @@
 
                 currentInvoiceBeingProcessed = {
                     id: Date.now(), // Unique ID for local storage
-                    date: UIElements.invoiceDateInput.value,
-                    isoDate: UIElements.invoiceDateInput.dataset.isoDate,
+                    date: UIElements.invoiceDateInput.value, // Formatted date string for display
+                    isoDate: UIElements.invoiceDateInput.dataset.isoDate, // ISO string for sorting/parsing
                     customerName: UIElements.customerNameInput.value,
                     ownerName: UIElements.invoiceOwnerInput.value,
                     ownerAddress: UIElements.invoiceOwnerAddressInput.value,
@@ -2329,7 +2341,10 @@
                 await UI.showSection(UIElements.invoiceDisplay);
                 UIElements.displayCustomerName.textContent = invoiceData.customerName || 'N/A';
                 UIElements.displayInvoiceOwner.textContent = invoiceData.ownerName || 'N/A';
-                UIElements.displayInvoiceDate.textContent = invoiceData.date || 'N/A';
+                // Display the user-friendly formatted date
+                UIElements.displayInvoiceDate.textContent = invoiceData.date || 'N/A'; 
+                // Set datetime attribute for machine readability (optional, but good practice if you have ISO date)
+                UIElements.displayInvoiceDate.setAttribute('datetime', invoiceData.isoDate || '');
                 UIElements.displayInvoiceOwnerAddress.textContent = invoiceData.ownerAddress || 'N/A';
                 UIElements.displayInvoiceOwnerPhone.textContent = invoiceData.ownerPhone || 'N/A';
                 
@@ -2400,12 +2415,14 @@
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
+
                 const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً ومزامنتها مع Firebase؟");
                 if (!confirmed) {
                     UI.showToast("تم إلغاء تحديث المخزون والحفظ.", 'info');
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
+
                 try {
                     productsToDeduct.forEach(({ productId, quantityUsed }) => {
                         const productIndex = savedProducts.findIndex(p => p.id === productId);
@@ -2492,6 +2509,7 @@
                 const filteredInvoices = allLocalInvoices.filter(invoice => {
                     const customerMatch = (invoice.customerName || '').toLowerCase().includes(searchTerm);
                     const ownerMatch = (invoice.ownerName || '').toLowerCase().includes(searchTerm);
+                    // Search in the display-friendly date format
                     const dateMatch = (invoice.date || '').toLowerCase().includes(searchTerm);
                     const productMatch = (invoice.products && invoice.products.some(p => (p.name || '').toLowerCase().includes(searchTerm)));
                     return customerMatch || ownerMatch || dateMatch || productMatch;
@@ -2504,6 +2522,7 @@
                 } else {
                     UIElements.emptyInvoicesMessage.style.display = 'none';
                 }
+                // Sort by isoDate for accurate chronological order, fall back to date if isoDate is missing
                 filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
                 filteredInvoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
@@ -2570,7 +2589,7 @@
                 if (confirmed) {
                     DataStore.deleteLocalInvoice(invoiceId);
                     LocalArchive.displayLocalInvoices();
-                    UI.showToast("تم حذف الفاتورة بنجاح من الأرشيف المحلي. ستتم مزامنة التغييرات عند تحديث الصفحة أو حفظ فاتورة جديدة.", 'success');
+                    UI.showToast("تم حذف الفاتورة بنجاح من الأرشيف المحلي.", 'success'); // Changed message
                     UI.populateAllDatalists();
                 } else {
                     UI.showToast("تم إلغاء حذف الفاتورة.", 'info');
