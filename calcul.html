@@ -7,8 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
+        xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Root CSS Variables for a modern look */
         :root {
@@ -23,7 +25,6 @@
             --modern-success: #28a745; /* Green for success */
             --modern-warning: #ffc107; /* Yellow for warning */
             --modern-error: #dc3545; /* Red for error */
-
             /* RGB values for dynamic shadows/colors */
             --modern-primary-accent-rgb: 0, 123, 255;
             --modern-success-rgb: 40, 167, 69;
@@ -111,9 +112,14 @@
             border-radius: 8px;
             padding: 1.5rem;
         }
-        
+
         /* Specific accent for duplicates */
         #duplicate-products.card-panel {
+            border-right: 5px solid var(--modern-warning);
+        }
+
+        /* Specific accent for sold products */
+        #sold-products.card-panel {
             border-right: 5px solid var(--modern-warning);
         }
 
@@ -145,6 +151,12 @@
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             border-right: 4px solid var(--modern-primary-accent);
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
 
         .kpi-card-title {
@@ -164,8 +176,15 @@
         .list-item-card {
             background-color: var(--modern-bg-secondary); /* Lighter background for list items */
             border: 1px solid var(--modern-border-light);
+            border-radius: 8px;
+            padding: 1rem; /* Adjusted padding */
             transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
             margin-bottom: 0.75rem; /* Spacing between list items */
+            display: flex; /* Ensure flex for icon and text */
+            align-items: center;
+            gap: 10px; /* Space between icon and text */
+            cursor: pointer;
+            text-align: right; /* RTL alignment */
         }
 
         .list-item-card:hover {
@@ -174,11 +193,31 @@
             border-color: var(--modern-primary-accent);
         }
 
+        .list-item-card .icon-wrapper {
+            flex-shrink: 0; /* Prevent icon from shrinking */
+            font-size: 1.5rem;
+            color: var(--modern-primary-accent);
+            transition: color 0.2s ease-in-out;
+        }
+
+        .list-item-card:hover .icon-wrapper {
+            color: #0056b3; /* Darker blue on hover */
+        }
+
+        .list-item-card .content-wrapper {
+            flex-grow: 1; /* Allow content to take available space */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* Align text to the right */
+        }
+
         /* Custom Scrollbar for lists */
         .custom-scrollbar {
             max-height: 300px; /* Example height */
             overflow-y: auto;
             padding-bottom: 10px; /* Space for scrollbar thumb */
+            padding-left: 10px; /* Space for scrollbar in RTL */
+            padding-right: 0;
         }
 
         .custom-scrollbar::-webkit-scrollbar {
@@ -258,7 +297,7 @@
         .btn-clear-action:hover {
             background-color: #5a6268; /* A darker grey */
         }
-        
+
         .btn-success-action {
             background-color: var(--modern-success);
             color: white;
@@ -320,13 +359,10 @@
 
         .toast-message.success { border-right: 5px solid var(--modern-success); }
         .toast-message.success i { color: var(--modern-success); }
-
         .toast-message.error { border-right: 5px solid var(--modern-error); }
         .toast-message.error i { color: var(--modern-error); }
-
         .toast-message.info { border-right: 5px solid var(--modern-primary-accent); }
         .toast-message.info i { color: var(--modern-primary-accent); }
-
         .toast-message.warning { border-right: 5px solid var(--modern-warning); }
         .toast-message.warning i { color: var(--modern-warning); }
 
@@ -425,7 +461,7 @@
             flex-direction: column;
             gap: 1.5rem;
         }
-        
+
         .invoice-modal-overlay.active .invoice-modal-content {
             transform: translateY(0);
             opacity: 1;
@@ -483,7 +519,7 @@
         .invoice-modal-summary {
             border-top: 2px dashed var(--modern-border-light);
             padding-top: 1.5rem;
-            text-align: left; /* Summary totals often align left for readability, adjust if needed for RTL total */
+            text-align: right; /* Summary totals often align right for RTL */
             direction: rtl; /* Ensure numbers and currency are aligned correctly if mixed with Arabic text */
         }
 
@@ -519,6 +555,7 @@
             body > *:not(.invoice-modal-overlay) {
                 display: none;
             }
+
             .invoice-modal-overlay {
                 position: static; /* Remove fixed positioning for print */
                 background-color: white; /* No overlay background */
@@ -526,6 +563,7 @@
                 opacity: 1;
                 visibility: visible;
             }
+
             .invoice-modal-content {
                 box-shadow: none;
                 max-width: none;
@@ -536,10 +574,12 @@
                 border-radius: 0;
                 overflow: visible;
             }
+
             .invoice-modal-header button,
             .invoice-modal-actions {
                 display: none; /* Hide close and print buttons in print view */
             }
+
             /* Ensure tables and lists print properly without scrollbars */
             .invoice-modal-table-wrapper,
             .custom-scrollbar {
@@ -589,79 +629,89 @@
                 
                 <div class="kpi-card-grid">
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي سعر الشراء</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-money-bill-wave ml-2"></i>إجمالي سعر الشراء</h3>
                         <p id="totalPurchaseCost" class="kpi-value">0.00 DH</p>
                     </div>
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي الأرباح</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-hand-holding-usd ml-2"></i>إجمالي الأرباح</h3>
                         <p id="totalProfit" class="kpi-value">0.00 DH</p>
                     </div>
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي سعر البيع</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-cash-register ml-2"></i>إجمالي سعر البيع</h3>
                         <p id="totalSellingPrice" class="kpi-value">0.00 DH</p>
                     </div>
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي العمولة</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-percent ml-2"></i>إجمالي العمولة</h3>
                         <p id="totalCommission" class="kpi-value">0.00 DH</p>
                     </div>
                     
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي المبيعات (HT)</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-calculator ml-2"></i>إجمالي المبيعات (HT)</h3>
                         <p id="totalSalesHT" class="kpi-value">0.00 DH</p>
                     </div>
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي TVA</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-file-invoice ml-2"></i>إجمالي TVA</h3>
                         <p id="totalTVA" class="kpi-value">0.00 DH</p>
                     </div>
                     <div class="kpi-card">
-                        <h3 class="kpi-card-title">إجمالي المبيعات (TTC)</h3>
+                        <h3 class="kpi-card-title"><i class="fas fa-dollar-sign ml-2"></i>إجمالي المبيعات (TTC)</h3>
                         <p id="totalSalesTTC" class="kpi-value">0.00 DH</p>
                     </div>
                 </div>
 
-                <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- Chart Placeholder - Now with a canvas for Chart.js -->
+                <div class="card-panel p-4 shadow-sm mt-8">
+                    <h3 class="section-title text-modern-primary-accent">
+                        <i class="fas fa-chart-bar"></i> نظرة عامة على الرسوم البيانية
+                    </h3>
+                    <div class="w-full h-80 flex items-center justify-center">
+                        <canvas id="salesChartCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-8">
                     <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title">
+                        <h3 class="card-panel-title section-title text-modern-primary-accent">
                             <i class="fas fa-box-open"></i> المنتجات الأكثر مبيعاً
                         </h3>
-                        <ul id="topSellingProductsList" class="custom-scrollbar space-y-2 pr-2">
+                        <ul id="topSellingProductsList" class="custom-scrollbar space-y-2">
                             <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
                     <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title">
+                        <h3 class="card-panel-title section-title text-modern-primary-accent">
                             <i class="fas fa-user-friends"></i> العملاء الأكثر نشاطاً
                         </h3>
-                        <ul id="topCustomersList" class="custom-scrollbar space-y-2 pr-2">
+                        <ul id="topCustomersList" class="custom-scrollbar space-y-2">
                             <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
                     <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title">
+                        <h3 class="card-panel-title section-title text-modern-primary-accent">
                             <i class="fas fa-file-invoice-dollar"></i> أصحاب الفواتير الأكثر نشاطاً
                         </h3>
-                        <ul id="topInvoiceOwnersList" class="custom-scrollbar space-y-2 pr-2">
+                        <ul id="topInvoiceOwnersList" class="custom-scrollbar space-y-2">
                             <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
                     <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title">
+                        <h3 class="card-panel-title section-title text-modern-primary-accent">
                             <i class="fas fa-truck"></i> الموردون الأكثر نشاطاً
                         </h3>
-                        <ul id="topSuppliersList" class="custom-scrollbar space-y-2 pr-2">
+                        <ul id="topSuppliersList" class="custom-scrollbar space-y-2">
                             <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
                         </ul>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-4 mt-6 search-filter-controls md:flex-row md:items-end md:justify-between">
+                <div class="flex flex-col gap-4 mt-8 search-filter-controls md:flex-row md:items-end md:justify-between">
                     <button type="button" id="clearCommonSearchInput"
                         class="modern-button btn-clear-action w-full md:w-auto md:shrink-0 h-11">
                         <i class="fas fa-times-circle"></i> مسح
                     </button>
                     <input type="text" id="commonSearchInput"
                         class="form-input md:flex-1 h-11"
-                        placeholder="البحث برقم الهاتف، الاسم، أو المنتج" list="allSearchOptions">
+                        placeholder="البحث برقم الهاتف، الاسم، أو المنتج..." list="allSearchOptions">
                     <datalist id="allSearchOptions"></datalist>
                     <label for="commonPhoneDropdown" class="sr-only">تصفية الكل حسب رقم الهاتف</label>
                     <select id="commonPhoneDropdown"
@@ -786,8 +836,6 @@
         <p>&copy; 2024 نظام إدارة الفواتير والمنتجات. جميع الحقوق محفوظة.</p>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script>
         // Tailwind CSS Configuration to extend colors with CSS variables
         tailwind.config = {
@@ -805,9 +853,9 @@
                         'modern-success': 'var(--modern-success)',
                         'modern-warning': 'var(--modern-warning)',
                         'modern-error': 'var(--modern-error)',
-                        'modern-primary-accent-rgb': 'var(--modern-primary-accent-rgb)',
-                        'modern-success-rgb': 'var(--modern-success-rgb)',
-                        'modern-error-rgb': 'var(--modern-error-rgb)',
+                        'modern-primary-accent-rgb': '0, 123, 255', // Use direct RGB values here
+                        'modern-success-rgb': '40, 167, 69',
+                        'modern-error-rgb': '220, 53, 69',
                     },
                 },
             },
@@ -960,6 +1008,7 @@
         }
 
         let UIElements; // Declared here, assigned in window.onload
+        let salesChartInstance; // To store the Chart.js instance
 
         // ====== UI Utility Functions (minimal set for this section) ======
         const UI = {
@@ -1100,14 +1149,12 @@
                 } else {
                     productsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-modern-text-secondary">لا توجد منتجات في هذه الفاتورة.</td></tr>`;
                 }
-
                 document.getElementById('modalTotalAmountBeforeCommission').textContent = parseFloat(invoice.totalHTBeforeCommission || 0).toFixed(2);
                 document.getElementById('modalCommissionDeducted').textContent = parseFloat(invoice.totalCommission || 0).toFixed(2);
                 document.getElementById('modalTotalAmount').textContent = parseFloat(invoice.totalHT || 0).toFixed(2);
                 document.getElementById('modalTVA').textContent = parseFloat(invoice.tva || 0).toFixed(2);
                 document.getElementById('modalTotalTTC').textContent = parseFloat(invoice.totalTTC || 0).toFixed(2);
                 document.getElementById('modalTotalProfit').textContent = parseFloat(invoice.totalProfit || 0).toFixed(2);
-
                 document.getElementById('invoiceDisplayModalOverlay').classList.add('active');
                 document.getElementById('invoiceDisplayModalOverlay').style.visibility = 'visible';
                 document.getElementById('invoiceDisplayModalContent').style.transform = 'translateY(0)';
@@ -1160,17 +1207,14 @@
                         }
                     }
                 });
-
                 document.getElementById('closeInvoiceModalBtn').addEventListener('click', UI.hideInvoiceModal);
                 document.getElementById('printInvoiceModalBtn').addEventListener('click', () => {
                     window.print();
                 });
             },
-
             populatePhoneDropdowns: (phoneNumbers) => {
                 UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
             },
-
             fetchAndDisplayCombinedFirebaseData: async () => {
                 UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
@@ -1212,6 +1256,11 @@
                         FirebaseData.displayStatistics([]);
                         UI.populatePhoneSelect(UIElements.commonPhoneDropdown, new Set()); 
                         UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, [], 'name'); 
+                        // Destroy chart if no data
+                        if (salesChartInstance) {
+                            salesChartInstance.destroy();
+                            salesChartInstance = null;
+                        }
                         return; 
                     }
 
@@ -1250,7 +1299,6 @@
                                             firebasePhoneKey: phoneKey, 
                                             ...invoiceDetails
                                         });
-
                                         // Extract products from invoices with full details
                                         if (invoiceDetails.products && Array.isArray(invoiceDetails.products)) {
                                             invoiceDetails.products.forEach((product) => {
@@ -1306,7 +1354,6 @@
 
                     FirebaseData.applyCombinedFilters(); // Apply filters to display fetched data
                     UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
-
                 } catch (error) {
                     UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
                     console.error("Failed to fetch Firebase data:", error);
@@ -1317,20 +1364,17 @@
                     UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); 
                 }
             },
-
             exportSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
                 if (selectedPhoneNumber === 'all' || !selectedPhoneNumber) {
                     UI.showToast("يرجى اختيار رقم هاتف محدد لتصدير بياناته.", 'warning');
                     return;
                 }
-
                 const confirmed = await UI.showConfirmModal("تأكيد التصدير", `هل أنت متأكد من أنك تريد تصدير جميع بيانات (المنتجات والفواتير) المرتبطة بالهاتف ${selectedPhoneNumber}؟`);
                 if (!confirmed) {
                     UI.showToast("تم إلغاء عملية التصدير.", 'info');
                     return;
                 }
-
                 UI.showToast(`جاري تصدير بيانات الهاتف ${selectedPhoneNumber}...`, 'info');
                 try {
                     const phoneDataRef = database.ref(`${appId}/alldata/${selectedPhoneNumber}`);
@@ -1341,7 +1385,6 @@
                         UI.showToast(`لا توجد بيانات لهذا الهاتف ${selectedPhoneNumber} في Firebase لتصديرها.`, 'warning'); 
                         return;
                     }
-
                     // Map Firebase French keys to local keys for export compatibility with the first app
                     const mappedDataForExport = {};
                     if (dataToExport.inventoryProducts) {
@@ -1354,7 +1397,6 @@
                     } else {
                         mappedDataForExport.invoices = [];
                     }
-
                     const exportDate = new Date().toISOString();
                     const finalExportObject = {
                         metadata: {
@@ -1370,7 +1412,6 @@
                         },
                         ...mappedDataForExport
                     };
-
                     const dataStr = JSON.stringify(finalExportObject, null, 4);
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -1387,20 +1428,17 @@
                     console.error("Error exporting phone data:", error);
                 }
             },
-
             deleteSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
                 if (selectedPhoneNumber === 'all' || !selectedPhoneNumber) {
                     UI.showToast("يرجى اختيار رقم هاتف محدد لحذف بياناته.", 'warning');
                     return;
                 }
-
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف الكلي", `هل أنت متأكد أنك تريد حذف جميع بيانات (المنتجات والفواتير) المرتبطة بالهاتف ${selectedPhoneNumber} من Firebase؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
                     UI.showToast("تم إلغاء عملية الحذف.", 'info');
                     return;
                 }
-
                 UI.showToast(`جاري حذف جميع بيانات الهاتف ${selectedPhoneNumber}...`, 'info');
                 try {
                     const phoneDataRef = database.ref(`${appId}/alldata/${selectedPhoneNumber}`);
@@ -1412,14 +1450,12 @@
                     console.error("Error deleting phone data:", error);
                 }
             },
-
             confirmAndDeleteProduct: async (productId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذا المنتج (ID: ${productId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
                     UI.showToast("تم إلغاء حذف المنتج.", 'info'); 
                     return;
                 }
-
                 UI.showToast("جاري حذف المنتج...", 'info');
                 try {
                     const productRef = database.ref(`${appId}/alldata/${firebasePhoneKey}/inventoryProducts/${productId}`);
@@ -1431,14 +1467,12 @@
                     console.error("Error deleting product:", error);
                 }
             },
-
             confirmAndDeleteInvoice: async (invoiceFirebaseId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذه الفاتورة (ID: ${invoiceFirebaseId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
                     UI.showToast("تم إلغاء حذف الفاتورة.", 'info'); 
                     return;
                 }
-
                 UI.showToast("جاري حذف الفاتورة...", 'info');
                 try {
                     const invoiceRef = database.ref(`${appId}/alldata/${firebasePhoneKey}/invoices/${invoiceFirebaseId}`);
@@ -1450,7 +1484,6 @@
                     console.error("Error deleting invoice:", error);
                 }
             },
-
             applyCombinedFilters: () => {
                 const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
@@ -1523,20 +1556,20 @@
                 filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 filteredDuplicateProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); 
+
                 FirebaseData.displayFirebaseInvoices(filteredInvoices);
                 FirebaseData.displayFirebaseProducts(filteredProducts);
                 FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts);
                 FirebaseData.displayFirebaseDuplicateProducts(filteredDuplicateProducts); 
                 FirebaseData.displayStatistics(filteredInvoices); // Recalculate stats based on filtered invoices
+                FirebaseData.renderSalesChart(filteredInvoices); // Render chart with filtered data
             },
-
             clearAndFilter: () => {
                 UIElements.commonSearchInput.value = '';
                 UIElements.commonPhoneDropdown.value = 'all';
                 FirebaseData.applyCombinedFilters();
                 UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
             },
-
             displayFirebaseInvoices: (invoices) => {
                 const container = UIElements.firebaseInvoicesContainer;
                 container.innerHTML = '';
@@ -1544,7 +1577,6 @@
                     container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>';
                     return;
                 }
-
                 invoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
                     invoiceDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:shadow-md', 'invoice-item-clickable'); 
@@ -1622,7 +1654,6 @@
                     container.appendChild(invoiceDiv);
                 });
             },
-
             displayFirebaseProducts: (products) => {
                 const container = UIElements.firebaseProductsContainer;
                 container.innerHTML = '';
@@ -1654,7 +1685,6 @@
                     container.appendChild(productDiv);
                 });
             },
-
             displayFirebaseInvoiceProducts: (products) => {
                 const container = UIElements.firebaseInvoiceProductsContainer;
                 container.innerHTML = '';
@@ -1689,7 +1719,6 @@
                             formattedInvoiceDate = product.invoiceDate || 'N/A'; 
                         }
                     }
-
                     productDiv.innerHTML = `
                         <p class="text-modern-text-dark"><strong>المنتج:</strong> ${product.name || 'N/A'}</p>
                         <p class="text-modern-text-dark"><strong>الكمية المباعة:</strong> ${product.quantityUsed || 0}</p>
@@ -1703,7 +1732,6 @@
                     container.appendChild(productDiv);
                 });
             },
-
             displayFirebaseDuplicateProducts: (products) => {
                 const container = UIElements.firebaseDuplicateProductsContainer;
                 container.innerHTML = '';
@@ -1733,7 +1761,6 @@
                     container.appendChild(productDiv);
                 });
             },
-
             displayStatistics: (invoices) => {
                 let totalSalesHT = 0;
                 let totalTVA = 0;
@@ -1807,26 +1834,26 @@
                 UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
 
                 // Prepare data for dynamic lists
-                const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue }));
-                const topCustomersData = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalTTC }));
-                const topInvoiceOwnersData = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalProfit }));
+                const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue, icon: 'fas fa-box' }));
+                const topCustomersData = Object.entries(customerActivity).sort(([, a], [, b]) => b.totalTTC - a.totalTTC).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalTTC, icon: 'fas fa-user' }));
+                const topInvoiceOwnersData = Object.entries(invoiceOwnerActivity).sort(([, a], [, b]) => b.totalProfit - a.totalProfit).map(([name, stats]) => ({ name, value: stats.invoiceCount, secondaryValue: stats.totalProfit, icon: 'fas fa-id-badge' }));
                 const topSuppliersData = Object.entries(supplierActivity)
                     .sort(([, a], [, b]) => b.totalPurchaseCost - a.totalPurchaseCost)
-                    .map(([name, stats]) => ({ name, value: stats.totalPurchaseCost, secondaryValue: stats.productsCount }));
+                    .map(([name, stats]) => ({ name, value: stats.totalPurchaseCost, secondaryValue: stats.productsCount, icon: 'fas fa-truck-moving' }));
 
                 // Render dynamic lists
-                FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`);
-                FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`);
-                FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} د.م.`);
+                FirebaseData.renderSimpleList(UIElements.topSellingProductsList, topSellingProductsData, (item) => item.name, (item) => `الكمية: ${item.value} وحدة - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-box');
+                FirebaseData.renderSimpleList(UIElements.topCustomersList, topCustomersData, (item) => item.name, (item) => `فواتير: ${item.value} - الإجمالي: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-user');
+                FirebaseData.renderSimpleList(UIElements.topInvoiceOwnersList, topInvoiceOwnersData, (item) => item.name, (item) => `فواتير: ${item.value} - الربح: ${item.secondaryValue.toFixed(2)} د.م.`, 'fas fa-id-badge');
                 FirebaseData.renderSimpleList(
                     UIElements.topSuppliersList,
                     topSuppliersData,
                     (item) => item.name,
-                    (item) => `قيمة المشتريات: ${item.value.toFixed(2)} د.م. - عدد المنتجات: ${item.secondaryValue}`
+                    (item) => `قيمة المشتريات: ${item.value.toFixed(2)} د.م. - عدد المنتجات: ${item.secondaryValue}`,
+                    'fas fa-truck-moving'
                 );
             },
-
-            renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn) => {
+            renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn, iconClass) => {
                 listEl.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(item => {
@@ -1837,7 +1864,10 @@
                             'group' 
                         );
                         li.innerHTML = `
-                            <div class="flex-grow flex flex-col items-end">
+                            <div class="icon-wrapper">
+                                <i class="${iconClass}"></i>
+                            </div>
+                            <div class="content-wrapper">
                                 <span class="font-bold text-modern-primary-accent text-base mb-1 group-hover:text-modern-primary-accent transition-colors duration-200">${primaryTextFn(item)}</span>
                                 <span class="text-modern-text-dark text-sm">${secondaryTextFn(item)}</span>
                             </div>
@@ -1855,6 +1885,104 @@
                     listEl.classList.remove('has-more-items');
                 }
             },
+            renderSalesChart: (invoices) => {
+                const ctx = document.getElementById('salesChartCanvas').getContext('2d');
+
+                // Destroy existing chart instance if it exists
+                if (salesChartInstance) {
+                    salesChartInstance.destroy();
+                }
+
+                // Aggregate sales data by month
+                const monthlySales = {};
+                invoices.forEach(invoice => {
+                    if (invoice.isoDate) {
+                        const date = new Date(invoice.isoDate);
+                        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`; // YYYY-MM
+                        monthlySales[monthYear] = (monthlySales[monthYear] || 0) + parseFloat(invoice.totalTTC || 0);
+                    }
+                });
+
+                // Sort months chronologically
+                const labels = Object.keys(monthlySales).sort();
+                const data = labels.map(month => monthlySales[month]);
+
+                // Convert month-year labels to Arabic month names
+                const arabicMonthLabels = labels.map(label => {
+                    const [year, monthNum] = label.split('-');
+                    const date = new Date(year, parseInt(monthNum) - 1, 1);
+                    return date.toLocaleDateString('ar-MA', { month: 'long', year: 'numeric' });
+                });
+
+                salesChartInstance = new Chart(ctx, {
+                    type: 'bar', // Can be 'line', 'pie', 'doughnut', etc.
+                    data: {
+                        labels: arabicMonthLabels,
+                        datasets: [{
+                            label: 'إجمالي المبيعات (TTC) بالدرهم المغربي',
+                            data: data,
+                            backgroundColor: 'rgba(0, 123, 255, 0.6)', // modern-primary-accent with opacity
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Allow chart to fill container
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        family: 'Cairo, Inter, sans-serif'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                rtl: true, // Enable RTL for tooltips
+                                titleFont: {
+                                    family: 'Cairo, Inter, sans-serif'
+                                },
+                                bodyFont: {
+                                    family: 'Cairo, Inter, sans-serif'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'المبلغ (درهم مغربي)',
+                                    font: {
+                                        family: 'Cairo, Inter, sans-serif'
+                                    }
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Cairo, Inter, sans-serif'
+                                    }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'الشهر',
+                                    font: {
+                                        family: 'Cairo, Inter, sans-serif'
+                                    }
+                                },
+                                ticks: {
+                                    font: {
+                                        family: 'Cairo, Inter, sans-serif'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         };
 
         // ====== Initialization on Window Load for this section ======
