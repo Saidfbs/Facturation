@@ -1613,6 +1613,7 @@
                 }
                 products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                 DataStore.setSavedProducts(products);
+                // UPDATED: Simplified message for local save
                 UI.showToast(isEditing ? "تم تحديث المنتج وحفظه محلياً بنجاح." : "تم إضافة المنتج وحفظه محلياً بنجاح.", 'success');
             },
             // MODIFICATION HERE: Removed Firebase deletion from local product deletion
@@ -1622,8 +1623,8 @@
                 if (productToDelete) {
                     products = products.filter(product => product.id !== id);
                     DataStore.setSavedProducts(products);
-                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. (لن يتم حذفه من Firebase تلقائياً)", 'success');
-                    // Removed: await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
+                    // UPDATED: Simplified message for local delete
+                    UI.showToast("تم حذف المنتج بنجاح.", 'success');
                 }
             },
             updateProductStock: (id, newStockQuantity) => {
@@ -1661,14 +1662,12 @@
                     if (productDiv) {
                         UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity || 0, products[index].minStockQuantity || 0);
                     }
-                    // UI.updateProductCountInCart(); // Removed this, as count is now for all saved products
                 }
             },
             resetAllProductQuantities: () => {
                 let products = DataStore.getSavedProducts();
                 products.forEach(product => { product.quantity = 0; });
                 DataStore.setSavedProducts(products);
-                // UI.updateProductCountInCart(); // Removed this, as count is now for all saved products
             },
             saveInvoiceToLocal: (invoiceData) => {
                 try {
@@ -1816,19 +1815,19 @@
                 }
 
                 // --- Sync Products ---
-                UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
+                UI.showToast("جاري مزامنة المنتجات المحلية ...", 'info');
                 const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
                 if (productsSyncedCount > 0) {
-                    UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase بنجاح.`, 'success');
+                    UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج بنجاح.`, 'success');
                 } else {
                     // UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info'); // Avoid too many toasts on initial load
                 }
 
                 // --- Sync Invoices ---
-                UI.showToast("جاري مزامنة الفواتير المحلية مع Firebase...", 'info');
+                UI.showToast("جاري مزامنة الفواتير المحلية ...", 'info');
                 const invoicesSyncedCount = await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhoneForSync);
                 if (invoicesSyncedCount > 0) {
-                    UI.showToast(`تمت مزامنة ${invoicesSyncedCount} فاتورة محلية مع Firebase.`, 'success');
+                    UI.showToast(`تمت مزامنة ${invoicesSyncedCount} فاتورة بنجاح.`, 'success');
                 } else {
                     // UI.showToast("لا توجد فواتير جديدة لمزامنتها مع Firebase تحت رقم المالك الحالي.", 'info'); // Avoid too many toasts on initial load
                 }
@@ -1934,9 +1933,8 @@
                         LocalArchive.displayLocalInvoices();
                         UI.populateAllDatalists();
                         DataStore.loadFormDefaults(); // Reload form with potentially new defaults
-                        UI.showToast("تم استيراد البيانات بنجاح. سيتم الآن مزامنتها مع Firebase عند تحديث الصفحة.", 'success');
-                        // No explicit Firebase sync after import, it will happen on next page load
-                        // await FirebaseSync.syncAllLocalDataToFirebaseOnLoad(); 
+                        // UPDATED: Simplified message for import
+                        UI.showToast("تم استيراد البيانات بنجاح.", 'success');
                         UIElements.importDataInput.value = ''; 
                     } catch (parseError) {
                         console.error("Error parsing JSON file:", parseError);
@@ -2123,11 +2121,10 @@
                 UI.populateAllDatalists();
             },
             deleteProduct: async (id) => {
-                const confirmed = await UI.showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟ سيتم حذفه محلياً. لن يتم حذفه من Firebase تلقائياً.");
+                const confirmed = await UI.showConfirmModal("تأكيد الحذف", "هل أنت متأكد من أنك تريد مسح هذا المنتج؟ سيتم حذفه محلياً.");
                 if (confirmed) {
                     await DataStore.deleteProduct(id); // This now only deletes locally
                     SalesProducts.displaySavedProducts();
-                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. (لن يتم حذفه من Firebase تلقائياً)", 'success'); // Changed message
                     UI.populateAllDatalists();
                     UI.updateProductCountInCart(); // Update product count in cart
                 } else {
@@ -2458,7 +2455,7 @@
                 // Re-check invoice owner phone validity before saving to Firebase
                 const ownerPhone = UIElements.invoiceOwnerPhoneInput.value.trim();
                 if (!ownerPhone || !Validation.checkPhoneFormat(ownerPhone)) {
-                    UI.showToast("يرجى ملء حقل 'هاتف مالك الفاتورة' بشكل صحيح قبل حفظ الفاتورة على Firebase.", 'error');
+                    UI.showToast("يرجى ملء حقل 'هاتف مالك الفاتورة' بشكل صحيح قبل حفظ الفاتورة.", 'error');
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
@@ -2488,7 +2485,7 @@
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
-                const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً؟ (سيتم مزامنة البيانات مع Firebase عند تحديث الصفحة).");
+                const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً؟");
                 if (!confirmed) {
                     UI.showToast("تم إلغاء تحديث المخزون والحفظ.", 'info');
                     UI.toggleButtonLoading(this, false);
@@ -2506,12 +2503,9 @@
                     DataStore.setSavedProducts(savedProducts);
                     SalesProducts.displaySavedProducts();
                     DataStore.saveInvoiceToLocal(currentInvoiceBeingProcessed);
+                    // UPDATED: Simplified message for stock update and local invoice save
                     UI.showToast("تم تحديث المخزون وحفظ الفاتورة محلياً بنجاح.", 'success');
                     
-                    // Removed: Individual Firebase invoice sync. Now only on page load.
-                    // await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhone); 
-                    // UI.showToast("تمت مزامنة الفواتير مع Firebase بنجاح.", 'success');
-
                     currentInvoiceBeingProcessed = null;
                     isNewInvoice = false;
                     Navigation.handleNavClick({ target: UIElements.desktopNavButtons[0] }); // Go back to dashboard
@@ -2776,7 +2770,7 @@
             const hasData = DataStore.getSavedProducts().length > 0 || JSON.parse(localStorage.getItem('localInvoices') || '[]').length > 0;
             if (hasData) {
                 UI.showToast(
-                    "تنبيه: يتم حفظ بياناتك محلياً في متصفحك. مسح بيانات المتصفح سيؤدي إلى فقدانها. استخدم خاصية 'تصدير البيانات (JSON)' لعمل نسخة احتياطية.",
+                    "تنبيه: استخدم خاصية 'تصدير البيانات (JSON)' لعمل نسخة احتياطية.",
                     'warning'
                 );
             }
