@@ -13,17 +13,25 @@
         /* Modern & Clean Color Palette */
         :root {
             --modern-bg-primary: #f8fafc; /* light blue-gray for main background */
-            --modern-card-bg: #ffffff;   /* pure white for cards */
+            --modern-card-bg: #ffffff;    /* pure white for cards */
             --modern-primary-accent: #4f46e5; /* Indigo 600 */
             --modern-secondary-accent: #e0e7ff; /* Indigo 100 */
             --modern-text-dark: #1f2937;  /* Gray 800 */
             --modern-text-secondary: #6b7280; /* Gray 500 */
             --modern-border-light: #e5e7eb; /* Gray 200 */
-            --modern-success: #22c55e;   /* Green 500 */
-            --modern-warning: #f59e0b;   /* Yellow 500 */
-            --modern-error: #ef4444;     /* Red 500 */
+            --modern-success: #22c55e;    /* Green 500 */
+            --modern-warning: #f59e0b;    /* Yellow 500 */
+            --modern-error: #ef4444;      /* Red 500 */
+            --modern-alert: #f59e0b; /* Orange for alerts/low stock */
+
+            /* New: Light background colors for card status */
+            --modern-bg-light-red: #fee2e2;    /* Red 100 */
+            --modern-bg-light-green: #dcfce7;  /* Green 100 */
+            --modern-bg-light-orange: #fffbe0; /* Yellow 100 */
+            --modern-bg-light-blue: #e0e7ff;   /* Indigo 100 (same as modern-secondary-accent) */
+
             /* RGB values for focus rings */
-            --modern-primary-accent-rgb: 79, 70, 229; /* Indigo 600 RGB */
+            --modern-primary-accent-rgb: 79, 70, 229;
             --modern-success-rgb: 34, 197, 94; 
             --modern-error-rgb: 239, 68, 68;
         }
@@ -460,28 +468,39 @@
             margin-top: 1.8rem;
         }
         .product-card-item {
-            background-color: var(--modern-card-bg); /* White background */
-            border: 1px solid var(--modern-border-light);
+            background-color: var(--modern-card-bg); /* Default white background */
+            border: 1px solid var(--modern-border-light); /* Default light border */
             border-radius: 0.75rem; /* Rounded corners */
             padding: 1.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; /* Added border-color to transition */
         }
         .product-card-item:hover {
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
-        .product-card-item.status-insufficient {
-            border-color: var(--modern-error);
+        /* UPDATED: Product card status backgrounds */
+        .product-card-item.status-insufficient { /* Quantity ordered > stock */
+            background-color: var(--modern-bg-light-red);
+            border-color: var(--modern-error); /* Keep a strong border for this critical state */
         }
-        .product-card-item.status-selected-sufficient {
-            border-color: var(--modern-success); /* Green for selected */
+        .product-card-item.status-selected-sufficient { /* Quantity ordered > 0 and <= stock */
+            background-color: var(--modern-bg-light-green);
+            border-color: var(--modern-success);
         }
-        .product-card-item.status-stock-positive {
-            border-color: var(--modern-primary-accent); /* Primary accent for in stock */
+        .product-card-item.status-low-stock { /* Stock <= minStock, and not selected or selected quantity is fine */
+            background-color: var(--modern-bg-light-orange);
+            border-color: var(--modern-alert);
         }
+        .product-card-item.status-stock-positive { /* Stock > 0 and > minStock, not selected */
+            background-color: var(--modern-bg-light-blue);
+            border-color: var(--modern-primary-accent);
+        }
+        /* Default: background-color: var(--modern-card-bg); border-color: var(--modern-border-light); */
+
+
         .product-info p, .supplier-info p {
             margin: 0.3rem 0;
             color: var(--modern-text-secondary);
@@ -507,11 +526,11 @@
             font-size: 1rem;
             background-color: var(--modern-card-bg); /* White */
         }
+        /* No qty-adjust-btn specific styles needed for minStockQuantityInput anymore if removed */
         .qty-adjust-btn {
             background-color: var(--modern-secondary-accent); /* Light accent background */
             border: 1px solid var(--modern-border-light);
             color: var(--modern-text-dark); /* Dark text */
-            /* Removed fixed width and height */
             border-radius: 0.5rem; /* Rounded corners */
             display: flex;
             justify-content: center;
@@ -725,7 +744,7 @@
             }
             .app-header, #toast-container, .modal-overlay, .invoice-actions-footer, .nav-data-management-links,
             .view-section:not(.active), .search-bar-container, .product-actions-footer,
-            .card-panel-title .fas, #dataManagementButtons { /* Hide more elements for print, including new data management buttons */
+            .card-panel-title .fas, #dataManagementButtons, #selectedProductCountContainer { /* Added #selectedProductCountContainer */
                 display: none !important;
             }
             .app-container {
@@ -794,7 +813,7 @@
                         <i class="fas fa-archive"></i> أرشيف الفواتير
                     </button>
                 </div>
-                </div>
+            </div>
         </div>
     </header>
     <div id="toast-container"></div>
@@ -826,6 +845,11 @@
                                 class="form-input" min="0" step="0.01">
                             <span class="validation-message"></span>
                         </div>
+                         <div class="form-group">
+                            <label for="minStockQuantity" class="form-label">الحد الأدنى للمخزون (للتنبيه):</label>
+                            <input type="number" id="minStockQuantity" placeholder="الحد الأدنى للمخزون" value="0" min="0" class="form-input">
+                            <span class="validation-message"></span>
+                        </div>
                         <div class="form-group">
                             <label for="supplierName" class="form-label required">اسم المورد:</label>
                             <input type="text" id="supplierName" required placeholder="أدخل اسم المورد"
@@ -842,7 +866,7 @@
                         <div class="form-group">
                             <label for="supplierPhone" class="form-label required">هاتف المورد:</label>
                             <input type="tel" id="supplierPhone" required placeholder="مثال: 0612345678" autocomplete="tel"
-                                pattern="[0-9]{10}" inputmode="numeric" class="form-input" list="supplierPhones">
+                                pattern="^0[0-9]{9}$" inputmode="numeric" class="form-input" list="supplierPhones">
                             <span class="validation-message"></span>
                         </div>
                         <div class="form-group">
@@ -857,6 +881,9 @@
                             <button type="submit" class="modern-button btn-warning-action" id="saveEditProduct" style="display: none;">
                                 <i class="fas fa-edit btn-icon"></i> تعديل المنتج
                                 <span class="loader-inline"></span>
+                            </button>
+                            <button type="button" class="modern-button btn-secondary-action" id="cancelEditProduct" style="display: none;">
+                                <i class="fas fa-times-circle btn-icon"></i> إلغاء التعديل
                             </button>
                         </div>
                     </form>
@@ -878,6 +905,11 @@
                             <span class="validation-message"></span>
                         </div>
                         <div class="form-group">
+                            <label for="companyName" class="form-label">اسم الشركة:</label>
+                            <input type="text" id="companyName" placeholder="أدخل اسم الشركة (اختياري)" autocomplete="on"
+                                class="form-input" list="companyNames">
+                        </div>
+                        <div class="form-group">
                             <label for="invoiceOwner" class="form-label required">اسم مالك الفاتورة:</label>
                             <input type="text" id="invoiceOwner" required placeholder="أدخل اسم مالك الفاتورة"
                                 autocomplete="on" class="form-input" list="invoiceOwners">
@@ -893,7 +925,7 @@
                         <div class="form-group">
                             <label for="invoiceOwnerPhone" class="form-label required">هاتف مالك الفاتورة:</label>
                             <input type="tel" id="invoiceOwnerPhone" required placeholder="مثال: 0612345678"
-                                autocomplete="tel" pattern="[0-9]{10}" inputmode="numeric" class="form-input" list="invoiceOwnerPhones">
+                                autocomplete="tel" pattern="^0[0-9]{9}$" inputmode="numeric" class="form-input" list="invoiceOwnerPhones">
                             <span class="validation-message"></span>
                         </div>
                         <div class="form-group">
@@ -917,7 +949,6 @@
                 </div>
             </div>
             
-            
             <div id="dataManagementButtons" class="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-center mt-8 p-4 bg-modern-card-bg rounded-xl shadow-md border border-modern-border-light">
                 <button type="button" class="modern-button" id="exportDataBtn">
                     <i class="fas fa-download"></i> تصدير (JSON)
@@ -928,11 +959,12 @@
                 </button>
             </div>
             
-            
             <div class="card-panel mt-8" id="savedProductsDisplay">
                 <h2 class="card-panel-title">
-                    <i class="fas fa-shopping-cart"></i> المنتجات المحفوظة (سلة الفاتورة)
+                    <i class="fas fa-shopping-cart"></i> المنتجات المحفوظة (المخزون)
                 </h2>
+                <p class="text-modern-text-dark text-lg mb-4 text-center" id="selectedProductCountContainer">المنتجات المحفوظة: <strong id="selectedProductCount">0</strong></p>
+
                 <div class="search-bar-container">
                     <input type="text" id="searchProduct" class="form-input search-input" placeholder="البحث عن منتج...">
                     <button class="clear-search-button" id="clearSearchProductBtn" hidden>
@@ -958,6 +990,7 @@
                     <h2 class="card-panel-title"> <i class="fas fa-user"></i> تفاصيل الفاتورة </h2>
                     <p><strong>العميل:</strong> <span id="displayCustomerName"></span></p>
                     <p><strong>التاريخ:</strong> <time datetime="" id="displayInvoiceDate"></time></p>
+                    <p><strong>اسم الشركة:</strong> <span id="displayCompanyName"></span></p>
                     <p><strong>المالك:</strong> <span id="displayInvoiceOwner"></span></p>
                     <p><strong>عنوان المالك:</strong> <span id="displayInvoiceOwnerAddress"></span></p>
                     <p><strong>هاتف المالك:</strong> <span id="displayInvoiceOwnerPhone"></span></p>
@@ -1062,7 +1095,7 @@
     <datalist id="invoiceOwners"></datalist>
     <datalist id="invoiceOwnerAddresses"></datalist>
     <datalist id="invoiceOwnerPhones"></datalist>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <datalist id="companyNames"></datalist> <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script>
         // Tailwind CSS Configuration to extend colors with CSS variables
@@ -1080,13 +1113,23 @@
                         'modern-success': 'var(--modern-success)',
                         'modern-warning': 'var(--modern-warning)',
                         'modern-error': 'var(--modern-error)',
-                        'modern-primary-accent-rgb': '79, 70, 229', // Directly using RGB values here
+                        'modern-alert': 'var(--modern-alert)', // New: alert color
+
+                        // New: Light background colors for card status
+                        'modern-bg-light-red': 'var(--modern-bg-light-red)',
+                        'modern-bg-light-green': 'var(--modern-bg-light-green)',
+                        'modern-bg-light-orange': 'var(--modern-bg-light-orange)',
+                        'modern-bg-light-blue': 'var(--modern-bg-light-blue)',
+
+                        /* RGB values for focus rings */
+                        'modern-primary-accent-rgb': '79, 70, 229',
                         'modern-success-rgb': '34, 197, 94', 
                         'modern-error-rgb': '239, 68, 68',
                     },
                 },
             },
         };
+
         // ====== UI Elements References ======
         const UIElements = {
             // Main Layout & Navigation
@@ -1105,21 +1148,25 @@
             productNameInput: document.getElementById('productName'),
             purchasePriceInput: document.getElementById('purchasePrice'),
             sellingPriceInput: document.getElementById('sellingPrice'),
+            minStockQuantityInput: document.getElementById('minStockQuantity'), // min stock input
             supplierNameInput: document.getElementById('supplierName'),
             supplierAddressInput: document.getElementById('supplierAddress'),
             supplierPhoneInput: document.getElementById('supplierPhone'),
             productQuantityInput: document.getElementById('productQuantity'),
             addProductButton: document.getElementById('addProduct'),
             saveEditProductButton: document.getElementById('saveEditProduct'),
+            cancelEditProductButton: document.getElementById('cancelEditProduct'),
             savedProductsList: document.getElementById('savedProductsList'),
             searchProductInput: document.getElementById('searchProduct'),
             clearSearchProductBtn: document.getElementById('clearSearchProductBtn'),
             savedProductsLoader: document.getElementById('savedProductsLoader'),
             emptyProductsMessage: document.getElementById('emptyProductsMessage'),
+            selectedProductCountSpan: document.getElementById('selectedProductCount'), // product count span for ALL saved products
             // Invoice Form
             invoiceForm: document.getElementById('invoiceForm'),
             clientFormContainer: document.getElementById('clientFormContainer'),
             customerNameInput: document.getElementById('customerName'),
+            companyNameInput: document.getElementById('companyName'), // Company Name input
             invoiceOwnerInput: document.getElementById('invoiceOwner'),
             invoiceOwnerPhoneInput: document.getElementById('invoiceOwnerPhone'),
             invoiceOwnerAddressInput: document.getElementById('invoiceOwnerAddress'),
@@ -1132,6 +1179,7 @@
             cancelInvoiceButton: document.getElementById('cancelInvoiceButton'),
             // Invoice Display Elements
             displayCustomerName: document.getElementById('displayCustomerName'),
+            displayCompanyName: document.getElementById('displayCompanyName'), // Company Name display
             displayInvoiceOwner: document.getElementById('displayInvoiceOwner'),
             displayInvoiceDate: document.getElementById('displayInvoiceDate'),
             displayInvoiceOwnerAddress: document.getElementById('displayInvoiceOwnerAddress'),
@@ -1141,7 +1189,6 @@
             displayTotalAmount: document.getElementById('displayTotalAmount'),
             displayTVA: document.getElementById('displayTVA'),
             displayTotalTTC: document.getElementById('displayTotalTTC'),
-            // displayTotalProfit: document.getElementById('displayTotalProfit'), // Removed from HTML
             displayDetails: document.getElementById('displayDetails'),
             // Local Archive
             localInvoicesList: document.getElementById('localInvoicesList'),
@@ -1149,7 +1196,7 @@
             clearSearchLocalInvoiceBtn: document.getElementById('clearSearchLocalInvoiceBtn'),
             localArchiveLoader: document.getElementById('localArchiveLoader'),
             emptyInvoicesMessage: document.getElementById('emptyInvoicesMessage'),
-            // Data Management (Export/Import) - Now in a new div
+            // Data Management (Export/Import)
             exportDataBtn: document.getElementById('exportDataBtn'),
             importDataInput: document.getElementById('importDataInput'),
             importDataBtn: document.getElementById('importDataBtn'),
@@ -1159,6 +1206,7 @@
             supplierAddressesDatalist: document.getElementById('supplierAddresses'),
             supplierPhonesDatalist: document.getElementById('supplierPhones'),
             customerNamesDatalist: document.getElementById('customerNames'),
+            companyNamesDatalist: document.getElementById('companyNames'), // Datalist for Company Names
             invoiceOwnersDatalist: document.getElementById('invoiceOwners'),
             invoiceOwnerAddressesDatalist: document.getElementById('invoiceOwnerAddresses'),
             invoiceOwnerPhonesDatalist: document.getElementById('invoiceOwnerPhones'),
@@ -1171,11 +1219,13 @@
             confirmYesBtn: document.getElementById('confirm-yes-btn'),
             confirmNoBtn: document.getElementById('confirm-no-btn'),
         };
+
         // Global Data Stores
         let allLocalInvoices = [];
         let currentInvoiceBeingProcessed = null;
         let isNewInvoice = false;
         let isTransitioning = false;
+
         // Firebase Configuration (Replace with your actual Firebase config)
         // IMPORTANT: In a Canvas environment, __firebase_config and __app_id are provided globally.
         // For local testing, you can hardcode your Firebase config here.
@@ -1195,17 +1245,21 @@
             console.error("Firebase initialization failed:", e);
             UI.showToast("فشل تهيئة Firebase. قد لا تعمل ميزات حفظ البيانات السحابية.", 'error');
         }
+
         // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
+        // This mapping ensures that local storage keys (Arabic/English friendly)
+        // are translated to Firebase keys (French friendly) and vice-versa.
         const KEY_MAPPING_TO_FIREBASE = {
             id: 'id',
             name: 'nom',
             purchasePrice: 'prixAchat',
             sellingPrice: 'prixVente',
+            minStockQuantity: 'quantiteMinimaleStock', // New: min stock
             supplierName: 'nomFournisseur',
             supplierAddress: 'adresseFournisseur',
-            supplierPhone: 'telephoneFournisseur', // Keep this for product data but will be overridden for path
+            supplierPhone: 'telephoneFournisseur',
             stockQuantity: 'quantiteStock',
-            date: 'dateCreationProduit', // This is for product creation date, not invoice date
+            date: 'dateCreationProduit',
             quantity: 'quantiteSelectionnee', // Quantity selected for invoice (local only)
             isLocal: 'estLocal', // To indicate if product was created locally
             // Invoice Keys
@@ -1213,6 +1267,7 @@
             invoiceDate: 'dateFacture', // Human-readable date
             isoDate: 'dateIsoFacture', // ISO format for consistent sorting/storage
             customerName: 'nomClient',
+            companyName: 'nomSociete', // New: company name
             ownerName: 'nomProprietaire',
             ownerAddress: 'adresseProprietaire',
             ownerPhone: 'telephoneProprietaire',
@@ -1226,10 +1281,12 @@
             invoiceCommissionRate: 'tauxCommissionFacture',
             quantityUsed: 'quantiteUtilisee' // Quantity actually used in invoice
         };
+
         const KEY_MAPPING_FROM_FIREBASE = {};
         for (const localKey in KEY_MAPPING_TO_FIREBASE) {
             KEY_MAPPING_FROM_FIREBASE[KEY_MAPPING_TO_FIREBASE[localKey]] = localKey;
         }
+
         function mapToFirebaseKeys(obj) {
             const newObj = {};
             for (const key in obj) {
@@ -1251,6 +1308,7 @@
             }
             return newObj;
         }
+
         function mapFromFirebaseKeys(fbObj) {
             if (fbObj === null || typeof fbObj !== 'object') {
                 return fbObj;
@@ -1276,6 +1334,7 @@
             }
             return newObj;
         }
+
         // ====== UI Utility Functions ======
         const UI = {
             confirmResolve: null,
@@ -1435,17 +1494,39 @@
                     loaderElement.classList.toggle('active', isLoading);
                 }
             },
-            // Updates the CSS class of a product card based on its quantity and stock
-            updateProductCardClass: (productDiv, quantitySelected, stockQuantity) => {
-                productDiv.classList.remove('status-insufficient', 'status-selected-sufficient', 'status-stock-positive');
+            // UPDATED: Updates the CSS class (background color) of a product card based on its quantity and stock
+            updateProductCardClass: (productDiv, quantitySelected, stockQuantity, minStockQuantity) => {
+                // Reset all status classes first
+                productDiv.classList.remove('status-insufficient', 'status-selected-sufficient', 'status-stock-positive', 'status-low-stock');
+                productDiv.style.backgroundColor = 'var(--modern-card-bg)'; // Default white background
+                productDiv.style.borderColor = 'var(--modern-border-light)'; // Default light border
+                
                 if (quantitySelected > 0 && stockQuantity < quantitySelected) {
+                    // Highest priority: Insufficient stock for selected quantity (Red background)
                     productDiv.classList.add('status-insufficient');
+                    productDiv.style.backgroundColor = 'var(--modern-bg-light-red)';
+                    productDiv.style.borderColor = 'var(--modern-error)'; 
                 } else if (quantitySelected > 0) {
+                    // Second highest: Selected quantity is available (Green background)
                     productDiv.classList.add('status-selected-sufficient');
-                } else if (stockQuantity <= 0) {
-                    // No specific class, default border
+                    productDiv.style.backgroundColor = 'var(--modern-bg-light-green)';
+                    productDiv.style.borderColor = 'var(--modern-success)';
+                } else if (stockQuantity <= 0 && quantitySelected === 0) {
+                    // Third highest: Out of stock (0 or less) and not selected. 
+                    // Let it fall through to default if no specific out-of-stock-not-selected color desired.
+                    // For now, it will revert to default.
+                    productDiv.style.backgroundColor = 'var(--modern-card-bg)'; 
+                    productDiv.style.borderColor = 'var(--modern-border-light)';
+                } else if (stockQuantity <= minStockQuantity) {
+                    // Fourth highest: Low stock (above 0 but below min) and not selected or selected is fine (Orange background)
+                    productDiv.classList.add('status-low-stock');
+                    productDiv.style.backgroundColor = 'var(--modern-bg-light-orange)';
+                    productDiv.style.borderColor = 'var(--modern-alert)';
                 } else {
+                    // Default: Healthy stock (above min and > 0) and not selected or selected is fine (Blue background)
                     productDiv.classList.add('status-stock-positive');
+                    productDiv.style.backgroundColor = 'var(--modern-bg-light-blue)';
+                    productDiv.style.borderColor = 'var(--modern-primary-accent)';
                 }
             },
             // Populates a datalist with unique values from an array of objects
@@ -1473,6 +1554,7 @@
                 
                 const allInvoiceRelatedData = [...allLocalInvoices];
                 UI.populateUniqueDatalist(UIElements.customerNamesDatalist, allInvoiceRelatedData, 'customerName');
+                UI.populateUniqueDatalist(UIElements.companyNamesDatalist, allInvoiceRelatedData, 'companyName'); // Company Names Datalist
                 UI.populateUniqueDatalist(UIElements.invoiceOwnersDatalist, allInvoiceRelatedData, 'ownerName');
                 UI.populateUniqueDatalist(UIElements.invoiceOwnerAddressesDatalist, allInvoiceRelatedData, 'ownerAddress');
                 UI.populateUniqueDatalist(UIElements.invoiceOwnerPhonesDatalist, allInvoiceRelatedData, 'ownerPhone');
@@ -1480,6 +1562,7 @@
                 const localInvoiceSearchValues = new Set();
                 allLocalInvoices.forEach(invoice => {
                     localInvoiceSearchValues.add(invoice.customerName || '');
+                    localInvoiceSearchValues.add(invoice.companyName || ''); // Add company name to search options
                     localInvoiceSearchValues.add(invoice.ownerName || '');
                     localInvoiceSearchValues.add(invoice.date || '');
                     if (invoice.products) {
@@ -1498,8 +1581,14 @@
                         UIElements.localInvoiceSearchOptionsDatalist.appendChild(option);
                     }
                 });
+            },
+            // UPDATED: Update the count of ALL saved products
+            updateProductCountInCart: () => {
+                const allSavedProducts = DataStore.getSavedProducts();
+                UIElements.selectedProductCountSpan.textContent = allSavedProducts.length;
             }
         };
+
         // ====== Data Storage & Manipulation (Local Storage) ======
         const DataStore = {
             getSavedProducts: () => {
@@ -1534,16 +1623,7 @@
                     products = products.filter(product => product.id !== id);
                     DataStore.setSavedProducts(products);
                     UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. (لن يتم حذفه من Firebase تلقائياً)", 'success');
-                    
-                    // --- REMOVED: This line would delete from Firebase immediately.
-                    // If you want a soft delete or manual sync, this should NOT be here.
-                    // const ownerPhone = localStorage.getItem('invoiceOwnerPhone');
-                    // if (ownerPhone && Validation.checkPhoneFormat(ownerPhone)) {
-                    //    await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
-                    // } else {
-                    //    console.warn("No valid owner phone found to delete product from Firebase.");
-                    // }
-                    // --- END REMOVED ---
+                    // Removed: await FirebaseSync.deleteProductFromFirebase(id, ownerPhone);
                 }
             },
             updateProductStock: (id, newStockQuantity) => {
@@ -1554,7 +1634,20 @@
                     DataStore.setSavedProducts(products);
                     const productDiv = UIElements.savedProductsList.querySelector(`.product-card-item[data-id="${id}"]`);
                     if (productDiv) {
-                        UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity);
+                        UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity, products[index].minStockQuantity || 0);
+                    }
+                }
+            },
+            // NEW: Update product's min stock quantity
+            updateProductMinStock: (id, newMinStockQuantity) => {
+                let products = DataStore.getSavedProducts();
+                const index = products.findIndex(product => product.id === id);
+                if (index !== -1) {
+                    products[index].minStockQuantity = Math.max(0, newMinStockQuantity);
+                    DataStore.setSavedProducts(products);
+                    const productDiv = UIElements.savedProductsList.querySelector(`.product-card-item[data-id="${id}"]`);
+                    if (productDiv) {
+                        UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity || 0, products[index].minStockQuantity || 0);
                     }
                 }
             },
@@ -1566,14 +1659,16 @@
                     DataStore.setSavedProducts(products);
                     const productDiv = UIElements.savedProductsList.querySelector(`.product-card-item[data-id="${id}"]`);
                     if (productDiv) {
-                        UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity || 0);
+                        UI.updateProductCardClass(productDiv, products[index].quantity || 0, products[index].stockQuantity || 0, products[index].minStockQuantity || 0);
                     }
+                    // UI.updateProductCountInCart(); // Removed this, as count is now for all saved products
                 }
             },
             resetAllProductQuantities: () => {
                 let products = DataStore.getSavedProducts();
                 products.forEach(product => { product.quantity = 0; });
                 DataStore.setSavedProducts(products);
+                // UI.updateProductCountInCart(); // Removed this, as count is now for all saved products
             },
             saveInvoiceToLocal: (invoiceData) => {
                 try {
@@ -1603,6 +1698,7 @@
                 UIElements.invoiceOwnerInput.value = localStorage.getItem('invoiceOwner') || '';
                 UIElements.invoiceOwnerPhoneInput.value = localStorage.getItem('invoiceOwnerPhone') || '';
                 UIElements.invoiceOwnerAddressInput.value = localStorage.getItem('invoiceOwnerAddress') || '';
+                UIElements.companyNameInput.value = localStorage.getItem('companyName') || ''; // New: load company name
                 UIElements.tvaInput.value = localStorage.getItem('tva') || '0';
                 UIElements.invoiceCommissionAmountInput.value = localStorage.getItem('invoiceCommissionAmount') || '0';
                 // Load from localStorage for product form supplier fields
@@ -1611,6 +1707,7 @@
                 UIElements.supplierPhoneInput.value = localStorage.getItem('supplierPhone') || '';
             }
         };
+
         // ====== Firebase Synchronization Logic (PUSH ONLY) ======
         const FirebaseSync = {
             // Function to get Firebase path based on ownerPhone and data type
@@ -1624,28 +1721,9 @@
                 const dataPath = (type === 'products') ? 'inventoryProducts' : 'invoices';
                 return `${appId}/alldata/${sanitizedPhone}/${dataPath}`;
             },
-            // Syncs a single product to Firebase using the provided phoneIdentifier (ownerPhone)
-            syncSingleProductToFirebase: async (productDataLocalKeys, phoneIdentifier) => {
-                if (!database) {
-                    console.error("Firebase database not initialized. Product not synced.");
-                    return;
-                }
-                if (!phoneIdentifier || !Validation.checkPhoneFormat(phoneIdentifier)) {
-                    console.warn(`Provided phone identifier is invalid or empty for product sync. Product "${productDataLocalKeys.name}" not synced to cloud.`);
-                    return; 
-                }
-                const productDataFirebaseKeys = mapToFirebaseKeys(productDataLocalKeys);
-                const firebaseProductPath = FirebaseSync.getFirebasePath(phoneIdentifier, 'products'); 
-                if (!firebaseProductPath) return;
-                try {
-                    await database.ref(`${firebaseProductPath}/${productDataFirebaseKeys.id}`).set(productDataFirebaseKeys);
-                    console.log(`Product "${productDataLocalKeys.name}" synced successfully to Firebase under ${phoneIdentifier}.`);
-                }
-                catch (error) {
-                    console.error(`خطأ في مزامنة المنتج "${productDataLocalKeys.name}" مع Firebase: ${error.message}`, error);
-                }
-            },
-            // New function to sync all products (for a given ownerPhone)
+
+            // Syncs all products (for a given ownerPhone)
+            // UPDATED: Now merges/updates, doesn't remove all first.
             syncAllProductsToFirebase: async (ownerPhoneForSync) => {
                 if (!database) {
                     console.error("Firebase database not initialized. Skipping product sync.");
@@ -1655,26 +1733,20 @@
                     console.warn("Invalid owner phone for product sync. Skipping Firebase product sync.");
                     return 0;
                 }
-
                 const allLocalProducts = DataStore.getSavedProducts();
                 let productsSyncedCount = 0;
                 
                 const firebaseProductPath = FirebaseSync.getFirebasePath(ownerPhoneForSync, 'products'); 
                 if (!firebaseProductPath) return 0;
 
-                // Clear existing products on Firebase for this owner, then push all local ones
-                try {
-                    await database.ref(firebaseProductPath).remove(); // Clear all products under this owner
-                    console.log(`Cleared existing products on Firebase for owner ${ownerPhoneForSync}.`);
-                } catch (error) {
-                    console.error(`Failed to clear products on Firebase for owner ${ownerPhoneForSync}:`, error);
-                    // Do not show toast here as it happens on load, might be too verbose.
-                }
+                // --- IMPORTANT: Removed the .remove() call to prevent data deletion on Firebase ---
+                // This ensures only new data is added or existing data is updated/merged.
+                // You'll need to manually manage deletions from Firebase if needed.
 
                 for (const product of allLocalProducts) {
                     try {
                         const productDataFirebaseKeys = mapToFirebaseKeys(product);
-                        // Using .set() with child path to ensure individual products are updated/created
+                        // Using .set() with child path to ensure individual products are updated/created (merge behavior)
                         await database.ref(`${firebaseProductPath}/${productDataFirebaseKeys.id}`).set(productDataFirebaseKeys);
                         productsSyncedCount++;
                     } catch (error) {
@@ -1683,28 +1755,9 @@
                 }
                 return productsSyncedCount;
             },
-            // Syncs a single invoice to Firebase - this function is now largely unused for actual syncs, but kept for clarity if needed.
-            syncSingleInvoiceToFirebase: async (invoiceDataLocalKeys) => {
-                if (!database) {
-                    console.error("Firebase database not initialized. Invoice not synced.");
-                    throw new Error("Firebase database not initialized.");
-                }
-                const firebaseInvoicePath = FirebaseSync.getFirebasePath(invoiceDataLocalKeys.ownerPhone, 'invoices');
-                if (!firebaseInvoicePath) {
-                    console.error("Firebase invoice path not available. Invoice not synced.");
-                    throw new Error("Firebase invoice path not available.");
-                }
-                try {
-                    await database.ref(`${firebaseInvoicePath}/${invoiceDataLocalKeys.id}`).set(mapToFirebaseKeys(invoiceDataLocalKeys));
-                    console.log(`Invoice ${invoiceDataLocalKeys.id} synced successfully to Firebase.`);
-                    return invoiceDataLocalKeys.id;
-                } catch (error) {
-                    console.error("Failed to save invoice to Firebase:", error);
-                    UI.showToast(`خطأ في حفظ بيانات الفاتورة إلى Firebase: ${error.message}`, 'error');
-                    throw error;
-                }
-            },
+
             // NEW FUNCTION: Syncs all local invoices to Firebase
+            // UPDATED: Now merges/updates, doesn't remove all first.
             syncAllLocalInvoicesToFirebase: async (ownerPhoneForSync) => {
                 if (!database) {
                     console.error("Firebase database not initialized. Skipping invoice sync.");
@@ -1714,28 +1767,22 @@
                     console.warn("Invalid owner phone for invoice sync. Skipping Firebase invoice sync.");
                     return 0;
                 }
-
                 const allInvoicesToSync = JSON.parse(localStorage.getItem('localInvoices') || '[]');
                 let invoicesSyncedCount = 0;
                 
                 const firebaseInvoiceBaseRef = database.ref(FirebaseSync.getFirebasePath(ownerPhoneForSync, 'invoices'));
                 if (!firebaseInvoiceBaseRef) return 0;
 
-                // Clear existing invoices on Firebase for this owner, then push all local ones
-                try {
-                    await firebaseInvoiceBaseRef.remove(); // Clear all invoices under this owner
-                    console.log(`Cleared existing invoices on Firebase for owner ${ownerPhoneForSync}.`);
-                } catch (error) {
-                    console.error(`Failed to clear invoices on Firebase for owner ${ownerPhoneForSync}:`, error);
-                    UI.showToast(`خطأ في مسح الفواتير القديمة على Firebase.`, 'error'); // Keep this toast for critical error
-                }
+                // --- IMPORTANT: Removed the .remove() call to prevent data deletion on Firebase ---
+                // This ensures only new data is added or existing data is updated/merged.
+                // You'll need to manually manage deletions from Firebase if needed.
 
                 for (const invoice of allInvoicesToSync) {
                     // Only sync invoices associated with the current owner phone
                     if (invoice.ownerPhone === ownerPhoneForSync) {
                         try {
                             const invoiceDataFirebaseKeys = mapToFirebaseKeys(invoice);
-                            // Using .set() with child path to ensure individual invoices are updated/created
+                            // Using .set() with child path to ensure individual invoices are updated/created (merge behavior)
                             await firebaseInvoiceBaseRef.child(invoiceDataFirebaseKeys.id).set(invoiceDataFirebaseKeys);
                             invoicesSyncedCount++;
                         } catch (error) {
@@ -1746,28 +1793,16 @@
                 return invoicesSyncedCount;
             },
 
-            // New function to delete a product from Firebase
-            // NOTE: This function is explicitly left for potential future use or manual calls,
-            // but it's NOT called by DataStore.deleteProduct as per the new requirement.
-            deleteProductFromFirebase: async (productId, phoneIdentifier) => {
-                if (!database || !phoneIdentifier || !Validation.checkPhoneFormat(phoneIdentifier)) {
-                    console.warn("Firebase not ready or phone identifier invalid. Cannot delete product from Firebase.");
-                    return;
-                }
-                const firebaseProductPath = FirebaseSync.getFirebasePath(phoneIdentifier, 'products');
-                try {
-                    await database.ref(`${firebaseProductPath}/${productId}`).remove();
-                    console.log(`Product ${productId} deleted successfully from Firebase.`);
-                    UI.showToast(`تم حذف المنتج بنجاح من Firebase.`, 'success');
-                } catch (error) {
-                    console.error(`Error deleting product ${productId} from Firebase:`, error);
-                    UI.showToast(`خطأ في حذف المنتج من Firebase: ${error.message}`, 'error');
-                }
-            },
             // Full sync on load/import - uses ownerPhone from localStorage (UIElements.invoiceOwnerPhoneInput)
             syncAllLocalDataToFirebaseOnLoad: async () => {
                 DataStore.loadFormDefaults(); // Load initial form defaults, including owner phone
                 const ownerPhoneForSync = UIElements.invoiceOwnerPhoneInput.value.trim(); // Get the current owner phone
+                
+                // NEW: Check for internet connection before attempting Firebase sync
+                if (!navigator.onLine) {
+                    UI.showToast("لا يوجد اتصال بالإنترنت. لن تتم مزامنة البيانات مع Firebase.", "warning");
+                    return;
+                }
 
                 if (!database) {
                     console.error("Firebase database not initialized. Skipping Firebase sync.");
@@ -1776,7 +1811,7 @@
                 
                 if (!ownerPhoneForSync || !Validation.checkPhoneFormat(ownerPhoneForSync)) {
                     console.warn("Owner phone is invalid or empty on load. Skipping Firebase product and invoice sync.");
-                    // No toast here as it happens on load, might be too verbose if not critical.
+                    UI.showToast("رقم هاتف مالك الفاتورة غير صالح أو فارغ. لن تتم مزامنة البيانات مع Firebase.", "warning");
                     return; 
                 }
 
@@ -1784,7 +1819,7 @@
                 UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
                 const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForSync);
                 if (productsSyncedCount > 0) {
-                    UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase.`, 'success');
+                    UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase بنجاح.`, 'success');
                 } else {
                     // UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info'); // Avoid too many toasts on initial load
                 }
@@ -1800,6 +1835,7 @@
                 console.log("Firebase sync on load completed.");
             }
         };
+
         // ====== Data Management (Export/Import) Logic ======
         const DataManagement = {
             exportData: () => {
@@ -1814,6 +1850,7 @@
                         ownerPhone: ownerPhone || 'N/A',
                         ownerName: localStorage.getItem('invoiceOwner') || '',
                         ownerAddress: localStorage.getItem('invoiceOwnerAddress') || '',
+                        companyName: localStorage.getItem('companyName') || '', // Export company name
                         tva: localStorage.getItem('tva') || '0',
                         invoiceCommissionAmount: localStorage.getItem('invoiceCommissionAmount') || '0',
                         description: "بيانات إدارة المبيعات والمخزون - نسخة احتياطية محلية"
@@ -1868,32 +1905,38 @@
                         localStorage.setItem('savedProducts', JSON.stringify(importedData.products));
                         localStorage.setItem('localInvoices', JSON.stringify(importedData.invoices));
                         
-                        // Update owner/supplier info based on imported data
-                        if (importedData.metadata && importedData.metadata.ownerPhone) {
-                            localStorage.setItem('invoiceOwnerPhone', importedData.metadata.ownerPhone);
+                        // Update owner/supplier/company info based on imported data
+                        if (importedData.metadata) {
+                            localStorage.setItem('invoiceOwnerPhone', importedData.metadata.ownerPhone || '');
                             localStorage.setItem('invoiceOwner', importedData.metadata.ownerName || '');
                             localStorage.setItem('invoiceOwnerAddress', importedData.metadata.ownerAddress || '');
+                            localStorage.setItem('companyName', importedData.metadata.companyName || ''); // Import company name
                             localStorage.setItem('tva', importedData.metadata.tva || '0');
                             localStorage.setItem('invoiceCommissionAmount', importedData.metadata.invoiceCommissionAmount || '0');
                         } else if (importedData.invoices && importedData.invoices.length > 0) {
-                                localStorage.setItem('invoiceOwnerPhone', importedData.invoices[0].ownerPhone || '');
-                                localStorage.setItem('invoiceOwner', importedData.invoices[0].ownerName || '');
-                                localStorage.setItem('invoiceOwnerAddress', importedData.invoices[0].ownerAddress || '');
-                                localStorage.setItem('tva', importedData.invoices[0].tva || '0');
-                                localStorage.setItem('invoiceCommissionAmount', importedData.invoices[0].totalCommission || '0');
+                            // Fallback if metadata is missing, try to get from first invoice
+                            localStorage.setItem('invoiceOwnerPhone', importedData.invoices[0].ownerPhone || '');
+                            localStorage.setItem('invoiceOwner', importedData.invoices[0].ownerName || '');
+                            localStorage.setItem('invoiceOwnerAddress', importedData.invoices[0].ownerAddress || '');
+                            localStorage.setItem('companyName', importedData.invoices[0].companyName || ''); // Import company name from invoice
+                            localStorage.setItem('tva', importedData.invoices[0].tva || '0');
+                            localStorage.setItem('invoiceCommissionAmount', importedData.invoices[0].totalCommission || '0');
                         }
+
                         // Try to infer supplier info from imported products if available
                         if (importedData.products && importedData.products.length > 0) {
                             localStorage.setItem('supplierName', importedData.products[0].supplierName || '');
                             localStorage.setItem('supplierAddress', importedData.products[0].supplierAddress || '');
                             localStorage.setItem('supplierPhone', importedData.products[0].supplierPhone || '');
                         }
+
                         SalesProducts.displaySavedProducts();
                         LocalArchive.displayLocalInvoices();
                         UI.populateAllDatalists();
                         DataStore.loadFormDefaults(); // Reload form with potentially new defaults
-                        UI.showToast("تم استيراد البيانات بنجاح. سيتم الآن مزامنتها مع Firebase.", 'success');
-                        await FirebaseSync.syncAllLocalDataToFirebaseOnLoad(); 
+                        UI.showToast("تم استيراد البيانات بنجاح. سيتم الآن مزامنتها مع Firebase عند تحديث الصفحة.", 'success');
+                        // No explicit Firebase sync after import, it will happen on next page load
+                        // await FirebaseSync.syncAllLocalDataToFirebaseOnLoad(); 
                         UIElements.importDataInput.value = ''; 
                     } catch (parseError) {
                         console.error("Error parsing JSON file:", parseError);
@@ -1904,6 +1947,7 @@
                 reader.readAsText(file);
             }
         };
+
         // ====== Navigation & View Management ======
         const Navigation = {
             init: () => {
@@ -1920,7 +1964,7 @@
                     UI.showToast("الرجاء الانتظار حتى يكتمل التحول بين الأقسام.", 'info');
                     return;
                 }
-                const button = event.target.closest('.modern-button'); // Changed to modern-button
+                const button = event.target.closest('.modern-button');
                 if (!button) return;
                 
                 // Only set active class for view navigation buttons, not export/import
@@ -1949,6 +1993,7 @@
                 }
             }
         };
+
         // ====== Product Management Logic ======
         const SalesProducts = {
             init: () => {
@@ -1962,8 +2007,15 @@
                         SalesProducts.handleProductFormSubmission(parseInt(idToEdit));
                     }
                 });
+                UIElements.cancelEditProductButton.addEventListener('click', () => { // New: Cancel Edit button listener
+                    SalesProducts.resetProductFormAndButtons();
+                    UI.showToast("تم إلغاء عملية تعديل المنتج.", 'info');
+                    SalesProducts.displaySavedProducts(); // Refresh the list to remove any active state on the edited item
+                });
                 UIElements.savedProductsList.addEventListener('click', SalesProducts.handleProductListClick);
+                // General change listener for inputs within product cards
                 UIElements.savedProductsList.addEventListener('change', SalesProducts.handleProductListChange);
+
                 UIElements.searchProductInput.addEventListener('input', () => {
                     SalesProducts.displaySavedProducts();
                     UIElements.clearSearchProductBtn.hidden = UIElements.searchProductInput.value === '';
@@ -1990,6 +2042,7 @@
                     name: UIElements.productNameInput.value.trim(),
                     purchasePrice: parseFloat(UIElements.purchasePriceInput.value),
                     sellingPrice: parseFloat(UIElements.sellingPriceInput.value),
+                    minStockQuantity: parseInt(UIElements.minStockQuantityInput.value || 0), // Ensure it's a number
                     supplierName: UIElements.supplierNameInput.value.trim(),
                     supplierAddress: UIElements.supplierAddressInput.value.trim(),
                     supplierPhone: UIElements.supplierPhoneInput.value.trim(),
@@ -2016,7 +2069,7 @@
                 }
                 const confirmed = await UI.showConfirmModal(
                     isEditing ? "تأكيد التعديل" : "تأكيد الإضافة",
-                    isEditing ? "هل أنت متأكد من أنك تريد تعديل هذا المنتج؟ سيتم تحديثه محلياً. ستتم مزامنة البيانات عند تحديث الصفحة أو حفظ فاتورة." : "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟ سيتم حفظه محلياً. ستتم مزامنة البيانات عند تحديث الصفحة أو حفظ فاتورة."
+                    isEditing ? "هل أنت متأكد من أنك تريد تعديل هذا المنتج؟ سيتم تحديثه محلياً." : "هل أنت متأكد من أنك تريد إضافة هذا المنتج؟ سيتم حفظه محلياً."
                 );
                 if (!confirmed) {
                     UI.showToast(isEditing ? "تم إلغاء تعديل المنتج." : "تم إلغاء إضافة المنتج.", 'info');
@@ -2025,17 +2078,7 @@
                 }
                 await DataStore.saveProduct(productData, isEditing);
                 SalesProducts.displaySavedProducts();
-                // SalesProducts.resetProductFormAndButtons(); // Do not call this directly
-                // Instead, clear product specific fields and keep supplier info
-                UIElements.productNameInput.value = '';
-                UIElements.purchasePriceInput.value = '';
-                UIElements.sellingPriceInput.value = '';
-                UIElements.productQuantityInput.value = '0'; // Reset quantity to 0 for new product
-                UIElements.productFormTitle.innerHTML = '<i class="fas fa-box"></i> إدارة المنتجات';
-                UIElements.addProductButton.style.display = 'flex';
-                UIElements.saveEditProductButton.style.display = 'none';
-                delete UIElements.saveEditProductButton.dataset.editingId;
-                UI.resetValidationMessages(UIElements.productForm);
+                SalesProducts.resetProductFormAndButtons(); // Now calls the new reset logic
                 UI.populateAllDatalists();
                 UI.toggleButtonLoading(submitBtn, false);
             },
@@ -2044,6 +2087,7 @@
                 UIElements.productFormTitle.innerHTML = '<i class="fas fa-box"></i> إدارة المنتجات';
                 UIElements.addProductButton.style.display = 'flex';
                 UIElements.saveEditProductButton.style.display = 'none';
+                UIElements.cancelEditProductButton.style.display = 'none'; // Hide cancel button
                 delete UIElements.saveEditProductButton.dataset.editingId;
                 UI.resetValidationMessages(UIElements.productForm);
                 // Reload supplier defaults from localStorage after reset
@@ -2066,12 +2110,14 @@
                 UIElements.productNameInput.value = productToEdit.name || '';
                 UIElements.purchasePriceInput.value = productToEdit.purchasePrice || 0;
                 UIElements.sellingPriceInput.value = productToEdit.sellingPrice || 0;
+                UIElements.minStockQuantityInput.value = productToEdit.minStockQuantity || 0; // New: populate min stock
                 UIElements.supplierNameInput.value = productToEdit.supplierName || '';
                 UIElements.supplierAddressInput.value = productToEdit.supplierAddress || '';
                 UIElements.supplierPhoneInput.value = productToEdit.supplierPhone || '';
                 UIElements.productQuantityInput.value = productToEdit.stockQuantity || 0;
                 UIElements.addProductButton.style.display = 'none';
                 UIElements.saveEditProductButton.style.display = 'flex';
+                UIElements.cancelEditProductButton.style.display = 'flex'; // Show cancel button
                 UIElements.saveEditProductButton.dataset.editingId = productId;
                 window.scrollTo({ top: UIElements.productFormContainer.offsetTop, behavior: 'smooth' });
                 UI.populateAllDatalists();
@@ -2081,17 +2127,20 @@
                 if (confirmed) {
                     await DataStore.deleteProduct(id); // This now only deletes locally
                     SalesProducts.displaySavedProducts();
-                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية.", 'success'); // Changed message
+                    UI.showToast("تم حذف المنتج بنجاح من الذاكرة المحلية. (لن يتم حذفه من Firebase تلقائياً)", 'success'); // Changed message
                     UI.populateAllDatalists();
+                    UI.updateProductCountInCart(); // Update product count in cart
                 } else {
                     UI.showToast("تم إلغاء حذف المنتج.", 'info');
                 }
             },
-            getProductStatusPriority: (quantitySelected, stockQuantity) => {
-                if (quantitySelected > 0 && stockQuantity < quantitySelected) return 1; /* Insufficient */
-                if (quantitySelected > 0) return 2; /* Selected and sufficient */
-                if (stockQuantity <= 0) return 3; /* Out of stock */
-                return 4; /* In stock, not selected */
+            // UPDATED: Product status priority for sorting and coloring
+            getProductStatusPriority: (quantitySelected, stockQuantity, minStockQuantity) => {
+                if (quantitySelected > 0 && stockQuantity < quantitySelected) return 1; /* Insufficient stock for selected */
+                if (quantitySelected > 0) return 2; /* Selected and sufficient stock */
+                if (stockQuantity <= minStockQuantity && stockQuantity > 0) return 3; /* Low stock (above 0 but below min) */
+                if (stockQuantity <= 0) return 4; /* Out of stock (0 or less) */
+                return 5; /* Healthy stock (above min) */
             },
             displaySavedProducts: () => {
                 UI.toggleGeneralLoader(UIElements.savedProductsLoader, true);
@@ -2102,9 +2151,10 @@
                     .filter(product => (product.name || '').toLowerCase().includes(searchTerm) ||
                                         (product.supplierName || '').toLowerCase().includes(searchTerm))
                     .sort((a, b) => {
-                        const statusA = SalesProducts.getProductStatusPriority(a.quantity || 0, a.stockQuantity || 0);
-                        const statusB = SalesProducts.getProductStatusPriority(b.quantity || 0, b.stockQuantity || 0);
+                        const statusA = SalesProducts.getProductStatusPriority(a.quantity || 0, a.stockQuantity || 0, a.minStockQuantity || 0);
+                        const statusB = SalesProducts.getProductStatusPriority(b.quantity || 0, b.stockQuantity || 0, b.minStockQuantity || 0);
                         if (statusA !== statusB) return statusA - statusB;
+                        // For same status, sort by stock quantity (descending)
                         if ((b.stockQuantity || 0) !== (a.stockQuantity || 0)) {
                             return (b.stockQuantity || 0) - (a.stockQuantity || 0);
                         }
@@ -2114,15 +2164,17 @@
                     UIElements.emptyProductsMessage.style.display = 'flex';
                     UIElements.savedProductsList.appendChild(UIElements.emptyProductsMessage);
                     UI.toggleGeneralLoader(UIElements.savedProductsLoader, false);
+                    UI.updateProductCountInCart();
                     return;
                 } else {
                     UIElements.emptyProductsMessage.style.display = 'none';
                 }
                 filteredProducts.forEach((product) => {
                     const productDiv = document.createElement('div');
-                    productDiv.className = 'product-card-item'; // Applied new styling via CSS
+                    productDiv.className = 'product-card-item';
                     productDiv.dataset.id = product.id;
-                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0);
+                    // Pass minStockQuantity to updateProductCardClass
+                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0, product.minStockQuantity || 0);
                     productDiv.innerHTML = `
                         <div class="product-info">
                             <p>${product.name || 'N/A'}</p>
@@ -2134,19 +2186,27 @@
                             <p><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
                         </div>
                         <div class="stock-section">
-                            <p>الكمية في المخزون:</p>
+                            <p>الكمية في المخزون: ${product.stockQuantity <= (product.minStockQuantity || 0) && product.stockQuantity > 0 ? '<span style="color: var(--modern-alert); font-weight: bold;">(منخفض!)</span>' : product.stockQuantity <= 0 ? '<span style="color: var(--modern-error); font-weight: bold;">(نفد المخزون)</span>' : ''}</p>
                             <div class="quantity-controls">
-                                <button type="button" class="qty-adjust-btn" data-action="plus">+</button>
+                                <button type="button" class="qty-adjust-btn" data-action="plus" data-target-input="stock-input">+</button>
                                 <input type="number" value="${product.stockQuantity || 0}" min="0" data-product-id="${product.id}" class="form-input stock-input">
-                                <button type="button" class="qty-adjust-btn" data-action="minus">-</button>
+                                <button type="button" class="qty-adjust-btn" data-action="minus" data-target-input="stock-input">-</button>
+                            </div>
+                        </div>
+                        <div class="min-stock-section">
+                            <p>الحد الأدنى للمخزون:</p>
+                            <div class="quantity-controls">
+                                <button type="button" class="qty-adjust-btn" data-action="plus" data-target-input="min-stock-input">+</button>
+                                <input type="number" value="${product.minStockQuantity || 0}" min="0" data-product-id="${product.id}" class="form-input min-stock-input">
+                                <button type="button" class="qty-adjust-btn" data-action="minus" data-target-input="min-stock-input">-</button>
                             </div>
                         </div>
                         <div class="invoice-quantity-section">
                             <p>الكمية المحددة للفاتورة:</p>
                             <div class="quantity-controls">
-                                <button type="button" class="qty-adjust-btn" data-action="plus">+</button>
+                                <button type="button" class="qty-adjust-btn" data-action="plus" data-target-input="product-quantity-input">+</button>
                                 <input type="number" class="form-input product-quantity-input" data-id="${product.id}" value="${product.quantity || 0}" min="0">
-                                <button type="button" class="qty-adjust-btn" data-action="minus">-</button>
+                                <button type="button" class="qty-adjust-btn" data-action="minus" data-target-input="product-quantity-input">-</button>
                             </div>
                         </div>
                         <div class="product-actions-footer">
@@ -2161,6 +2221,7 @@
                     UIElements.savedProductsList.appendChild(productDiv);
                 });
                 UI.toggleGeneralLoader(UIElements.savedProductsLoader, false);
+                UI.updateProductCountInCart(); // Update product count after displaying
             },
             handleProductListClick: (event) => {
                 const target = event.target;
@@ -2168,25 +2229,33 @@
                 if (!productDiv) return;
                 const productId = parseInt(productDiv.dataset.id);
                 if (isNaN(productId)) return;
+                
                 if (target.classList.contains('btn-warning-action') || target.closest('.btn-warning-action')) {
                     SalesProducts.editProduct(productId);
                 } else if (target.classList.contains('btn-danger-action') || target.closest('.btn-danger-action')) {
                     SalesProducts.deleteProduct(productId);
                 } else if (target.classList.contains('qty-adjust-btn')) {
-                    const inputElement = target.parentNode.querySelector('.form-input');
+                    // Determine which input this button is associated with using data-target-input
+                    const targetInputClass = target.dataset.targetInput; // Now uses class not ID
+                    const inputElement = productDiv.querySelector(`.${targetInputClass}`); // Find input within the same product card
+
+                    if (!inputElement) return;
+
                     let currentVal = parseInt(inputElement.value) || 0;
                     currentVal += (target.dataset.action === 'plus' ? 1 : -1);
                     inputElement.value = Math.max(0, currentVal);
                     
-                    // Determine if it's a stock input or invoice quantity input
+                    // Update the correct property in DataStore
                     if (inputElement.classList.contains('stock-input')) {
                         DataStore.updateProductStock(productId, parseInt(inputElement.value));
+                    } else if (inputElement.classList.contains('min-stock-input')) { // Handle min-stock-input
+                        DataStore.updateProductMinStock(productId, parseInt(inputElement.value));
                     } else if (inputElement.classList.contains('product-quantity-input')) {
                         DataStore.updateProductInvoiceQuantity(productId, parseInt(inputElement.value));
                     }
                     
                     const product = DataStore.getSavedProducts().find(p => p.id === productId);
-                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0);
+                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0, product.minStockQuantity || 0);
                 }
             },
             handleProductListChange: (event) => {
@@ -2195,17 +2264,23 @@
                 if (!productDiv) return;
                 const productId = parseInt(productDiv.dataset.id);
                 if (isNaN(productId)) return;
+
                 if (target.classList.contains('stock-input')) {
                     DataStore.updateProductStock(productId, parseInt(target.value || 0));
                     const product = DataStore.getSavedProducts().find(p => p.id === productId);
-                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0);
+                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0, product.minStockQuantity || 0);
+                } else if (target.classList.contains('min-stock-input')) { // Handle change for min-stock-input
+                    DataStore.updateProductMinStock(productId, parseInt(target.value || 0));
+                    const product = DataStore.getSavedProducts().find(p => p.id === productId);
+                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0, product.minStockQuantity || 0);
                 } else if (target.classList.contains('product-quantity-input')) {
                     DataStore.updateProductInvoiceQuantity(productId, parseInt(target.value || 0));
                     const product = DataStore.getSavedProducts().find(p => p.id === productId);
-                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0);
+                    UI.updateProductCardClass(productDiv, product.quantity || 0, product.stockQuantity || 0, product.minStockQuantity || 0);
                 }
             }
         };
+
         // ====== Invoice Creation & Display Logic ======
         const InvoiceManager = {
             init: () => {
@@ -2216,6 +2291,7 @@
                 
                 // Save form fields to localStorage on change
                 UIElements.customerNameInput.addEventListener('change', () => localStorage.setItem('customerName', UIElements.customerNameInput.value));
+                UIElements.companyNameInput.addEventListener('change', () => localStorage.setItem('companyName', UIElements.companyNameInput.value)); // New: save company name
                 UIElements.invoiceOwnerInput.addEventListener('change', () => localStorage.setItem('invoiceOwner', UIElements.invoiceOwnerInput.value));
                 UIElements.invoiceOwnerPhoneInput.addEventListener('change', () => localStorage.setItem('invoiceOwnerPhone', UIElements.invoiceOwnerPhoneInput.value));
                 UIElements.invoiceOwnerAddressInput.addEventListener('change', () => localStorage.setItem('invoiceOwnerAddress', UIElements.invoiceOwnerAddressInput.value));
@@ -2240,23 +2316,8 @@
                     return;
                 }
 
-                // --- NEW LOGIC: Sync ALL products to Firebase using ownerPhone before creating invoice ---
-                // This ensures product stock and details are up-to-date on Firebase before processing the invoice
-                try {
-                    UI.showToast("جاري مزامنة المنتجات المحلية مع Firebase...", 'info');
-                    const productsSyncedCount = await FirebaseSync.syncAllProductsToFirebase(ownerPhoneForInvoice);
-                    if (productsSyncedCount > 0) {
-                        UI.showToast(`تمت مزامنة ${productsSyncedCount} منتج محلي مع Firebase بنجاح.`, 'success');
-                    } else {
-                        UI.showToast("لا توجد منتجات جديدة لمزامنتها مع Firebase.", 'info');
-                    }
-                } catch (error) {
-                    console.error("Error during initial product sync for invoice creation:", error);
-                    UI.showToast("حدث خطأ أثناء مزامنة المنتجات مع Firebase. الرجاء المحاولة مرة أخرى.", 'error');
-                    UI.toggleButtonLoading(UIElements.createInvoiceButton, false);
-                    return;
-                }
-                // --- END NEW LOGIC ---
+                // Removed: Initial Firebase products sync on invoice creation. Now only on page load.
+
                 let totalHTBeforeCommission = 0;
                 let totalProfit = 0;
                 const invoiceCommissionAmount = parseFloat(UIElements.invoiceCommissionAmountInput.value) || 0;
@@ -2318,16 +2379,19 @@
                         return;
                     }
                 }
+
                 const finalTotalHT = totalHTBeforeCommission - totalCommission;
                 const tvaRate = parseFloat(UIElements.tvaInput.value) / 100;
                 const tvaCalculated = (finalTotalHT * tvaRate).toFixed(2);
                 const totalTTC = (finalTotalHT + parseFloat(tvaCalculated)).toFixed(2);
                 totalProfit -= totalCommission; // Deduct commission from total profit
+
                 currentInvoiceBeingProcessed = {
                     id: Date.now(), // Unique ID for local storage
                     date: UIElements.invoiceDateInput.value, // Formatted date string for display
                     isoDate: UIElements.invoiceDateInput.dataset.isoDate, // ISO string for sorting/parsing
                     customerName: UIElements.customerNameInput.value,
+                    companyName: UIElements.companyNameInput.value.trim(), // include company name
                     ownerName: UIElements.invoiceOwnerInput.value,
                     ownerAddress: UIElements.invoiceOwnerAddressInput.value,
                     ownerPhone: UIElements.invoiceOwnerPhoneInput.value,
@@ -2341,12 +2405,14 @@
                     invoiceCommissionRate: parseFloat(UIElements.tvaInput.value),
                 };
                 console.log("Invoice data prepared:", currentInvoiceBeingProcessed); // For your review: log invoice object here
+
                 await InvoiceManager.displayFullInvoice(currentInvoiceBeingProcessed, true);
                 UI.toggleButtonLoading(UIElements.createInvoiceButton, false);
             },
             displayFullInvoice: async (invoiceData, isNew = false) => {
                 await UI.showSection(UIElements.invoiceDisplay);
                 UIElements.displayCustomerName.textContent = invoiceData.customerName || 'N/A';
+                UIElements.displayCompanyName.textContent = invoiceData.companyName || 'N/A'; // display company name
                 UIElements.displayInvoiceOwner.textContent = invoiceData.ownerName || 'N/A';
                 // Display the user-friendly formatted date
                 UIElements.displayInvoiceDate.textContent = invoiceData.date || 'N/A'; 
@@ -2360,7 +2426,6 @@
                 UIElements.displayTotalAmount.textContent = `${invoiceData.totalHT} درهم`;
                 UIElements.displayTVA.textContent = `${invoiceData.tva} درهم`;
                 UIElements.displayTotalTTC.textContent = `${invoiceData.totalTTC} درهم`;
-                // UIElements.displayTotalProfit.textContent = `${invoiceData.totalProfit} درهم`; // Removed this line
                 UIElements.displayDetails.innerHTML = '';
                 let productNumber = 1;
                 if (invoiceData.products && invoiceData.products.length > 0) {
@@ -2423,7 +2488,7 @@
                     UI.toggleButtonLoading(this, false);
                     return;
                 }
-                const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً ومزامنتها مع Firebase؟");
+                const confirmed = await UI.showConfirmModal("تأكيد تحديث المخزون والحفظ", "هل أنت متأكد من تحديث المخزون بناءً على هذه الفاتورة وحفظها محلياً؟ (سيتم مزامنة البيانات مع Firebase عند تحديث الصفحة).");
                 if (!confirmed) {
                     UI.showToast("تم إلغاء تحديث المخزون والحفظ.", 'info');
                     UI.toggleButtonLoading(this, false);
@@ -2443,11 +2508,10 @@
                     DataStore.saveInvoiceToLocal(currentInvoiceBeingProcessed);
                     UI.showToast("تم تحديث المخزون وحفظ الفاتورة محلياً بنجاح.", 'success');
                     
-                    // --- CHANGED: Sync ALL invoices for the current owner
-                    await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhone);
-                    // --- END CHANGED ---
+                    // Removed: Individual Firebase invoice sync. Now only on page load.
+                    // await FirebaseSync.syncAllLocalInvoicesToFirebase(ownerPhone); 
+                    // UI.showToast("تمت مزامنة الفواتير مع Firebase بنجاح.", 'success');
 
-                    UI.showToast("تمت مزامنة الفواتير مع Firebase بنجاح.", 'success');
                     currentInvoiceBeingProcessed = null;
                     isNewInvoice = false;
                     Navigation.handleNavClick({ target: UIElements.desktopNavButtons[0] }); // Go back to dashboard
@@ -2467,7 +2531,7 @@
                     originalViewportContent = viewportMeta.getAttribute('content');
                     viewportMeta.setAttribute('content', 'width=900'); // Set a fixed width for printing
                 }
-                const elementsToHide = document.querySelectorAll('.app-header, #toast-container, .modal-overlay, .invoice-actions-footer, .nav-data-management-links, .profit-row, #dataManagementButtons'); // Added #dataManagementButtons
+                const elementsToHide = document.querySelectorAll('.app-header, #toast-container, .modal-overlay, .invoice-actions-footer, .nav-data-management-links, .profit-row, #dataManagementButtons, #selectedProductCountContainer'); // Added #selectedProductCountContainer
                 elementsToHide.forEach(el => el.style.display = 'none');
                 window.print();
                 setTimeout(() => {
@@ -2489,6 +2553,7 @@
                 }
             }
         };
+
         // ====== Local Archive Logic ======
         const LocalArchive = {
             init: () => {
@@ -2517,11 +2582,12 @@
                 const searchTerm = UIElements.searchLocalInvoiceInput.value.toLowerCase();
                 const filteredInvoices = allLocalInvoices.filter(invoice => {
                     const customerMatch = (invoice.customerName || '').toLowerCase().includes(searchTerm);
+                    const companyMatch = (invoice.companyName || '').toLowerCase().includes(searchTerm); // search company name
                     const ownerMatch = (invoice.ownerName || '').toLowerCase().includes(searchTerm);
                     // Search in the display-friendly date format
                     const dateMatch = (invoice.date || '').toLowerCase().includes(searchTerm);
                     const productMatch = (invoice.products && invoice.products.some(p => (p.name || '').toLowerCase().includes(searchTerm)));
-                    return customerMatch || ownerMatch || dateMatch || productMatch;
+                    return customerMatch || companyMatch || ownerMatch || dateMatch || productMatch; // Include companyMatch
                 });
                 if (filteredInvoices.length === 0) {
                     UIElements.emptyInvoicesMessage.style.display = 'flex';
@@ -2535,7 +2601,7 @@
                 filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
                 filteredInvoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
-                    invoiceDiv.classList.add('mini-invoice-card'); // Applied new styling via CSS
+                    invoiceDiv.classList.add('mini-invoice-card');
                     invoiceDiv.dataset.invoiceId = invoice.id;
                     let productsListHtml = '<p class="empty-state-message" style="margin: 0; padding: 5px 0; color: var(--modern-text-secondary);">لا توجد منتجات.</p>';
                     if (invoice.products && invoice.products.length > 0) {
@@ -2559,7 +2625,7 @@
                     invoiceDiv.innerHTML = `
                         <div class="mini-invoice-header">
                             <p><strong>العميل:</strong> ${invoice.customerName || 'N/A'}</p>
-                            <p><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
+                            ${invoice.companyName ? `<p><strong>الشركة:</strong> ${invoice.companyName}</p>` : ''} <p><strong>مالك الفاتورة:</strong> ${invoice.ownerName || 'N/A'}</p>
                             <p><strong>التاريخ:</strong> ${invoice.date || 'N/A'}</p>
                         </div>
                         ${productsListHtml}
@@ -2598,25 +2664,40 @@
                 if (confirmed) {
                     DataStore.deleteLocalInvoice(invoiceId);
                     LocalArchive.displayLocalInvoices();
-                    UI.showToast("تم حذف الفاتورة بنجاح من الأرشيف المحلي.", 'success'); // Changed message
+                    UI.showToast("تم حذف الفاتورة بنجاح من الأرشيف المحلي.", 'success');
                     UI.populateAllDatalists();
                 } else {
                     UI.showToast("تم إلغاء حذف الفاتورة.", 'info');
                 }
             }
         };
+
         // ====== Form Validation Logic ======
         const Validation = {
             checkPhoneFormat: (phone) => {
-                const regex = new RegExp("^[0-9]{10}$");
+                // Moroccan phone number starts with 0 and has 10 digits
+                // Example: 0612345678 or 0712345678. Updated regex to include 05, 06, 07, 08.
+                const regex = /^0[5-8][0-9]{8}$/; 
                 return regex.test(phone);
             },
             
             showValidationError: (field, message) => {
                 const errorMessageSpan = field.nextElementSibling;
-                if (errorMessageSpan && errorMessageSpan.classList.contains('validation-message')) {
-                    errorMessageSpan.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-                    errorMessageSpan.style.display = 'flex';
+                // If the element is within .quantity-controls, its sibling for error is different
+                const parentQuantityControls = field.closest('.quantity-controls');
+                let actualErrorMessageSpan = errorMessageSpan; // Default to direct sibling
+                if (parentQuantityControls) {
+                    // Find the validation-message span outside this specific quantity-controls div
+                    // It should be the sibling of the .form-group div that contains this .quantity-controls
+                    const formGroup = parentQuantityControls.closest('.form-group');
+                    if (formGroup) {
+                         actualErrorMessageSpan = formGroup.querySelector('.validation-message');
+                    }
+                }
+                
+                if (actualErrorMessageSpan && actualErrorMessageSpan.classList.contains('validation-message')) {
+                    actualErrorMessageSpan.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                    actualErrorMessageSpan.style.display = 'flex';
                 }
                 field.classList.add('error');
             },
@@ -2624,14 +2705,25 @@
                 let isValid = true;
                 const fieldValue = field.value.trim();
                 const errorMessageSpan = field.nextElementSibling;
-                if (errorMessageSpan && errorMessageSpan.classList.contains('validation-message')) {
-                    errorMessageSpan.textContent = '';
-                    errorMessageSpan.style.display = 'none';
+                // If the element is within .quantity-controls, its sibling for error is different
+                const parentQuantityControls = field.closest('.quantity-controls');
+                let actualErrorMessageSpan = errorMessageSpan; // Default to direct sibling
+                if (parentQuantityControls) {
+                    const formGroup = parentQuantityControls.closest('.form-group');
+                    if (formGroup) {
+                         actualErrorMessageSpan = formGroup.querySelector('.validation-message');
+                    }
+                }
+                
+                if (actualErrorMessageSpan && actualErrorMessageSpan.classList.contains('validation-message')) {
+                    actualErrorMessageSpan.textContent = '';
+                    actualErrorMessageSpan.style.display = 'none';
                 }
                 field.classList.remove('error');
+
                 if (field.hasAttribute('required') && !fieldValue) {
                     isValid = false;
-                    Validation.showValidationError(field, `${field.placeholder || field.labels[0].textContent.replace(':', '').trim()} مطلوب.`);
+                    Validation.showValidationError(field, `${field.placeholder || (field.labels.length > 0 ? field.labels[0].textContent.replace(':', '').trim() : 'هذا الحقل')} مطلوب.`);
                 } else if (field.type === 'number') {
                     const numValue = parseFloat(fieldValue);
                     if (isNaN(numValue) || numValue < parseFloat(field.min || 0)) {
@@ -2644,7 +2736,7 @@
                 } else if (field.type === 'tel' && field.pattern) {
                     if (!Validation.checkPhoneFormat(fieldValue)) {
                         isValid = false;
-                        Validation.showValidationError(field, `صيغة رقم الهاتف غير صحيحة (10 أرقام).`);
+                        Validation.showValidationError(field, `صيغة رقم الهاتف غير صحيحة (يجب أن تبدأ بـ 05، 06، 07 أو 08 وتتكون من 10 أرقام).`);
                     }
                 }
                 return isValid;
@@ -2659,6 +2751,7 @@
                 return allFieldsValid;
             }
         };
+
         // ====== Initialization on Window Load ======
         window.addEventListener('load', async () => {
             DataStore.loadFormDefaults();
@@ -2678,7 +2771,7 @@
             UI.populateAllDatalists();
             
             // Initial sync on load (products and invoices will sync if owner phone is available)
-            // This function now handles clearing old data and pushing all current local data.
+            // This function now handles merging data.
             await FirebaseSync.syncAllLocalDataToFirebaseOnLoad(); 
             const hasData = DataStore.getSavedProducts().length > 0 || JSON.parse(localStorage.getItem('localInvoices') || '[]').length > 0;
             if (hasData) {
