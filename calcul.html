@@ -9,26 +9,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
         xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWTK4bQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
-        /* Root CSS Variables for a modern look */
+        /* Modern & Clean Color Palette - Unified */
         :root {
-            --modern-bg-primary: #f0f2f5; /* Light grey background */
-            --modern-bg-secondary: #e9ecef; /* Slightly darker grey for contrast */
-            --modern-card-bg: #ffffff; /* White card backgrounds */
-            --modern-primary-accent: #007bff; /* Blue for primary accents (buttons, highlights) */
-            --modern-secondary-accent: #6c757d; /* Grey for secondary accents */
-            --modern-text-dark: #343a40; /* Dark grey for main text */
-            --modern-text-secondary: #6c757d; /* Lighter grey for secondary text */
-            --modern-border-light: #dee2e6; /* Light grey for borders */
-            --modern-success: #28a745; /* Green for success */
-            --modern-warning: #ffc107; /* Yellow for warning */
-            --modern-error: #dc3545; /* Red for error */
-            /* RGB values for dynamic shadows/colors */
-            --modern-primary-accent-rgb: 0, 123, 255;
-            --modern-success-rgb: 40, 167, 69;
-            --modern-error-rgb: 220, 53, 69;
+            --modern-bg-primary: #f0f4f8; /* Light gray-blue background */
+            --modern-card-bg: #ffffff; /* Pure white card background */
+            --modern-primary-accent: #4f46e5; /* Primary accent color (Indigo 600) */
+            --modern-secondary-accent: #e0e7ff; /* Light secondary accent (Indigo 100) */
+            --modern-text-dark: #1f2937; /* Dark text (Gray 800) */
+            --modern-text-secondary: #6b7280; /* Secondary text (Gray 500) */
+            --modern-border-light: #e5e7eb; /* Light borders (Gray 200) */
+            --modern-success: #22c55e; /* Green for success (Green 500) */
+            --modern-warning: #f59e0b; /* Yellow for warning (Yellow 500) */
+            --modern-error: #ef4444; /* Red for error (Red 500) */
+            --modern-info: #3b82f6; /* Blue for info */
+            
+            /* RGB values for shadows */
+            --modern-primary-accent-rgb: 79, 70, 229;
+            --modern-success-rgb: 34, 197, 94;
+            --modern-error-rgb: 239, 68, 68;
+
+            /* Card background colors for specific states */
+            --modern-bg-light-red: #fee2e2;
+            --modern-bg-light-green: #dcfce7;
+            --modern-bg-light-orange: #fffbe0;
+            --modern-bg-light-blue: #e0e7ff;
         }
 
         /* Base body styling for RTL, font, and background */
@@ -39,103 +45,241 @@
             line-height: 1.6;
             margin: 0;
             display: flex;
-            flex-direction: column; /* For sticky footer if needed */
-            min-height: 100vh; /* Full viewport height */
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll on mobile */
         }
 
         /* --- Header Styles --- */
         .app-header {
             background-color: var(--modern-primary-accent);
+            padding: 1rem 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            width: 100%;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            z-index: 30;
         }
 
         .header-brand {
-            display: flex;
-            align-items: center;
             font-size: 1.8rem;
             font-weight: 700;
-            gap: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
-        .header-brand i {
+        .header-brand .fas {
             font-size: 1.5rem;
+            color: white;
         }
 
-        .app-header nav ul {
+        /* Main Layout Container (Flex for Sidebar + Content) */
+        .main-layout-container {
+            display: flex;
+            flex-grow: 1; /* Allow it to take available vertical space */
+            width: 100%;
+            max-width: 1400px; /* Slightly wider for more content */
+            margin: 0 auto;
+            padding: 1.5rem 1rem; /* Vertical padding, horizontal handled by children */
+            box-sizing: border-box;
+            flex-direction: row; /* Changed back to row for sidebar */
+        }
+
+        /* Sidebar Styles (File Explorer Tree) */
+        .sidebar {
+            width: 280px; /* Fixed width for sidebar on larger screens */
+            background-color: var(--modern-card-bg);
+            border-left: 1px solid var(--modern-border-light); /* RTL border */
+            border-top-right-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem 1rem;
+            overflow-y: auto; /* Scrollable sidebar */
+            flex-shrink: 0; /* Prevent shrinking */
+            margin-right: 1.5rem; /* Space between sidebar and content */
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+        }
+
+        @media (max-width: 1023px) { /* Adjust for medium screens and smaller */
+            .sidebar {
+                position: fixed;
+                top: 0; 
+                right: -280px; /* Start off-screen to the right (RTL) */
+                height: 100%;
+                z-index: 50; /* Above main content */
+                margin-right: 0;
+                border-radius: 0;
+                padding-top: 5rem; /* Space for header if fixed */
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); /* Shadow when open */
+            }
+            .sidebar.open {
+                transform: translateX(-280px); /* Slide in from right (RTL) */
+            }
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 40;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            }
+            .sidebar-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+
+        .tree-view ul {
             list-style: none;
             padding: 0;
             margin: 0;
-            display: flex;
-            gap: 1.5rem;
         }
 
-        .app-header nav ul li a {
-            color: white;
-            text-decoration: none;
+        .tree-view li {
+            padding: 0.6rem 0.75rem;
+            cursor: pointer;
             font-weight: 500;
-            transition: color 0.2s ease-in-out;
+            color: var(--modern-text-dark);
+            transition: background-color 0.2s ease, color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-radius: 0.75rem;
+            margin-bottom: 0.25rem;
         }
 
-        .app-header nav ul li a:hover {
-            color: var(--modern-bg-secondary);
+        .tree-view li:hover {
+            background-color: var(--modern-secondary-accent);
+            color: var(--modern-primary-accent);
         }
 
-        .app-header nav ul li a i {
-            margin-left: 8px; /* For RTL icon spacing */
+        .tree-view li.active {
+            background-color: var(--modern-primary-accent);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(var(--modern-primary-accent-rgb), 0.2);
         }
 
-        /* --- Main Container Styles --- */
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            padding-top: 1.5rem;
-            padding-bottom: 1.5rem;
+        .tree-view li.active .fas {
+            color: white;
         }
 
-        /* --- Card Panel Styles --- */
+        .tree-view li .fas {
+            color: var(--modern-text-secondary);
+            font-size: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .tree-view li.folder > .fas {
+            margin-left: 0.5rem;
+        }
+
+        .tree-view li.folder.open > .toggle-icon {
+            transform: rotate(-90deg); /* Rotate arrow when open */
+        }
+
+        .tree-view ul.nested {
+            padding-right: 1.5rem;
+            display: none;
+            margin-top: 0.25rem;
+            border-right: 1px dashed var(--modern-border-light); /* Visual guide for nested items */
+            padding-bottom: 0.25rem;
+        }
+
+        .tree-view ul.nested.active {
+            display: block;
+        }
+
+        .tree-view li.folder {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tree-view li.folder .folder-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+
+        .tree-view li.folder .toggle-icon {
+            transition: transform 0.2s ease;
+            font-size: 0.8rem;
+            color: var(--modern-text-secondary);
+        }
+
+        .tree-view li.folder.active .toggle-icon {
+            color: white;
+        }
+
+        .tree-view li.file-item {
+            font-size: 0.9rem;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex-grow: 1;
+            padding-left: 1.5rem; /* Space from sidebar */
+            padding-right: 1.5rem; /* Right padding */
+            overflow-y: auto;
+        }
+
+        /* Card Panel Styles */
         .card-panel {
             background-color: var(--modern-card-bg);
             border: 1px solid var(--modern-border-light);
-            border-right: 5px solid var(--modern-primary-accent); /* Accent border for general cards */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            padding: 1.5rem;
+            border-radius: 1.25rem; /* More rounded corners */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* More pronounced shadow */
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .card-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
         }
 
-        /* Specific accent for duplicates */
-        #duplicate-products.card-panel {
-            border-right: 5px solid var(--modern-warning);
-        }
-
-        /* Specific accent for sold products */
-        #sold-products.card-panel {
-            border-right: 5px solid var(--modern-warning);
-        }
+        /* Specific accent borders for cards */
+        .card-panel.accent-primary { border-right: 5px solid var(--modern-primary-accent); }
+        .card-panel.accent-warning { border-right: 5px solid var(--modern-warning); }
+        .card-panel.accent-error { border-right: 5px solid var(--modern-error); }
 
         .section-title {
-            font-size: 1.6rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--modern-primary-accent);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1rem;
             border-bottom: 2px solid var(--modern-border-light);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.8rem;
+            justify-content: center;
         }
 
-        /* --- KPI Card Grid --- */
+        @media (min-width: 768px) {
+            .section-title { justify-content: flex-start; }
+        }
+
+        .section-title .fas {
+            font-size: 1.6rem;
+            color: var(--modern-primary-accent);
+        }
+
         .kpi-card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -146,285 +290,276 @@
         .kpi-card {
             background-color: var(--modern-card-bg);
             border: 1px solid var(--modern-border-light);
-            border-radius: 8px;
-            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border-right: 4px solid var(--modern-primary-accent);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+            border-right: 4px solid var(--modern-primary-accent); /* Default KPI accent */
         }
 
-        .kpi-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-        }
+        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); }
 
         .kpi-card-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--modern-text-secondary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .kpi-value {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: var(--modern-primary-accent);
         }
 
-        /* --- Dynamic List Item Card --- */
+        /* Dynamic List Items */
         .list-item-card {
-            background-color: var(--modern-bg-secondary); /* Lighter background for list items */
+            background-color: var(--modern-bg-primary); /* Use primary background for list items */
             border: 1px solid var(--modern-border-light);
-            border-radius: 8px;
-            padding: 1rem; /* Adjusted padding */
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-            margin-bottom: 0.75rem; /* Spacing between list items */
-            display: flex; /* Ensure flex for icon and text */
+            border-radius: 0.75rem;
+            padding: 0.8rem 1rem;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease;
+            margin-bottom: 0.6rem;
+            display: flex;
             align-items: center;
-            gap: 10px; /* Space between icon and text */
+            gap: 12px;
             cursor: pointer;
-            text-align: right; /* RTL alignment */
+            text-align: right;
+            direction: rtl;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
 
         .list-item-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            border-color: var(--modern-primary-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+            background-color: var(--modern-secondary-accent);
         }
 
         .list-item-card .icon-wrapper {
-            flex-shrink: 0; /* Prevent icon from shrinking */
-            font-size: 1.5rem;
+            flex-shrink: 0;
+            font-size: 1.4rem;
             color: var(--modern-primary-accent);
             transition: color 0.2s ease-in-out;
         }
 
-        .list-item-card:hover .icon-wrapper {
-            color: #0056b3; /* Darker blue on hover */
-        }
+        .list-item-card:hover .icon-wrapper { color: var(--modern-primary-accent); }
 
         .list-item-card .content-wrapper {
-            flex-grow: 1; /* Allow content to take available space */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            align-items: flex-end; /* Align text to the right */
+            align-items: flex-end;
+        }
+        .list-item-card .content-wrapper span:first-child {
+            font-weight: 600;
+            color: var(--modern-text-dark);
+            font-size: 1rem;
+        }
+        .list-item-card .content-wrapper span:last-child {
+            color: var(--modern-text-secondary);
+            font-size: 0.85rem;
         }
 
-        /* Custom Scrollbar for lists */
+        /* Custom Scrollbar */
         .custom-scrollbar {
-            max-height: 300px; /* Example height */
+            max-height: 350px; /* Slightly taller scrollable lists */
             overflow-y: auto;
-            padding-bottom: 10px; /* Space for scrollbar thumb */
-            padding-left: 10px; /* Space for scrollbar in RTL */
+            padding-bottom: 10px;
+            padding-left: 10px;
             padding-right: 0;
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; border-radius: 10px;}
+        .custom-scrollbar::-webkit-scrollbar-track { background: var(--modern-bg-primary); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--modern-border-light); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--modern-secondary-accent); }
 
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: var(--modern-bg-primary);
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: var(--modern-border-light);
-            border-radius: 10px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: var(--modern-secondary-accent);
-        }
-
-        /* --- Form Elements --- */
+        /* Form Elements */
         .form-input {
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1.2rem;
             border: 1px solid var(--modern-border-light);
-            border-radius: 6px;
+            border-radius: 0.75rem; /* More rounded */
             background-color: var(--modern-card-bg);
             color: var(--modern-text-dark);
             width: 100%;
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
             outline: none;
         }
 
         .form-input:focus {
             border-color: var(--modern-primary-accent);
-            box-shadow: 0 0 0 3px rgba(var(--modern-primary-accent-rgb), 0.25);
+            box-shadow: 0 0 0 4px rgba(var(--modern-primary-accent-rgb), 0.25); /* Stronger focus ring */
         }
 
-        /* --- Modern Buttons --- */
+        /* Buttons */
         .modern-button {
-            padding: 0.75rem 1.25rem;
-            border-radius: 6px;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.75rem; /* More rounded */
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 0.6rem;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08); /* Stronger button shadow */
+            border: 1px solid transparent;
         }
+
+        .modern-button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        .modern-button:active { box-shadow: inset 0 1px 4px rgba(0,0,0,0.15); transform: translateY(0); }
 
         .btn-primary-action {
             background-color: var(--modern-primary-accent);
             color: white;
-            border: 1px solid var(--modern-primary-accent);
+            border-color: var(--modern-primary-accent);
+            box-shadow: 0 8px 20px rgba(var(--modern-primary-accent-rgb), 0.35); /* Stronger primary shadow */
         }
 
-        .btn-primary-action:hover {
-            background-color: #0056b3; /* A darker blue */
-        }
+        .btn-primary-action:hover { background-color: #4338ca; border-color: #4338ca; }
 
         .btn-danger-action {
             background-color: var(--modern-error);
             color: white;
-            border: 1px solid var(--modern-error);
+            border-color: var(--modern-error);
+            box-shadow: 0 8px 20px rgba(var(--modern-error-rgb), 0.35);
         }
 
-        .btn-danger-action:hover {
-            background-color: #c82333; /* A darker red */
-        }
+        .btn-danger-action:hover { background-color: #dc2626; border-color: #dc2626; }
 
         .btn-clear-action {
             background-color: var(--modern-secondary-accent);
-            color: white;
-            border: 1px solid var(--modern-secondary-accent);
+            color: var(--modern-text-dark);
+            border-color: var(--modern-border-light);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
         }
 
-        .btn-clear-action:hover {
-            background-color: #5a6268; /* A darker grey */
-        }
+        .btn-clear-action:hover { background-color: var(--modern-border-light); border-color: var(--modern-border-light); }
 
         .btn-success-action {
             background-color: var(--modern-success);
             color: white;
-            border: 1px solid var(--modern-success);
+            border-color: var(--modern-success);
+            box-shadow: 0 8px 20px rgba(var(--modern-success-rgb), 0.35);
         }
 
-        .btn-success-action:hover {
-            background-color: #218838; /* A darker green */
-        }
+        .btn-success-action:hover { background-color: #16a34a; border-color: #16a34a; }
 
-        /* --- Loader Spinner --- */
+        /* Loaders */
         .loader {
-            border-color: var(--modern-border-light) !important;
-            border-top-color: var(--modern-primary-accent) !important;
+            border: 5px solid var(--modern-border-light);
+            border-top: 5px solid var(--modern-primary-accent);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
+            margin: 3rem auto;
+            display: none;
         }
+
+        .loader.active { display: block; }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* --- Toast Messages --- */
+        /* Toast Messages */
         #toast-container {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            align-items: flex-end; /* Align toasts to the right */
+            gap: 1rem;
+            max-width: 380px; /* Slightly wider toasts */
+            align-items: center;
         }
 
         .toast-message {
-            background-color: var(--modern-card-bg);
-            color: var(--modern-text-dark);
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.1rem 1.5rem; /* Larger padding */
+            border-radius: 0.75rem; /* More rounded */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+            opacity: 0;
+            transform: scale(0.9); /* Subtle scale effect */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             display: flex;
             align-items: center;
-            gap: 10px;
-            min-width: 250px;
-            max-width: 350px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            gap: 0.8rem;
+            font-size: 1.05rem;
+            color: white;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: right;
         }
 
-        .toast-message.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .toast-message.active { opacity: 1; transform: scale(1); }
+        .toast-message i { font-size: 1.3rem; }
+        .toast-message.success { background-color: var(--modern-success); }
+        .toast-message.error { background-color: var(--modern-error); }
+        .toast-message.info { background-color: var(--modern-info); } /* Use new info color */
+        .toast-message.warning { background-color: var(--modern-warning); }
 
-        .toast-message i {
-            font-size: 1.2rem;
-        }
-
-        .toast-message.success { border-right: 5px solid var(--modern-success); }
-        .toast-message.success i { color: var(--modern-success); }
-        .toast-message.error { border-right: 5px solid var(--modern-error); }
-        .toast-message.error i { color: var(--modern-error); }
-        .toast-message.info { border-right: 5px solid var(--modern-primary-accent); }
-        .toast-message.info i { color: var(--modern-primary-accent); }
-        .toast-message.warning { border-right: 5px solid var(--modern-warning); }
-        .toast-message.warning i { color: var(--modern-warning); }
-
-        /* --- Modal Styles (Confirmation & Invoice Display) --- */
+        /* Modals */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
 
         .modal-content {
             background-color: var(--modern-card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
+            padding: 2.8rem; /* Larger padding */
+            border-radius: 1.25rem; /* More rounded */
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+            max-width: 550px; /* Slightly wider */
             width: 90%;
             text-align: center;
-            transform: translateY(-50px); /* Start slightly above center */
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: translateY(-50px); /* Deeper initial transform */
+            transition: transform 0.3s ease, opacity 0.3s ease;
             opacity: 0;
         }
 
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        .modal-overlay.active .modal-content { transform: translateY(0); opacity: 1; }
 
         .modal-title {
-            font-size: 1.8rem;
+            font-size: 2rem; /* Larger title */
+            font-weight: 700;
             color: var(--modern-primary-accent);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .modal-message {
-            font-size: 1.1rem;
-            color: var(--modern-text-dark);
-            margin-bottom: 2rem;
+            font-size: 1.15rem; /* Larger message */
+            color: var(--modern-text-secondary);
+            margin-bottom: 2.5rem;
         }
 
         .modal-actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 1.5rem; /* Larger gap */
         }
 
-        /* Invoice Display Modal Specifics */
         .invoice-modal-overlay {
             position: fixed;
             top: 0;
@@ -438,132 +573,130 @@
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
-        .invoice-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .invoice-modal-overlay.active { opacity: 1; visibility: visible; }
 
         .invoice-modal-content {
             background-color: var(--modern-card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            max-width: 800px; /* Wider for invoice details */
+            padding: 2.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            max-width: 900px; /* Wider for invoice details */
             width: 95%;
-            text-align: right; /* RTL alignment */
+            text-align: right;
             transform: translateY(-50px);
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transition: transform 0.3s ease, opacity 0.3s ease;
             opacity: 0;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.8rem;
         }
 
-        .invoice-modal-overlay.active .invoice-modal-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        .invoice-modal-overlay.active .invoice-modal-content { transform: translateY(0); opacity: 1; }
 
         .invoice-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--modern-border-light);
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--modern-border-light); /* Thicker border */
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.5rem;
         }
 
-        .invoice-modal-header h3 {
-            font-size: 1.5rem;
-            color: var(--modern-primary-accent);
-            margin: 0;
-        }
+        .invoice-modal-header h3 { font-size: 1.8rem; color: var(--modern-primary-accent); margin: 0; }
 
-        .invoice-modal-info p {
-            margin-bottom: 0.5rem;
-            color: var(--modern-text-dark);
-        }
+        .invoice-modal-info p { margin-bottom: 0.7rem; font-size: 1.05rem; color: var(--modern-text-dark); }
+        .invoice-modal-info p strong { color: var(--modern-primary-accent); }
 
         .invoice-modal-table-wrapper {
-            max-height: 300px;
+            max-height: 350px; /* Taller table scroll */
             overflow-y: auto;
             border: 1px solid var(--modern-border-light);
-            border-radius: 6px;
+            border-radius: 0.75rem;
         }
 
-        .invoice-modal-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .invoice-modal-table th,
-        .invoice-modal-table td {
-            padding: 0.8rem;
+        .invoice-modal-table { width: 100%; border-collapse: collapse; text-align: right; }
+        .invoice-modal-table th, .invoice-modal-table td {
+            padding: 1rem 1.5rem; /* More padding */
             border-bottom: 1px solid var(--modern-border-light);
-            text-align: right; /* RTL alignment */
+            text-align: right;
         }
 
         .invoice-modal-table th {
-            background-color: var(--modern-bg-secondary);
+            background-color: var(--modern-secondary-accent);
             font-weight: 600;
             color: var(--modern-primary-accent);
         }
 
-        .invoice-modal-table tbody tr:last-child td {
-            border-bottom: none;
+        .invoice-modal-table tbody tr:last-child td { border-bottom: none; }
+
+        .invoice-products-table, .po-products-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .invoice-products-table th, .invoice-products-table td,
+        .po-products-table th, .po-products-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--modern-border-light);
+            text-align: right;
+        }
+        .invoice-products-table th, .po-products-table th {
+            background-color: var(--modern-bg-primary);
+            color: var(--modern-text-dark);
+            font-weight: 600;
+        }
+        .invoice-products-scrollable, .po-products-scrollable {
+            max-height: 150px; /* Limit height for nested product lists */
+            overflow-y: auto;
+            margin-top: 1rem;
+            border: 1px solid var(--modern-border-light);
+            border-radius: 0.75rem;
         }
 
         .invoice-modal-summary {
             border-top: 2px dashed var(--modern-border-light);
-            padding-top: 1.5rem;
-            text-align: right; /* Summary totals often align right for RTL */
-            direction: rtl; /* Ensure numbers and currency are aligned correctly if mixed with Arabic text */
+            padding-top: 1.2rem;
+            text-align: right;
+            direction: rtl;
         }
 
-        .invoice-modal-summary p {
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
-            color: var(--modern-text-dark);
-        }
-
-        .invoice-modal-summary strong {
-            color: var(--modern-primary-accent);
-        }
-
+        .invoice-modal-summary p { margin-bottom: 0.7rem; font-size: 1.1rem; color: var(--modern-text-dark); }
+        .invoice-modal-summary strong { color: var(--modern-primary-accent); }
         .invoice-modal-summary .total-row {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--modern-success);
+            color: var(--modern-primary-accent);
+            background-color: var(--modern-secondary-accent);
             border-top: 1px solid var(--modern-border-light);
-            padding-top: 0.75rem;
-            margin-top: 0.75rem;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            border-radius: 0.75rem;
         }
 
         .invoice-modal-actions {
             display: flex;
-            justify-content: flex-end; /* Align print button to the right */
-            gap: 15px;
-            padding-top: 1rem;
-            border-top: 1px solid var(--modern-border-light);
+            justify-content: flex-end;
+            gap: 1.5rem;
+            padding-top: 1.2rem;
+            border-top: 2px dashed var(--modern-border-light);
         }
 
-        /* Adjustments for print view (optional but good practice) */
-        @media print {
-            body > *:not(.invoice-modal-overlay) {
-                display: none;
-            }
+        .invoice-modal-actions .modern-button { flex-grow: 1; max-width: 180px; }
 
+        @media print {
+            body > *:not(.invoice-modal-overlay) { display: none; }
             .invoice-modal-overlay {
-                position: static; /* Remove fixed positioning for print */
-                background-color: white; /* No overlay background */
+                position: static;
+                background-color: white;
                 display: block;
                 opacity: 1;
                 visibility: visible;
+                height: auto;
             }
-
             .invoice-modal-content {
                 box-shadow: none;
                 max-width: none;
@@ -573,29 +706,54 @@
                 opacity: 1;
                 border-radius: 0;
                 overflow: visible;
+                margin: 0;
             }
-
-            .invoice-modal-header button,
-            .invoice-modal-actions {
-                display: none; /* Hide close and print buttons in print view */
-            }
-
-            /* Ensure tables and lists print properly without scrollbars */
-            .invoice-modal-table-wrapper,
-            .custom-scrollbar {
-                max-height: none !important;
-                overflow: visible !important;
+            .invoice-modal-header button, .invoice-modal-actions { display: none; }
+            .invoice-modal-table-wrapper, .custom-scrollbar { max-height: none !important; overflow: visible !important; }
+            .invoice-modal-table th, .invoice-modal-table td { border-color: #ddd !important; }
+            .invoice-modal-summary .total-row {
+                background-color: #f0f0f0 !important;
+                -webkit-print-color-adjust: exact;
+                color: #000 !important;
             }
         }
 
-        /* --- Footer Styles --- */
         .app-footer {
             background-color: var(--modern-text-dark);
             color: white;
             text-align: center;
-            padding: 1rem;
+            padding: 1.2rem;
             margin-top: 2rem;
             font-size: 0.9rem;
+            flex-shrink: 0;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+        }
+
+        /* Burger Menu for Mobile */
+        .burger-menu {
+            display: none; /* Hidden by default, shown on small screens */
+            background-color: transparent;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-left: 1rem; /* Space from brand */
+            z-index: 60; /* Above sidebar overlay */
+        }
+
+        @media (max-width: 1023px) {
+            .burger-menu {
+                display: block;
+            }
+            .app-header .flex-col.md\:flex-row {
+                flex-direction: row; /* Keep header items in a row */
+                justify-content: space-between;
+            }
+            .app-header .header-nav-group {
+                display: none; /* Hide main nav buttons on mobile when sidebar is active */
+            }
         }
     </style>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
@@ -603,108 +761,46 @@
 </head>
 <body>
     <header class="app-header">
-        <div class="header-content">
-            <h1 class="header-brand">
-                <i class="fas fa-database"></i>
-                <span>بيانات Firebase والإحصائيات</span>
-            </h1>
-            <nav>
-                <ul>
-                    <li><a href="#detailed-stats">
-                        <i class="fas fa-chart-line"></i> لوحة التحكم
-                    </a></li>
-                </ul>
-            </nav>
+        <div class="max-w-7xl mx-auto w-full flex flex-col md:flex-row justify-between items-center flex-wrap gap-5 px-6">
+            <div class="flex-shrink-0 flex items-center">
+                <button type="button" id="burgerMenu" class="burger-menu lg:hidden">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-brand"><i class="fas fa-chart-pie"></i> لوحة تحكم تحليل البيانات</div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 md:gap-6 items-center w-full">
+                <!-- Removed redundant button as navigation is now in top-nav-container -->
+            </div>
         </div>
     </header>
 
     <div id="toast-container"></div> 
+    <div id="sidebarOverlay" class="sidebar-overlay lg:hidden"></div>
 
-    <main class="flex-grow px-4 md:px-8 py-4"> 
-        <div class="app-container space-y-10">
-            <section id="detailed-stats" class="card-panel">
-                <h2 class="section-title">
-                    <i class="fas fa-chart-line"></i> إحصائيات المبيعات التفصيلية
-                </h2>
-                
-                <div class="kpi-card-grid">
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-money-bill-wave ml-2"></i>إجمالي سعر الشراء</h3>
-                        <p id="totalPurchaseCost" class="kpi-value">0.00 DH</p>
-                    </div>
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-hand-holding-usd ml-2"></i>إجمالي الأرباح</h3>
-                        <p id="totalProfit" class="kpi-value">0.00 DH</p>
-                    </div>
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-cash-register ml-2"></i>إجمالي سعر البيع</h3>
-                        <p id="totalSellingPrice" class="kpi-value">0.00 DH</p>
-                    </div>
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-percent ml-2"></i>إجمالي العمولة</h3>
-                        <p id="totalCommission" class="kpi-value">0.00 DH</p>
-                    </div>
-                    
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-calculator ml-2"></i>إجمالي المبيعات (HT)</h3>
-                        <p id="totalSalesHT" class="kpi-value">0.00 DH</p>
-                    </div>
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-file-invoice ml-2"></i>إجمالي TVA</h3>
-                        <p id="totalTVA" class="kpi-value">0.00 DH</p>
-                    </div>
-                    <div class="kpi-card">
-                        <h3 class="kpi-card-title"><i class="fas fa-dollar-sign ml-2"></i>إجمالي المبيعات (TTC)</h3>
-                        <p id="totalSalesTTC" class="kpi-value">0.00 DH</p>
-                    </div>
-                </div>
+    <div class="main-layout-container">
+        <!-- Sidebar (Tree View) -->
+        <aside class="sidebar" id="sidebar">
+            <h3 class="section-title !text-xl !mb-4 !pb-2 !border-b !border-modern-border-light !justify-start">
+                <i class="fas fa-folder-tree"></i> تصفح البيانات
+            </h3>
+            <div id="treeViewContainer" class="tree-view">
+                <!-- Tree will be rendered here by JavaScript -->
+                <ul id="mainTreeRoot">
+                    <li class="folder" data-type="all" data-phone="all">
+                        <div class="folder-label">
+                            <i class="fas fa-database"></i> <span>جميع بيانات Firebase</span>
+                        </div>
+                        <i class="fas fa-chevron-left toggle-icon"></i>
+                    </li>
+                </ul>
+            </div>
+        </aside>
 
-                <!-- Chart Placeholder - Now with a canvas for Chart.js -->
-                <div class="card-panel p-4 shadow-sm mt-8">
-                    <h3 class="section-title text-modern-primary-accent">
-                        <i class="fas fa-chart-bar"></i> نظرة عامة على الرسوم البيانية
-                    </h3>
-                    <div class="w-full h-80 flex items-center justify-center">
-                        <canvas id="salesChartCanvas"></canvas>
-                    </div>
-                </div>
-
-                <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-8">
-                    <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title section-title text-modern-primary-accent">
-                            <i class="fas fa-box-open"></i> المنتجات الأكثر مبيعاً
-                        </h3>
-                        <ul id="topSellingProductsList" class="custom-scrollbar space-y-2">
-                            <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title section-title text-modern-primary-accent">
-                            <i class="fas fa-user-friends"></i> العملاء الأكثر نشاطاً
-                        </h3>
-                        <ul id="topCustomersList" class="custom-scrollbar space-y-2">
-                            <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title section-title text-modern-primary-accent">
-                            <i class="fas fa-file-invoice-dollar"></i> أصحاب الفواتير الأكثر نشاطاً
-                        </h3>
-                        <ul id="topInvoiceOwnersList" class="custom-scrollbar space-y-2">
-                            <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                    <div class="card-panel p-4 shadow-sm flex flex-col">
-                        <h3 class="card-panel-title section-title text-modern-primary-accent">
-                            <i class="fas fa-truck"></i> الموردون الأكثر نشاطاً
-                        </h3>
-                        <ul id="topSuppliersList" class="custom-scrollbar space-y-2">
-                            <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-4 mt-8 search-filter-controls md:flex-row md:items-end md:justify-between">
+        <!-- Main Content Area -->
+        <main class="content-area"> 
+            <div class="app-container space-y-10 !p-0">
+                <!-- Search and Filter Controls (always visible) -->
+                <div class="flex flex-col gap-4 mb-6 search-filter-controls md:flex-row md:items-end md:justify-between card-panel !p-4">
                     <button type="button" id="clearCommonSearchInput"
                         class="modern-button btn-clear-action w-full md:w-auto md:shrink-0 h-11">
                         <i class="fas fa-times-circle"></i> مسح
@@ -718,71 +814,152 @@
                         class="form-input md:flex-1 h-11">
                     </select>
                 </div>
-            </section>
-            
-            <div id="phoneActions" class="flex flex-wrap gap-4 mb-6 justify-center" style="display: none;">
-                <button type="button" id="exportPhoneDataBtn" class="modern-button btn-primary-action">
-                    <i class="fas fa-download"></i> تصدير بيانات هذا الهاتف
-                </button>
-                <button type="button" id="deletePhoneDataBtn" class="modern-button btn-danger-action">
-                    <i class="fas fa-trash-alt"></i> حذف بيانات هذا الهاتف
-                </button>
+
+                <!-- Phone-specific Actions (visible only when a phone is selected) -->
+                <div id="phoneActions" class="flex flex-wrap gap-4 mb-6 justify-center" style="display: none;">
+                    <button type="button" id="exportPhoneDataBtn" class="modern-button btn-primary-action">
+                        <i class="fas fa-download"></i> تصدير بيانات هذا الهاتف
+                    </button>
+                    <button type="button" id="deletePhoneDataBtn" class="modern-button btn-danger-action">
+                        <i class="fas fa-trash-alt"></i> حذف بيانات هذا الهاتف
+                    </button>
+                </div>
+
+                <!-- Sections (dynamically shown/hidden) -->
+                <section id="detailed-stats" class="card-panel accent-primary">
+                    <h2 class="section-title">
+                        <i class="fas fa-chart-line"></i> إحصائيات المبيعات التفصيلية
+                    </h2>
+                    <div class="kpi-card-grid">
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-money-bill-wave"></i>إجمالي سعر الشراء</h3>
+                            <p id="totalPurchaseCost" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-hand-holding-usd"></i>إجمالي الأرباح</h3>
+                            <p id="totalProfit" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-cash-register"></i>إجمالي سعر البيع</h3>
+                            <p id="totalSellingPrice" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-percent"></i>إجمالي العمولة</h3>
+                            <p id="totalCommission" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-calculator"></i>إجمالي المبيعات (HT)</h3>
+                            <p id="totalSalesHT" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-file-invoice"></i>إجمالي TVA</h3>
+                            <p id="totalTVA" class="kpi-value">0.00 DH</p>
+                        </div>
+                        <div class="kpi-card">
+                            <h3 class="kpi-card-title"><i class="fas fa-dollar-sign"></i>إجمالي المبيعات (TTC)</h3>
+                            <p id="totalSalesTTC" class="kpi-value">0.00 DH</p>
+                        </div>
+                    </div>
+
+                    <div id="dynamicStatsListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mt-8">
+                        <div class="card-panel p-4 shadow-sm flex flex-col accent-primary">
+                            <h3 class="card-panel-title section-title text-modern-primary-accent !text-xl !mb-4 !pb-2 !border-b !border-modern-border-light">
+                                <i class="fas fa-box-open"></i> المنتجات الأكثر مبيعاً
+                            </h3>
+                            <ul id="topSellingProductsList" class="custom-scrollbar space-y-2">
+                                <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
+                            </ul>
+                        </div>
+                        <div class="card-panel p-4 shadow-sm flex flex-col accent-primary">
+                            <h3 class="card-panel-title section-title text-modern-primary-accent !text-xl !mb-4 !pb-2 !border-b !border-modern-border-light">
+                                <i class="fas fa-user-friends"></i> العملاء الأكثر نشاطاً
+                            </h3>
+                            <ul id="topCustomersList" class="custom-scrollbar space-y-2">
+                                <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
+                            </ul>
+                        </div>
+                        <div class="card-panel p-4 shadow-sm flex flex-col accent-primary">
+                            <h3 class="card-panel-title section-title text-modern-primary-accent !text-xl !mb-4 !pb-2 !border-b !border-modern-border-light">
+                                <i class="fas fa-file-invoice-dollar"></i> أصحاب الفواتير الأكثر نشاطاً
+                            </h3>
+                            <ul id="topInvoiceOwnersList" class="custom-scrollbar space-y-2">
+                                <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
+                            </ul>
+                        </div>
+                        <div class="card-panel p-4 shadow-sm flex flex-col accent-primary">
+                            <h3 class="card-panel-title section-title text-modern-primary-accent !text-xl !mb-4 !pb-2 !border-b !border-modern-border-light">
+                                <i class="fas fa-truck"></i> الموردون الأكثر نشاطاً
+                            </h3>
+                            <ul id="topSuppliersList" class="custom-scrollbar space-y-2">
+                                <li class="text-modern-text-dark text-center py-2">لا توجد بيانات</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="purchase-orders-list" class="card-panel accent-primary" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-shopping-cart"></i> قائمة أوامر الشراء من Firebase
+                    </h2>
+                    <div id="firebasePurchaseOrdersContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد أوامر شراء لعرضها.</p>
+                    </div>
+                    <div id="firebasePurchaseOrdersLoader"
+                        class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
+                    </div>
+                </section>
+
+                <section id="duplicate-products" class="card-panel accent-warning" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-copy" style="color: var(--modern-warning);"></i> المنتجات المتكررة في المخزون
+                    </h2>
+                    <div id="firebaseDuplicateProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات متكررة لعرضها.</p>
+                    </div>
+                    <div id="firebaseDuplicateProductsLoader"
+                        class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
+                    </div>
+                </section>
+
+                <section id="inventory-products" class="card-panel accent-primary" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-boxes"></i> قائمة منتجات المخزون من Firebase
+                    </h2>
+                    <div id="firebaseProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>
+                    </div>
+                    <div id="firebaseProductsLoader"
+                        class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
+                    </div>
+                </section>
+
+                <section id="sold-products" class="card-panel accent-warning" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-receipt" style="color: var(--modern-warning);"></i> المنتجات المباعة في الفواتير
+                    </h2>
+                    <div id="firebaseInvoiceProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات مباعة في
+                            الفواتير لعرضها.</p>
+                    </div>
+                    <div id="firebaseInvoiceProductsLoader"
+                        class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
+                    </div>
+                </section>
+
+                <section id="invoices-list" class="card-panel accent-primary" style="display: none;">
+                    <h2 class="section-title">
+                        <i class="fas fa-cloud"></i> قائمة فواتير Firebase
+                    </h2>
+                    <div id="firebaseInvoicesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>
+                    </div>
+                    <div id="firebaseInvoicesLoader"
+                        class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
+                    </div>
+                </section>
             </div>
-
-            <section id="duplicate-products" class="card-panel">
-                <h2 class="section-title">
-                    <i class="fas fa-copy" style="color: var(--modern-warning);"></i> المنتجات المتكررة في المخزون
-                    (<span id="firebaseDuplicateProductListCount">0</span>)
-                </h2>
-                <div id="firebaseDuplicateProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات متكررة لعرضها.</p>
-                </div>
-                <div id="firebaseDuplicateProductsLoader"
-                    class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
-                </div>
-            </section>
-
-            <section id="inventory-products" class="card-panel">
-                <h2 class="section-title">
-                    <i class="fas fa-boxes"></i> قائمة منتجات المخزون من Firebase
-                    (<span id="firebaseProductListCount">0</span>)
-                </h2>
-                <div id="firebaseProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>
-                </div>
-                <div id="firebaseProductsLoader"
-                    class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
-                </div>
-            </section>
-
-            <section id="sold-products" class="card-panel">
-                <h2 class="section-title">
-                    <i class="fas fa-receipt" style="color: var(--modern-warning);"></i> المنتجات المباعة في الفواتير
-                    (<span id="firebaseInvoiceProductListCount">0</span>)
-                </h2>
-                <div id="firebaseInvoiceProductsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات مباعة في
-                        الفواتير لعرضها.</p>
-                </div>
-                <div id="firebaseInvoiceProductsLoader"
-                    class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
-                </div>
-            </section>
-
-            <section id="invoices-list" class="card-panel">
-                <h2 class="section-title">
-                    <i class="fas fa-cloud"></i> قائمة فواتير Firebase
-                    (<span id="firebaseInvoiceListCount">0</span>)
-                </h2>
-                <div id="firebaseInvoicesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>
-                </div>
-                <div id="firebaseInvoicesLoader"
-                    class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden">
-                </div>
-            </section>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <div id="invoiceDisplayModalOverlay" class="invoice-modal-overlay">
         <div id="invoiceDisplayModalContent" class="invoice-modal-content">
@@ -832,6 +1009,52 @@
         </div>
     </div>
 
+    <!-- Modal for Purchase Order Details -->
+    <div id="purchaseOrderDisplayModalOverlay" class="invoice-modal-overlay">
+        <div id="purchaseOrderDisplayModalContent" class="invoice-modal-content">
+            <div class="invoice-modal-header">
+                <h3>تفاصيل أمر الشراء</h3>
+                <button id="closePurchaseOrderModalBtn" class="modern-button btn-danger-action">
+                    <i class="fas fa-times"></i> إغلاق
+                </button>
+            </div>
+            <div class="invoice-modal-info">
+                <p><strong>المورد:</strong> <span id="modalPOSupplierName"></span></p>
+                <p><strong>هاتف المورد:</strong> <span id="modalPOSupplierPhone"></span></p>
+                <p><strong>تاريخ أمر الشراء:</strong> <span id="modalPODate"></span></p>
+                <p><strong>مالك أمر الشراء:</strong> <span id="modalPOOwnerName"></span></p>
+                <p><strong>هاتف المالك:</strong> <span id="modalPOOwnerPhone"></span></p>
+                <p><strong>رقم أمر الشراء:</strong> <span id="modalPONumber"></span></p>
+                <p><strong>تاريخ التسليم المتوقع:</strong> <span id="modalPODeliveryDate"></span></p>
+                <p><strong>الحالة:</strong> <span id="modalPOStatus"></span></p>
+            </div>
+            <div class="invoice-modal-table-wrapper">
+                <table class="invoice-modal-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المنتج</th>
+                            <th>سعر الشراء</th>
+                            <th>الكمية</th>
+                            <th>المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalPOProductsTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="invoice-modal-summary">
+                <p class="total-row"><strong>إجمالي تكلفة الشراء:</strong> <span id="modalPOTotalCost"></span> DH</p>
+            </div>
+            <div class="invoice-modal-actions">
+                <button id="printPurchaseOrderModalBtn" class="modern-button btn-primary-action">
+                    <i class="fas fa-print"></i> طباعة أمر الشراء
+                </button>
+            </div>
+            <div id="purchaseOrderModalLoader" class="loader w-8 h-8 border-4 border-modern-border-light border-t-modern-primary-accent rounded-full mx-auto mt-6 hidden"></div>
+        </div>
+    </div>
+
     <footer class="app-footer">
         <p>&copy; 2024 نظام إدارة الفواتير والمنتجات. جميع الحقوق محفوظة.</p>
     </footer>
@@ -853,9 +1076,11 @@
                         'modern-success': 'var(--modern-success)',
                         'modern-warning': 'var(--modern-warning)',
                         'modern-error': 'var(--modern-error)',
-                        'modern-primary-accent-rgb': '0, 123, 255', // Use direct RGB values here
-                        'modern-success-rgb': '40, 167, 69',
-                        'modern-error-rgb': '220, 53, 69',
+                        'modern-info': 'var(--modern-info)',
+                        // Corrected RGB values to be literal strings instead of CSS variables
+                        'modern-primary-accent-rgb': '79, 70, 229', 
+                        'modern-success-rgb': '34, 197, 94',
+                        'modern-error-rgb': '239, 68, 68',
                     },
                 },
             },
@@ -866,6 +1091,7 @@
             databaseURL: "https://said-rahil-default-rtdb.firebaseio.com",
             // Add other config properties if needed, e.g., projectId, apiKey, etc.
         };
+
         let firebaseApp;
         let database;
         try {
@@ -886,6 +1112,11 @@
         let allFirebaseInvoiceProductsWithDetails = []; // Stores products from invoices with customer/owner details
         let inventoryProductsMap = new Map(); // Use a Map to quickly access original product data from inventoryProducts
         let allFirebaseDuplicateProducts = []; // Stores detected duplicate products
+        let allFirebasePurchaseOrdersData = []; // Stores purchase orders
+
+        // Current view state for the file explorer
+        let currentSelectedPhone = 'all'; // 'all' or a specific phone number
+        let currentSelectedDataType = 'dashboard'; // 'dashboard', 'inventory', 'invoices', 'purchaseOrders', 'duplicates', 'soldProducts'
 
         // ====== Key Mapping for Firebase (Local Keys <-> French Keys) ======
         // IMPORTANT: These mappings MUST match the ones in your main sales application EXACTLY.
@@ -895,6 +1126,7 @@
             name: 'nom',
             purchasePrice: 'prixAchat',
             sellingPrice: 'prixVente',
+            minStockQuantity: 'quantiteMinimaleStock', // Added minStockQuantity
             supplierName: 'nomFournisseur',
             supplierAddress: 'adresseFournisseur',
             supplierPhone: 'telephoneFournisseur',
@@ -903,6 +1135,7 @@
             // 'quantity' and 'isLocal' are local-only in the sales app, so they are not mapped for Firebase storage.
             // quantity: 'quantiteSelectionnee', 
             // isLocal: 'estLocal', 
+
             // Invoice Keys (fields within the invoice object)
             // id: 'id', // This is for the invoice ID itself. (handled manually as firebase key)
             date: 'dateFacture', // Formatted date string for display (matches original app)
@@ -921,7 +1154,23 @@
             totalCommission: 'commissionTotale',
             invoiceCommissionRate: 'tauxCommissionFacture',
             // Product within Invoice Keys (fields within product objects inside the invoice's products array)
-            quantityUsed: 'quantiteUtilisee' // Quantity used in a specific invoice item
+            quantityUsed: 'quantiteUtilisee', // Quantity used in a specific invoice item
+            // NEW: Purchase Order Keys (based on provided JSON structure)
+            // The actual collection name in the provided JSON is 'purchaseOrders'
+            // The fields within each purchase order object are mapped here:
+            totalCost: 'montantTotalBonCommande', // Actual key from provided JSON
+            poDate: 'dateCreationProduit', // Using this as the main date for PO display
+            poIsoDate: 'dateIsoFacture', // Using this as the ISO date for PO sorting (even if named 'dateIsoFacture' in POs)
+            poOwnerName: 'nomProprietaireBonCommande', // Actual key from provided JSON
+            poOwnerPhone: 'telephoneProprietaireBonCommande', // Actual key from provided JSON
+            poSupplierName: 'nomFournisseurBonCommande', // Actual key from provided JSON
+            poSupplierAddress: 'adresseFournisseurBonCommande', // Actual key from provided JSON
+            poSupplierPhone: 'telephoneFournisseurBonCommande', // Actual key from provided JSON
+            poDeliveryDate: 'dateLivraisonEstimee', // Actual key from provided JSON
+            poStatus: 'statut', // Actual key from provided JSON
+            poNumber: 'numeroBonCommande', // Actual key from provided JSON
+            poProducts: 'produitsCommandes', // Actual key for the array of products within a purchase order
+            quantityPurchased: 'quantiteCommandee' // Actual key for quantity within a PO product
         };
 
         // Create reverse mapping for converting from Firebase French keys back to local keys
@@ -933,7 +1182,7 @@
         /**
          * Maps an object's keys from French Firebase names back to local JavaScript names.
          * Keys not found in KEY_MAPPING_FROM_FIREBASE are passed through as is.
-         * Handles nested 'produits' array within an invoice object recursively.
+         * Handles nested 'produits' array within an invoice object and 'produitsCommandes' array within purchase order recursively.
          * @param {object} fbObj - The object with French Firebase keys to map.
          * @returns {object} A new object with keys mapped back to local JavaScript names.
          */
@@ -945,6 +1194,7 @@
             for (const fbKey in fbObj) {
                 if (fbObj.hasOwnProperty(fbKey)) {
                     const localKey = KEY_MAPPING_FROM_FIREBASE[fbKey];
+                    // Handle nested products array for both invoices ('produits') and purchase orders ('produitsCommandes')
                     if (fbKey === 'produits' && Array.isArray(fbObj[fbKey])) {
                         newObj[localKey || fbKey] = fbObj[fbKey].map(p => {
                             const productMapped = {};
@@ -955,7 +1205,18 @@
                             }
                             return productMapped;
                         });
-                    } else {
+                    } else if (fbKey === 'produitsCommandes' && Array.isArray(fbObj[fbKey])) { // Specific for purchase order products
+                         newObj[localKey || fbKey] = fbObj[fbKey].map(p => {
+                            const productMapped = {};
+                            for (const productFbKey in p) {
+                                if (p.hasOwnProperty(productFbKey)) {
+                                    productMapped[KEY_MAPPING_FROM_FIREBASE[productFbKey] || productFbKey] = p[productFbKey];
+                                }
+                            }
+                            return productMapped;
+                        });
+                    }
+                    else {
                         newObj[localKey || fbKey] = fbObj[fbKey];
                     }
                 }
@@ -966,7 +1227,7 @@
         /**
          * Maps an object's keys from local JavaScript names to French Firebase names.
          * Keys not found in KEY_MAPPING_TO_FIREBASE are passed through as is.
-         * Handles nested 'products' array within an invoice object recursively.
+         * Handles nested 'products' array within an invoice object and purchase order recursively.
          * @param {object} localObj - The object with local JavaScript keys to map.
          * @returns {object} A new object with keys mapped to French Firebase names.
          */
@@ -978,7 +1239,8 @@
             for (const localKey in localObj) {
                 if (localObj.hasOwnProperty(localKey)) {
                     const fbKey = KEY_MAPPING_TO_FIREBASE[localKey];
-                    if (localKey === 'products' && Array.isArray(localObj[localKey])) {
+                    // Handle nested products array for both invoices and purchase orders
+                    if (localKey === 'products' && Array.isArray(localObj[localKey])) { // 'products' is the local key for invoice products
                         newObj[fbKey || localKey] = localObj[localKey].map(p => {
                             const productMapped = {};
                             for (const productLocalKey in p) {
@@ -988,7 +1250,18 @@
                             }
                             return productMapped;
                         });
-                    } else {
+                    } else if (localKey === 'poProducts' && Array.isArray(localObj[localKey])) { // 'poProducts' is the local key for PO products
+                         newObj[fbKey || localKey] = localObj[localKey].map(p => {
+                            const productMapped = {};
+                            for (const productLocalKey in p) {
+                                if (p.hasOwnProperty(productLocalKey)) {
+                                    productMapped[KEY_MAPPING_TO_FIREBASE[productLocalKey] || productLocalKey] = p[productLocalKey];
+                                }
+                            }
+                            return productMapped;
+                        });
+                    }
+                    else {
                         newObj[fbKey || localKey] = localObj[localKey];
                     }
                 }
@@ -1008,7 +1281,6 @@
         }
 
         let UIElements; // Declared here, assigned in window.onload
-        let salesChartInstance; // To store the Chart.js instance
 
         // ====== UI Utility Functions (minimal set for this section) ======
         const UI = {
@@ -1038,11 +1310,13 @@
                     }, 600); 
                 }, 3000); 
             },
+
             toggleGeneralLoader: (loaderElement, isLoading) => {
                 if (loaderElement) {
                     loaderElement.classList.toggle('hidden', !isLoading);
                 }
             },
+
             populateUniqueDatalist: (datalistElement, sourceArray, propertyName) => {
                 const uniqueValues = new Set();
                 sourceArray.forEach(item => {
@@ -1057,6 +1331,7 @@
                     datalistElement.appendChild(option);
                 });
             },
+
             populatePhoneSelect: (selectElement, phoneNumbers) => {
                 selectElement.innerHTML = '<option value="all">عرض الكل</option>';
                 Array.from(phoneNumbers).sort().forEach(phoneNumber => {
@@ -1066,6 +1341,7 @@
                     selectElement.appendChild(option);
                 });
             },
+
             showConfirmModal: (title, message) => { 
                 return new Promise(resolve => {
                     const modalOverlay = document.createElement('div');
@@ -1100,6 +1376,7 @@
                     }, { once: true });
                 });
             },
+
             showInvoiceModal: (invoice) => {
                 document.getElementById('modalCustomerName').textContent = invoice.customerName || 'N/A';
                 document.getElementById('modalCompanyName').textContent = invoice.companyName || 'N/A';
@@ -1149,6 +1426,7 @@
                 } else {
                     productsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-modern-text-secondary">لا توجد منتجات في هذه الفاتورة.</td></tr>`;
                 }
+
                 document.getElementById('modalTotalAmountBeforeCommission').textContent = parseFloat(invoice.totalHTBeforeCommission || 0).toFixed(2);
                 document.getElementById('modalCommissionDeducted').textContent = parseFloat(invoice.totalCommission || 0).toFixed(2);
                 document.getElementById('modalTotalAmount').textContent = parseFloat(invoice.totalHT || 0).toFixed(2);
@@ -1159,27 +1437,111 @@
                 document.getElementById('invoiceDisplayModalOverlay').style.visibility = 'visible';
                 document.getElementById('invoiceDisplayModalContent').style.transform = 'translateY(0)';
             },
+
             hideInvoiceModal: () => {
                 document.getElementById('invoiceDisplayModalOverlay').classList.remove('active');
-                document.getElementById('invoiceDisplayModalContent').style.transform = 'translateY(-50px)';
+                document.getElementById('invoiceDisplayModalContent').style.transform = 'translateY(-30px)'; // Changed to -30px to unify animation
                 document.getElementById('invoiceDisplayModalOverlay').addEventListener('transitionend', function handler() {
                     document.getElementById('invoiceDisplayModalOverlay').removeEventListener('transitionend', handler);
                     document.getElementById('invoiceDisplayModalOverlay').style.visibility = 'hidden';
                 }, { once: true });
+            },
+
+            // NEW: showPurchaseOrderModal
+            showPurchaseOrderModal: (po) => {
+                document.getElementById('modalPOSupplierName').textContent = po.poSupplierName || 'N/A';
+                document.getElementById('modalPOSupplierPhone').textContent = po.poSupplierPhone || 'N/A';
+                document.getElementById('modalPODate').textContent = po.poDate || 'N/A'; // Displaying dateCreationProduit as poDate
+                document.getElementById('modalPOOwnerName').textContent = po.poOwnerName || 'N/A';
+                document.getElementById('modalPOOwnerPhone').textContent = po.poOwnerPhone || 'N/A';
+                document.getElementById('modalPONumber').textContent = po.poNumber || 'N/A';
+                document.getElementById('modalPODeliveryDate').textContent = po.poDeliveryDate || 'N/A';
+                document.getElementById('modalPOStatus').textContent = po.poStatus || 'N/A';
+
+                let formattedPODate = 'N/A';
+                if (po.poIsoDate) {
+                    try {
+                        const dateObj = new Date(po.poIsoDate);
+                        const options = {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Africa/Casablanca'
+                        };
+                        formattedPODate = dateObj.toLocaleDateString('ar-MA', options);
+                    } catch (e) {
+                        console.warn("Invalid ISO date format for modal purchase order:", po.poIsoDate, e);
+                        formattedPODate = po.poDate || 'N/A'; // Fallback to original date string
+                    }
+                } else if (po.poDate) {
+                    formattedPODate = po.poDate;
+                }
+                document.getElementById('modalPODate').textContent = formattedPODate;
+
+                const productsTableBody = document.getElementById('modalPOProductsTableBody');
+                productsTableBody.innerHTML = '';
+                if (po.poProducts && po.poProducts.length > 0) { // Using poProducts as the local key for nested products
+                    let productNumber = 1;
+                    po.poProducts.forEach(product => {
+                        const row = document.createElement('tr');
+                        const productTotal = (parseFloat(product.prixAchat || 0) * (product.quantiteCommandee || 0)).toFixed(2);
+                        row.innerHTML = `
+                            <td>${productNumber++}</td>
+                            <td>${product.nom || 'N/A'}</td>
+                            <td>${parseFloat(product.prixAchat || 0).toFixed(2)} DH</td>
+                            <td>${product.quantiteCommandee || 0}</td>
+                            <td>${productTotal} DH</td>
+                        `;
+                        productsTableBody.appendChild(row);
+                    });
+                } else {
+                    productsTableBody.innerHTML = `<tr><td colspan="5" class="text-center italic text-modern-text-secondary">لا توجد منتجات في أمر الشراء هذا.</td></tr>`;
+                }
+                document.getElementById('modalPOTotalCost').textContent = parseFloat(po.totalCost || 0).toFixed(2);
+                document.getElementById('purchaseOrderDisplayModalOverlay').classList.add('active');
+                document.getElementById('purchaseOrderDisplayModalOverlay').style.visibility = 'visible';
+                document.getElementById('purchaseOrderDisplayModalContent').style.transform = 'translateY(0)';
+            },
+
+            // NEW: hidePurchaseOrderModal
+            hidePurchaseOrderModal: () => {
+                document.getElementById('purchaseOrderDisplayModalOverlay').classList.remove('active');
+                document.getElementById('purchaseOrderDisplayModalContent').style.transform = 'translateY(-30px)';
+                document.getElementById('purchaseOrderDisplayModalOverlay').addEventListener('transitionend', function handler() {
+                    document.getElementById('purchaseOrderDisplayModalOverlay').removeEventListener('transitionend', handler);
+                    document.getElementById('purchaseOrderDisplayModalOverlay').style.visibility = 'hidden';
+                }, { once: true });
+            },
+
+            toggleSidebar: (open) => {
+                const sidebar = UIElements.sidebar;
+                const overlay = UIElements.sidebarOverlay;
+                if (sidebar) sidebar.classList.toggle('open', open);
+                if (overlay) overlay.classList.toggle('active', open);
             }
         };
 
         // ====== Firebase Data & Statistics Logic (extracted) ======
         const FirebaseData = {
             init: () => {
-                UIElements.commonSearchInput.addEventListener('input', FirebaseData.applyCombinedFilters);
-                UIElements.clearCommonSearchInputButton.addEventListener('click', FirebaseData.clearAndFilter);
-                UIElements.commonPhoneDropdown.addEventListener('change', FirebaseData.applyCombinedFilters);
+                // Event listeners for search and filter controls
+                if (UIElements.commonSearchInput) UIElements.commonSearchInput.addEventListener('input', FirebaseData.applyCombinedFilters);
+                if (UIElements.clearCommonSearchInputButton) UIElements.clearCommonSearchInputButton.addEventListener('click', FirebaseData.clearAndFilter);
+                // Listen for changes on the phone dropdown to filter data
+                if (UIElements.commonPhoneDropdown) UIElements.commonPhoneDropdown.addEventListener('change', (event) => {
+                    currentSelectedPhone = event.target.value; // Update global state for selected phone
+                    FirebaseData.applyCombinedFilters(); // Apply filters based on new phone selection
+                });
                 
-                UIElements.exportPhoneDataBtn.addEventListener('click', FirebaseData.exportSelectedPhoneData);
-                UIElements.deletePhoneDataBtn.addEventListener('click', FirebaseData.deleteSelectedPhoneData);
+                // Event listeners for phone-specific actions
+                if (UIElements.exportPhoneDataBtn) UIElements.exportPhoneDataBtn.addEventListener('click', FirebaseData.exportSelectedPhoneData);
+                if (UIElements.deletePhoneDataBtn) UIElements.deletePhoneDataBtn.addEventListener('click', FirebaseData.deleteSelectedPhoneData);
 
-                UIElements.firebaseProductsContainer.addEventListener('click', (event) => {
+                // Event listeners for product cards (delete)
+                if (UIElements.firebaseProductsContainer) UIElements.firebaseProductsContainer.addEventListener('click', (event) => {
                     const target = event.target.closest('.delete-product-button');
                     if (target) {
                         const productDiv = target.closest('[data-product-id]');
@@ -1189,7 +1551,8 @@
                     }
                 });
 
-                UIElements.firebaseInvoicesContainer.addEventListener('click', (event) => {
+                // Event listeners for invoice cards (delete and view details)
+                if (UIElements.firebaseInvoicesContainer) UIElements.firebaseInvoicesContainer.addEventListener('click', (event) => {
                     const target = event.target.closest('.delete-invoice-button');
                     if (target) {
                         const invoiceDiv = target.closest('[data-invoice-id]');
@@ -1207,26 +1570,107 @@
                         }
                     }
                 });
-                document.getElementById('closeInvoiceModalBtn').addEventListener('click', UI.hideInvoiceModal);
-                document.getElementById('printInvoiceModalBtn').addEventListener('click', () => {
+                if (document.getElementById('closeInvoiceModalBtn')) document.getElementById('closeInvoiceModalBtn').addEventListener('click', UI.hideInvoiceModal);
+                if (document.getElementById('printInvoiceModalBtn')) document.getElementById('printInvoiceModalBtn').addEventListener('click', () => {
                     window.print();
                 });
+
+                // Event listeners for Purchase Order section (delete and view details)
+                if (UIElements.firebasePurchaseOrdersContainer) UIElements.firebasePurchaseOrdersContainer.addEventListener('click', (event) => {
+                    const target = event.target.closest('.delete-po-button');
+                    if (target) {
+                        const poDiv = target.closest('[data-po-id]');
+                        const poFirebaseId = poDiv.dataset.poId;
+                        const firebasePhoneKey = poDiv.dataset.firebasePhoneKey;
+                        FirebaseData.confirmAndDeletePurchaseOrder(poFirebaseId, firebasePhoneKey);
+                    } else {
+                        const poCard = event.target.closest('.po-item-clickable');
+                        if (poCard) {
+                            const poFirebaseId = poCard.dataset.poId;
+                            const selectedPO = allFirebasePurchaseOrdersData.find(po => po.firebaseId === poFirebaseId);
+                            if (selectedPO) {
+                                UI.showPurchaseOrderModal(selectedPO);
+                            }
+                        }
+                    }
+                });
+                if (document.getElementById('closePurchaseOrderModalBtn')) document.getElementById('closePurchaseOrderModalBtn').addEventListener('click', UI.hidePurchaseOrderModal);
+                if (document.getElementById('printPurchaseOrderModalBtn')) document.getElementById('printPurchaseOrderModalBtn').addEventListener('click', () => {
+                    window.print();
+                });
+
+                // Burger menu event listener for mobile sidebar
+                if (UIElements.burgerMenu) UIElements.burgerMenu.addEventListener('click', () => UI.toggleSidebar(true));
+                if (UIElements.sidebarOverlay) UIElements.sidebarOverlay.addEventListener('click', () => UI.toggleSidebar(false));
+
+                // Event listeners for tree view items
+                if (UIElements.mainTreeRoot) {
+                    UIElements.mainTreeRoot.addEventListener('click', (event) => {
+                        const target = event.target.closest('li');
+                        if (target) {
+                            const dataType = target.dataset.type;
+                            const phone = target.dataset.phone;
+                            if (dataType === 'all' && phone === 'all' && target.classList.contains('folder')) {
+                                // Click on "All Firebase Data" folder, toggle open/close
+                                const nestedUl = target.querySelector('ul.nested');
+                                if (nestedUl) {
+                                    nestedUl.classList.toggle('active');
+                                    target.classList.toggle('open');
+                                }
+                                // Select its dashboard view
+                                FirebaseData.selectTreeItem('all', 'dashboard');
+                            } else if (target.classList.contains('folder')) {
+                                // Click on a phone folder, toggle open/close
+                                const nestedUl = target.querySelector('ul.nested');
+                                if (nestedUl) {
+                                    nestedUl.classList.toggle('active');
+                                    target.classList.toggle('open');
+                                }
+                                // Select its dashboard view
+                                FirebaseData.selectTreeItem(phone, 'dashboard');
+                            } else if (target.classList.contains('file-item')) {
+                                // Click on a file item (specific data type)
+                                FirebaseData.selectTreeItem(phone, dataType);
+                                // Close sidebar on mobile after selection
+                                UI.toggleSidebar(false);
+                            }
+                            event.stopPropagation(); // Prevent parent elements from also being clicked
+                        }
+                    });
+                }
             },
+
             populatePhoneDropdowns: (phoneNumbers) => {
-                UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
+                if (UIElements.commonPhoneDropdown) UI.populatePhoneSelect(UIElements.commonPhoneDropdown, phoneNumbers);
             },
+
             fetchAndDisplayCombinedFirebaseData: async () => {
+                // Show all loaders initially
                 UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, true);
                 UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, true); 
+                UI.toggleGeneralLoader(UIElements.firebasePurchaseOrdersLoader, true);
 
                 if (!database) {
                     UI.showToast("قاعدة بيانات Firebase غير جاهزة لجلب البيانات.", 'info');
+                    // Hide all loaders if Firebase is not ready
                     UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); 
+                    UI.toggleGeneralLoader(UIElements.firebasePurchaseOrdersLoader, false);
+                    return;
+                }
+                
+                if (!navigator.onLine) {
+                    UI.showToast("لا يوجد اتصال بالإنترنت. لا يمكن جلب البيانات من Firebase.", "warning");
+                    // Hide all loaders if no internet connection
+                    UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
+                    UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); 
+                    UI.toggleGeneralLoader(UIElements.firebasePurchaseOrdersLoader, false);
                     return;
                 }
 
@@ -1235,32 +1679,32 @@
                     const snapshot = await alldataRef.once('value');
                     const data = snapshot.val();
 
+                    // Clear previous data
                     allFirebaseInvoicesData = [];
                     inventoryProductsMap.clear(); 
                     allFirebaseProductsData = []; 
                     allFirebaseInvoiceProductsWithDetails = [];
                     allFirebaseDuplicateProducts = []; 
+                    allFirebasePurchaseOrdersData = []; 
                     const uniquePhoneNumbers = new Set();
                     const productTracker = new Map(); 
                     
                     if (!data || Object.keys(data).length === 0) { 
                         UI.showToast("لا توجد بيانات في Firebase لعرضها.", 'info');
-                        UIElements.firebaseInvoiceListCountSpan.textContent = 0;
-                        UIElements.firebaseProductListCountSpan.textContent = 0;
-                        UIElements.firebaseInvoiceProductListCount.textContent = 0;
-                        UIElements.firebaseDuplicateProductListCount.textContent = 0;
+                        // Reset all counts in navigation buttons (if they existed, now they don't in this version's HTML)
+                        // If they were still there, they'd be handled by the next applyCombinedFilters call anyway.
+
+                        // Display empty lists
                         FirebaseData.displayFirebaseInvoices([]);
                         FirebaseData.displayFirebaseProducts([]);
                         FirebaseData.displayFirebaseInvoiceProducts([]);
                         FirebaseData.displayFirebaseDuplicateProducts([]);
-                        FirebaseData.displayStatistics([]);
-                        UI.populatePhoneSelect(UIElements.commonPhoneDropdown, new Set()); 
+                        FirebaseData.displayFirebasePurchaseOrders([]);
+                        FirebaseData.displayStatistics([]); // Update stats with empty data
+                        FirebaseData.populatePhoneDropdowns(new Set()); // Update phone dropdown with empty set
                         UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, [], 'name'); 
-                        // Destroy chart if no data
-                        if (salesChartInstance) {
-                            salesChartInstance.destroy();
-                            salesChartInstance = null;
-                        }
+                        // Render tree view with no phones
+                        FirebaseData.renderTreeView(new Set());
                         return; 
                     }
 
@@ -1269,7 +1713,7 @@
                             uniquePhoneNumbers.add(phoneKey); 
                             const phoneData = data[phoneKey];
 
-                            // Process Inventory Products first for the map
+                            // Process Inventory Products
                             if (phoneData.inventoryProducts) {
                                 for (const productId in phoneData.inventoryProducts) {
                                     if (phoneData.inventoryProducts.hasOwnProperty(productId)) {
@@ -1320,6 +1764,20 @@
                                     }
                                 }
                             }
+
+                            // Process Purchase Orders
+                            if (phoneData.purchaseOrders) {
+                                for (const poFirebaseKey in phoneData.purchaseOrders) {
+                                    if (phoneData.purchaseOrders.hasOwnProperty(poFirebaseKey)) {
+                                        const poDetails = mapFromFirebaseKeys(phoneData.purchaseOrders[poFirebaseKey]);
+                                        poDetails.firebaseId = poFirebaseKey; // Ensure firebaseId is set for POs
+                                        poDetails.firebasePhoneKey = phoneKey; // Ensure firebasePhoneKey is set for POs
+                                        allFirebasePurchaseOrdersData.push(poDetails);
+                                        // For debugging: log the mapped purchase order details
+                                        // console.log("Mapped Purchase Order Details:", poDetails);
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -1341,10 +1799,15 @@
                     
                     // Populate dropdown and datalists
                     FirebaseData.populatePhoneDropdowns(uniquePhoneNumbers);
+                    // Populate datalists with relevant fields for search suggestions
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'name');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseProductsData, 'supplierName');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'customerName');
                     UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebaseInvoicesData, 'ownerName');
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebasePurchaseOrdersData, 'poSupplierName'); // Add PO supplier names
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebasePurchaseOrdersData, 'poOwnerName'); // Add PO owner names
+                    UI.populateUniqueDatalist(UIElements.allSearchOptionsDatalist, allFirebasePurchaseOrdersData, 'poNumber'); // Add PO numbers
+
                     // Add sanitized phone numbers to the datalist for search suggestions
                     Array.from(uniquePhoneNumbers).sort().forEach(phone => {
                         const option = document.createElement('option');
@@ -1352,25 +1815,32 @@
                         UIElements.allSearchOptionsDatalist.appendChild(option);
                     });
 
-                    FirebaseData.applyCombinedFilters(); // Apply filters to display fetched data
+                    // Render the tree view after data is fetched
+                    FirebaseData.renderTreeView(Array.from(uniquePhoneNumbers).sort());
+
+                    // Apply filters to display fetched data based on initial view state
+                    FirebaseData.selectTreeItem('all', 'dashboard'); // Initial selection
                     UI.showToast("تم جلب جميع البيانات من Firebase بنجاح.", 'success');
                 } catch (error) {
                     UI.showToast(`خطأ في جلب بيانات Firebase: ${error.message}`, 'error');
                     console.error("Failed to fetch Firebase data:", error);
                 } finally {
+                    // Hide all loaders after fetch attempt
                     UI.toggleGeneralLoader(UIElements.firebaseProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoicesLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseInvoiceProductsLoader, false);
                     UI.toggleGeneralLoader(UIElements.firebaseDuplicateProductsLoader, false); 
+                    UI.toggleGeneralLoader(UIElements.firebasePurchaseOrdersLoader, false);
                 }
             },
+
             exportSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
                 if (selectedPhoneNumber === 'all' || !selectedPhoneNumber) {
                     UI.showToast("يرجى اختيار رقم هاتف محدد لتصدير بياناته.", 'warning');
                     return;
                 }
-                const confirmed = await UI.showConfirmModal("تأكيد التصدير", `هل أنت متأكد من أنك تريد تصدير جميع بيانات (المنتجات والفواتير) المرتبطة بالهاتف ${selectedPhoneNumber}؟`);
+                const confirmed = await UI.showConfirmModal("تأكيد التصدير", `هل أنت متأكد من أنك تريد تصدير جميع بيانات (المنتجات والفواتير وأوامر الشراء) المرتبطة بالهاتف ${selectedPhoneNumber}؟`); // Updated message
                 if (!confirmed) {
                     UI.showToast("تم إلغاء عملية التصدير.", 'info');
                     return;
@@ -1397,6 +1867,13 @@
                     } else {
                         mappedDataForExport.invoices = [];
                     }
+                    // NEW: Export purchase orders
+                    if (dataToExport.purchaseOrders) {
+                        mappedDataForExport.purchaseOrders = Object.values(dataToExport.purchaseOrders).map(mapFromFirebaseKeys);
+                    } else {
+                        mappedDataForExport.purchaseOrders = [];
+                    }
+
                     const exportDate = new Date().toISOString();
                     const finalExportObject = {
                         metadata: {
@@ -1408,10 +1885,12 @@
                             ownerAddress: mappedDataForExport.invoices.length > 0 ? mappedDataForExport.invoices[0].ownerAddress : '',
                             tva: mappedDataForExport.invoices.length > 0 ? mappedDataForExport.invoices[0].tva : '0',
                             invoiceCommissionAmount: mappedDataForExport.invoices.length > 0 ? mappedDataForExport.invoices[0].totalCommission : '0',
+                            companyName: mappedDataForExport.invoices.length > 0 ? mappedDataForExport.invoices[0].companyName : '', // Export company name
                             description: `بيانات إدارة المبيعات والمخزون - نسخة احتياطية لرقم الهاتف ${selectedPhoneNumber}`
                         },
                         ...mappedDataForExport
                     };
+
                     const dataStr = JSON.stringify(finalExportObject, null, 4);
                     const blob = new Blob([dataStr], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
@@ -1428,13 +1907,14 @@
                     console.error("Error exporting phone data:", error);
                 }
             },
+
             deleteSelectedPhoneData: async () => {
                 const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
                 if (selectedPhoneNumber === 'all' || !selectedPhoneNumber) {
                     UI.showToast("يرجى اختيار رقم هاتف محدد لحذف بياناته.", 'warning');
                     return;
                 }
-                const confirmed = await UI.showConfirmModal("تأكيد الحذف الكلي", `هل أنت متأكد أنك تريد حذف جميع بيانات (المنتجات والفواتير) المرتبطة بالهاتف ${selectedPhoneNumber} من Firebase؟\nهذا الإجراء لا يمكن التراجع عنه!`);
+                const confirmed = await UI.showConfirmModal("تأكيد الحذف الكلي", `هل أنت متأكد أنك تريد حذف جميع بيانات (المنتجات والفواتير وأوامر الشراء) المرتبطة بالهاتف ${selectedPhoneNumber} من Firebase؟\nهذا الإجراء لا يمكن التراجع عنه!`); // Updated message
                 if (!confirmed) {
                     UI.showToast("تم إلغاء عملية الحذف.", 'info');
                     return;
@@ -1450,6 +1930,7 @@
                     console.error("Error deleting phone data:", error);
                 }
             },
+
             confirmAndDeleteProduct: async (productId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذا المنتج (ID: ${productId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
@@ -1467,6 +1948,7 @@
                     console.error("Error deleting product:", error);
                 }
             },
+
             confirmAndDeleteInvoice: async (invoiceFirebaseId, firebasePhoneKey) => {
                 const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف هذه الفاتورة (ID: ${invoiceFirebaseId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
                 if (!confirmed) {
@@ -1484,19 +1966,61 @@
                     console.error("Error deleting invoice:", error);
                 }
             },
+            
+            confirmAndDeletePurchaseOrder: async (poFirebaseId, firebasePhoneKey) => {
+                const confirmed = await UI.showConfirmModal("تأكيد الحذف", `هل أنت متأكد أنك تريد حذف أمر الشراء هذا (ID: ${poFirebaseId}) من رقم الهاتف ${firebasePhoneKey}؟\nهذا الإجراء لا يمكن التراجع عنه!`);
+                if (!confirmed) {
+                    UI.showToast("تم إلغاء حذف أمر الشراء.", 'info');
+                    return;
+                }
+                UI.showToast("جاري حذف أمر الشراء...", 'info');
+                try {
+                    const poRef = database.ref(`${appId}/alldata/${firebasePhoneKey}/purchaseOrders/${poFirebaseId}`);
+                    await poRef.remove();
+                    UI.showToast("تم حذف أمر الشراء بنجاح!", 'success');
+                    FirebaseData.fetchAndDisplayCombinedFirebaseData(); // Re-fetch all data
+                } catch (error) {
+                    UI.showToast(`فشل حذف أمر الشراء: ${error.message}`, 'error');
+                    console.error("Error deleting purchase order:", error);
+                }
+            },
+
+            /**
+             * Applies filters based on selected phone number and data type from the tree view.
+             * This function now controls which content section is visible.
+             */
             applyCombinedFilters: () => {
                 const searchTerm = UIElements.commonSearchInput.value.toLowerCase();
-                const selectedPhoneNumber = UIElements.commonPhoneDropdown.value;
+                const selectedPhoneNumber = UIElements.commonPhoneDropdown.value; // This is for the dropdown filter
                 
+                // Determine the active phone and data type from the tree view selection
+                const activePhoneInTree = currentSelectedPhone;
+                const activeDataTypeInTree = currentSelectedDataType;
+
                 // Toggle visibility of phone-specific action buttons
-                if (selectedPhoneNumber !== 'all' && selectedPhoneNumber) {
-                    UIElements.phoneActionsContainer.style.display = 'flex';
+                if (activePhoneInTree !== 'all' && activePhoneInTree) {
+                    if (UIElements.phoneActionsContainer) UIElements.phoneActionsContainer.style.display = 'flex';
                 } else {
-                    UIElements.phoneActionsContainer.style.display = 'none';
+                    if (UIElements.phoneActionsContainer) UIElements.phoneActionsContainer.style.display = 'none';
                 }
 
-                // Filter Invoices
-                const filteredInvoices = allFirebaseInvoicesData.filter(invoice => {
+                // Hide all content sections first
+                if (UIElements.detailedStatsSection) UIElements.detailedStatsSection.style.display = 'none';
+                if (UIElements.purchaseOrdersListSection) UIElements.purchaseOrdersListSection.style.display = 'none';
+                if (UIElements.duplicateProductsSection) UIElements.duplicateProductsSection.style.display = 'none';
+                if (UIElements.inventoryProductsSection) UIElements.inventoryProductsSection.style.display = 'none';
+                if (UIElements.soldProductsSection) UIElements.soldProductsSection.style.display = 'none';
+                if (UIElements.invoicesListSection) UIElements.invoicesListSection.style.display = 'none';
+
+                // Filter data based on selected phone number from the tree view (or 'all' data)
+                const dataFilteredByPhone = allFirebaseProductsData.filter(p => activePhoneInTree === 'all' || p.firebasePhoneKey === activePhoneInTree);
+                const invoicesFilteredByPhone = allFirebaseInvoicesData.filter(inv => activePhoneInTree === 'all' || inv.firebasePhoneKey === activePhoneInTree);
+                const poFilteredByPhone = allFirebasePurchaseOrdersData.filter(po => activePhoneInTree === 'all' || po.firebasePhoneKey === activePhoneInTree);
+                const duplicateFilteredByPhone = allFirebaseDuplicateProducts.filter(dp => activePhoneInTree === 'all' || dp.firebasePhoneKey === activePhoneInTree);
+                const invoiceProductsFilteredByPhone = allFirebaseInvoiceProductsWithDetails.filter(ip => activePhoneInTree === 'all' || ip.firebasePhoneKey === activePhoneInTree);
+
+                // Apply search term filter to the phone-filtered data
+                const filteredInvoices = invoicesFilteredByPhone.filter(invoice => {
                     const matchesSearch = searchTerm ?
                         ((invoice.customerName || '').toLowerCase().includes(searchTerm) ||
                             (invoice.ownerName || '').toLowerCase().includes(searchTerm) ||
@@ -1506,23 +2030,22 @@
                                 (p.name || '').toLowerCase().includes(searchTerm) ||
                                 (p.supplierName || '').toLowerCase().includes(searchTerm))))
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || invoice.firebasePhoneKey === selectedPhoneNumber);
-                    return matchesSearch && matchesPhone;
+                    // Also filter by the commonPhoneDropdown if it's not 'all'
+                    const matchesDropdownPhone = (selectedPhoneNumber === 'all' || invoice.firebasePhoneKey === selectedPhoneNumber);
+                    return matchesSearch && matchesDropdownPhone;
                 });
 
-                // Filter Inventory Products
-                const filteredProducts = allFirebaseProductsData.filter(product => {
+                const filteredProducts = dataFilteredByPhone.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
                             (product.supplierName || '').toLowerCase().includes(searchTerm) ||
                             (product.supplierPhone && product.supplierPhone.includes(searchTerm)))
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
-                    return matchesSearch && matchesPhone;
+                    const matchesDropdownPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
+                    return matchesSearch && matchesDropdownPhone;
                 });
 
-                // Filter Invoice Products (sold items)
-                const filteredInvoiceProducts = allFirebaseInvoiceProductsWithDetails.filter(product => {
+                const filteredInvoiceProducts = invoiceProductsFilteredByPhone.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
                             (product.customerName || '').toLowerCase().includes(searchTerm) ||
@@ -1530,48 +2053,87 @@
                             (product.companyName || '').toLowerCase().includes(searchTerm) || 
                             (product.ownerPhone && product.ownerPhone.includes(searchTerm)))
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
-                    return matchesSearch && matchesPhone;
+                    const matchesDropdownPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
+                    return matchesSearch && matchesDropdownPhone;
                 });
 
-                // Filter Duplicate Products
-                const filteredDuplicateProducts = allFirebaseDuplicateProducts.filter(product => {
+                const filteredDuplicateProducts = duplicateFilteredByPhone.filter(product => {
                     const matchesSearch = searchTerm ?
                         ((product.name || '').toLowerCase().includes(searchTerm) ||
                             (product.supplierName || '').toLowerCase().includes(searchTerm) ||
                             (product.supplierPhone && product.supplierPhone.includes(searchTerm)))
                         : true;
-                    const matchesPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
-                    return matchesSearch && matchesPhone;
+                    const matchesDropdownPhone = (selectedPhoneNumber === 'all' || product.firebasePhoneKey === selectedPhoneNumber);
+                    return matchesSearch && matchesDropdownPhone;
                 });
 
-                // Update counts
-                UIElements.firebaseInvoiceListCountSpan.textContent = filteredInvoices.length;
-                UIElements.firebaseProductListCountSpan.textContent = filteredProducts.length;
-                UIElements.firebaseInvoiceProductListCount.textContent = filteredInvoiceProducts.length;
-                UIElements.firebaseDuplicateProductListCount.textContent = filteredDuplicateProducts.length; 
+                const filteredPurchaseOrders = poFilteredByPhone.filter(po => {
+                    const matchesSearch = searchTerm ?
+                        ((po.poSupplierName || '').toLowerCase().includes(searchTerm) ||
+                            (po.poSupplierPhone && po.poSupplierPhone.includes(searchTerm)) ||
+                            (po.poOwnerName || '').toLowerCase().includes(searchTerm) ||
+                            (po.poOwnerPhone && po.poOwnerPhone.includes(searchTerm)) ||
+                            (po.poNumber && po.poNumber.toLowerCase().includes(searchTerm)) ||
+                            (po.poProducts && po.poProducts.some(p =>
+                                (p.nom || '').toLowerCase().includes(searchTerm))))
+                        : true;
+                    const matchesDropdownPhone = (selectedPhoneNumber === 'all' || po.firebasePhoneKey === selectedPhoneNumber);
+                    return matchesSearch && matchesDropdownPhone;
+                });
 
-                // Sort and display
-                filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
-                filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                filteredDuplicateProducts.sort((a, b) => (a.name || '').localeCompare(b.name || '')); 
+                // Update counts on the navigation buttons (if they existed, now they don't in this version's HTML)
+                // If they were still there, they'd be handled by the next applyCombinedFilters call anyway.
 
-                FirebaseData.displayFirebaseInvoices(filteredInvoices);
-                FirebaseData.displayFirebaseProducts(filteredProducts);
-                FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts);
-                FirebaseData.displayFirebaseDuplicateProducts(filteredDuplicateProducts); 
-                FirebaseData.displayStatistics(filteredInvoices); // Recalculate stats based on filtered invoices
-                FirebaseData.renderSalesChart(filteredInvoices); // Render chart with filtered data
+                // Sort and display based on currentSelectedDataType
+                switch (activeDataTypeInTree) {
+                    case 'dashboard':
+                        if (UIElements.detailedStatsSection) UIElements.detailedStatsSection.style.display = 'block';
+                        FirebaseData.displayStatistics(filteredInvoices); // Stats based on filtered invoices
+                        break;
+                    case 'inventory':
+                        if (UIElements.inventoryProductsSection) UIElements.inventoryProductsSection.style.display = 'block';
+                        filteredProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                        FirebaseData.displayFirebaseProducts(filteredProducts);
+                        break;
+                    case 'invoices':
+                        if (UIElements.invoicesListSection) UIElements.invoicesListSection.style.display = 'block';
+                        filteredInvoices.sort((a, b) => new Date(b.isoDate || b.date) - new Date(a.isoDate || a.date));
+                        FirebaseData.displayFirebaseInvoices(filteredInvoices);
+                        break;
+                    case 'purchaseOrders':
+                        if (UIElements.purchaseOrdersListSection) UIElements.purchaseOrdersListSection.style.display = 'block';
+                        filteredPurchaseOrders.sort((a, b) => new Date(b.poIsoDate || b.poDate) - new Date(a.poIsoDate || a.poDate));
+                        FirebaseData.displayFirebasePurchaseOrders(filteredPurchaseOrders);
+                        break;
+                    case 'duplicates':
+                        if (UIElements.duplicateProductsSection) UIElements.duplicateProductsSection.style.display = 'block';
+                        filteredDuplicateProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                        FirebaseData.displayFirebaseDuplicateProducts(filteredDuplicateProducts);
+                        break;
+                    case 'soldProducts':
+                        if (UIElements.soldProductsSection) UIElements.soldProductsSection.style.display = 'block';
+                        filteredInvoiceProducts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                        FirebaseData.displayFirebaseInvoiceProducts(filteredInvoiceProducts);
+                        break;
+                    default:
+                        // Default to dashboard if nothing is selected or an unknown type
+                        if (UIElements.detailedStatsSection) UIElements.detailedStatsSection.style.display = 'block';
+                        FirebaseData.displayStatistics(filteredInvoices);
+                        break;
+                }
             },
+
             clearAndFilter: () => {
-                UIElements.commonSearchInput.value = '';
-                UIElements.commonPhoneDropdown.value = 'all';
-                FirebaseData.applyCombinedFilters();
+                if (UIElements.commonSearchInput) UIElements.commonSearchInput.value = '';
+                if (UIElements.commonPhoneDropdown) UIElements.commonPhoneDropdown.value = 'all';
+                // Reset tree selection to 'all' and 'dashboard'
+                FirebaseData.selectTreeItem('all', 'dashboard'); // Use new function
                 UI.showToast("تم مسح حقول البحث وتحديث القوائم.", 'info');
             },
+
             displayFirebaseInvoices: (invoices) => {
                 const container = UIElements.firebaseInvoicesContainer;
+                if (!container) return; // Add check for container existence
                 container.innerHTML = '';
                 if (invoices.length === 0) {
                     container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد فواتير لعرضها.</p>';
@@ -1579,8 +2141,7 @@
                 }
                 invoices.forEach(invoice => {
                     const invoiceDiv = document.createElement('div');
-                    invoiceDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:shadow-md', 'invoice-item-clickable'); 
-                    invoiceDiv.style.borderColor = 'var(--modern-primary-accent)'; 
+                    invoiceDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:shadow-md', 'invoice-item-clickable', 'accent-primary'); 
                     invoiceDiv.dataset.invoiceId = invoice.firebaseId;
                     invoiceDiv.dataset.firebasePhoneKey = invoice.firebasePhoneKey;
                     
@@ -1654,8 +2215,10 @@
                     container.appendChild(invoiceDiv);
                 });
             },
+
             displayFirebaseProducts: (products) => {
                 const container = UIElements.firebaseProductsContainer;
+                if (!container) return; // Add check for container existence
                 container.innerHTML = '';
                 if (products.length === 0) {
                     container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات لعرضها.</p>';
@@ -1663,8 +2226,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg');
-                    productDiv.style.borderColor = 'var(--modern-primary-accent)'; 
+                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'accent-primary');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
@@ -1675,6 +2237,7 @@
                         <p class="text-modern-text-dark"><strong>هاتف المورد:</strong> ${product.supplierPhone || 'N/A'}</p>
                         <p class="text-modern-text-dark"><strong>الكمية في المخزون:</strong> ${product.stockQuantity || 0}</p>
                         ${product.date ? `<p class="text-modern-text-dark"><strong>تاريخ الإضافة:</strong> ${product.date}</p>` : ''}
+                        <p class="text-modern-text-dark"><strong>الحد الأدنى للمخزون:</strong> ${product.minStockQuantity || 0}</p>
                         ${product.firebasePhoneKey ? `<p class="text-modern-text-dark"><strong>رقم هاتف المالك (في Firebase):</strong> ${product.firebasePhoneKey}</p>` : ''}
                         <div class="flex justify-end gap-2 mt-4">
                             <button class="modern-button btn-danger-action delete-product-button">
@@ -1685,8 +2248,10 @@
                     container.appendChild(productDiv);
                 });
             },
+
             displayFirebaseInvoiceProducts: (products) => {
                 const container = UIElements.firebaseInvoiceProductsContainer;
+                if (!container) return; // Add check for container existence
                 container.innerHTML = '';
                 if (products.length === 0) {
                     container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات مباعة في الفواتير لعرضها.</p>';
@@ -1694,8 +2259,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg');
-                    productDiv.style.borderColor = 'var(--modern-warning)'; 
+                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'accent-warning');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.invoiceId = product.invoiceId;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
@@ -1732,8 +2296,10 @@
                     container.appendChild(productDiv);
                 });
             },
+
             displayFirebaseDuplicateProducts: (products) => {
                 const container = UIElements.firebaseDuplicateProductsContainer;
+                if (!container) return; // Add check for container existence
                 container.innerHTML = '';
                 if (products.length === 0) {
                     container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد منتجات متكررة لعرضها.</p>';
@@ -1741,8 +2307,7 @@
                 }
                 products.forEach(product => {
                     const productDiv = document.createElement('div');
-                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg');
-                    productDiv.style.borderColor = 'var(--modern-error)'; 
+                    productDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'hover:translate-y-[-8px]', 'hover:shadow-lg', 'accent-error');
                     productDiv.dataset.productId = product.id;
                     productDiv.dataset.firebasePhoneKey = product.firebasePhoneKey;
                     productDiv.innerHTML = `
@@ -1761,6 +2326,93 @@
                     container.appendChild(productDiv);
                 });
             },
+
+            // NEW: displayFirebasePurchaseOrders
+            displayFirebasePurchaseOrders: (purchaseOrders) => {
+                const container = UIElements.firebasePurchaseOrdersContainer;
+                if (!container) return; // Add check for container existence
+                container.innerHTML = '';
+                if (purchaseOrders.length === 0) {
+                    container.innerHTML = '<p class="text-modern-text-dark text-center py-4 col-span-full">لا توجد أوامر شراء لعرضها.</p>';
+                    return;
+                }
+                purchaseOrders.forEach(po => {
+                    const poDiv = document.createElement('div');
+                    poDiv.classList.add('card-panel', 'p-4', 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-300', 'flex', 'flex-col', 'justify-between', 'items-stretch', 'text-right', 'text-sm', 'leading-relaxed', 'cursor-pointer', 'hover:shadow-md', 'po-item-clickable', 'accent-primary');
+                    poDiv.dataset.poId = po.firebaseId;
+                    poDiv.dataset.firebasePhoneKey = po.firebasePhoneKey;
+
+                    let productsListHtml = '<p class="text-center italic text-modern-text-dark text-xs py-2">لا توجد منتجات في أمر الشراء هذا.</p>';
+                    if (po.poProducts && po.poProducts.length > 0) { // Using poProducts as the local key for nested products
+                        productsListHtml = `
+                            <div class="po-products-scrollable custom-scrollbar">
+                                <table class="po-products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>المنتج</th>
+                                            <th>الكمية</th>
+                                            <th>الإجمالي</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${po.poProducts.map(product => `
+                                            <tr>
+                                                <td>${product.nom || 'N/A'}</td>
+                                                <td>${product.quantiteCommandee || 0}</td>
+                                                <td>${(parseFloat(product.prixAchat || 0) * (product.quantiteCommandee || 0)).toFixed(2)} DH</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    }
+                    let formattedPODate = 'N/A';
+                    if (po.poIsoDate) {
+                        try {
+                            const dateObj = new Date(po.poIsoDate);
+                            const options = {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Africa/Casablanca'
+                            };
+                            formattedPODate = dateObj.toLocaleDateString('ar-MA', options);
+                        } catch (e) {
+                            console.warn("Invalid ISO date format for purchase order:", po.poIsoDate, e);
+                            formattedPODate = po.poDate || 'N/A';
+                        }
+                    } else if (po.poDate) {
+                        formattedPODate = po.poDate;
+                    }
+                    poDiv.innerHTML = `
+                        <div class="mb-2">
+                            <p class="text-modern-text-dark"><strong>رقم أمر الشراء:</strong> ${po.poNumber || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>المورد:</strong> ${po.poSupplierName || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>هاتف المورد:</strong> ${po.poSupplierPhone || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>تاريخ الأمر:</strong> ${formattedPODate}</p>
+                            <p class="text-modern-text-dark"><strong>مالك أمر الشراء:</strong> ${po.poOwnerName || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>هاتف المالك:</strong> ${po.poOwnerPhone || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>تاريخ التسليم المتوقع:</strong> ${po.poDeliveryDate || 'N/A'}</p>
+                            <p class="text-modern-text-dark"><strong>الحالة:</strong> ${po.poStatus || 'N/A'}</p>
+                        </div>
+                        ${productsListHtml}
+                        <div class="border-t border-dashed border-modern-border-light pt-2 mt-2 text-right">
+                            <p class="text-modern-text-dark"><strong>إجمالي التكلفة:</strong> <span class="text-modern-primary-accent font-bold">${parseFloat(po.totalCost || 0).toFixed(2)} DH</span></p>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="modern-button btn-danger-action delete-po-button">
+                                <i class="fas fa-trash-alt"></i> حذف
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(poDiv);
+                });
+            },
+
             displayStatistics: (invoices) => {
                 let totalSalesHT = 0;
                 let totalTVA = 0;
@@ -1825,13 +2477,13 @@
                 });
 
                 // Update main statistics display
-                UIElements.totalPurchaseCost.textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
-                UIElements.totalSellingPrice.textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
-                UIElements.totalCommission.textContent = `${totalOverallCommission.toFixed(2)} DH`;
-                UIElements.totalProfit.textContent = `${totalOverallProfit.toFixed(2)} DH`;
-                UIElements.totalSalesHT.textContent = `${totalSalesHT.toFixed(2)} DH`;
-                UIElements.totalTVA.textContent = `${totalTVA.toFixed(2)} DH`;
-                UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
+                if (UIElements.totalPurchaseCost) UIElements.totalPurchaseCost.textContent = `${totalPurchaseCostAllProducts.toFixed(2)} DH`;
+                if (UIElements.totalSellingPrice) UIElements.totalSellingPrice.textContent = `${totalSellingPriceAllProducts.toFixed(2)} DH`;
+                if (UIElements.totalCommission) UIElements.totalCommission.textContent = `${totalOverallCommission.toFixed(2)} DH`;
+                if (UIElements.totalProfit) UIElements.totalProfit.textContent = `${totalOverallProfit.toFixed(2)} DH`;
+                if (UIElements.totalSalesHT) UIElements.totalSalesHT.textContent = `${totalSalesHT.toFixed(2)} DH`;
+                if (UIElements.totalTVA) UIElements.totalTVA.textContent = `${totalTVA.toFixed(2)} DH`;
+                if (UIElements.totalSalesTTC) UIElements.totalSalesTTC.textContent = `${totalSalesTTC.toFixed(2)} DH`;
 
                 // Prepare data for dynamic lists
                 const topSellingProductsData = Object.entries(productSales).sort(([, a], [, b]) => b.quantitySold - a.quantitySold).map(([name, stats]) => ({ name, value: stats.quantitySold, secondaryValue: stats.totalRevenue, icon: 'fas fa-box' }));
@@ -1853,7 +2505,9 @@
                     'fas fa-truck-moving'
                 );
             },
+
             renderSimpleList: (listEl, data, primaryTextFn, secondaryTextFn, iconClass) => {
+                if (!listEl) return; // Add check for list element existence
                 listEl.innerHTML = '';
                 if (data.length > 0) {
                     data.forEach(item => {
@@ -1874,7 +2528,7 @@
                         `;
                         li.dataset.searchTerm = primaryTextFn(item);
                         li.addEventListener('click', () => {
-                            UIElements.commonSearchInput.value = li.dataset.searchTerm;
+                            if (UIElements.commonSearchInput) UIElements.commonSearchInput.value = li.dataset.searchTerm;
                             FirebaseData.applyCombinedFilters();
                         });
                         listEl.appendChild(li);
@@ -1885,103 +2539,203 @@
                     listEl.classList.remove('has-more-items');
                 }
             },
-            renderSalesChart: (invoices) => {
-                const ctx = document.getElementById('salesChartCanvas').getContext('2d');
 
-                // Destroy existing chart instance if it exists
-                if (salesChartInstance) {
-                    salesChartInstance.destroy();
+            /**
+             * Renders the file explorer tree view.
+             * @param {Array<string>} phoneNumbers - Array of unique phone numbers.
+             */
+            renderTreeView: (phoneNumbers) => {
+                const treeRoot = UIElements.mainTreeRoot;
+                if (!treeRoot) return; // Add check for treeRoot existence
+                treeRoot.innerHTML = ''; // Clear existing tree
+
+                // Add "All Firebase Data" root node
+                const allDataNode = document.createElement('li');
+                allDataNode.classList.add('folder');
+                allDataNode.dataset.type = 'all';
+                allDataNode.dataset.phone = 'all';
+                allDataNode.innerHTML = `
+                    <div class="folder-label">
+                        <i class="fas fa-database"></i> <span>جميع بيانات Firebase</span>
+                    </div>
+                    <i class="fas fa-chevron-left toggle-icon"></i>
+                `;
+                treeRoot.appendChild(allDataNode);
+
+                const allDataNestedList = document.createElement('ul');
+                allDataNestedList.classList.add('nested');
+                allDataNode.appendChild(allDataNestedList);
+
+                // Add sub-nodes for "All Data" (Dashboard, All Inventory, All Invoices, etc.)
+                const dashboardNode = document.createElement('li');
+                dashboardNode.classList.add('file-item');
+                dashboardNode.dataset.type = 'dashboard';
+                dashboardNode.dataset.phone = 'all';
+                dashboardNode.innerHTML = `<i class="fas fa-chart-line"></i> <span>لوحة التحكم (الكل)</span>`;
+                allDataNestedList.appendChild(dashboardNode);
+
+                const allInventoryNode = document.createElement('li');
+                allInventoryNode.classList.add('file-item');
+                allInventoryNode.dataset.type = 'inventory';
+                allInventoryNode.dataset.phone = 'all';
+                allInventoryNode.innerHTML = `<i class="fas fa-boxes"></i> <span>منتجات المخزون (الكل)</span>`;
+                allDataNestedList.appendChild(allInventoryNode);
+
+                const allInvoicesNode = document.createElement('li');
+                allInvoicesNode.classList.add('file-item');
+                allInvoicesNode.dataset.type = 'invoices';
+                allInvoicesNode.dataset.phone = 'all';
+                allInvoicesNode.innerHTML = `<i class="fas fa-cloud"></i> <span>الفواتير (الكل)</span>`;
+                allDataNestedList.appendChild(allInvoicesNode);
+
+                const allPurchaseOrdersNode = document.createElement('li');
+                allPurchaseOrdersNode.classList.add('file-item');
+                allPurchaseOrdersNode.dataset.type = 'purchaseOrders';
+                allPurchaseOrdersNode.dataset.phone = 'all';
+                allPurchaseOrdersNode.innerHTML = `<i class="fas fa-shopping-cart"></i> <span>أوامر الشراء (الكل)</span>`;
+                allDataNestedList.appendChild(allPurchaseOrdersNode);
+
+                const allSoldProductsNode = document.createElement('li');
+                allSoldProductsNode.classList.add('file-item');
+                allSoldProductsNode.dataset.type = 'soldProducts';
+                allSoldProductsNode.dataset.phone = 'all';
+                allSoldProductsNode.innerHTML = `<i class="fas fa-receipt"></i> <span>المنتجات المباعة (الكل)</span>`;
+                allDataNestedList.appendChild(allSoldProductsNode);
+
+                const allDuplicateProductsNode = document.createElement('li');
+                allDuplicateProductsNode.classList.add('file-item');
+                allDuplicateProductsNode.dataset.type = 'duplicates';
+                allDuplicateProductsNode.dataset.phone = 'all';
+                allDuplicateProductsNode.innerHTML = `<i class="fas fa-copy"></i> <span>المنتجات المتكررة (الكل)</span>`;
+                allDataNestedList.appendChild(allDuplicateProductsNode);
+
+                // Add phone number nodes
+                phoneNumbers.forEach(phone => {
+                    const phoneNode = document.createElement('li');
+                    phoneNode.classList.add('folder');
+                    phoneNode.dataset.type = 'phone';
+                    phoneNode.dataset.phone = phone;
+                    phoneNode.innerHTML = `
+                        <div class="folder-label">
+                            <i class="fas fa-mobile-alt"></i> <span>${phone}</span>
+                        </div>
+                        <i class="fas fa-chevron-left toggle-icon"></i>
+                    `;
+                    treeRoot.appendChild(phoneNode);
+
+                    const nestedList = document.createElement('ul');
+                    nestedList.classList.add('nested');
+                    phoneNode.appendChild(nestedList);
+
+                    // Add sub-nodes for each phone number
+                    const dashboardPhoneNode = document.createElement('li');
+                    dashboardPhoneNode.classList.add('file-item');
+                    dashboardPhoneNode.dataset.type = 'dashboard';
+                    dashboardPhoneNode.dataset.phone = phone;
+                    dashboardPhoneNode.innerHTML = `<i class="fas fa-chart-line"></i> <span>لوحة التحكم</span>`;
+                    nestedList.appendChild(dashboardPhoneNode);
+
+                    const inventoryPhoneNode = document.createElement('li');
+                    inventoryPhoneNode.classList.add('file-item');
+                    inventoryPhoneNode.dataset.type = 'inventory';
+                    inventoryPhoneNode.dataset.phone = phone;
+                    inventoryPhoneNode.innerHTML = `<i class="fas fa-boxes"></i> <span>منتجات المخزون</span>`;
+                    nestedList.appendChild(inventoryPhoneNode);
+
+                    const invoicesPhoneNode = document.createElement('li');
+                    invoicesPhoneNode.classList.add('file-item');
+                    invoicesPhoneNode.dataset.type = 'invoices';
+                    invoicesPhoneNode.dataset.phone = phone;
+                    invoicesPhoneNode.innerHTML = `<i class="fas fa-cloud"></i> <span>الفواتير</span>`;
+                    nestedList.appendChild(invoicesPhoneNode);
+
+                    const purchaseOrdersPhoneNode = document.createElement('li');
+                    purchaseOrdersPhoneNode.classList.add('file-item');
+                    purchaseOrdersPhoneNode.dataset.type = 'purchaseOrders';
+                    purchaseOrdersPhoneNode.dataset.phone = phone;
+                    purchaseOrdersPhoneNode.innerHTML = `<i class="fas fa-shopping-cart"></i> <span>أوامر الشراء</span>`;
+                    nestedList.appendChild(purchaseOrdersPhoneNode);
+
+                    const soldProductsPhoneNode = document.createElement('li');
+                    soldProductsPhoneNode.classList.add('file-item');
+                    soldProductsPhoneNode.dataset.type = 'soldProducts';
+                    soldProductsPhoneNode.dataset.phone = phone;
+                    soldProductsPhoneNode.innerHTML = `<i class="fas fa-receipt"></i> <span>المنتجات المباعة</span>`;
+                    nestedList.appendChild(soldProductsPhoneNode);
+
+                    const duplicateProductsPhoneNode = document.createElement('li');
+                    duplicateProductsPhoneNode.classList.add('file-item');
+                    duplicateProductsPhoneNode.dataset.type = 'duplicates';
+                    duplicateProductsPhoneNode.dataset.phone = phone;
+                    duplicateProductsPhoneNode.innerHTML = `<i class="fas fa-copy"></i> <span>المنتجات المتكررة</span>`;
+                    nestedList.appendChild(duplicateProductsPhoneNode);
+                });
+
+                // Initial selection: "All Firebase Data" -> Dashboard
+                // This is handled by selectTreeItem at the end of fetchAndDisplayCombinedFirebaseData
+            },
+
+            /**
+             * Handles selection of an item in the tree view.
+             * Updates active classes and global state, then applies filters.
+             * @param {string} phone - The selected phone number ('all' or specific number).
+             * @param {string} type - The selected data type ('dashboard', 'inventory', etc.).
+             */
+            selectTreeItem: (phone, type) => {
+                // Remove active class from all items
+                if (UIElements.mainTreeRoot) {
+                    UIElements.mainTreeRoot.querySelectorAll('li').forEach(item => {
+                        item.classList.remove('active');
+                    });
                 }
 
-                // Aggregate sales data by month
-                const monthlySales = {};
-                invoices.forEach(invoice => {
-                    if (invoice.isoDate) {
-                        const date = new Date(invoice.isoDate);
-                        const monthYear = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`; // YYYY-MM
-                        monthlySales[monthYear] = (monthlySales[monthYear] || 0) + parseFloat(invoice.totalTTC || 0);
-                    }
-                });
-
-                // Sort months chronologically
-                const labels = Object.keys(monthlySales).sort();
-                const data = labels.map(month => monthlySales[month]);
-
-                // Convert month-year labels to Arabic month names
-                const arabicMonthLabels = labels.map(label => {
-                    const [year, monthNum] = label.split('-');
-                    const date = new Date(year, parseInt(monthNum) - 1, 1);
-                    return date.toLocaleDateString('ar-MA', { month: 'long', year: 'numeric' });
-                });
-
-                salesChartInstance = new Chart(ctx, {
-                    type: 'bar', // Can be 'line', 'pie', 'doughnut', etc.
-                    data: {
-                        labels: arabicMonthLabels,
-                        datasets: [{
-                            label: 'إجمالي المبيعات (TTC) بالدرهم المغربي',
-                            data: data,
-                            backgroundColor: 'rgba(0, 123, 255, 0.6)', // modern-primary-accent with opacity
-                            borderColor: 'rgba(0, 123, 255, 1)',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // Allow chart to fill container
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top',
-                                labels: {
-                                    font: {
-                                        family: 'Cairo, Inter, sans-serif'
-                                    }
-                                }
-                            },
-                            tooltip: {
-                                rtl: true, // Enable RTL for tooltips
-                                titleFont: {
-                                    family: 'Cairo, Inter, sans-serif'
-                                },
-                                bodyFont: {
-                                    family: 'Cairo, Inter, sans-serif'
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'المبلغ (درهم مغربي)',
-                                    font: {
-                                        family: 'Cairo, Inter, sans-serif'
-                                    }
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Cairo, Inter, sans-serif'
-                                    }
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'الشهر',
-                                    font: {
-                                        family: 'Cairo, Inter, sans-serif'
-                                    }
-                                },
-                                ticks: {
-                                    font: {
-                                        family: 'Cairo, Inter, sans-serif'
-                                    }
-                                }
-                            }
+                // Find and add active class to the selected item
+                let selectedNode;
+                if (phone === 'all' && type === 'dashboard') {
+                     selectedNode = UIElements.mainTreeRoot.querySelector(`li.folder[data-phone="all"][data-type="all"]`);
+                     if (selectedNode) {
+                         selectedNode.classList.add('active', 'open');
+                         const nestedUl = selectedNode.querySelector('ul.nested');
+                         if (nestedUl) nestedUl.classList.add('active');
+                         // Also activate the specific dashboard sub-item
+                         const dashboardFileItem = selectedNode.querySelector(`li.file-item[data-phone="all"][data-type="dashboard"]`);
+                         if (dashboardFileItem) dashboardFileItem.classList.add('active');
+                     }
+                } else if (phone === 'all' && type !== 'dashboard') {
+                    selectedNode = UIElements.mainTreeRoot.querySelector(`li.file-item[data-phone="all"][data-type="${type}"]`);
+                    if (selectedNode) {
+                        selectedNode.classList.add('active');
+                        // Ensure parent folder is open
+                        const parentFolder = selectedNode.closest('li.folder');
+                        if(parentFolder) {
+                            parentFolder.classList.add('active', 'open');
+                            const nestedUl = parentFolder.querySelector('ul.nested');
+                            if(nestedUl) nestedUl.classList.add('active');
                         }
                     }
-                });
+                }
+                else { // Specific phone number selected
+                    selectedNode = UIElements.mainTreeRoot.querySelector(`li.file-item[data-phone="${phone}"][data-type="${type}"]`);
+                    if (selectedNode) {
+                        selectedNode.classList.add('active');
+                        // Ensure parent folder is open
+                        const parentFolder = selectedNode.closest('li.folder');
+                        if(parentFolder) {
+                            parentFolder.classList.add('active', 'open');
+                            const nestedUl = parentFolder.querySelector('ul.nested');
+                            if(nestedUl) nestedUl.classList.add('active');
+                        }
+                    }
+                }
+                
+                currentSelectedPhone = phone;
+                currentSelectedDataType = type;
+
+                // Update the common phone dropdown to reflect the selected phone from the tree
+                if (UIElements.commonPhoneDropdown) UIElements.commonPhoneDropdown.value = phone;
+
+                // Apply filters based on new selection
+                FirebaseData.applyCombinedFilters();
             }
         };
 
@@ -1993,19 +2747,24 @@
                 commonSearchInput: document.getElementById('commonSearchInput'),
                 clearCommonSearchInputButton: document.getElementById('clearCommonSearchInput'),
                 allSearchOptionsDatalist: document.getElementById('allSearchOptions'),
-                firebaseProductListCountSpan: document.getElementById('firebaseProductListCount'),
-                firebaseInvoiceListCountSpan: document.getElementById('firebaseInvoiceListCount'),
-                firebaseInvoiceProductListCount: document.getElementById('firebaseInvoiceProductListCount'),
-                firebaseDuplicateProductListCount: document.getElementById('firebaseDuplicateProductListCount'), 
+                // Removed nav button count spans as top nav is removed
+                // navProductListCountSpan: document.getElementById('navProductListCount'),
+                // navInvoiceListCountSpan: document.getElementById('navInvoiceListCount'),
+                // navPurchaseOrderListCountSpan: document.getElementById('navPurchaseOrderListCount'),
+                // navSoldProductListCount: document.getElementById('navSoldProductListCount'),
+                // navDuplicateProductListCount: document.getElementById('navDuplicateProductListCount'),
+
                 firebaseProductsContainer: document.getElementById('firebaseProductsContainer'),
                 firebaseInvoicesContainer: document.getElementById('firebaseInvoicesContainer'),
                 firebaseInvoiceProductsContainer: document.getElementById('firebaseInvoiceProductsContainer'),
                 firebaseDuplicateProductsContainer: document.getElementById('firebaseDuplicateProductsContainer'), 
+                firebasePurchaseOrdersContainer: document.getElementById('firebasePurchaseOrdersContainer'), 
                 // Corrected loader IDs as per HTML
                 firebaseProductsLoader: document.getElementById('firebaseProductsLoader'),
                 firebaseInvoicesLoader: document.getElementById('firebaseInvoicesLoader'),
                 firebaseInvoiceProductsLoader: document.getElementById('firebaseInvoiceProductsLoader'),
                 firebaseDuplicateProductsLoader: document.getElementById('firebaseDuplicateProductsLoader'), 
+                firebasePurchaseOrdersLoader: document.getElementById('firebasePurchaseOrdersLoader'), 
                 totalPurchaseCost: document.getElementById('totalPurchaseCost'),
                 totalSellingPrice: document.getElementById('totalSellingPrice'),
                 totalCommission: document.getElementById('totalCommission'),
@@ -2041,8 +2800,41 @@
                 modalTotalProfit: document.getElementById('modalTotalProfit'),
                 closeInvoiceModalBtn: document.getElementById('closeInvoiceModalBtn'),
                 printInvoiceModalBtn: document.getElementById('printInvoiceModalBtn'),
-                invoiceModalLoader: document.getElementById('invoiceModalLoader')
+                invoiceModalLoader: document.getElementById('invoiceModalLoader'),
+                // Purchase Order Modal elements
+                purchaseOrderDisplayModalOverlay: document.getElementById('purchaseOrderDisplayModalOverlay'),
+                purchaseOrderDisplayModalContent: document.getElementById('purchaseOrderDisplayModalContent'),
+                modalPOSupplierName: document.getElementById('modalPOSupplierName'),
+                modalPOSupplierPhone: document.getElementById('modalPOSupplierPhone'),
+                modalPODate: document.getElementById('modalPODate'),
+                modalPOOwnerName: document.getElementById('modalPOOwnerName'),
+                modalPOOwnerPhone: document.getElementById('modalPOOwnerPhone'),
+                modalPOProductsTableBody: document.getElementById('modalPOProductsTableBody'),
+                modalPOTotalCost: document.getElementById('modalPOTotalCost'),
+                modalPONumber: document.getElementById('modalPONumber'), 
+                modalPODeliveryDate: document.getElementById('modalPODeliveryDate'), 
+                modalPOStatus: document.getElementById('modalPOStatus'), 
+                closePurchaseOrderModalBtn: document.getElementById('closePurchaseOrderModalBtn'),
+                printPurchaseOrderModalBtn: document.getElementById('printPurchaseOrderModalBtn'),
+                purchaseOrderModalLoader: document.getElementById('purchaseOrderModalLoader'),
+                // NEW: Tree View elements
+                mainTreeRoot: document.getElementById('mainTreeRoot'),
+                // NEW: Section elements for toggling visibility
+                detailedStatsSection: document.getElementById('detailed-stats'),
+                purchaseOrdersListSection: document.getElementById('purchase-orders-list'),
+                duplicateProductsSection: document.getElementById('duplicate-products'),
+                inventoryProductsSection: document.getElementById('inventory-products'),
+                soldProductsSection: document.getElementById('sold-products'),
+                invoicesListSection: document.getElementById('invoices-list'),
+                // NEW: Burger Menu and Overlay (re-added for mobile sidebar)
+                burgerMenu: document.getElementById('burgerMenu'),
+                sidebar: document.getElementById('sidebar'),
+                sidebarOverlay: document.getElementById('sidebarOverlay')
             };
+
+            // Log UIElements after initialization to debug if elements are null
+            console.log("UIElements after initialization:", UIElements);
+
             FirebaseData.init();
             FirebaseData.fetchAndDisplayCombinedFirebaseData();
         });
