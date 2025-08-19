@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" >
@@ -9,35 +10,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background-color: #ECE5DD; /* WhatsApp-like light beige background */
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
             direction: rtl;
         }
+
         h1 {
             font-size: clamp(2rem, 5vw, 3rem);
-            color: #FFFFFF;
-            font-weight: 600;
         }
+
         h2 {
             font-size: clamp(1.5rem, 3.5vw, 2rem);
-            color: #000000;
-            font-weight: 600;
-        }
-        
-        .header {
-            background-color: #075E54; /* WhatsApp green */
-            padding: 1.5rem;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header .settings-btn {
-            color: white;
         }
 
         .modal {
@@ -55,8 +42,9 @@
             align-items: center;
             transition: all 0.3s ease-in-out;
         }
+
         .modal-content {
-            background-color: #FFFFFF;
+            background-color: #fefefe;
             padding: 24px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
@@ -72,13 +60,19 @@
             overflow-y: auto;
             transition: background-color 0.3s ease-in-out;
         }
+
         #statsModal .modal-content {
-            max-width: 95%;
-            width: 95%;
-            height: 50vh;
-            max-height: 50vh;
+            width: 100vw;
+            height: 70vh;
+            max-width: none;
+            max-height: none;
+            border-radius: 0;
             padding: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            animation: none;
         }
+
         .close-btn {
             position: absolute;
             top: 1rem;
@@ -88,22 +82,26 @@
             font-weight: bold;
             transition: color 0.3s;
         }
+
         .close-btn:hover,
         .close-btn:focus {
             color: black;
             text-decoration: none;
             cursor: pointer;
         }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
                 transform: scale(0.9);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1);
             }
         }
+
         .notification-message {
             position: fixed;
             top: 10%;
@@ -116,31 +114,37 @@
             animation: slideIn 0.5s forwards, fadeOut 3s forwards 2s;
             z-index: 1000;
         }
+
         @keyframes slideIn {
             from {
                 top: -50px;
                 opacity: 0;
             }
+
             to {
                 top: 10%;
                 opacity: 1;
             }
         }
+
         @keyframes fadeOut {
             from {
                 opacity: 1;
             }
+
             to {
                 opacity: 0;
             }
         }
+
         .card {
-            background-color: #FFFFFF;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 1.5rem;
-            border: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
+
         .industrial-button-wrapper {
             display: flex;
             flex-direction: column;
@@ -150,44 +154,52 @@
             border-radius: 0.5rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
+
         .industrial-button {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background-color: #D3D3D3; /* Gray background for inactive state */
+            background-color: #d1d5db;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.3s;
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
             cursor: pointer;
             position: relative;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #B0B0B0;
+            border: 1px solid #9ca3af;
         }
+
         .industrial-button:hover {
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
+
         .industrial-button:active {
             transform: translateY(2px);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
+
         .indicator-light {
             position: absolute;
             width: 90%;
             height: 90%;
             border-radius: 50%;
-            background-color: #E8E8E8; /* Lighter gray for off state */
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #ef4444;
+            /* Default Red (OFF) */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 5px rgba(239, 68, 68, 0.4);
             transition: all 0.3s ease-in-out;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .indicator-light.active {
-            background-color: #25D366; /* WhatsApp green for on state */
-            box-shadow: 0 0 15px #25D366, inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: #22c55e;
+            /* Green for ON state */
+            box-shadow: 0 0 15px #22c55e, inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         .button-header {
             display: flex;
             align-items: center;
@@ -195,11 +207,13 @@
             width: 100%;
             margin-bottom: 0.5rem;
         }
+
         .control-label-header {
             font-weight: bold;
             color: #1f2937;
             text-align: center;
         }
+
         .settings-btn {
             background: none;
             border: none;
@@ -207,127 +221,137 @@
             padding: 0.5rem;
             transition: color 0.2s;
         }
+
         .settings-btn:hover {
-            color: #ECE5DD;
+            color: #1d4ed8;
         }
+
         .icon-small {
             font-size: 1.25rem;
             color: #6b7280;
         }
+
         .digital-display-container {
             width: 100%;
             height: 100px;
-            background-color: #FFFFFF;
-            border: 1px solid #CCCCCC;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            background-color: #0d0d0d;
+            border: 5px solid #9ca3af;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0 auto;
             position: relative;
-            border-radius: 8px;
+            border-radius: 0.5rem;
             padding: 0 1rem;
         }
+
         .digital-display-text {
-            color: #000000;
+            color: #00ff00;
             font-family: 'Digital-7 Mono', monospace;
             font-size: 3rem;
             line-height: 1;
-            text-shadow: none;
+            text-shadow: 0 0 10px #00ff00;
         }
+
         .input-style {
             background-color: #f9fafb;
             border: 1px solid #d1d5db;
             color: #1f2937;
         }
+
         .input-style::placeholder {
             color: #9ca3af;
         }
+
         .input-style:focus {
             outline: none;
-            box-shadow: 0 0 0 2px #075E54;
+            box-shadow: 0 0 0 2px #1d4ed8;
         }
-        
+
+        /* New status bar styles */
         .status-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 5px;
-            background-color: #d1d5db; /* Default gray for disconnected */
+            background-color: #ef4444;
+            /* Default red for disconnected */
             z-index: 1000;
             transition: background-color 0.3s ease-in-out;
         }
+
         .status-connected {
-            background-color: #25D366; /* WhatsApp green for connected */
+            background-color: #22c55e;
         }
+
+        /* Green for connected */
         .status-disconnected {
-            background-color: #d1d5db; /* Gray for disconnected */
+            background-color: #ef4444;
         }
-        
+
+        /* Red for disconnected */
+        /* New transparent button style for the settings icon */
         .transparent-btn {
             background: none;
             border: none;
             cursor: pointer;
             padding: 0;
         }
+
         .do-icon {
             font-size: 2rem;
             color: white;
+            /* Icon color is now always white */
             transition: color 0.3s ease-in-out;
         }
+
         .indicator-light.active .do-icon {
             color: white;
         }
-        @media (orientation: landscape) and (min-width: 768px) {
-            #statsModal .modal-content {
-                width: 100vw;
-                height: 100vh;
-                max-width: none;
-                max-height: none;
-                border-radius: 0;
-                padding: 1.5rem;
-                justify-content: center;
-                align-items: center;
-                animation: none;
-            }
-        }
     </style>
 </head>
+
 <body class="bg-gray-100 p-4 text-gray-800">
     <div id="connection-status-bar" class="status-bar"></div>
-    <div class="header">
-        <h1 class="text-3xl md:text-5xl font-bold">لوحة التحكم</h1>
-        <button id="open-system-settings-btn" class="transparent-btn text-white hover:text-gray-200 transition-colors duration-300">
-            <i class="fas fa-cog text-3xl md:text-4xl"></i>
-        </button>
-    </div>
-    
     <div class="container mx-auto max-w-7xl p-6">
-        <p class="text-center text-lg mb-10 text-gray-600">مراقبة المداخل والتحكم بالمخارج الرقمية والتناظرية عبر الويب.</p>
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl md:text-5xl font-bold text-gray-900">لوحة التحكم KC868-A16</h1>
+            <div class="flex items-center space-x-2">
+                <button id="open-system-settings-btn"
+                    class="transparent-btn text-gray-700 hover:text-gray-900 transition-colors duration-300">
+                    <i class="fas fa-cog text-3xl md:text-4xl"></i>
+                </button>
+            </div>
+        </div>
+        <p class="text-center text-lg mb-10 text-gray-600">مراقبة المداخل والمخارج الرقمية والتناظرية عبر الويب.
+        </p>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="card mb-8 lg:mb-0">
-                <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-[#075E54] pr-3">المداخل التناظرية (4–20mA)</h2>
+                <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المداخل التناظرية
+                    (4–20mA)</h2>
                 <div id="ai-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 </div>
             </div>
             <div class="grid grid-cols-1 gap-6">
                 <div class="card mb-0">
-                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-[#075E54] pr-3">المخارج الرقمية</h2>
+                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المخارج الرقمية
+                    </h2>
                     <div id="do-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4">
                     </div>
                 </div>
                 <div class="card mb-0">
-                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-[#075E54] pr-3">المداخل الرقمية</h2>
+                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المداخل الرقمية
+                    </h2>
                     <div id="di-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4">
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
     <div id="statsModal" class="modal">
-        <div class="modal-content bg-white">
+        <div class="modal-content bg-slate-50">
             <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
                 onclick="closeModal('statsModal')">&times;</button>
             <h3 id="modalTitle" class="text-2xl font-bold mb-4 text-center text-gray-800"></h3>
@@ -337,61 +361,91 @@
             <div id="chart-container" class="w-full h-full">
                 <canvas id="archiveChart"></canvas>
             </div>
+            <div id="chart-controls" class="flex justify-center items-center space-x-2 mt-4 rtl:space-x-reverse hidden">
+                <button id="zoomOutBtn"
+                    class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-lg transition-colors">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+                <button id="resetZoomBtn"
+                    class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-1 px-3 rounded-lg transition-colors">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="zoomInBtn"
+                    class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1 px-3 rounded-lg transition-colors">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+            </div>
+            <div id="chart-timeline-footer"
+                class="w-full mt-4 p-2 text-sm text-center text-gray-600 bg-gray-200 rounded-lg hidden">
+                انقر على نقطة لرؤية توقيتها
+            </div>
             <p id="noDataMessage" class="text-center text-gray-500 mt-4 hidden">لا توجد بيانات أرشيف لهذا العنصر.</p>
         </div>
     </div>
     <div id="renameModal" class="modal">
-        <div class="modal-content bg-white">
+        <div class="modal-content bg-slate-50">
             <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
                 onclick="closeModal('renameModal')">&times;</button>
             <h3 class="text-2xl font-bold mb-4 text-center text-gray-800">تغيير الاسم</h3>
             <p id="renameLabel" class="text-lg text-gray-700 mb-4"></p>
             <input type="text" id="renameInput" placeholder="أدخل اسماً جديداً..."
-                class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#075E54] w-full text-right bg-white text-gray-800">
+                class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-right bg-white text-gray-800">
             <button id="saveRenameBtn"
-                class="w-full mt-4 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2 rounded-lg transition-colors">حفظ الاسم</button>
+                class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors">حفظ
+                الاسم</button>
         </div>
     </div>
     <div id="optionsModal" class="modal">
-        <div class="modal-content bg-white">
+        <div class="modal-content bg-slate-50">
             <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
                 onclick="closeModal('optionsModal')">&times;</button>
             <h3 class="text-2xl font-bold mb-6 text-center text-gray-800">خيارات التحكم</h3>
             <div class="flex flex-col space-y-4 w-full">
                 <button id="modalRenameBtn"
-                    class="w-full bg-[#128C7E] hover:bg-[#075E54] text-white font-bold py-3 rounded-lg transition-colors">تغيير الاسم</button>
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors">تغيير
+                    الاسم</button>
                 <button id="modalArchiveBtn"
-                    class="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 rounded-lg transition-colors">عرض الأرشيف</button>
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition-colors">عرض
+                    الأرشيف</button>
             </div>
         </div>
     </div>
     <div id="systemSettingsModal" class="modal">
-        <div class="modal-content bg-white">
+        <div class="modal-content bg-slate-50">
             <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
                 onclick="closeModal('systemSettingsModal')">&times;</button>
             <h3 class="text-2xl font-bold mb-4 text-center text-gray-800">إعدادات النظام</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
                 <div class="flex flex-col">
-                    <label for="db_url" class="text-sm font-medium mb-1 text-right text-gray-700">عنوان قاعدة البيانات (URL)</label>
+                    <label for="db_url" class="text-sm font-medium mb-1 text-right text-gray-700">عنوان قاعدة البيانات
+                        (URL)</label>
                     <input type="text" id="db_url" placeholder="أدخل URL الخاص بقاعدة البيانات..."
-                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#075E54] text-right bg-white text-gray-800">
+                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right bg-white text-gray-800">
                 </div>
                 <div class="flex flex-col">
                     <label for="db_device" class="text-sm font-medium mb-1 text-right text-gray-700">اسم الجهاز</label>
                     <input type="text" id="db_device" placeholder="أدخل اسم الجهاز..."
-                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#075E54] text-right bg-white text-gray-800">
+                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right bg-white text-gray-800">
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 <button id="save_btn"
-                    class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-2 rounded-lg transition-colors duration-300">حفظ الإعدادات</button>
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors duration-300">حفظ
+                    الإعدادات</button>
                 <button id="reset-names-btn"
-                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg transition-colors duration-300">إعادة التسمية الافتراضية</button>
+                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-lg transition-colors duration-300">
+                    إعادة التسمية الافتراضية
+                </button>
             </div>
+            <button id="goToFirebaseBtn"
+                class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors duration-300">
+                انتقل إلى Firebase Console
+            </button>
         </div>
     </div>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseURLInput = document.getElementById('db_url');
@@ -413,11 +467,18 @@
             const loadingSpinner = document.getElementById('loadingSpinner');
             const modalRenameBtn = document.getElementById('modalRenameBtn');
             const modalArchiveBtn = document.getElementById('modalArchiveBtn');
+            const goToFirebaseBtn = document.getElementById('goToFirebaseBtn');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const resetZoomBtn = document.getElementById('resetZoomBtn');
+            // تم إزالة أزرار التنقل لليسار واليمين
+            const chartTimelineFooter = document.getElementById('chart-timeline-footer');
             let chartInstance = null;
             let currentControlId = null;
             let currentControlType = null;
             let firebaseInitialized = false;
             let deviceRef = null;
+
             const storedUrl = localStorage.getItem('firebaseURL');
             const storedDevice = localStorage.getItem('firebaseDevice');
             if (storedUrl) {
@@ -457,6 +518,7 @@
                 deviceRef = firebase.database().ref(deviceName);
                 renderUI();
                 setupListeners();
+                // Update the connection status bar
                 firebase.database().ref('.info/connected').on('value', snapshot => {
                     if (snapshot.val() === true) {
                         connectionStatusBar.classList.remove('status-disconnected');
@@ -532,11 +594,12 @@
                 modalTitle.textContent = `أرشيف ${localStorage.getItem(`${id}_name`) || id}`;
                 noDataMessage.classList.add('hidden');
                 loadingSpinner.classList.remove('hidden');
+                document.getElementById('chart-controls').classList.remove('hidden');
                 if (chartInstance) {
                     chartInstance.destroy();
                 }
                 const archiveRef = deviceRef.child('archive').child(type).child(id);
-                archiveRef.once('value', snapshot => {
+                archiveRef.on('value', snapshot => {
                     loadingSpinner.classList.add('hidden');
                     const archive = snapshot.val() || [];
                     if (archive.length === 0) {
@@ -546,16 +609,10 @@
                     const sortedArchive = archive.sort((a, b) => a.timestamp - b.timestamp);
                     const isDigital = (type === 'DI' || type === 'DO');
                     const ctx = document.getElementById('archiveChart').getContext('2d');
-                    let timeUnit = 'hour';
-                    const dataPointsCount = sortedArchive.length;
-                    const timeSpan = dataPointsCount > 1 ? sortedArchive[dataPointsCount - 1].timestamp - sortedArchive[0].timestamp : 0;
-                    if (timeSpan < 3600000) {
-                        timeUnit = 'minute';
-                    }
-                    if (timeSpan < 60000) {
-                        timeUnit = 'second';
-                    }
+                    
                     let chartConfig;
+                    
+                    // إعدادات المبيان الرقمي
                     if (isDigital) {
                         chartConfig = {
                             type: 'line',
@@ -566,16 +623,13 @@
                                         x: d.timestamp,
                                         y: d.value
                                     })),
-                                    borderColor: '#25D366',
-                                    backgroundColor: (context) => {
-                                        if (!context.chart.chartArea) return;
-                                        return getGradient(context.chart.ctx, context.chart.chartArea, 'rgba(37, 211, 102, 0.6)', 'rgba(37, 211, 102, 1)');
-                                    },
+                                    borderColor: '#3b82f6', /* لون أزرق */
+                                    backgroundColor: 'rgba(59, 130, 246, 0.2)', /* لون تعبئة أزرق فاتح */
                                     fill: true,
-                                    stepped: 'before',
-                                    tension: 0,
                                     pointRadius: 3,
-                                    pointBackgroundColor: '#25D366',
+                                    stepped: false, /* خط ناعم */
+                                    tension: 0.4, /* نعومة الخط */
+                                    pointBackgroundColor: '#3b82f6',
                                     pointBorderColor: '#fff',
                                     pointHoverRadius: 5
                                 }]
@@ -605,16 +659,20 @@
                                                 if (value === 0) return '0';
                                                 return '';
                                             }
+                                        },
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
                                         }
                                     },
                                     x: {
                                         type: 'time',
                                         time: {
-                                            unit: timeUnit,
+                                            unit: 'day',
                                             displayFormats: {
-                                                second: 'HH:mm:ss',
-                                                minute: 'HH:mm',
-                                                hour: 'dd MMM, HH:mm'
+                                                day: 'dd MMM',
+                                                hour: 'dd MMM, HH:mm',
+                                                minute: 'HH:mm:ss',
+                                                second: 'HH:mm:ss'
                                             },
                                             tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
                                         },
@@ -628,10 +686,21 @@
                                         },
                                         ticks: {
                                             autoSkip: true,
-                                            maxTicksLimit: 3,
+                                            maxTicksLimit: 10,
                                             font: {
                                                 size: 10
+                                            },
+                                            callback: function(value, index, ticks) {
+                                                const date = new Date(value);
+                                                if (isNaN(date)) return '';
+                                                return date.toLocaleString('ar-EG', {
+                                                    day: '2-digit',
+                                                    month: 'short'
+                                                }).replace(',', '');
                                             }
+                                        },
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
                                         }
                                     }
                                 },
@@ -661,15 +730,26 @@
                                     },
                                     datalabels: {
                                         display: false
+                                    },
+                                    zoom: {
+                                        pan: {
+                                            enabled: true,
+                                            mode: 'x',
+                                        },
+                                        zoom: {
+                                            wheel: {
+                                                enabled: true,
+                                            },
+                                            pinch: {
+                                                enabled: true
+                                            },
+                                            mode: 'x',
+                                        },
                                     }
-                                },
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeOutQuart'
                                 }
                             }
                         };
-                    } else { // Analog AI Chart Configuration (Line Chart)
+                    } else { // إعدادات المبيان التناظري
                         chartConfig = {
                             type: 'line',
                             data: {
@@ -679,21 +759,14 @@
                                         x: d.timestamp,
                                         y: d.value
                                     })),
-                                    backgroundColor: (context) => {
-                                        const chart = context.chart;
-                                        const {
-                                            ctx,
-                                            chartArea
-                                        } = chart;
-                                        if (!chartArea) return;
-                                        return getGradient(ctx, chartArea, 'rgba(37, 211, 102, 1)', 'rgba(37, 211, 102, 0.6)');
-                                    },
-                                    borderColor: '#25D366',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                                    borderColor: '#3b82f6',
                                     borderWidth: 2,
                                     fill: true,
-                                    tension: 0.3,
+                                    stepped: false,
+                                    tension: 0.4,
                                     pointRadius: 3,
-                                    pointBackgroundColor: '#25D366',
+                                    pointBackgroundColor: '#3b82f6',
                                     pointBorderColor: '#fff',
                                     pointHoverRadius: 5
                                 }]
@@ -717,16 +790,20 @@
                                             font: {
                                                 size: 12
                                             }
+                                        },
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
                                         }
                                     },
                                     x: {
                                         type: 'time',
                                         time: {
-                                            unit: timeUnit,
+                                            unit: 'day',
                                             displayFormats: {
-                                                second: 'HH:mm:ss',
-                                                minute: 'HH:mm',
-                                                hour: 'dd MMM, HH:mm'
+                                                day: 'dd MMM',
+                                                hour: 'dd MMM, HH:mm',
+                                                minute: 'HH:mm:ss',
+                                                second: 'HH:mm:ss'
                                             },
                                             tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
                                         },
@@ -740,10 +817,21 @@
                                         },
                                         ticks: {
                                             autoSkip: true,
-                                            maxTicksLimit: 3,
+                                            maxTicksLimit: 10,
                                             font: {
                                                 size: 10
+                                            },
+                                            callback: function(value, index, ticks) {
+                                                const date = new Date(value);
+                                                if (isNaN(date)) return '';
+                                                return date.toLocaleString('ar-EG', {
+                                                    day: '2-digit',
+                                                    month: 'short'
+                                                }).replace(',', '');
                                             }
+                                        },
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.1)'
                                         }
                                     }
                                 },
@@ -768,17 +856,51 @@
                                     },
                                     datalabels: {
                                         display: false
+                                    },
+                                    zoom: {
+                                        pan: {
+                                            enabled: true,
+                                            mode: 'x',
+                                        },
+                                        zoom: {
+                                            wheel: {
+                                                enabled: true,
+                                            },
+                                            pinch: {
+                                                enabled: true
+                                            },
+                                            mode: 'x',
+                                        },
                                     }
-                                },
-                                animation: {
-                                    duration: 1000,
-                                    easing: 'easeOutQuart'
                                 }
                             }
                         };
                     }
+
                     Chart.register(ChartDataLabels);
+                    Chart.register(ChartZoom);
                     chartInstance = new Chart(ctx, chartConfig);
+                    document.getElementById('chart-controls').classList.remove('hidden');
+
+                    const zoomInBtn = document.getElementById('zoomInBtn');
+                    const zoomOutBtn = document.getElementById('zoomOutBtn');
+                    const resetZoomBtn = document.getElementById('resetZoomBtn');
+                    
+                    zoomInBtn.addEventListener('click', () => {
+                        if (chartInstance) {
+                            chartInstance.zoom(1.1);
+                        }
+                    });
+                    zoomOutBtn.addEventListener('click', () => {
+                        if (chartInstance) {
+                            chartInstance.zoom(0.9);
+                        }
+                    });
+                    resetZoomBtn.addEventListener('click', () => {
+                        if (chartInstance) {
+                            chartInstance.resetZoom();
+                        }
+                    });
                 });
             };
             const createDigitalControl = (container, type, count) => {
@@ -786,30 +908,30 @@
                     const id = `${type}${i}`;
                     const name = localStorage.getItem(`${id}_name`) || id;
                     const div = document.createElement('div');
-                    div.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col items-center space-y-2 card';
+                    div.className = 'bg-slate-50 p-4 rounded-lg shadow-md flex flex-col items-center space-y-2 card';
                     let industrialButtonHTML = '';
                     if (type === 'DO') {
                         industrialButtonHTML = `
-                            <div class="industrial-button">
-                                <div id="${id}-indicator" class="indicator-light">
-                                    <i id="${id}-icon" class="fas fa-power-off do-icon"></i>
+                                <div class="industrial-button">
+                                    <div id="${id}-indicator" class="indicator-light">
+                                        <i id="${id}-icon" class="fas fa-power-off do-icon"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
                     } else {
                         industrialButtonHTML = `
-                            <div class="industrial-button">
-                                <div id="${id}-indicator" class="indicator-light"></div>
-                            </div>
-                        `;
+                                <div class="industrial-button">
+                                    <div id="${id}-indicator" class="indicator-light"></div>
+                                </div>
+                            `;
                     }
                     div.innerHTML = `
-                        <div class="flex items-center justify-between w-full">
-                            <span class="font-bold text-gray-800">${name}</span>
-                            <button class="settings-btn" data-type="${type}" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
-                        </div>
-                        ${industrialButtonHTML}
-                    `;
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="font-bold text-gray-800">${name}</span>
+                                    <button class="settings-btn" data-type="${type}" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
+                                </div>
+                                ${industrialButtonHTML}
+                            `;
                     if (type === 'DO') {
                         div.querySelector('.industrial-button').addEventListener('click', () => {
                             toggleState(deviceRef.child(type).child(id), type, id);
@@ -831,20 +953,20 @@
                     const id = `AI${i}`;
                     const name = localStorage.getItem(`${id}_name`) || id;
                     const div = document.createElement('div');
-                    div.className = 'bg-white p-4 rounded-lg shadow-md flex flex-col space-y-2 card';
+                    div.className = 'bg-slate-50 p-4 rounded-lg shadow-md flex flex-col space-y-2 card';
                     div.innerHTML = `
-                        <div class="flex items-center justify-between w-full">
-                            <span class="font-bold text-gray-800">${name}</span>
-                            <button class="settings-btn" data-type="AI" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
-                        </div>
-                        <div class="digital-display-container">
-                            <span id="${id}-display" class="digital-display-text">-- mA</span>
-                        </div>
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-gray-700 text-right">ضبط التيار (mA):</label>
-                            <input type="range" id="${id}-slider" min="4" max="20" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                        </div>
-                    `;
+                                <div class="flex items-center justify-between w-full">
+                                    <span class="font-bold text-gray-800">${name}</span>
+                                    <button class="settings-btn" data-type="AI" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
+                                </div>
+                                <div class="digital-display-container">
+                                    <span id="${id}-display" class="digital-display-text">-- mA</span>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-700 text-right">ضبط التيار (mA):</label>
+                                    <input type="range" id="${id}-slider" min="4" max="20" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            `;
                     aiContainer.appendChild(div);
                 }
             };
@@ -879,10 +1001,10 @@
                             if (value === null) continue;
                             const isActive = value === 1;
                             if (isActive) {
-                                displayElement.style.backgroundColor = '#25D366'; // Green
+                                displayElement.style.backgroundColor = '#22c55e';
                                 iconElement.style.color = 'white';
                             } else {
-                                displayElement.style.backgroundColor = '#d1d5db'; // Gray
+                                displayElement.style.backgroundColor = '#ef4444';
                                 iconElement.style.color = 'white';
                             }
                         }
@@ -1007,4 +1129,5 @@
         });
     </script>
 </body>
+
 </html>
