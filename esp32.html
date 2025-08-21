@@ -4,115 +4,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" >
-    <title>لوحة التحكم KC868-A16</title>
-    <link href="https://fonts.cdnfonts.com/css/digital-7-mono" rel="stylesheet">
+    <title>لوحة تحكم KC868-A16</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js" defer></script>
+    <script>
+        document.documentElement.classList.add('dark');
+    </script>
     <style>
+        /* إزالة الحشوات والهوامش من جميع العناصر */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #075e54;
+            --secondary-color: #dcf8c6;
+            --text-color: #1f2937;
+            --bg-color: #ffffff;
+            --card-bg: #e5e7eb;
+            --border-color: #d1d5db;
+            --success-color: #25d366;
+            --danger-color: #ef4444;
+            --pending-color: #f59e0b;
+            --digital-display-bg: #f3f4f6;
+            --digital-display-text: #1a202c;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-medium: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark {
+            --primary-color: #128c7e;
+            --secondary-color: #262d31;
+            --text-color: #f0fff0;
+            --bg-color: #111b21;
+            --card-bg: #1f2c34;
+            --border-color: #2a3136;
+            --success-color: #25d366;
+            --danger-color: #ff3333;
+            --pending-color: #ffcc00;
+            --digital-display-bg: #111b21;
+            --digital-display-text: #00ff41;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             direction: rtl;
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-weight: 700;
         }
 
         h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
+            font-size: clamp(2rem, 5vw, 2.5rem);
+            color: white;
+            text-align: right;
+            padding-right: 1.5rem;
         }
 
         h2 {
-            font-size: clamp(1.5rem, 3.5vw, 2rem);
+            font-size: clamp(1.5rem, 3.5vw, 1.75rem);
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            border-right: 4px solid var(--primary-color);
+            padding-right: 1rem;
+        }
+
+        .header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--primary-color);
+            color: white;
+            width: 100%;
         }
 
         .modal {
             display: none;
             position: fixed;
-            z-index: 100;
-            left: 0;
+            z-index: 1000;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
-            transition: all 0.3s ease-in-out;
         }
 
         .modal-content {
-            background-color: #fefefe;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            background-color: var(--card-bg);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
             max-width: 90%;
             width: 500px;
-            height: auto;
-            max-height: 90vh;
-            animation: fadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             position: relative;
-            overflow-y: auto;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-        #statsModal .modal-content {
-            width: 100vw;
-            height: 70vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-            padding: 1.5rem;
-            justify-content: center;
-            align-items: center;
-            animation: none;
         }
 
         .close-btn {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 1.75rem;
+            cursor: pointer;
             position: absolute;
             top: 1rem;
             left: 1rem;
-            color: #aaa;
-            font-size: 28px;
-            font-weight: bold;
             transition: color 0.3s;
         }
 
-        .close-btn:hover,
-        .close-btn:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        .close-btn:hover {
+            color: var(--text-color);
         }
 
         .notification-message {
             position: fixed;
-            top: 10%;
+            top: 2%;
             left: 50%;
             transform: translateX(-50%);
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 12px 20px;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 8px var(--shadow-medium);
             animation: slideIn 0.5s forwards, fadeOut 3s forwards 2s;
-            z-index: 1000;
+            z-index: 2000;
+            font-size: 1rem;
+            font-weight: 500;
         }
 
         @keyframes slideIn {
@@ -122,7 +159,7 @@
             }
 
             to {
-                top: 10%;
+                top: 2%;
                 opacity: 1;
             }
         }
@@ -138,56 +175,69 @@
         }
 
         .card {
-            background-color: #ffffff;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px var(--shadow-light);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
         }
 
-        .industrial-button-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f9fafb;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow-medium);
+        }
+
+        .control-label {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            color: white;
+        }
+
+        .icon-btn:hover {
+            color: var(--secondary-color);
+            transform: scale(1.1);
         }
 
         .industrial-button {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            background-color: #d1d5db;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
-            cursor: pointer;
+            box-shadow: 0 4px 8px var(--shadow-medium);
             position: relative;
+            cursor: pointer;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #9ca3af;
+            transition: all 0.2s ease-in-out;
+            background-color: var(--border-color);
         }
 
         .industrial-button:hover {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .industrial-button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transform: translateY(0);
+            box-shadow: 2px 2px 4px var(--shadow-light);
         }
 
         .indicator-light {
-            position: absolute;
-            width: 90%;
-            height: 90%;
+            width: 63px;
+            height: 63px;
             border-radius: 50%;
-            background-color: #ef4444;
-            /* Default Red (OFF) */
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 5px rgba(239, 68, 68, 0.4);
+            background-color: var(--danger-color);
             transition: all 0.3s ease-in-out;
             display: flex;
             justify-content: center;
@@ -195,331 +245,666 @@
         }
 
         .indicator-light.active {
-            background-color: #22c55e;
-            /* Green for ON state */
-            box-shadow: 0 0 15px #22c55e, inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: var(--success-color);
         }
 
-        .button-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 0.5rem;
+        .indicator-light.pending {
+            background-color: var(--pending-color);
+            animation: pulse 1s infinite;
         }
 
-        .control-label-header {
-            font-weight: bold;
-            color: #1f2937;
-            text-align: center;
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
-        .settings-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0.5rem;
-            transition: color 0.2s;
-        }
-
-        .settings-btn:hover {
-            color: #1d4ed8;
-        }
-
-        .icon-small {
-            font-size: 1.25rem;
-            color: #6b7280;
+        .do-icon {
+            font-size: 1.5rem;
+            color: white;
         }
 
         .digital-display-container {
             width: 100%;
-            height: 100px;
-            background-color: #0d0d0d;
-            border: 5px solid #9ca3af;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            height: 60px;
+            background-color: var(--digital-display-bg);
+            border: 2px solid var(--border-color);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 0 auto;
-            position: relative;
             border-radius: 0.5rem;
-            padding: 0 1rem;
         }
 
         .digital-display-text {
-            color: #00ff00;
+            color: var(--digital-display-text);
             font-family: 'Digital-7 Mono', monospace;
-            font-size: 3rem;
+            font-size: 2rem;
             line-height: 1;
-            text-shadow: 0 0 10px #00ff00;
+            font-weight: 500;
         }
 
-        .input-style {
-            background-color: #f9fafb;
-            border: 1px solid #d1d5db;
-            color: #1f2937;
+        input[type="range"] {
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            height: 10px;
+            -webkit-appearance: none;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .input-style::placeholder {
-            color: #9ca3af;
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: background 0.2s;
         }
 
-        .input-style:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px #1d4ed8;
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #2563eb;
         }
 
-        /* New status bar styles */
+        .dark input[type="range"]::-webkit-slider-thumb {
+            background: var(--primary-color);
+        }
+
         .status-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 5px;
-            background-color: #ef4444;
-            /* Default red for disconnected */
+            height: 6px;
+            background-color: var(--danger-color);
             z-index: 1000;
-            transition: background-color 0.3s ease-in-out;
         }
 
         .status-connected {
-            background-color: #22c55e;
+            background-color: var(--success-color);
         }
 
-        /* Green for connected */
         .status-disconnected {
-            background-color: #ef4444;
+            background-color: var(--danger-color);
         }
 
-        /* Red for disconnected */
-        /* New transparent button style for the settings icon */
-        .transparent-btn {
-            background: none;
+        .rename-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .action-button {
+            background: var(--primary-color);
             border: none;
+            padding: 1rem 1.5rem;
             cursor: pointer;
-            padding: 0;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 8px var(--shadow-medium);
+            color: white;
+            border-radius: 0.75rem;
         }
 
-        .do-icon {
-            font-size: 2rem;
-            color: white;
-            /* Icon color is now always white */
-            transition: color 0.3s ease-in-out;
+        .action-button:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
-        .indicator-light.active .do-icon {
-            color: white;
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .action-button-secondary {
+            background: var(--secondary-color);
+            border: none;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 8px var(--shadow-medium);
+            color: black;
+            border-radius: 0.75rem;
+        }
+
+        .action-button-secondary:hover {
+            background: #4b5563;
+        }
+
+        .chart-main-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .digital-control-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .digital-control-card-wrapper {
+            flex-grow: 1;
+            flex-basis: 0;
+        }
+
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a0a0a0"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: left 0.75rem center;
+            background-size: 1rem;
+            padding-left: 2.5rem;
         }
     </style>
 </head>
 
-<body class="bg-gray-100 p-4 text-gray-800">
+<body>
     <div id="connection-status-bar" class="status-bar"></div>
-    <div class="container mx-auto max-w-7xl p-6">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-3xl md:text-5xl font-bold text-gray-900">لوحة التحكم KC868-A16</h1>
-            <div class="flex items-center space-x-2">
-                <button id="open-system-settings-btn"
-                    class="transparent-btn text-gray-700 hover:text-gray-900 transition-colors duration-300">
-                    <i class="fas fa-cog text-3xl md:text-4xl"></i>
-                </button>
-            </div>
+    <header class="header">
+        <div class="flex items-center space-x-4">
+            <i class="fab fa-whatsapp text-3xl text-gray-100"></i>
+            <h1 class="font-bold text-2xl text-white">لوحة تحكم KC868-A16</h1>
         </div>
-        <p class="text-center text-lg mb-10 text-gray-600">مراقبة المداخل والمخارج الرقمية والتناظرية عبر الويب.
-        </p>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card mb-8 lg:mb-0">
-                <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المداخل التناظرية
-                    (4–20mA)</h2>
-                <div id="ai-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                </div>
-            </div>
-            <div class="grid grid-cols-1 gap-6">
-                <div class="card mb-0">
-                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المخارج الرقمية
-                    </h2>
-                    <div id="do-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4">
-                    </div>
-                </div>
-                <div class="card mb-0">
-                    <h2 class="text-2xl font-semibold mb-4 text-right border-r-4 border-emerald-500 pr-3">المداخل الرقمية
-                    </h2>
-                    <div id="di-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-4">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="statsModal" class="modal">
-        <div class="modal-content bg-slate-50">
-            <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
-                onclick="closeModal('statsModal')">&times;</button>
-            <h3 id="modalTitle" class="text-2xl font-bold mb-4 text-center text-gray-800"></h3>
-            <div id="loadingSpinner" class="hidden flex justify-center items-center mt-8">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-            </div>
-            <div id="chart-container" class="w-full h-full">
-                <canvas id="archiveChart"></canvas>
-            </div>
-            <div id="chart-controls" class="flex justify-center items-center space-x-2 mt-4 rtl:space-x-reverse hidden">
-                <button id="zoomOutBtn"
-                    class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-lg transition-colors">
-                    <i class="fas fa-search-minus"></i>
-                </button>
-                <button id="resetZoomBtn"
-                    class="bg-slate-700 hover:bg-slate-800 text-white font-bold py-1 px-3 rounded-lg transition-colors">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button id="zoomInBtn"
-                    class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-1 px-3 rounded-lg transition-colors">
-                    <i class="fas fa-search-plus"></i>
+        <button id="open-system-settings-btn" class="icon-btn rounded-full">
+            <i class="fas fa-cog text-xl"></i>
+        </button>
+    </header>
+    <main class="p-4">
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-right flex-grow">المداخل التناظرية (AI)</h2>
+                <button class="toggle-section-btn icon-btn" data-target="ai-section">
+                    <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
-            <div id="chart-timeline-footer"
-                class="w-full mt-4 p-2 text-sm text-center text-gray-600 bg-gray-200 rounded-lg hidden">
-                انقر على نقطة لرؤية توقيتها
+            <div id="ai-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4 hidden"></div>
+        </section>
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-right flex-grow">المخارج الرقمية (DO)</h2>
+                <button class="toggle-section-btn icon-btn" data-target="do-section">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
             </div>
-            <p id="noDataMessage" class="text-center text-gray-500 mt-4 hidden">لا توجد بيانات أرشيف لهذا العنصر.</p>
-        </div>
-    </div>
+            <div id="do-section" class="digital-control-grid mb-4 hidden"></div>
+        </section>
+        <section>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-right flex-grow">المداخل الرقمية (DI)</h2>
+                <button class="toggle-section-btn icon-btn" data-target="di-section">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div id="di-section" class="digital-control-grid hidden"></div>
+        </section>
+    </main>
     <div id="renameModal" class="modal">
-        <div class="modal-content bg-slate-50">
-            <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
-                onclick="closeModal('renameModal')">&times;</button>
-            <h3 class="text-2xl font-bold mb-4 text-center text-gray-800">تغيير الاسم</h3>
-            <p id="renameLabel" class="text-lg text-gray-700 mb-4"></p>
+        <div class="modal-content text-right">
+            <h3 class="text-2xl font-bold mb-4">تغيير الاسم</h3>
+            <button class="close-btn" data-modal-id="renameModal"><i class="fas fa-times"></i></button>
+            <p id="renameLabel" class="rename-label mb-4"></p>
             <input type="text" id="renameInput" placeholder="أدخل اسماً جديداً..."
-                class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full text-right bg-white text-gray-800">
-            <button id="saveRenameBtn"
-                class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors">حفظ
-                الاسم</button>
-        </div>
-    </div>
-    <div id="optionsModal" class="modal">
-        <div class="modal-content bg-slate-50">
-            <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
-                onclick="closeModal('optionsModal')">&times;</button>
-            <h3 class="text-2xl font-bold mb-6 text-center text-gray-800">خيارات التحكم</h3>
-            <div class="flex flex-col space-y-4 w-full">
-                <button id="modalRenameBtn"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-lg transition-colors">تغيير
-                    الاسم</button>
-                <button id="modalArchiveBtn"
-                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 rounded-lg transition-colors">عرض
-                    الأرشيف</button>
+                class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
+            
+            <div id="unit-options-container" class="mt-4">
+                <label for="unitSelect" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">تغيير الوحدة:</label>
+                <select id="unitSelect" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color dark:bg-gray-700 dark:text-gray-100"></select>
             </div>
+            
+            <div id="rename-time-options" class="flex flex-wrap justify-center items-center gap-2 mt-4 mb-2"></div>
+            <button id="saveRenameBtn" class="w-full mt-6 action-button">حفظ الاسم</button>
         </div>
     </div>
     <div id="systemSettingsModal" class="modal">
-        <div class="modal-content bg-slate-50">
-            <button class="absolute top-4 left-4 text-gray-400 hover:text-gray-600 text-3xl close-btn"
-                onclick="closeModal('systemSettingsModal')">&times;</button>
-            <h3 class="text-2xl font-bold mb-4 text-center text-gray-800">إعدادات النظام</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 w-full">
+        <div class="modal-content text-right">
+            <h3 class="text-2xl font-bold mb-4">إعدادات النظام</h3>
+            <button class="close-btn" data-modal-id="systemSettingsModal"><i class="fas fa-times"></i></button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="flex flex-col">
-                    <label for="db_url" class="text-sm font-medium mb-1 text-right text-gray-700">عنوان قاعدة البيانات
-                        (URL)</label>
-                    <input type="text" id="db_url" placeholder="أدخل URL الخاص بقاعدة البيانات..."
-                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right bg-white text-gray-800">
+                    <label for="db_url" class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">عنوان قاعدة
+                        البيانات (URL)</label>
+                    <input type="text" id="db_url" placeholder="مثال: https://my-project.firebaseio.com"
+                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
                 </div>
                 <div class="flex flex-col">
-                    <label for="db_device" class="text-sm font-medium mb-1 text-right text-gray-700">اسم الجهاز</label>
-                    <input type="text" id="db_device" placeholder="أدخل اسم الجهاز..."
-                        class="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right bg-white text-gray-800">
+                    <label for="db_device" class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">اسم
+                        الجهاز</label>
+                    <input type="text" id="db_device" placeholder="مثال: my-device-name"
+                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                <button id="save_btn"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors duration-300">حفظ
-                    الإعدادات</button>
-                <button id="reset-names-btn"
-                    class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 rounded-lg transition-colors duration-300">
-                    إعادة التسمية الافتراضية
-                </button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button id="save-settings-btn" class="w-full action-button">حفظ الإعدادات</button>
+                <button id="reset-names-btn" class="w-full action-button">إعادة التسمية الافتراضية</button>
             </div>
-            <button id="goToFirebaseBtn"
-                class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg transition-colors duration-300">
-                انتقل إلى Firebase Console
+            <button id="go-to-firebase-btn" class="w-full mt-4 action-button-secondary">
+                انتقل إلى Firebase Console <i class="fas fa-external-link-alt"></i>
             </button>
         </div>
     </div>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseURLInput = document.getElementById('db_url');
-            const firebaseDeviceInput = document.getElementById('db_device');
-            const saveBtn = document.getElementById('save_btn');
-            const resetNamesBtn = document.getElementById('reset-names-btn');
-            const openSystemSettingsBtn = document.getElementById('open-system-settings-btn');
-            const systemSettingsModal = document.getElementById('systemSettingsModal');
-            const connectionStatusBar = document.getElementById('connection-status-bar');
-            const statsModal = document.getElementById('statsModal');
-            const renameModal = document.getElementById('renameModal');
-            const optionsModal = document.getElementById('optionsModal');
-            const closeChartBtn = document.querySelector('#statsModal .close-btn');
-            const renameLabel = document.getElementById('renameLabel');
-            const renameInput = document.getElementById('renameInput');
-            const saveRenameBtn = document.getElementById('saveRenameBtn');
-            const modalTitle = document.getElementById('modalTitle');
-            const noDataMessage = document.getElementById('noDataMessage');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            const modalRenameBtn = document.getElementById('modalRenameBtn');
-            const modalArchiveBtn = document.getElementById('modalArchiveBtn');
-            const goToFirebaseBtn = document.getElementById('goToFirebaseBtn');
-            const zoomInBtn = document.getElementById('zoomInBtn');
-            const zoomOutBtn = document.getElementById('zoomOutBtn');
-            const resetZoomBtn = document.getElementById('resetZoomBtn');
-            // تم إزالة أزرار التنقل لليسار واليمين
-            const chartTimelineFooter = document.getElementById('chart-timeline-footer');
-            let chartInstance = null;
-            let currentControlId = null;
-            let currentControlType = null;
-            let firebaseInitialized = false;
-            let deviceRef = null;
+        const controlsConfig = {
+            AI: [
+                { id: 'AI1', label: 'مقياس التيار 1', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
+                { id: 'AI2', label: 'مقياس التيار 2', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
+                { id: 'AI3', label: 'مقياس التيار 3', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
+                { id: 'AI4', label: 'مقياس التيار 4', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' }
+            ],
+            DO: [
+                { id: 'DO1', label: 'مفتاح التشغيل 1', icon: 'fas fa-lightbulb' },
+                { id: 'DO2', label: 'مفتاح التشغيل 2', icon: 'fas fa-lightbulb' },
+                { id: 'DO3', label: 'مفتاح التشغيل 3', icon: 'fas fa-lightbulb' },
+                { id: 'DO4', label: 'مفتاح التشغيل 4', icon: 'fas fa-lightbulb' },
+                { id: 'DO5', label: 'مفتاح التشغيل 5', icon: 'fas fa-lightbulb' },
+                { id: 'DO6', label: 'مفتاح التشغيل 6', icon: 'fas fa-lightbulb' },
+                { id: 'DO7', label: 'مفتاح التشغيل 7', icon: 'fas fa-lightbulb' },
+                { id: 'DO8', label: 'مفتاح التشغيل 8', icon: 'fas fa-lightbulb' }
+            ],
+            DI: [
+                { id: 'DI1', label: 'حساس الحالة 1', icon: 'fas fa-door-open' },
+                { id: 'DI2', label: 'حساس الحالة 2', icon: 'fas fa-door-open' },
+                { id: 'DI3', label: 'حساس الحالة 3', icon: 'fas fa-door-open' },
+                { id: 'DI4', label: 'حساس الحالة 4', icon: 'fas fa-door-open' },
+                { id: 'DI5', label: 'حساس الحالة 5', icon: 'fas fa-door-open' },
+                { id: 'DI6', label: 'حساس الحالة 6', icon: 'fas fa-door-open' },
+                { id: 'DI7', label: 'حساس الحالة 7', icon: 'fas fa-door-open' },
+                { id: 'DI8', label: 'حساس الحالة 8', icon: 'fas fa-door-open' }
+            ]
+        };
+        const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
+        const timeRangeLabels = ['ساعة', '24 ساعة', 'الكل'];
+        const aiUnits = ['mA', 'V', '°C'];
+        const unitMappings = JSON.parse(localStorage.getItem('unitMappings')) || {};
+        let firebaseInitialized = false;
+        let deviceRef = null;
+        const chartInstances = {};
+        const isChartBeingUpdated = {};
+        const aiDataCache = {};
+        const renamedLabels = JSON.parse(localStorage.getItem('renamedLabels')) || {};
+        const style = getComputedStyle(document.body);
+        const primaryColor = style.getPropertyValue('--primary-color').trim();
+        const successColor = style.getPropertyValue('--success-color').trim();
+        const textColor = style.getPropertyValue('--text-color').trim();
 
-            const storedUrl = localStorage.getItem('firebaseURL');
-            const storedDevice = localStorage.getItem('firebaseDevice');
-            if (storedUrl) {
-                firebaseURLInput.value = storedUrl;
+        function showMessage(message, isError = false) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `notification-message ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            messageElement.textContent = message;
+            document.body.appendChild(messageElement);
+            setTimeout(() => messageElement.remove(), 3000);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function createChart(ctx, type, id, dataPoints = []) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
             }
-            if (storedDevice) {
-                firebaseDeviceInput.value = storedDevice;
-            }
-            const showMessage = (message, isError = false) => {
-                const messageElement = document.createElement('div');
-                messageElement.className = `notification-message ${isError ? 'bg-red-500' : 'bg-green-500'}`;
-                messageElement.textContent = message;
-                document.body.appendChild(messageElement);
-                setTimeout(() => {
-                    messageElement.remove();
-                }, 3000);
-            };
-            const openModal = (modalId) => {
-                document.getElementById(modalId).style.display = 'flex';
-            };
-            const closeModal = (modalId) => {
-                document.getElementById(modalId).style.display = 'none';
-            };
-            const initFirebaseAndControls = (url, deviceName) => {
-                if (!firebaseInitialized) {
-                    try {
-                        firebase.initializeApp({
-                            databaseURL: url
-                        });
-                        firebaseInitialized = true;
-                    } catch (error) {
-                        console.error("Firebase initialization failed:", error);
-                        showMessage('فشل في تهيئة Firebase. تحقق من URL.', true);
-                        return;
+            const isDigital = (type === 'DI' || type === 'DO');
+            const borderColor = isDigital ? successColor : primaryColor;
+            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || {}).unit;
+
+            const chartConfig = {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: isDigital ? 'الحالة' : 'القيمة',
+                        data: dataPoints,
+                        borderColor: borderColor,
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const { ctx, chartArea } = chart;
+                            if (!chartArea) return;
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            const transparentColor = isDigital ? 'rgba(16, 185, 129, 0)' : 'rgba(59, 130, 246, 0)';
+                            const semiTransparentColor = isDigital ? successColor + '60' : primaryColor + '60';
+                            gradient.addColorStop(0, transparentColor);
+                            gradient.addColorStop(1, semiTransparentColor);
+                            return gradient;
+                        },
+                        fill: true,
+                        stepped: isDigital ? 'after' : false,
+                        tension: isDigital ? 0 : 0.4,
+                        pointRadius: 0,
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    font: { family: 'Inter, sans-serif' },
+                    layout: { padding: { bottom: 40 } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: false },
+                            min: isDigital ? -0.1 : 0,
+                            max: isDigital ? 1.1 : 20,
+                            ticks: {
+                                font: { size: 10, family: 'Inter, sans-serif' },
+                                color: textColor,
+                                maxTicksLimit: 5,
+                                callback: isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value} ${currentUnit}`
+                            },
+                            grid: {
+                                color: isDigital ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)'
+                            }
+                        },
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: {
+                                    second: 'HH:mm:ss',
+                                    minute: 'HH:mm',
+                                    hour: 'HH:mm',
+                                    day: 'd MMM',
+                                    week: 'd MMM',
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'dd/MM/yyyy HH:mm:ss'
+                            },
+                            title: { display: false },
+                            ticks: {
+                                font: { size: 10, family: 'Inter, sans-serif' },
+                                color: textColor,
+                                maxTicksLimit: 8,
+                                callback: (value) => {
+                                    const date = new Date(value);
+                                    const day = date.getDate().toString().padStart(2, '0');
+                                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                                    const year = date.getFullYear();
+                                    const hours = date.getHours().toString().padStart(2, '0');
+                                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                                    return [`${day}/${month}/${year}`, `${hours}:${minutes}`];
+                                },
+                                autoSkip: false
+                            },
+                            grid: {
+                                color: isDigital ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            rtl: true,
+                            bodyFont: { size: 12 },
+                            titleFont: { size: 14, weight: 'bold' },
+                            callbacks: {
+                                title: (context) => new Date(context[0].parsed.x).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' }),
+                                label: (context) => {
+                                    if (context.dataset.label.includes('الحالة')) {
+                                        return `الحالة: ${context.raw.y === 1 ? 'مفعل' : 'غير مفعل'}`;
+                                    } else if (id.startsWith('AI')) {
+                                        return `القيمة: ${context.raw.y.toFixed(2)} ${currentUnit}`;
+                                    }
+                                    return `القيمة: ${context.raw.y}`;
+                                }
+                            }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                            },
+                            zoom: {
+                                pinch: {
+                                    enabled: true
+                                },
+                                wheel: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
                     }
                 }
+            };
+            Chart.register(ChartZoom);
+            chartInstances[id] = new Chart(ctx, chartConfig);
+        }
+        
+        function updateTimeRange(newIndex, chartId) {
+            localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
+            
+            const buttonContainer = document.getElementById(`${chartId}-time-options`);
+            if (buttonContainer) {
+                const buttons = buttonContainer.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    if (parseInt(btn.dataset.timeIndex) === newIndex) {
+                        btn.classList.add('bg-primary-color', 'text-white');
+                        btn.classList.remove('text-gray-400');
+                    } else {
+                        btn.classList.remove('bg-primary-color', 'text-white');
+                        btn.classList.add('text-gray-400');
+                    }
+                });
+            }
+
+            updateChartDisplay(chartId, newIndex);
+        }
+        
+        function updateChartDisplay(chartId, newIndex) {
+            const dataPoints = aiDataCache[chartId];
+            if (!dataPoints || !dataPoints.length) {
+                return;
+            }
+
+            const now = Date.now();
+            const timeRange = timeRanges[newIndex];
+            const startTimestamp = timeRange === 'all' ? 0 : now - timeRange;
+
+            const filteredData = dataPoints.filter(point => point.x >= startTimestamp);
+            
+            const ctx = document.getElementById(`${chartId}-chart`);
+            if (ctx) {
+                if (chartInstances[chartId]) {
+                    chartInstances[chartId].data.datasets[0].data = filteredData;
+                    chartInstances[chartId].update();
+                } else {
+                    createChart(ctx, 'AI', chartId, filteredData);
+                }
+            }
+        }
+
+        async function toggleState(ref, type, id) {
+            const indicator = document.getElementById(`${id}-indicator`);
+            if (indicator && indicator.classList.contains('pending')) return;
+            if (indicator) indicator.classList.add('pending');
+
+            try {
+                const snapshot = await ref.once('value');
+                const currentValue = snapshot.val();
+                const newValue = (currentValue === 1) ? 0 : 1;
+                await ref.set(newValue);
+            } catch (error) {
+                console.error("Failed to set value:", error);
+                showMessage('فشل في تحديث الحالة.', true);
+            } finally {
+                if (indicator) indicator.classList.remove('pending');
+            }
+        }
+
+        function saveToArchive(type, id, value) {
+            if (!deviceRef) return;
+            const timestamp = firebase.database.ServerValue.TIMESTAMP;
+            const archiveRef = deviceRef.child('archive').child(type).child(id);
+            archiveRef.push({ value, timestamp });
+        }
+
+        async function setDefaultValues() {
+            if (!deviceRef) return;
+            const promises = [];
+            controlsConfig.DO.forEach(config => promises.push(deviceRef.child('DO').child(config.id).once('value').then(snapshot => !snapshot.exists() && deviceRef.child('DO').child(config.id).set(0))));
+            controlsConfig.DI.forEach(config => promises.push(deviceRef.child('DI').child(config.id).once('value').then(snapshot => !snapshot.exists() && deviceRef.child('DI').child(config.id).set(0))));
+            controlsConfig.AI.forEach(config => promises.push(deviceRef.child('AI').child(config.id).once('value').then(snapshot => (!snapshot.exists() || snapshot.val()?.current === undefined) && deviceRef.child('AI').child(config.id).set({ current: 0 }))));
+            await Promise.all(promises);
+        }
+
+        function setupListeners() {
+            if (!deviceRef) return;
+
+            ['DO', 'DI'].forEach(type => {
+                controlsConfig[type].forEach(config => {
+                    const ref = deviceRef.child(type).child(config.id);
+                    ref.on('value', snapshot => {
+                        const value = snapshot.val();
+                        const indicator = document.getElementById(`${config.id}-indicator`);
+                        if (indicator) {
+                            indicator.classList.toggle('active', value === 1);
+                            if (type === 'DO') {
+                                indicator.classList.remove('pending');
+                            }
+                        }
+                    });
+                });
+            });
+
+            controlsConfig.AI.forEach(config => {
+                const aiRef = deviceRef.child('AI').child(config.id);
+                aiRef.on('value', snapshot => {
+                    const data = snapshot.val();
+                    const displayElement = document.getElementById(`${config.id}-display`);
+                    const slider = document.getElementById(`${config.id}-slider`);
+                    if (displayElement && slider) {
+                        const current = data && typeof data === 'object' && data.current !== undefined ? data.current : '--';
+                        const currentUnit = unitMappings[config.id] || controlsConfig.AI.find(c => c.id === config.id).unit;
+                        displayElement.textContent = `${typeof current === 'number' ? current.toFixed(2) : current} ${currentUnit}`;
+                        if (typeof current === 'number') {
+                            slider.value = current;
+                        }
+                    }
+                });
+
+                const archiveRef = deviceRef.child('archive').child('AI').child(config.id);
+                archiveRef.on('value', snapshot => {
+                    const dataPoints = [];
+                    snapshot.forEach(childSnapshot => {
+                        const val = childSnapshot.val();
+                        dataPoints.push({ x: val.timestamp, y: val.value });
+                    });
+                    aiDataCache[config.id] = dataPoints;
+                    const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 1;
+                    updateChartDisplay(config.id, lastTimeRangeIndex);
+                });
+            });
+        }
+
+        function createAiControlElement(config) {
+            const controlId = config.id;
+            const controlName = renamedLabels[controlId] || config.label;
+            const currentUnit = unitMappings[controlId] || config.unit;
+            const div = document.createElement('div');
+            div.className = 'card';
+            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 1;
+            div.innerHTML = `
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
+                        <button class="rename-btn icon-btn text-xs text-gray-400 dark:text-gray-500" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="control-label">${controlName}</span>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700 text-right dark:text-gray-300">القيمة التناظرية:</label>
+                        <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
+                    </div>
+                    <div class="digital-display-container mx-auto my-2">
+                        <span id="${controlId}-display" class="digital-display-text">-- ${currentUnit}</span>
+                    </div>
+                    <div class="chart-main-container relative">
+                        <div id="${controlId}-time-options" class="flex flex-wrap justify-center items-center gap-2 mb-2">
+                            ${timeRangeLabels.map((label, index) => `
+                                <button
+                                    class="time-range-btn text-xs font-semibold px-2 py-1 rounded-full transition-colors ${index === currentTimeRangeIndex ? 'bg-primary-color text-white' : 'text-gray-400'}"
+                                    data-time-index="${index}"
+                                    data-id="${controlId}"
+                                >
+                                    ${label}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <canvas id="${controlId}-chart"></canvas>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        function createDigitalControlElement(config, type) {
+            const controlId = config.id;
+            const controlName = renamedLabels[controlId] || config.label;
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = 'digital-control-card-wrapper';
+            cardWrapper.innerHTML = `
+                <div class="card p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
+                        <button class="rename-btn icon-btn text-xs text-gray-400 dark:text-gray-500" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                    </div>
+                    <span class="control-label">${controlName}</span>
+                    <div class="flex justify-center mt-4">
+                        <div class="industrial-button" data-id="${controlId}" data-type="${type}">
+                            <div id="${controlId}-indicator" class="indicator-light">
+                                <i id="${controlId}-icon" class="${config.icon} do-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return cardWrapper;
+        }
+
+        function renderAllControls() {
+            const aiSection = document.getElementById('ai-section');
+            const doSection = document.getElementById('do-section');
+            const diSection = document.getElementById('di-section');
+            aiSection.innerHTML = '';
+            doSection.innerHTML = '';
+            diSection.innerHTML = '';
+
+            controlsConfig.AI.forEach(config => {
+                aiSection.appendChild(createAiControlElement(config));
+            });
+            controlsConfig.DO.forEach(config => doSection.appendChild(createDigitalControlElement(config, 'DO')));
+            controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
+        }
+
+        function initFirebaseAndControls(url, deviceName) {
+            try {
+                if (!firebaseInitialized) {
+                    firebase.initializeApp({ databaseURL: url });
+                    firebaseInitialized = true;
+                }
                 deviceRef = firebase.database().ref(deviceName);
-                renderUI();
+                renderAllControls();
                 setupListeners();
-                // Update the connection status bar
+                setDefaultValues();
                 firebase.database().ref('.info/connected').on('value', snapshot => {
+                    const connectionStatusBar = document.getElementById('connection-status-bar');
                     if (snapshot.val() === true) {
                         connectionStatusBar.classList.remove('status-disconnected');
                         connectionStatusBar.classList.add('status-connected');
@@ -528,602 +913,167 @@
                         connectionStatusBar.classList.add('status-disconnected');
                     }
                 });
-            };
-            const saveToArchive = (type, id, value) => {
-                if (!deviceRef) {
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showMessage('فشل في تهيئة Firebase. تحقق من URL.', true);
+            }
+        }
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('#open-system-settings-btn')) {
+                document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
+                document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
+                openModal('systemSettingsModal');
+            } else if (event.target.closest('#save-settings-btn')) {
+                const newUrl = document.getElementById('db_url').value.trim();
+                const newDevice = document.getElementById('db_device').value.trim();
+                const urlRegex = /^https:\/\/[a-zA-Z0-9-]+\.firebaseio\.com$/;
+                if (!urlRegex.test(newUrl) || !newDevice) {
+                    showMessage('الرجاء إدخال عنوان قاعدة بيانات واسم جهاز صالحين.', true);
                     return;
                 }
-                const timestamp = firebase.database.ServerValue.TIMESTAMP;
-                const archiveRef = deviceRef.child('archive').child(type).child(id);
-                archiveRef.once('value', snapshot => {
-                    const archive = snapshot.val() || [];
-                    const newEntry = {
-                        value: value,
-                        timestamp: timestamp
-                    };
-                    archive.unshift(newEntry);
-                    if (archive.length > 1000) {
-                        archive.length = 1000;
-                    }
-                    archiveRef.set(archive);
-                });
-            };
-            const toggleState = (ref, type, id) => {
-                ref.once('value', snapshot => {
-                    const currentValue = snapshot.val();
-                    const newValue = (currentValue === 1) ? 0 : 1;
-                    ref.set(newValue);
-                    saveToArchive(type, id, newValue);
-                });
-            };
-            const setDefaultValues = async () => {
-                if (!deviceRef) return;
-                for (let i = 1; i <= 16; i++) {
-                    const doRef = deviceRef.child('DO').child(`DO${i}`);
-                    const doSnapshot = await doRef.once('value');
-                    if (!doSnapshot.exists()) {
-                        doRef.set(0);
-                    }
-                    const diRef = deviceRef.child('DI').child(`DI${i}`);
-                    const diSnapshot = await diRef.once('value');
-                    if (!diSnapshot.exists()) {
-                        diRef.set(0);
+                localStorage.setItem('firebaseURL', newUrl);
+                localStorage.setItem('firebaseDevice', newDevice);
+                showMessage('تم حفظ الإعدادات بنجاح!');
+                initFirebaseAndControls(newUrl, newDevice);
+                closeModal('systemSettingsModal');
+            } else if (event.target.closest('#reset-names-btn')) {
+                localStorage.removeItem('renamedLabels');
+                showMessage('تمت إعادة تعيين الأسماء بنجاح!');
+                location.reload();
+            } else if (event.target.closest('#saveRenameBtn')) {
+                const currentControlId = document.getElementById('renameModal').dataset.id;
+                const newName = document.getElementById('renameInput').value.trim();
+                const newUnit = document.getElementById('unitSelect').value;
+                const aiControl = controlsConfig.AI.find(c => c.id === currentControlId);
+                
+                if (newName) {
+                    renamedLabels[currentControlId] = newName;
+                    localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
+                    const labelElement = document.querySelector(`[data-id="${currentControlId}"]`).closest('.card').querySelector('.control-label:not(.text-sm)');
+                    if (labelElement) {
+                        labelElement.textContent = newName;
                     }
                 }
-                for (let i = 1; i <= 4; i++) {
-                    const aiRef = deviceRef.child('AI').child(`AI${i}`);
-                    const aiSnapshot = await aiRef.once('value');
-                    if (!aiSnapshot.exists() || !aiSnapshot.val().current) {
-                        aiRef.set({
-                            current: 4
-                        });
-                    }
-                }
-            };
-            const getGradient = (ctx, chartArea, startColor, endColor) => {
-                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
-                gradient.addColorStop(0, startColor);
-                gradient.addColorStop(1, endColor);
-                return gradient;
-            };
-            const displayArchiveChart = (type, id) => {
-                if (!deviceRef) {
-                    showMessage('الرجاء حفظ إعدادات Firebase أولاً.', true);
-                    return;
-                }
-                modalTitle.textContent = `أرشيف ${localStorage.getItem(`${id}_name`) || id}`;
-                noDataMessage.classList.add('hidden');
-                loadingSpinner.classList.remove('hidden');
-                document.getElementById('chart-controls').classList.remove('hidden');
-                if (chartInstance) {
-                    chartInstance.destroy();
-                }
-                const archiveRef = deviceRef.child('archive').child(type).child(id);
-                archiveRef.on('value', snapshot => {
-                    loadingSpinner.classList.add('hidden');
-                    const archive = snapshot.val() || [];
-                    if (archive.length === 0) {
-                        noDataMessage.classList.remove('hidden');
-                        return;
-                    }
-                    const sortedArchive = archive.sort((a, b) => a.timestamp - b.timestamp);
-                    const isDigital = (type === 'DI' || type === 'DO');
-                    const ctx = document.getElementById('archiveChart').getContext('2d');
-                    
-                    let chartConfig;
-                    
-                    // إعدادات المبيان الرقمي
-                    if (isDigital) {
-                        chartConfig = {
-                            type: 'line',
-                            data: {
-                                datasets: [{
-                                    label: 'الحالة',
-                                    data: sortedArchive.map(d => ({
-                                        x: d.timestamp,
-                                        y: d.value
-                                    })),
-                                    borderColor: '#3b82f6', /* لون أزرق */
-                                    backgroundColor: 'rgba(59, 130, 246, 0.2)', /* لون تعبئة أزرق فاتح */
-                                    fill: true,
-                                    pointRadius: 3,
-                                    stepped: false, /* خط ناعم */
-                                    tension: 0.4, /* نعومة الخط */
-                                    pointBackgroundColor: '#3b82f6',
-                                    pointBorderColor: '#fff',
-                                    pointHoverRadius: 5
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        title: {
-                                            display: true,
-                                            text: 'الحالة',
-                                            font: {
-                                                size: 14
-                                            }
-                                        },
-                                        min: -0.1,
-                                        max: 1.1,
-                                        ticks: {
-                                            stepSize: 0.5,
-                                            font: {
-                                                size: 12
-                                            },
-                                            callback: (value) => {
-                                                if (value === 1) return '1';
-                                                if (value === 0) return '0';
-                                                return '';
-                                            }
-                                        },
-                                        grid: {
-                                            color: 'rgba(0, 0, 0, 0.1)'
-                                        }
-                                    },
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'day',
-                                            displayFormats: {
-                                                day: 'dd MMM',
-                                                hour: 'dd MMM, HH:mm',
-                                                minute: 'HH:mm:ss',
-                                                second: 'HH:mm:ss'
-                                            },
-                                            tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: 'الوقت (التاريخ والساعة)',
-                                            font: {
-                                                size: 14
-                                            },
-                                            position: 'bottom'
-                                        },
-                                        ticks: {
-                                            autoSkip: true,
-                                            maxTicksLimit: 10,
-                                            font: {
-                                                size: 10
-                                            },
-                                            callback: function(value, index, ticks) {
-                                                const date = new Date(value);
-                                                if (isNaN(date)) return '';
-                                                return date.toLocaleString('ar-EG', {
-                                                    day: '2-digit',
-                                                    month: 'short'
-                                                }).replace(',', '');
-                                            }
-                                        },
-                                        grid: {
-                                            color: 'rgba(0, 0, 0, 0.1)'
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            title: function(context) {
-                                                return new Date(context[0].parsed.x).toLocaleString('ar-EG');
-                                            },
-                                            label: function(context) {
-                                                const value = context.raw.y;
-                                                const status = value === 1 ? '1' : '0';
-                                                return `الحالة: ${status}`;
-                                            }
-                                        },
-                                        bodyFont: {
-                                            size: 14
-                                        },
-                                        titleFont: {
-                                            size: 16,
-                                            weight: 'bold'
-                                        },
-                                        rtl: true
-                                    },
-                                    datalabels: {
-                                        display: false
-                                    },
-                                    zoom: {
-                                        pan: {
-                                            enabled: true,
-                                            mode: 'x',
-                                        },
-                                        zoom: {
-                                            wheel: {
-                                                enabled: true,
-                                            },
-                                            pinch: {
-                                                enabled: true
-                                            },
-                                            mode: 'x',
-                                        },
-                                    }
-                                }
-                            }
-                        };
-                    } else { // إعدادات المبيان التناظري
-                        chartConfig = {
-                            type: 'line',
-                            data: {
-                                datasets: [{
-                                    label: 'التيار (mA)',
-                                    data: sortedArchive.map(d => ({
-                                        x: d.timestamp,
-                                        y: d.value
-                                    })),
-                                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                                    borderColor: '#3b82f6',
-                                    borderWidth: 2,
-                                    fill: true,
-                                    stepped: false,
-                                    tension: 0.4,
-                                    pointRadius: 3,
-                                    pointBackgroundColor: '#3b82f6',
-                                    pointBorderColor: '#fff',
-                                    pointHoverRadius: 5
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: false,
-                                        title: {
-                                            display: true,
-                                            text: 'التيار (mA)',
-                                            font: {
-                                                size: 14
-                                            }
-                                        },
-                                        min: 4,
-                                        max: 20,
-                                        ticks: {
-                                            font: {
-                                                size: 12
-                                            }
-                                        },
-                                        grid: {
-                                            color: 'rgba(0, 0, 0, 0.1)'
-                                        }
-                                    },
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'day',
-                                            displayFormats: {
-                                                day: 'dd MMM',
-                                                hour: 'dd MMM, HH:mm',
-                                                minute: 'HH:mm:ss',
-                                                second: 'HH:mm:ss'
-                                            },
-                                            tooltipFormat: 'yyyy-MM-dd HH:mm:ss'
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: 'الوقت (التاريخ والساعة)',
-                                            font: {
-                                                size: 14
-                                            },
-                                            position: 'bottom'
-                                        },
-                                        ticks: {
-                                            autoSkip: true,
-                                            maxTicksLimit: 10,
-                                            font: {
-                                                size: 10
-                                            },
-                                            callback: function(value, index, ticks) {
-                                                const date = new Date(value);
-                                                if (isNaN(date)) return '';
-                                                return date.toLocaleString('ar-EG', {
-                                                    day: '2-digit',
-                                                    month: 'short'
-                                                }).replace(',', '');
-                                            }
-                                        },
-                                        grid: {
-                                            color: 'rgba(0, 0, 0, 0.1)'
-                                        }
-                                    }
-                                },
-                                plugins: {
-                                    legend: {
-                                        display: true
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            title: function(context) {
-                                                return new Date(context[0].parsed.x).toLocaleString('ar-EG');
-                                            }
-                                        },
-                                        bodyFont: {
-                                            size: 14
-                                        },
-                                        titleFont: {
-                                            size: 16,
-                                            weight: 'bold'
-                                        },
-                                        rtl: true
-                                    },
-                                    datalabels: {
-                                        display: false
-                                    },
-                                    zoom: {
-                                        pan: {
-                                            enabled: true,
-                                            mode: 'x',
-                                        },
-                                        zoom: {
-                                            wheel: {
-                                                enabled: true,
-                                            },
-                                            pinch: {
-                                                enabled: true
-                                            },
-                                            mode: 'x',
-                                        },
-                                    }
-                                }
-                            }
-                        };
-                    }
 
-                    Chart.register(ChartDataLabels);
-                    Chart.register(ChartZoom);
-                    chartInstance = new Chart(ctx, chartConfig);
-                    document.getElementById('chart-controls').classList.remove('hidden');
+                if (aiControl) {
+                    unitMappings[currentControlId] = newUnit;
+                    localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
+                    const displayElement = document.getElementById(`${currentControlId}-display`);
+                    const sliderValue = document.getElementById(`${currentControlId}-slider`).value;
+                    if (displayElement) {
+                        displayElement.textContent = `${sliderValue} ${newUnit}`;
+                    }
+                }
 
-                    const zoomInBtn = document.getElementById('zoomInBtn');
-                    const zoomOutBtn = document.getElementById('zoomOutBtn');
-                    const resetZoomBtn = document.getElementById('resetZoomBtn');
-                    
-                    zoomInBtn.addEventListener('click', () => {
-                        if (chartInstance) {
-                            chartInstance.zoom(1.1);
-                        }
-                    });
-                    zoomOutBtn.addEventListener('click', () => {
-                        if (chartInstance) {
-                            chartInstance.zoom(0.9);
-                        }
-                    });
-                    resetZoomBtn.addEventListener('click', () => {
-                        if (chartInstance) {
-                            chartInstance.resetZoom();
-                        }
-                    });
-                });
-            };
-            const createDigitalControl = (container, type, count) => {
-                for (let i = 1; i <= count; i++) {
-                    const id = `${type}${i}`;
-                    const name = localStorage.getItem(`${id}_name`) || id;
-                    const div = document.createElement('div');
-                    div.className = 'bg-slate-50 p-4 rounded-lg shadow-md flex flex-col items-center space-y-2 card';
-                    let industrialButtonHTML = '';
-                    if (type === 'DO') {
-                        industrialButtonHTML = `
-                                <div class="industrial-button">
-                                    <div id="${id}-indicator" class="indicator-light">
-                                        <i id="${id}-icon" class="fas fa-power-off do-icon"></i>
-                                    </div>
-                                </div>
-                            `;
-                    } else {
-                        industrialButtonHTML = `
-                                <div class="industrial-button">
-                                    <div id="${id}-indicator" class="indicator-light"></div>
-                                </div>
-                            `;
-                    }
-                    div.innerHTML = `
-                                <div class="flex items-center justify-between w-full">
-                                    <span class="font-bold text-gray-800">${name}</span>
-                                    <button class="settings-btn" data-type="${type}" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
-                                </div>
-                                ${industrialButtonHTML}
-                            `;
-                    if (type === 'DO') {
-                        div.querySelector('.industrial-button').addEventListener('click', () => {
-                            toggleState(deviceRef.child(type).child(id), type, id);
-                        });
-                    }
-                    container.appendChild(div);
+                showMessage('تم حفظ التغييرات بنجاح!');
+                closeModal('renameModal');
+            } else if (event.target.closest('#go-to-firebase-btn')) {
+                const url = document.getElementById('db_url').value.trim();
+                const match = url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/);
+                const projectId = match ? match[1] : null;
+                const firebaseConsoleUrl = projectId ? `https://console.firebase.google.com/u/0/project/${projectId}/database/data` : 'https://console.firebase.google.com/u/0/';
+                window.open(firebaseConsoleUrl, '_blank');
+            } else if (event.target.closest('.close-btn')) {
+                const modalId = event.target.closest('.close-btn').dataset.modalId;
+                if (modalId) {
+                    closeModal(modalId);
                 }
-            };
-            const renderUI = () => {
-                const diContainer = document.getElementById('di-container');
-                const doContainer = document.getElementById('do-container');
-                const aiContainer = document.getElementById('ai-container');
-                diContainer.innerHTML = '';
-                doContainer.innerHTML = '';
-                aiContainer.innerHTML = '';
-                createDigitalControl(diContainer, 'DI', 16);
-                createDigitalControl(doContainer, 'DO', 16);
-                for (let i = 1; i <= 4; i++) {
-                    const id = `AI${i}`;
-                    const name = localStorage.getItem(`${id}_name`) || id;
-                    const div = document.createElement('div');
-                    div.className = 'bg-slate-50 p-4 rounded-lg shadow-md flex flex-col space-y-2 card';
-                    div.innerHTML = `
-                                <div class="flex items-center justify-between w-full">
-                                    <span class="font-bold text-gray-800">${name}</span>
-                                    <button class="settings-btn" data-type="AI" data-id="${id}"><i class="fas fa-cog icon-small text-gray-500"></i></button>
-                                </div>
-                                <div class="digital-display-container">
-                                    <span id="${id}-display" class="digital-display-text">-- mA</span>
-                                </div>
-                                <div class="mt-4">
-                                    <label class="block text-sm font-medium text-gray-700 text-right">ضبط التيار (mA):</label>
-                                    <input type="range" id="${id}-slider" min="4" max="20" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                                </div>
-                            `;
-                    aiContainer.appendChild(div);
+            } else if (event.target.closest('.rename-btn')) {
+                const btn = event.target.closest('.rename-btn');
+                const controlId = btn.getAttribute('data-id');
+                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId);
+                const name = renamedLabels[controlId] || config.label;
+                
+                document.getElementById('renameLabel').textContent = `تغيير اسم: ${name}`;
+                document.getElementById('renameInput').value = name;
+                document.getElementById('renameModal').dataset.id = controlId;
+
+                const unitSelectContainer = document.getElementById('unit-options-container');
+
+                if (controlId.startsWith('AI')) {
+                    unitSelectContainer.style.display = 'block';
+                    const unitSelect = document.getElementById('unitSelect');
+                    unitSelect.innerHTML = aiUnits.map(unit => `<option value="${unit}">${unit}</option>`).join('');
+                    unitSelect.value = unitMappings[controlId] || controlsConfig.AI.find(c => c.id === controlId).unit;
+                } else {
+                    unitSelectContainer.style.display = 'none';
                 }
-            };
-            const setupListeners = () => {
-                if (!deviceRef) return;
-                const doRef = deviceRef.child('DO');
-                const diRef = deviceRef.child('DI');
-                const aiRef = deviceRef.child('AI');
-                diRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) return;
-                    for (let i = 1; i <= 16; i++) {
-                        const itemId = `DI${i}`;
-                        const displayElement = document.getElementById(`${itemId}-indicator`);
-                        if (displayElement) {
-                            const value = data[itemId];
-                            if (value === null) continue;
-                            const isActive = value === 1;
-                            displayElement.classList.toggle('active', isActive);
-                        }
-                    }
-                });
-                doRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) return;
-                    for (let i = 1; i <= 16; i++) {
-                        const itemId = `DO${i}`;
-                        const displayElement = document.getElementById(`${itemId}-indicator`);
-                        const iconElement = document.getElementById(`${itemId}-icon`);
-                        if (displayElement && iconElement) {
-                            const value = data[itemId];
-                            if (value === null) continue;
-                            const isActive = value === 1;
-                            if (isActive) {
-                                displayElement.style.backgroundColor = '#22c55e';
-                                iconElement.style.color = 'white';
-                            } else {
-                                displayElement.style.backgroundColor = '#ef4444';
-                                iconElement.style.color = 'white';
-                            }
-                        }
-                    }
-                });
-                aiRef.on('value', (snapshot) => {
-                    const data = snapshot.val();
-                    if (!data) return;
-                    for (let i = 1; i <= 4; i++) {
-                        const inputId = `AI${i}`;
-                        const displayElement = document.getElementById(`${inputId}-display`);
-                        const slider = document.getElementById(`${inputId}-slider`);
-                        if (displayElement && slider) {
-                            const value = data[inputId];
-                            if (value && typeof value === 'object' && value.current !== undefined) {
-                                const current = value.current;
-                                displayElement.textContent = `${current.toFixed(2)} mA`;
-                                slider.value = current;
-                            } else {
-                                displayElement.textContent = `-- mA`;
-                            }
-                        }
-                    }
-                });
-                for (let i = 1; i <= 4; i++) {
-                    const id = `AI${i}`;
-                    const slider = document.getElementById(`${id}-slider`);
-                    if (slider) {
-                        slider.addEventListener('change', (e) => {
-                            const value = parseFloat(e.target.value);
-                            deviceRef.child('AI').child(id).update({
-                                current: value
-                            });
-                            saveToArchive('AI', id, value);
-                        });
-                    }
+                
+                openModal('renameModal');
+            } else if (event.target.closest('.toggle-section-btn')) {
+                const btn = event.target.closest('.toggle-section-btn');
+                const targetId = btn.getAttribute('data-target');
+                const targetSection = document.getElementById(targetId);
+                const icon = btn.querySelector('i');
+                const isHidden = targetSection.classList.toggle('hidden');
+                localStorage.setItem(`sectionState-${targetId}`, !isHidden);
+                if (isHidden) {
+                    icon.classList.replace('fa-chevron-down', 'fa-chevron-left');
+                } else {
+                    icon.classList.replace('fa-chevron-left', 'fa-chevron-down');
                 }
+            } else if (event.target.closest('.industrial-button[data-type="DO"]')) {
+                const btn = event.target.closest('.industrial-button[data-type="DO"]');
+                const doId = btn.dataset.id;
+                toggleState(deviceRef.child('DO').child(doId), 'DO', doId);
+            } else if (event.target.closest('.time-range-btn')) {
+                const btn = event.target.closest('.time-range-btn');
+                const chartId = btn.dataset.id;
+                const newIndex = parseInt(btn.dataset.timeIndex);
+                updateTimeRange(newIndex, chartId);
+            }
+        });
+
+        const updateFirebaseAI = debounce((aiId, value) => {
+            if (deviceRef) {
+                deviceRef.child('AI').child(aiId).update({ current: value });
+                saveToArchive('AI', aiId, value);
+            }
+        }, 500);
+
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
             };
+        }
+
+        document.addEventListener('input', (event) => {
+            if (event.target.matches('[id$="-slider"]')) {
+                const slider = event.target;
+                const value = parseFloat(slider.value);
+                const aiId = slider.id.replace('-slider', '');
+                const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
+                document.getElementById(`${aiId}-display`).textContent = `${value.toFixed(2)} ${currentUnit}`;
+                updateFirebaseAI(aiId, value);
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const storedUrl = localStorage.getItem('firebaseURL');
+            const storedDevice = localStorage.getItem('firebaseDevice');
             if (storedUrl && storedDevice) {
                 initFirebaseAndControls(storedUrl, storedDevice);
-                setDefaultValues();
+            } else {
+                renderAllControls();
+                showMessage('الرجاء إدخال إعدادات Firebase من زر الإعدادات في الأعلى.', false);
             }
-            openSystemSettingsBtn.addEventListener('click', () => {
-                openModal('systemSettingsModal');
-            });
-            saveBtn.addEventListener('click', () => {
-                const newUrl = firebaseURLInput.value.trim();
-                const newDevice = firebaseDeviceInput.value.trim();
-                if (newUrl && newDevice) {
-                    localStorage.setItem('firebaseURL', newUrl);
-                    localStorage.setItem('firebaseDevice', newDevice);
-                    showMessage('تم حفظ الإعدادات بنجاح!');
-                    initFirebaseAndControls(newUrl, newDevice);
-                    setDefaultValues();
-                    closeModal('systemSettingsModal');
-                } else {
-                    showMessage('الرجاء إدخال عنوان قاعدة البيانات واسم الجهاز.', true);
-                }
-            });
-            resetNamesBtn.addEventListener('click', () => {
-                showMessage('تمت إعادة تعيين الأسماء بنجاح!');
-                for (let i = 1; i <= 16; i++) {
-                    localStorage.removeItem(`DI${i}_name`);
-                    localStorage.removeItem(`DO${i}_name`);
-                }
-                for (let i = 1; i <= 4; i++) {
-                    localStorage.removeItem(`AI${i}_name`);
-                }
-                renderUI();
-            });
-            closeChartBtn.addEventListener('click', () => closeModal('statsModal'));
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.settings-btn')) {
-                    const button = e.target.closest('.settings-btn');
-                    const type = button.getAttribute('data-type');
-                    const id = button.getAttribute('data-id');
-                    currentControlId = id;
-                    currentControlType = type;
-                    openModal('optionsModal');
-                }
-            });
-            modalRenameBtn.addEventListener('click', () => {
-                closeModal('optionsModal');
-                renameLabel.textContent = `تغيير اسم: ${localStorage.getItem(`${currentControlId}_name`) || currentControlId}`;
-                renameInput.value = localStorage.getItem(`${currentControlId}_name`) || currentControlId;
-                openModal('renameModal');
-            });
-            modalArchiveBtn.addEventListener('click', () => {
-                closeModal('optionsModal');
-                if (deviceRef) {
-                    displayArchiveChart(currentControlType, currentControlId);
-                    openModal('statsModal');
-                } else {
-                    showMessage('الرجاء حفظ إعدادات Firebase أولاً.', true);
-                }
-            });
-            saveRenameBtn.addEventListener('click', () => {
-                if (currentControlId) {
-                    const newName = renameInput.value.trim();
-                    if (newName) {
-                        localStorage.setItem(`${currentControlId}_name`, newName);
-                        showMessage('تم حفظ الاسم بنجاح!');
-                        renderUI();
+
+            ['ai-section', 'do-section', 'di-section'].forEach(sectionId => {
+                const isVisible = localStorage.getItem(`sectionState-${sectionId}`) === 'true';
+                const section = document.getElementById(sectionId);
+                const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"]`);
+                if (section && toggleButton) {
+                    if (isVisible) {
+                        section.classList.remove('hidden');
+                        toggleButton.querySelector('i').classList.replace('fa-chevron-left', 'fa-chevron-down');
+                    } else {
+                        section.classList.add('hidden');
+                        toggleButton.querySelector('i').classList.replace('fa-chevron-down', 'fa-chevron-left');
                     }
-                }
-                closeModal('renameModal');
-            });
-            window.addEventListener('click', (e) => {
-                if (e.target === statsModal) {
-                    closeModal('statsModal');
-                }
-                if (e.target === renameModal) {
-                    closeModal('renameModal');
-                }
-                if (e.target === optionsModal) {
-                    closeModal('optionsModal');
-                }
-                if (e.target === systemSettingsModal) {
-                    closeModal('systemSettingsModal');
                 }
             });
         });
