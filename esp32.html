@@ -2,9 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم KC868-A16</title>
     
+    <link rel="icon" href="https://via.placeholder.com/32x32?text=KC">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/180x180?text=KC">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +26,6 @@
     </script>
     
     <style>
-        /* إزالة الحشوات والهوامش من جميع العناصر */
         * {
             margin: 0;
             padding: 0;
@@ -411,7 +413,8 @@
             
             <div class="flex flex-col gap-2 mt-6">
                 <button id="saveRenameBtn" class="w-full action-button">حفظ التغييرات</button>
-                <button id="export-chart-data-btn" class="w-full action-button-secondary hidden">تصدير بيانات المبيان (CSV)</button>
+                <button id="export-chart-data-btn" class="w-full action-button">تصدير بيانات المبيان (CSV)</button>
+                <button id="delete-chart-data-btn" class="w-full action-button-secondary bg-red-500 hover:bg-red-700 text-white">حذف بيانات المبيان</button>
             </div>
         </div>
     </div>
@@ -478,6 +481,7 @@
         const primaryColor = style.getPropertyValue('--primary-color').trim();
         const successColor = style.getPropertyValue('--success-color').trim();
         const textColor = style.getPropertyValue('--text-color').trim();
+
         function showMessage(message, isError = false) {
             const messageElement = document.createElement('div');
             messageElement.className = `notification-message ${isError ? 'bg-red-500' : 'bg-green-500'}`;
@@ -485,12 +489,15 @@
             document.body.appendChild(messageElement);
             setTimeout(() => messageElement.remove(), 3000);
         }
+
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
         }
+
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+
         function createOrUpdateChart(ctx, id, type, dataPoints = []) {
             const isDigital = (type === 'DI' || type === 'DO');
             const borderColor = isDigital ? successColor : primaryColor;
@@ -541,6 +548,7 @@
                 chartInstances[id] = new Chart(ctx, chartConfig);
             }
         }
+
         function updateTimeRange(newIndex, chartId) {
             localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
             const buttonContainer = document.getElementById(`${chartId}-time-options`);
@@ -552,6 +560,7 @@
             }
             updateChartDisplay(chartId, newIndex);
         }
+
         function updateChartDisplay(chartId, newIndex) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || !dataPoints.length) return;
@@ -564,6 +573,7 @@
                 createOrUpdateChart(ctx, chartId, 'AI', filteredData);
             }
         }
+
         async function toggleState(ref, type, id) {
             const indicator = document.getElementById(`${id}-indicator`);
             if (indicator && indicator.classList.contains('pending')) return;
@@ -580,12 +590,14 @@
                 if (indicator) indicator.classList.remove('pending');
             }
         }
+
         function saveToArchive(type, id, value) {
             if (!deviceRef) return;
             const timestamp = firebase.database.ServerValue.TIMESTAMP;
             const archiveRef = deviceRef.child('archive').child(type).child(id);
             archiveRef.push({ value, timestamp });
         }
+
         async function setDefaultValues() {
             if (!deviceRef) return;
             const snapshot = await deviceRef.once('value');
@@ -606,8 +618,10 @@
                 console.log("قاعدة البيانات تحتوي بالفعل على بيانات، لا داعي لحفظ القيم الافتراضية.");
             }
         }
+
         function setupListeners() {
             if (!deviceRef) return;
+
             ['DO', 'DI'].forEach(type => {
                 controlsConfig[type].forEach(config => {
                     const ref = deviceRef.child(type).child(config.id);
@@ -621,6 +635,7 @@
                     });
                 });
             });
+            
             controlsConfig.AI.forEach(config => {
                 const aiRef = deviceRef.child('AI').child(config.id);
                 aiRef.on('value', snapshot => {
@@ -634,6 +649,7 @@
                         if (typeof current === 'number') slider.value = current;
                     }
                 });
+
                 const archiveRef = deviceRef.child('archive').child('AI').child(config.id);
                 archiveRef.on('value', snapshot => {
                     const dataPoints = [];
@@ -642,19 +658,69 @@
                         dataPoints.push({ x: val.timestamp, y: val.value });
                     });
                     aiDataCache[config.id] = dataPoints;
-                    // تم تغيير القيمة الافتراضية من 1 إلى 0 لعرض "ساعة" بشكل افتراضي
                     const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
                     updateChartDisplay(config.id, lastTimeRangeIndex);
                 });
             });
         }
+        
+        function exportChartDataAsFile(chartId) {
+            const dataPoints = aiDataCache[chartId];
+            if (!dataPoints || dataPoints.length === 0) {
+                showMessage('لا توجد بيانات لتصديرها.', true);
+                return;
+            }
+            const renamedLabel = renamedLabels[chartId] || chartId;
+            
+            let csvContent = "\uFEFFDate,Time,Value\n";
+            
+            dataPoints.forEach(point => {
+                const dateObj = new Date(point.x);
+                
+                const date = dateObj.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+                const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                
+                csvContent += `${date},${time},${point.y}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${renamedLabel}_data_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage('تم تصدير بيانات المخطط بنجاح!');
+        }
+        
+        async function deleteChartData(chartId) {
+            if (!deviceRef) {
+                showMessage('لم يتم إعداد Firebase بعد.', true);
+                return;
+            }
+            const confirmDelete = confirm("هل أنت متأكد من أنك تريد حذف كافة بيانات هذا المبيان؟ لا يمكن التراجع عن هذا الإجراء.");
+            if (confirmDelete) {
+                try {
+                    const archiveRef = deviceRef.child('archive').child('AI').child(chartId);
+                    await archiveRef.remove();
+                    showMessage('تم حذف البيانات بنجاح!');
+                } catch (error) {
+                    console.error("فشل في حذف البيانات:", error);
+                    showMessage('فشل في حذف البيانات. يرجى المحاولة مرة أخرى.', true);
+                } finally {
+                    closeModal('renameModal');
+                }
+            }
+        }
+
         function createAiControlElement(config) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || config.label;
             const currentUnit = unitMappings[controlId] || config.unit;
             const div = document.createElement('div');
             div.className = 'card';
-            // تم تغيير القيمة الافتراضية من 1 إلى 0 لعرض "ساعة" بشكل افتراضي
             const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
             div.innerHTML = `
                 <div class="p-4">
@@ -692,6 +758,7 @@
             `;
             return div;
         }
+
         function createDigitalControlElement(config, type) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || config.label;
@@ -715,6 +782,7 @@
             `;
             return cardWrapper;
         }
+
         function renderAllControls() {
             const aiSection = document.getElementById('ai-section');
             const doSection = document.getElementById('do-section');
@@ -726,6 +794,7 @@
             controlsConfig.DO.forEach(config => doSection.appendChild(createDigitalControlElement(config, 'DO')));
             controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
         }
+
         function initFirebaseAndControls(url, deviceName) {
             try {
                 if (!firebaseInitialized) {
@@ -753,34 +822,6 @@
                 console.error("Firebase initialization failed:", error);
                 showMessage('فشل في تهيئة Firebase. تحقق من URL.', true);
             }
-        }
-        
-        // دالة تصدير بيانات المخطط إلى ملف CSV (مُحدّثة)
-        function exportChartDataAsFile(chartId) {
-            const dataPoints = aiDataCache[chartId];
-            if (!dataPoints || dataPoints.length === 0) {
-                showMessage('لا توجد بيانات لتصديرها.', true);
-                return;
-            }
-            const renamedLabel = renamedLabels[chartId] || chartId;
-            // إضافة BOM لتوافق أفضل مع Excel في عرض الأحرف العربية
-            let csvContent = "\uFEFFTime,Value\n";
-            dataPoints.forEach(point => {
-                const date = new Date(point.x);
-                // استخدام تنسيق ISO 8601 القياسي للحصول على تنسيق تاريخ عالمي
-                const formattedDate = date.toISOString();
-                csvContent += `${formattedDate},${point.y}\n`;
-            });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${renamedLabel}_data_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showMessage('تم تصدير بيانات المخطط بنجاح!');
         }
         
         document.addEventListener('click', (event) => {
@@ -819,6 +860,9 @@
             } else if (target.id === 'export-chart-data-btn') {
                 const chartId = document.getElementById('renameModal').dataset.id;
                 exportChartDataAsFile(chartId);
+            } else if (target.id === 'delete-chart-data-btn') {
+                const chartId = document.getElementById('renameModal').dataset.id;
+                deleteChartData(chartId);
             } else if (target.id === 'saveRenameBtn') {
                 const currentControlId = document.getElementById('renameModal').dataset.id;
                 const newName = document.getElementById('renameInput').value.trim();
@@ -860,10 +904,12 @@
                 document.getElementById('renameModal').dataset.id = controlId;
                 const unitSelectContainer = document.getElementById('unit-options-container');
                 const exportChartDataBtn = document.getElementById('export-chart-data-btn');
+                const deleteChartDataBtn = document.getElementById('delete-chart-data-btn');
                 
                 if (controlId.startsWith('AI')) {
                     unitSelectContainer.style.display = 'block';
                     exportChartDataBtn.style.display = 'block';
+                    deleteChartDataBtn.style.display = 'block';
                     document.getElementById('modal-title').textContent = 'إعدادات المبيان';
                     const unitSelect = document.getElementById('unitSelect');
                     unitSelect.innerHTML = aiUnits.map(unit => `<option value="${unit}">${unit}</option>`).join('');
@@ -871,8 +917,10 @@
                 } else {
                     unitSelectContainer.style.display = 'none';
                     exportChartDataBtn.style.display = 'none';
+                    deleteChartDataBtn.style.display = 'none';
                     document.getElementById('modal-title').textContent = 'تغيير الاسم';
                 }
+                
                 openModal('renameModal');
             } else if (target.closest('.toggle-section-btn')) {
                 const btn = target.closest('.toggle-section-btn');
@@ -893,12 +941,14 @@
                 updateTimeRange(newIndex, chartId);
             }
         });
+
         const updateFirebaseAI = debounce((aiId, value) => {
             if (deviceRef) {
                 deviceRef.child('AI').child(aiId).set(value);
                 saveToArchive('AI', aiId, value);
             }
         }, 500);
+
         function debounce(func, delay) {
             let timeout;
             return function(...args) {
