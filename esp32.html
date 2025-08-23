@@ -5,6 +5,8 @@
     <meta id="viewport-meta" name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم KC868-A16</title>
     
+    <link rel="manifest" href="/manifest.json">
+
     <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
     <link rel="apple-touch-icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog">
 
@@ -363,14 +365,7 @@
         .modal-content label {
             color: var(--text-color);
         }
-        
-        .modal-content input[type="text"],
-        .modal-content input[type="number"] {
-            background-color: #ffffff;
-            color: #1f2937;
-        }
-        .dark .modal-content input[type="text"],
-        .dark .modal-content input[type="number"] {
+        .modal-content input {
             background-color: #ffffff;
             color: #1f2937;
         }
@@ -381,7 +376,7 @@
     <header class="header">
         <div class="flex items-center justify-between w-full">
             <button id="go-to-firebase-btn" class="icon-btn rounded-full" aria-label="انتقل إلى Firebase Console">
-                <i class="fas fa-external-link-alt text-xl"></i>
+                <i class="fas fa-database text-xl"></i>
             </button>
             <button id="theme-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير المظهر">
                 <i class="fas fa-moon text-xl"></i>
@@ -1055,7 +1050,7 @@
             } else if (target.closest('.toggle-section-btn')) {
                 const btn = target.closest('.toggle-section-btn');
                 const targetSection = document.getElementById(targetSectionId);
-                const icon = btn.querySelector('i');
+                const icon = sectionHeader.querySelector('i');
                 const isHidden = targetSection.classList.toggle('hidden');
                 localStorage.setItem(`sectionState-${targetSectionId}`, !isHidden);
                 icon.classList.toggle('fa-chevron-down', !isHidden);
@@ -1082,6 +1077,7 @@
                 const viewportMeta = document.getElementById('viewport-meta');
                 const currentContent = viewportMeta.getAttribute('content');
                 const isDesktop = currentContent.includes('width=1200');
+                const iconElement = target.querySelector('i');
                 if (isDesktop) {
                     viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
                     localStorage.setItem('viewportMode', 'mobile');
@@ -1090,6 +1086,38 @@
                     localStorage.setItem('viewportMode', 'desktop');
                 }
                 location.reload();
+            } else if (target.id === 'subscribe-notifications-btn') {
+                if ('serviceWorker' in navigator && 'PushManager' in window) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY_HERE'
+                        }).then(subscription => {
+                            const key = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))));
+                            const auth = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))));
+                            const endpoint = subscription.endpoint;
+                            const subscriptionData = { endpoint, key, auth };
+                            
+                            if (deviceRef) {
+                                const subscriptionsRef = firebase.database().ref('subscriptions');
+                                subscriptionsRef.push(subscriptionData)
+                                    .then(() => {
+                                        showMessage('تم تفعيل الإشعارات بنجاح!');
+                                        console.log('Push subscription saved to database.');
+                                    })
+                                    .catch(error => {
+                                        showMessage('فشل في حفظ بيانات الاشتراك.', true);
+                                        console.error('Error saving subscription:', error);
+                                    });
+                            }
+                        }).catch(error => {
+                            showMessage('فشل تفعيل الإشعارات.', true);
+                            console.error('Push subscription failed:', error);
+                        });
+                    });
+                } else {
+                    showMessage('متصفحك لا يدعم الإشعارات.', true);
+                }
             }
         });
 
@@ -1174,6 +1202,14 @@
                     viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
                     iconElement.classList.replace('fa-mobile-alt', 'fa-desktop');
                 }
+            }
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                    console.log('Service Worker registered successfully!', reg);
+                }).catch(function(err) {
+                    console.log('Service Worker registration failed:', err);
+                });
             }
         });
     </script>
