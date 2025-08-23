@@ -22,7 +22,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js" defer></script>
     
     <script>
-        document.documentElement.classList.add('dark');
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
     </script>
     
     <style>
@@ -45,6 +47,8 @@
             --digital-display-text: #1a202c;
             --shadow-light: rgba(0, 0, 0, 0.05);
             --shadow-medium: rgba(0, 0, 0, 0.1);
+            --chart-grid-color-digital: rgba(16, 185, 129, 0.2);
+            --chart-grid-color-analog: rgba(59, 130, 246, 0.2);
         }
         .dark {
             --primary-color: #128c7e;
@@ -58,6 +62,8 @@
             --pending-color: #ffcc00;
             --digital-display-bg: #111b21;
             --digital-display-text: #00ff41;
+            --chart-grid-color-digital: rgba(16, 185, 129, 0.5);
+            --chart-grid-color-analog: rgba(59, 130, 246, 0.5);
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -72,6 +78,7 @@
         }
         h1, h2, h3 {
             font-weight: 700;
+            color: var(--text-color);
         }
         h1 {
             font-size: clamp(2rem, 5vw, 2.5rem);
@@ -121,7 +128,7 @@
         .close-btn {
             background: none;
             border: none;
-            color: var(--secondary-color);
+            color: var(--text-color);
             font-size: 1.75rem;
             cursor: pointer;
             position: absolute;
@@ -130,7 +137,7 @@
             transition: color 0.3s;
         }
         .close-btn:hover {
-            color: var(--text-color);
+            color: var(--danger-color);
         }
         .notification-message {
             position: fixed;
@@ -194,16 +201,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease-in-out;
             background-color: var(--border-color);
+            transition: none;
         }
         .industrial-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: none;
+            box-shadow: 0 4px 8px var(--shadow-medium);
         }
         .industrial-button:active {
-            transform: translateY(0);
-            box-shadow: 2px 2px 4px var(--shadow-light);
+            transform: none;
+            box-shadow: 0 4px 8px var(--shadow-medium);
         }
         .indicator-light {
             width: 63px;
@@ -341,28 +348,33 @@
             flex-grow: 1;
             flex-basis: 0;
         }
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23a0a0a0"><path d="M7 10l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: left 0.75rem center;
-            background-size: 1rem;
-            padding-left: 2.5rem;
+        .section-toggle-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .header .icon-btn i {
+            color: white;
+        }
+        .rename-btn i {
+            color: var(--text-color);
+        }
+        .modal-content h3,
+        .modal-content label {
+            color: var(--text-color);
         }
     </style>
 </head>
 <body>
     <div id="connection-status-bar" class="status-bar"></div>
     <header class="header">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-between w-full">
             <button id="go-to-firebase-btn" class="icon-btn rounded-full" aria-label="انتقل إلى Firebase Console">
                 <i class="fas fa-external-link-alt text-xl"></i>
             </button>
-            <h1 class="font-bold text-2xl text-white">لوحة تحكم KC868-A16</h1>
-        </div>
-        <div class="flex items-center space-x-2">
+            <button id="theme-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير المظهر">
+                <i class="fas fa-moon text-xl"></i>
+            </button>
             <button id="open-system-settings-btn" class="icon-btn rounded-full" aria-label="إعدادات النظام">
                 <i class="fas fa-cog text-xl"></i>
             </button>
@@ -370,9 +382,9 @@
     </header>
     <main class="p-4">
         <section>
-            <div class="flex justify-between items-center mb-4">
+            <div class="section-toggle-header flex justify-between items-center mb-4" data-target="ai-section">
                 <h2 class="font-semibold text-right flex-grow">المداخل التناظرية (AI)</h2>
-                <button class="toggle-section-btn icon-btn" data-target="ai-section">
+                <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -380,9 +392,9 @@
         </section>
         
         <section>
-            <div class="flex justify-between items-center mb-4">
+            <div class="section-toggle-header flex justify-between items-center mb-4" data-target="do-section">
                 <h2 class="font-semibold text-right flex-grow">المخارج الرقمية (DO)</h2>
-                <button class="toggle-section-btn icon-btn" data-target="do-section">
+                <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -390,9 +402,9 @@
         </section>
         
         <section>
-            <div class="flex justify-between items-center mb-4">
+            <div class="section-toggle-header flex justify-between items-center mb-4" data-target="di-section">
                 <h2 class="font-semibold text-right flex-grow">المداخل الرقمية (DI)</h2>
-                <button class="toggle-section-btn icon-btn" data-target="di-section">
+                <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
@@ -407,8 +419,16 @@
             <input type="text" id="renameInput" placeholder="أدخل اسماً جديداً..." class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
             
             <div id="unit-options-container" class="mt-4">
-                <label for="unitSelect" class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">تغيير الوحدة:</label>
-                <select id="unitSelect" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color dark:bg-gray-700 dark:text-gray-100"></select>
+                <label for="unitInput" class="block text-sm font-medium mb-2 dark:text-gray-300">تغيير الوحدة:</label>
+                <input type="text" id="unitInput" placeholder="أدخل الوحدة (مثال: mA)" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
+            </div>
+
+            <div id="scaling-options-container" class="mt-4">
+                <label class="block text-sm font-medium mb-2 dark:text-gray-300">نطاق القيمة:</label>
+                <div class="flex gap-2">
+                    <input type="number" id="minAnalogInput" placeholder="القيمة الدنيا" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
+                    <input type="number" id="maxAnalogInput" placeholder="القيمة العليا" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
+                </div>
             </div>
             
             <div class="flex flex-col gap-2 mt-6">
@@ -424,11 +444,11 @@
             <button class="close-btn" data-modal-id="systemSettingsModal"><i class="fas fa-times"></i></button>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="flex flex-col">
-                    <label for="db_url" class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">عنوان قاعدة البيانات (URL)</label>
+                    <label for="db_url" class="text-sm font-medium mb-2 dark:text-gray-300">عنوان قاعدة البيانات (URL)</label>
                     <input type="text" id="db_url" placeholder="مثال: https://my-project.firebaseio.com" class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
                 </div>
                 <div class="flex flex-col">
-                    <label for="db_device" class="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">اسم الجهاز</label>
+                    <label for="db_device" class="text-sm font-medium mb-2 dark:text-gray-300">اسم الجهاز</label>
                     <input type="text" id="db_device" placeholder="مثال: my-device-name" class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full bg-gray-50 text-text-color text-right dark:bg-gray-700 dark:text-gray-100">
                 </div>
             </div>
@@ -442,10 +462,10 @@
     <script>
         const controlsConfig = {
             AI: [
-                { id: 'AI1', label: 'مقياس التيار 1', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
-                { id: 'AI2', label: 'مقياس التيار 2', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
-                { id: 'AI3', label: 'مقياس التيار 3', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' },
-                { id: 'AI4', label: 'مقياس التيار 4', type: 'slider', min: 0, max: 20, step: 0.1, unit: 'mA', icon: 'fas fa-chart-line' }
+                { id: 'AI1', label: 'مقياس التيار 1', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
+                { id: 'AI2', label: 'مقياس التيار 2', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
+                { id: 'AI3', label: 'مقياس التيار 3', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
+                { id: 'AI4', label: 'مقياس التيار 4', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' }
             ],
             DO: [
                 { id: 'DO1', label: 'مفتاح التشغيل 1', icon: 'fas fa-lightbulb' },
@@ -470,17 +490,18 @@
         };
         const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
         const timeRangeLabels = ['ساعة', '24 ساعة', 'الكل'];
-        const aiUnits = ['mA', 'V', '°C'];
+        const aiUnits = ['mA', 'V', '°C', 'Value'];
         const unitMappings = JSON.parse(localStorage.getItem('unitMappings')) || {};
         const renamedLabels = JSON.parse(localStorage.getItem('renamedLabels')) || {};
+        const scalingMappings = JSON.parse(localStorage.getItem('scalingMappings')) || {};
         let firebaseInitialized = false;
         let deviceRef = null;
         const chartInstances = {};
         const aiDataCache = {};
-        const style = getComputedStyle(document.body);
-        const primaryColor = style.getPropertyValue('--primary-color').trim();
-        const successColor = style.getPropertyValue('--success-color').trim();
-        const textColor = style.getPropertyValue('--text-color').trim();
+        
+        function getCssVariable(variable) {
+            return getComputedStyle(document.body).getPropertyValue(variable).trim();
+        }
 
         function showMessage(message, isError = false) {
             const messageElement = document.createElement('div');
@@ -497,20 +518,40 @@
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+        
+        function scaleValue(rawValue, controlId) {
+            const config = controlsConfig.AI.find(c => c.id === controlId);
+            const { realMin, realMax } = scalingMappings[controlId] || config;
+            const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
+            return scaledValue;
+        }
 
         function createOrUpdateChart(ctx, id, type, dataPoints = []) {
             const isDigital = (type === 'DI' || type === 'DO');
-            const borderColor = isDigital ? successColor : primaryColor;
+            const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
             const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || {}).unit;
             
+            let yMin = 0;
+            let yMax = 4096;
+            if (id.startsWith('AI')) {
+                const config = controlsConfig.AI.find(c => c.id === id);
+                const { realMin, realMax } = scalingMappings[id] || config;
+                yMin = realMin;
+                yMax = realMax;
+            }
+
             if (chartInstances[id]) {
-                chartInstances[id].data.datasets[0].data = dataPoints;
-                chartInstances[id].options.scales.y.ticks.callback = isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value} ${currentUnit}`;
+                const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
+                chartInstances[id].data.datasets[0].data = scaledDataPoints;
+                chartInstances[id].options.scales.y.ticks.callback = isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value.toFixed(2)} ${currentUnit}`;
+                chartInstances[id].options.scales.y.min = yMin;
+                chartInstances[id].options.scales.y.max = yMax;
                 chartInstances[id].update();
             } else {
+                const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
                 const chartConfig = {
                     type: 'line',
-                    data: { datasets: [{ label: isDigital ? 'الحالة' : 'القيمة', data: dataPoints, borderColor, fill: true, stepped: isDigital ? 'after' : false, tension: isDigital ? 0 : 0.4, pointRadius: 0, borderWidth: 2 }] },
+                    data: { datasets: [{ label: isDigital ? 'الحالة' : 'القيمة', data: scaledDataPoints, borderColor, fill: true, stepped: isDigital ? 'after' : false, tension: isDigital ? 0 : 0.4, pointRadius: 0, borderWidth: 2 }] },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
@@ -518,12 +559,12 @@
                         layout: { padding: { bottom: 40 } },
                         scales: {
                             y: {
-                                beginAtZero: true,
+                                beginAtZero: false,
                                 title: { display: false },
-                                min: isDigital ? -0.1 : 0,
-                                max: isDigital ? 1.1 : 20,
-                                ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: textColor, maxTicksLimit: 5, callback: isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value} ${currentUnit}` },
-                                grid: { color: isDigital ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)' }
+                                min: isDigital ? -0.1 : yMin,
+                                max: isDigital ? 1.1 : yMax,
+                                ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: getCssVariable('--text-color'), maxTicksLimit: 5, callback: isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value.toFixed(2)} ${currentUnit}` },
+                                grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
                             },
                             x: {
                                 type: 'time',
@@ -533,13 +574,31 @@
                                     tooltipFormat: 'dd/MM/yyyy HH:mm:ss'
                                 },
                                 title: { display: false },
-                                ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: textColor, maxTicksLimit: 8, callback: (value) => { const date = new Date(value); const day = date.getDate().toString().padStart(2, '0'); const month = (date.getMonth() + 1).toString().padStart(2, '0'); const year = date.getFullYear(); const hours = date.getHours().toString().padStart(2, '0'); const minutes = date.getMinutes().toString().padStart(2, '0'); return [`${day}/${month}/${year}`, `${hours}:${minutes}`]; }, autoSkip: false },
-                                grid: { color: isDigital ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)' }
+                                ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: getCssVariable('--text-color'), maxTicksLimit: 8, callback: (value) => { const date = new Date(value); const day = date.getDate().toString().padStart(2, '0'); const month = (date.getMonth() + 1).toString().padStart(2, '0'); const year = date.getFullYear(); const hours = date.getHours().toString().padStart(2, '0'); const minutes = date.getMinutes().toString().padStart(2, '0'); return [`${day}/${month}/${year}`, `${hours}:${minutes}`]; }, autoSkip: false },
+                                grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
                             }
                         },
                         plugins: {
                             legend: { display: false },
-                            tooltip: { rtl: true, bodyFont: { size: 12 }, titleFont: { size: 14, weight: 'bold' }, callbacks: { title: (context) => new Date(context[0].parsed.x).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' }), label: (context) => { if (context.dataset.label.includes('الحالة')) { return `الحالة: ${context.raw.y === 1 ? 'مفعل' : 'غير مفعل'}`; } else if (id.startsWith('AI')) { return `القيمة: ${context.raw.y.toFixed(2)} ${currentUnit}`; } return `القيمة: ${context.raw.y}`; } } },
+                            tooltip: { 
+                                rtl: true, 
+                                bodyFont: { size: 12 }, 
+                                titleFont: { size: 14, weight: 'bold' },
+                                backgroundColor: getCssVariable('--card-bg'),
+                                titleColor: getCssVariable('--text-color'),
+                                bodyColor: getCssVariable('--text-color'),
+                                callbacks: { 
+                                    title: (context) => new Date(context[0].parsed.x).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' }), 
+                                    label: (context) => { 
+                                        if (context.dataset.label.includes('الحالة')) { 
+                                            return `الحالة: ${context.raw.y === 1 ? 'مفعل' : 'غير مفعل'}`; 
+                                        } else if (id.startsWith('AI')) { 
+                                            return `القيمة: ${context.raw.y.toFixed(2)} ${currentUnit}`; 
+                                        } 
+                                        return `القيمة: ${context.raw.y}`; 
+                                    } 
+                                } 
+                            },
                             zoom: { pan: { enabled: true, mode: 'x' }, zoom: { pinch: { enabled: true }, wheel: { enabled: true }, mode: 'x' } }
                         }
                     }
@@ -641,12 +700,18 @@
                 aiRef.on('value', snapshot => {
                     const data = snapshot.val();
                     const displayElement = document.getElementById(`${config.id}-display`);
+                    const labelValueRawElement = document.getElementById(`${config.id}-label-value-raw`);
                     const slider = document.getElementById(`${config.id}-slider`);
+                    
                     if (displayElement && slider) {
-                        const current = typeof data === 'number' ? data : '--';
+                        const currentRaw = typeof data === 'number' ? data : '--';
                         const currentUnit = unitMappings[config.id] || controlsConfig.AI.find(c => c.id === config.id).unit;
-                        displayElement.textContent = `${typeof current === 'number' ? current.toFixed(2) : current} ${currentUnit}`;
-                        if (typeof current === 'number') slider.value = current;
+                        const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, config.id) : '--';
+                        const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
+                        
+                        displayElement.textContent = displayText;
+                        if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
+                        if (typeof currentRaw === 'number') slider.value = currentRaw;
                     }
                 });
 
@@ -679,8 +744,9 @@
                 
                 const date = dateObj.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
                 const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                const scaledValue = scaleValue(point.y, chartId);
                 
-                csvContent += `${date},${time},${point.y}\n`;
+                csvContent += `${date},${time},${scaledValue.toFixed(2)}\n`;
             });
             
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -727,14 +793,16 @@
                     <div class="flex items-center justify-between mb-2">
                         <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
                         <div class="flex items-center space-x-2">
-                            <button class="rename-btn icon-btn text-xs text-gray-400 dark:text-gray-500" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="control-label">${controlName}</span>
                     </div>
                     <div class="mt-4">
-                        <label class="block text-xs font-medium text-gray-700 text-right dark:text-gray-300">القيمة التناظرية:</label>
+                        <label class="block text-xs font-medium dark:text-gray-300 text-right">
+                            القيمة التناظرية: <span id="${controlId}-label-value-raw">--</span>
+                        </label>
                         <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
                     </div>
                     <div class="digital-display-container mx-auto my-2">
@@ -768,7 +836,7 @@
                 <div class="card p-4">
                     <div class="flex items-center justify-between mb-2">
                         <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
-                        <button class="rename-btn icon-btn text-xs text-gray-400 dark:text-gray-500" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
                     </div>
                     <span class="control-label">${controlName}</span>
                     <div class="flex justify-center mt-4">
@@ -831,7 +899,17 @@
             const modalId = target.dataset.modalId;
             const controlId = target.dataset.id;
             const targetSectionId = target.dataset.target;
-            
+
+            const sectionHeader = event.target.closest('.section-toggle-header');
+            if (sectionHeader && sectionHeader.dataset.target) {
+                const targetSection = document.getElementById(sectionHeader.dataset.target);
+                const icon = sectionHeader.querySelector('i');
+                const isHidden = targetSection.classList.toggle('hidden');
+                localStorage.setItem(`sectionState-${sectionHeader.dataset.target}`, !isHidden);
+                icon.classList.toggle('fa-chevron-down', !isHidden);
+                icon.classList.toggle('fa-chevron-left', isHidden);
+            }
+
             if (target.id === 'open-system-settings-btn') {
                 document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
                 document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
@@ -866,26 +944,36 @@
             } else if (target.id === 'saveRenameBtn') {
                 const currentControlId = document.getElementById('renameModal').dataset.id;
                 const newName = document.getElementById('renameInput').value.trim();
-                const newUnit = document.getElementById('unitSelect').value;
-                const aiControl = controlsConfig.AI.find(c => c.id === currentControlId);
+                const newUnit = document.getElementById('unitInput').value.trim();
+                
+                const minVal = parseFloat(document.getElementById('minAnalogInput').value);
+                const maxVal = parseFloat(document.getElementById('maxAnalogInput').value);
                 
                 if (newName) {
                     renamedLabels[currentControlId] = newName;
                     localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
-                    const labelElement = document.querySelector(`[data-id="${currentControlId}"]`).closest('.card').querySelector('.control-label:not(.text-sm)');
-                    if (labelElement) labelElement.textContent = newName;
                 }
                 
-                if (aiControl) {
-                    unitMappings[currentControlId] = newUnit;
-                    localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
-                    const displayElement = document.getElementById(`${currentControlId}-display`);
-                    const sliderValue = document.getElementById(`${currentControlId}-slider`).value;
-                    if (displayElement) displayElement.textContent = `${sliderValue} ${newUnit}`;
+                if (currentControlId.startsWith('AI')) {
+                    if (newUnit) {
+                        unitMappings[currentControlId] = newUnit;
+                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
+                    } else {
+                        delete unitMappings[currentControlId];
+                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
+                    }
+                    if (!isNaN(minVal) && !isNaN(maxVal)) {
+                        scalingMappings[currentControlId] = { realMin: minVal, realMax: maxVal };
+                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
+                    } else {
+                        delete scalingMappings[currentControlId];
+                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
+                    }
                 }
                 
                 showMessage('تم حفظ التغييرات بنجاح!');
                 closeModal('renameModal');
+                location.reload();
             } else if (target.id === 'go-to-firebase-btn') {
                 const url = localStorage.getItem('firebaseURL');
                 const match = url ? url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/) : null;
@@ -893,7 +981,8 @@
                 const firebaseConsoleUrl = projectId ? `https://console.firebase.google.com/u/0/project/${projectId}/database/data` : 'https://console.firebase.google.com/u/0/';
                 window.open(firebaseConsoleUrl, '_blank');
             } else if (target.closest('.close-btn')) {
-                if (modalId) closeModal(modalId);
+                const parentModal = target.closest('.modal');
+                if (parentModal) closeModal(parentModal.id);
             } else if (target.closest('.rename-btn')) {
                 const btn = target.closest('.rename-btn');
                 const controlId = btn.getAttribute('data-id');
@@ -902,20 +991,29 @@
                 document.getElementById('renameLabel').textContent = `تغيير اسم: ${name}`;
                 document.getElementById('renameInput').value = name;
                 document.getElementById('renameModal').dataset.id = controlId;
-                const unitSelectContainer = document.getElementById('unit-options-container');
+                
+                const unitOptionsContainer = document.getElementById('unit-options-container');
+                const unitInput = document.getElementById('unitInput');
+                const scalingOptionsContainer = document.getElementById('scaling-options-container');
                 const exportChartDataBtn = document.getElementById('export-chart-data-btn');
                 const deleteChartDataBtn = document.getElementById('delete-chart-data-btn');
                 
                 if (controlId.startsWith('AI')) {
-                    unitSelectContainer.style.display = 'block';
+                    unitOptionsContainer.style.display = 'block';
+                    scalingOptionsContainer.style.display = 'block';
                     exportChartDataBtn.style.display = 'block';
                     deleteChartDataBtn.style.display = 'block';
                     document.getElementById('modal-title').textContent = 'إعدادات المبيان';
-                    const unitSelect = document.getElementById('unitSelect');
-                    unitSelect.innerHTML = aiUnits.map(unit => `<option value="${unit}">${unit}</option>`).join('');
-                    unitSelect.value = unitMappings[controlId] || controlsConfig.AI.find(c => c.id === controlId).unit;
+                    
+                    const currentUnit = unitMappings[controlId] || config.unit;
+                    unitInput.value = currentUnit;
+                    
+                    const scaling = scalingMappings[controlId] || config;
+                    document.getElementById('minAnalogInput').value = scaling.realMin;
+                    document.getElementById('maxAnalogInput').value = scaling.realMax;
                 } else {
-                    unitSelectContainer.style.display = 'none';
+                    unitOptionsContainer.style.display = 'none';
+                    scalingOptionsContainer.style.display = 'none';
                     exportChartDataBtn.style.display = 'none';
                     deleteChartDataBtn.style.display = 'none';
                     document.getElementById('modal-title').textContent = 'تغيير الاسم';
@@ -939,6 +1037,15 @@
                 const chartId = btn.dataset.id;
                 const newIndex = parseInt(btn.dataset.timeIndex);
                 updateTimeRange(newIndex, chartId);
+            } else if (target.id === 'theme-toggle-btn') {
+                const htmlElement = document.documentElement;
+                const isDarkMode = htmlElement.classList.toggle('dark');
+                if (isDarkMode) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+                location.reload();
             }
         });
 
@@ -961,11 +1068,20 @@
         document.addEventListener('input', (event) => {
             if (event.target.matches('[id$="-slider"]')) {
                 const slider = event.target;
-                const value = parseFloat(slider.value);
+                const rawValue = parseFloat(slider.value);
                 const aiId = slider.id.replace('-slider', '');
+
                 const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
-                document.getElementById(`${aiId}-display`).textContent = `${value.toFixed(2)} ${currentUnit}`;
-                updateFirebaseAI(aiId, value);
+                const scaledValue = scaleValue(rawValue, aiId);
+                
+                document.getElementById(`${aiId}-display`).textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
+                
+                const labelValueRawElement = document.getElementById(`${aiId}-label-value-raw`);
+                if (labelValueRawElement) {
+                    labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
+                }
+                
+                updateFirebaseAI(aiId, rawValue);
             }
         });
         
@@ -981,17 +1097,27 @@
             ['ai-section', 'do-section', 'di-section'].forEach(sectionId => {
                 const isVisible = localStorage.getItem(`sectionState-${sectionId}`) === 'true';
                 const section = document.getElementById(sectionId);
-                const toggleButton = document.querySelector(`.toggle-section-btn[data-target="${sectionId}"]`);
+                const toggleButton = document.querySelector(`.section-toggle-header[data-target="${sectionId}"] i`);
                 if (section && toggleButton) {
                     if (isVisible) {
                         section.classList.remove('hidden');
-                        toggleButton.querySelector('i').classList.replace('fa-chevron-left', 'fa-chevron-down');
+                        toggleButton.classList.replace('fa-chevron-left', 'fa-chevron-down');
                     } else {
                         section.classList.add('hidden');
-                        toggleButton.querySelector('i').classList.replace('fa-chevron-down', 'fa-chevron-left');
+                        toggleButton.classList.replace('fa-chevron-down', 'fa-chevron-left');
                     }
                 }
             });
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const htmlElement = document.documentElement;
+            if (themeToggleBtn) {
+                const iconElement = themeToggleBtn.querySelector('i');
+                if (htmlElement.classList.contains('dark')) {
+                    iconElement.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    iconElement.classList.replace('fa-sun', 'fa-moon');
+                }
+            }
         });
     </script>
 </body>
