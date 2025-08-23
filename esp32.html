@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" >
     <title>لوحة تحكم KC868-A16</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -642,7 +642,8 @@
                         dataPoints.push({ x: val.timestamp, y: val.value });
                     });
                     aiDataCache[config.id] = dataPoints;
-                    const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 1;
+                    // تم تغيير القيمة الافتراضية من 1 إلى 0 لعرض "ساعة" بشكل افتراضي
+                    const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
                     updateChartDisplay(config.id, lastTimeRangeIndex);
                 });
             });
@@ -653,7 +654,8 @@
             const currentUnit = unitMappings[controlId] || config.unit;
             const div = document.createElement('div');
             div.className = 'card';
-            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 1;
+            // تم تغيير القيمة الافتراضية من 1 إلى 0 لعرض "ساعة" بشكل افتراضي
+            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
             div.innerHTML = `
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-2">
@@ -730,8 +732,6 @@
                     firebase.initializeApp({ databaseURL: url });
                     firebaseInitialized = true;
                 } else {
-                    // إذا كانت Firebase مهيأة بالفعل، قم بإعادة ضبط المستمعين
-                    // هذا يمنع وجود مستمعين قدامى من الاتصال بقاعدة البيانات الجديدة
                     firebase.database().goOffline();
                     firebase.database().goOnline();
                 }
@@ -755,7 +755,7 @@
             }
         }
         
-        // دالة تصدير بيانات المخطط إلى ملف CSV
+        // دالة تصدير بيانات المخطط إلى ملف CSV (مُحدّثة)
         function exportChartDataAsFile(chartId) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || dataPoints.length === 0) {
@@ -763,20 +763,14 @@
                 return;
             }
             const renamedLabel = renamedLabels[chartId] || chartId;
-            // إنشاء رأس الملف
-            let csvContent = "Time,Value\n";
-            // إضافة البيانات
+            // إضافة BOM لتوافق أفضل مع Excel في عرض الأحرف العربية
+            let csvContent = "\uFEFFTime,Value\n";
             dataPoints.forEach(point => {
                 const date = new Date(point.x);
-                // تنسيق التاريخ والوقت ليكون متوافقًا مع Excel
-                const formattedDate = date.toLocaleString('en-US', {
-                    year: 'numeric', month: '2-digit', day: '2-digit',
-                    hour: '2-digit', minute: '2-digit', second: '2-digit',
-                    hour12: false
-                });
+                // استخدام تنسيق ISO 8601 القياسي للحصول على تنسيق تاريخ عالمي
+                const formattedDate = date.toISOString();
                 csvContent += `${formattedDate},${point.y}\n`;
             });
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -788,7 +782,7 @@
             URL.revokeObjectURL(url);
             showMessage('تم تصدير بيانات المخطط بنجاح!');
         }
-
+        
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button, [data-id], [data-target]');
             if (!target) return;
@@ -814,7 +808,6 @@
                 localStorage.setItem('firebaseDevice', newDevice);
                 showMessage('تم حفظ الإعدادات بنجاح!');
                 
-                // إعادة تهيئة Firebase بالمعلومات الجديدة وإعادة تحميل الواجهة
                 initFirebaseAndControls(newUrl, newDevice);
                 
                 closeModal('systemSettingsModal');
