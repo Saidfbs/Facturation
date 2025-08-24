@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <meta id="viewport-meta" name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم KC868-A16</title>
-    
+
     <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
     <link rel="apple-touch-icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js" defer></script>
-    
+
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js" defer></script>
-    
+
     <script>
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
         }
     </script>
-    
+
     <style>
         * {
             margin: 0;
@@ -378,9 +378,6 @@
             <button id="theme-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير المظهر">
                 <i class="fas fa-moon text-xl"></i>
             </button>
-            <button id="viewport-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير طريقة العرض">
-                <i class="fas fa-desktop text-xl"></i>
-            </button>
             <button id="notification-toggle-btn" class="icon-btn rounded-full" aria-label="تفعيل الإشعارات">
                 <i class="fas fa-bell-slash text-xl"></i>
             </button>
@@ -511,10 +508,8 @@
         let isShowingNotification = false;
         let notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
         let soundPlayed = false;
-
         // Load the notification sound
         const notificationSound = new Audio('https://s3.amazonaws.com/freecodecamp/relaxing-sounds-notification.mp3');
-
         function getCssVariable(variable) {
             return getComputedStyle(document.body).getPropertyValue(variable).trim();
         }
@@ -536,12 +531,9 @@
             isShowingNotification = true;
             const notification = notificationQueue.shift();
             
-            if (!soundPlayed && !notification.isError) {
-                notificationSound.play().then(() => {
-                    soundPlayed = true;
-                }).catch(e => console.error("Error playing sound:", e));
+            if (!notification.isError) {
+                notificationSound.play().catch(e => console.error("Error playing sound:", e));
             }
-
             const messageElement = document.createElement('div');
             messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
             messageElement.textContent = notification.message;
@@ -549,11 +541,9 @@
             
             setTimeout(() => {
                 messageElement.remove();
-                soundPlayed = false;
                 processNotificationQueue();
             }, 5000);
         }
-
         function toggleNotifications() {
             notificationsEnabled = !notificationsEnabled;
             localStorage.setItem('notificationsEnabled', notificationsEnabled);
@@ -564,7 +554,6 @@
                 showMessage('تم تعطيل الإشعارات.', true);
             }
         }
-
         function updateNotificationButton() {
             const btn = document.getElementById('notification-toggle-btn');
             if (btn) {
@@ -703,18 +692,23 @@
         async function toggleState(ref, type, id) {
             const indicator = document.getElementById(`${id}-indicator`);
             if (indicator && indicator.classList.contains('pending')) return;
-            if (indicator) indicator.classList.add('pending');
+            
             try {
                 const snapshot = await ref.once('value');
                 const currentValue = snapshot.val();
                 const newValue = (currentValue === 1) ? 0 : 1;
-                await ref.set(newValue);
-                const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
-                showMessage(`تم تغيير حالة ${controlName} إلى: ${newValue === 1 ? 'مفعل' : 'معطل'}.`);
+                
+                // Only send a command and show pending state if the state is actually changing
+                if (currentValue !== newValue) {
+                    if (indicator) indicator.classList.add('pending');
+                    await ref.set(newValue);
+                } else {
+                    // Reset pending state immediately if the state hasn't changed.
+                    if (indicator) indicator.classList.remove('pending');
+                }
             } catch (error) {
                 console.error("فشل في تحديث القيمة:", error);
                 showMessage('فشل في تحديث الحالة.', true);
-            } finally {
                 if (indicator) indicator.classList.remove('pending');
             }
         }
@@ -750,8 +744,6 @@
         function setupListeners() {
             if (!deviceRef) return;
             
-            let isFirstLoad = true;
-            
             deviceRef.on('value', snapshot => {
                 const data = snapshot.val();
                 if (data) {
@@ -762,7 +754,8 @@
                                 const lastValueKey = `${type}-${id}`;
                                 const lastKnownValue = localStorage.getItem(lastValueKey);
                                 
-                                if (!isFirstLoad && lastKnownValue !== null && parseInt(lastKnownValue) !== value) {
+                                // Show notifications if the value has changed
+                                if (lastKnownValue === null || parseInt(lastKnownValue) !== value) {
                                     const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
                                     const status = value === 1 ? 'مفعلة' : 'معطلة';
                                     showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
@@ -789,7 +782,8 @@
                         const lastValueKey = `AI-${id}`;
                         const lastKnownValue = localStorage.getItem(lastValueKey);
                         
-                        if (!isFirstLoad && lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
+                        // Show notifications if the value has changed
+                        if (lastKnownValue === null || parseFloat(lastKnownValue) !== value) {
                             const controlName = renamedLabels[id] || config.label;
                             const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
                             const currentUnit = unitMappings[id] || config.unit;
@@ -810,12 +804,7 @@
                         }
                     });
                 }
-                
-                if (isFirstLoad) {
-                    isFirstLoad = false;
-                }
             });
-
             controlsConfig.AI.forEach(config => {
                 const archiveRef = deviceRef.child('archive').child('AI').child(config.id);
                 archiveRef.on('value', snapshot => {
@@ -1005,7 +994,6 @@
                 timeout = setTimeout(() => func.apply(context, args), delay);
             };
         }
-
         const updateFirebaseAI = debounce((aiId, value) => {
             if (deviceRef) {
                 deviceRef.child('AI').child(aiId).set(value)
@@ -1013,8 +1001,6 @@
                         const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
                         const scaledValue = scaleValue(value, aiId);
                         const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
-                        // The notification is now handled by the 'value' listener, so we don't need it here.
-                        // showMessage(`تم تحديث قيمة ${controlName} إلى: ${scaledValue.toFixed(2)} ${currentUnit}`);
                     })
                     .catch(error => {
                         console.error("فشل في تحديث القيمة التناظرية:", error);
@@ -1023,7 +1009,6 @@
                 saveToArchive('AI', aiId, value);
             }
         }, 500);
-
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button, [data-id], [data-target]');
             if (!target) return;
@@ -1059,7 +1044,8 @@
                 localStorage.setItem('firebaseDevice', newDevice);
                 showMessage('تم حفظ الإعدادات بنجاح!');
                 
-                initFirebaseAndControls(newUrl, newDevice);
+                // Reload the page to apply new Firebase settings
+                location.reload();
                 
                 closeModal('systemSettingsModal');
             } else if (target.id === 'reset-names-btn') {
@@ -1196,26 +1182,6 @@
                     localStorage.setItem('theme', 'light');
                 }
                 location.reload();
-            } else if (target.id === 'viewport-toggle-btn') {
-                const viewportMeta = document.getElementById('viewport-meta');
-                const currentContent = viewportMeta.getAttribute('content');
-                const isDesktop = currentContent.includes('width=1200');
-                const iconElement = target.querySelector('i');
-                if (isDesktop) {
-                    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-                    localStorage.setItem('viewportMode', 'mobile');
-                    if (iconElement) {
-                        iconElement.classList.remove('fa-desktop');
-                        iconElement.classList.add('fa-mobile-alt');
-                    }
-                } else {
-                    viewportMeta.setAttribute('content', 'width=1200, user-scalable=yes');
-                    localStorage.setItem('viewportMode', 'desktop');
-                    if (iconElement) {
-                        iconElement.classList.remove('fa-mobile-alt');
-                        iconElement.classList.add('fa-desktop');
-                    }
-                }
             } else if (target.id === 'notification-toggle-btn') {
                 toggleNotifications();
             }
@@ -1226,6 +1192,7 @@
                 const slider = event.target;
                 const rawValue = parseFloat(slider.value);
                 const aiId = slider.id.replace('-slider', '');
+                
                 const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
                 const scaledValue = scaleValue(rawValue, aiId);
                 
@@ -1236,10 +1203,6 @@
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
                 
-                // Show notification immediately on slider change
-                const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
-                showMessage(`تم تحديث قيمة ${controlName} إلى: ${scaledValue.toFixed(2)} ${currentUnit}`);
-
                 updateFirebaseAI(aiId, rawValue);
             }
         });
@@ -1278,21 +1241,6 @@
                 }
             }
             
-            const viewportMode = localStorage.getItem('viewportMode') || 'mobile';
-            const viewportMeta = document.getElementById('viewport-meta');
-            const viewportToggleBtn = document.getElementById('viewport-toggle-btn');
-            if (viewportToggleBtn) {
-                const iconElement = viewportToggleBtn.querySelector('i');
-                if (viewportMode === 'desktop') {
-                    viewportMeta.setAttribute('content', 'width=1200, user-scalable=yes');
-                    iconElement.classList.remove('fa-mobile-alt');
-                    iconElement.classList.add('fa-desktop');
-                } else {
-                    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-                    iconElement.classList.remove('fa-desktop');
-                    iconElement.classList.add('fa-mobile-alt');
-                }
-            }
             updateNotificationButton();
         });
     </script>
