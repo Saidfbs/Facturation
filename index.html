@@ -1,2193 +1,996 @@
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta id="viewport-meta" name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>لوحة تحكم KC868-A16</title>
-
     
-
     <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
-
     <link rel="apple-touch-icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
     
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0" defer></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js" defer></script>
-
     
-
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js" defer></script>
-
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js" defer></script>
-
     
-
     <script>
-
         if (localStorage.getItem('theme') === 'dark') {
-
             document.documentElement.classList.add('dark');
-
         }
-
     </script>
-
     
-
     <style>
-
         * {
-
             margin: 0;
-
             padding: 0;
-
             box-sizing: border-box;
-
         }
-
         :root {
-
             --primary-color: #075e54;
-
             --secondary-color: #dcf8c6;
-
             --text-color: #1f2937;
-
             --bg-color: #ffffff;
-
             --card-bg: #e5e7eb;
-
             --border-color: #d1d5db;
-
             --success-color: #25d366;
-
             --danger-color: #ef4444;
-
             --pending-color: #f59e0b;
-
             --digital-display-bg: #f3f4f6;
-
             --digital-display-text: #1a202c;
-
             --shadow-light: rgba(0, 0, 0, 0.05);
-
             --shadow-medium: rgba(0, 0, 0, 0.1);
-
             --chart-grid-color-digital: rgba(16, 185, 129, 0.2);
-
             --chart-grid-color-analog: rgba(59, 130, 246, 0.2);
-
         }
-
         .dark {
-
             --primary-color: #128c7e;
-
             --secondary-color: #262d31;
-
             --text-color: #f0fff0;
-
             --bg-color: #111b21;
-
             --card-bg: #1f2c34;
-
             --border-color: #2a3136;
-
             --success-color: #25d366;
-
             --danger-color: #ff3333;
-
             --pending-color: #ffcc00;
-
             --digital-display-bg: #111b21;
-
             --digital-display-text: #00ff41;
-
             --chart-grid-color-digital: rgba(16, 185, 129, 0.5);
-
             --chart-grid-color-analog: rgba(59, 130, 246, 0.5);
-
         }
-
         body {
-
             font-family: 'Inter', sans-serif;
-
             background-color: var(--bg-color);
-
             color: var(--text-color);
-
             direction: rtl;
-
             line-height: 1.6;
-
             transition: background-color 0.3s ease, color 0.3s ease;
-
             min-height: 100vh;
-
             margin: 0 auto;
-
             max-width: 1200px;
-
         }
-
         h1, h2, h3 {
-
             font-weight: 700;
-
             color: var(--text-color);
-
         }
-
         h1 {
-
             font-size: clamp(2rem, 5vw, 2.5rem);
-
             color: white;
-
             text-align: right;
-
             padding-right: 1.5rem;
-
         }
-
         h2 {
-
             font-size: clamp(1.5rem, 3.5vw, 1.75rem);
-
             color: var(--text-color);
-
             margin-bottom: 1rem;
-
             border-right: 4px solid var(--primary-color);
-
             padding-right: 1rem;
-
         }
-
         .header {
-
             padding: 1.5rem;
-
             display: flex;
-
             align-items: center;
-
             justify-content: space-between;
-
             background-color: var(--primary-color);
-
             color: white;
-
             width: 100%;
-
         }
-
         .modal {
-
             display: none;
-
             position: fixed;
-
             z-index: 1000;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 100%;
-
             background-color: rgba(0, 0, 0, 0.5);
-
             backdrop-filter: blur(5px);
-
             -webkit-backdrop-filter: blur(5px);
-
             justify-content: center;
-
             align-items: center;
-
         }
-
         .modal-content {
-
             background-color: var(--card-bg);
-
             border-radius: 1.5rem;
-
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-
             padding: 2rem;
-
             max-width: 90%;
-
             width: 500px;
-
             position: relative;
-
         }
-
         .close-btn {
-
             background: none;
-
             border: none;
-
             color: var(--text-color);
-
             font-size: 1.75rem;
-
             cursor: pointer;
-
             position: absolute;
-
             top: 1rem;
-
             left: 1rem;
-
             transition: color 0.3s;
-
         }
-
         .close-btn:hover {
-
             color: var(--danger-color);
-
         }
-
         .notification-message {
-
             position: fixed;
-
             top: 2%;
-
             left: 50%;
-
             transform: translateX(-50%);
-
             color: white;
-
             padding: 12px 20px;
-
             border-radius: 0.75rem;
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
             animation: slideIn 0.5s forwards, fadeOut 3s forwards 2s;
-
             z-index: 2000;
-
             font-size: 1rem;
-
             font-weight: 500;
-
         }
-
         @keyframes slideIn {
-
             from { top: -50px; opacity: 0; }
-
             to { top: 2%; opacity: 1; }
-
         }
-
         @keyframes fadeOut {
-
             from { opacity: 1; }
-
             to { opacity: 0; }
-
         }
-
         .card {
-
             background-color: var(--card-bg);
-
             border-radius: 0.5rem;
-
             box-shadow: 0 1px 2px var(--shadow-light);
-
             transition: transform 0.2s, box-shadow 0.2s;
-
             height: 100%;
-
         }
-
         .card:hover {
-
             transform: translateY(-2px);
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
         }
-
         .control-label {
-
             font-weight: 600;
-
             color: var(--text-color);
-
             font-size: 1rem;
-
             margin-bottom: 0.25rem;
-
         }
-
         .icon-btn {
-
             background: none;
-
             border: none;
-
             cursor: pointer;
-
             transition: color 0.2s, transform 0.2s;
-
             font-size: 1.25rem;
-
             color: white;
-
         }
-
         .icon-btn:hover {
-
             color: var(--secondary-color);
-
             transform: scale(1.1);
-
         }
-
         .industrial-button {
-
             width: 70px;
-
             height: 70px;
-
             border-radius: 50%;
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
             position: relative;
-
             cursor: pointer;
-
             overflow: hidden;
-
             display: flex;
-
             align-items: center;
-
             justify-content: center;
-
             background-color: var(--border-color);
-
             transition: none;
-
         }
-
         .industrial-button:hover {
-
             transform: none;
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
         }
-
         .industrial-button:active {
-
             transform: none;
-
-            box-shadow: 0 4px 8px var(--shadow-medium);
-
+            box-shadow: 4px 8px var(--shadow-medium);
         }
-
         .indicator-light {
-
             width: 63px;
-
             height: 63px;
-
             border-radius: 50%;
-
             background-color: var(--danger-color);
-
             transition: all 0.3s ease-in-out;
-
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
         }
-
         .indicator-light.active {
-
             background-color: var(--success-color);
-
         }
-
         .indicator-light.pending {
-
             background-color: var(--pending-color);
-
             animation: pulse 1s infinite;
-
         }
-
         @keyframes pulse {
-
             0% { transform: scale(1); }
-
             50% { transform: scale(1.05); }
-
             100% { transform: scale(1); }
-
         }
-
         .do-icon {
-
             font-size: 1.5rem;
-
             color: white;
-
         }
-
         .digital-display-container {
-
             width: 100%;
-
             height: 60px;
-
             background-color: var(--digital-display-bg);
-
             border: 2px solid var(--border-color);
-
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-
             display: flex;
-
             justify-content: center;
-
             align-items: center;
-
             border-radius: 0.5rem;
-
         }
-
         .digital-display-text {
-
             color: var(--digital-display-text);
-
             font-family: 'Digital-7 Mono', monospace;
-
             font-size: 2rem;
-
             line-height: 1;
-
             font-weight: 500;
-
         }
-
         input[type="range"] {
-
             background: var(--border-color);
-
             border: 1px solid var(--border-color);
-
             height: 10px;
-
             -webkit-appearance: none;
-
             cursor: pointer;
-
             border-radius: 5px;
-
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-
         }
-
         input[type="range"]::-webkit-slider-thumb {
-
             -webkit-appearance: none;
-
             height: 20px;
-
             width: 20px;
-
             background: var(--primary-color);
-
             border: none;
-
             border-radius: 50%;
-
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-
             transition: background 0.2s;
-
         }
-
         input[type="range"]::-webkit-slider-thumb:hover {
-
             background: #2563eb;
-
         }
-
         .dark input[type="range"]::-webkit-slider-thumb {
-
             background: var(--primary-color);
-
         }
-
         .status-bar {
-
             position: fixed;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 6px;
-
             background-color: var(--danger-color);
-
             z-index: 1000;
-
         }
-
         .status-connected {
-
             background-color: var(--success-color);
-
         }
-
         .status-disconnected {
-
             background-color: var(--danger-color);
-
         }
-
         .rename-label {
-
             font-weight: 600;
-
             font-size: 1.1rem;
-
             color: var(--text-color);
-
         }
-
         .action-button {
-
             background: var(--primary-color);
-
             border: none;
-
             padding: 1rem 1.5rem;
-
             cursor: pointer;
-
             font-weight: 600;
-
             transition: all 0.2s ease-in-out;
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
             color: white;
-
             border-radius: 0.75rem;
-
         }
-
         .action-button:hover {
-
             background: #2563eb;
-
             transform: translateY(-2px);
-
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-
         }
-
         .action-button:active {
-
             transform: translateY(0);
-
         }
-
         .action-button-secondary {
-
             background: var(--secondary-color);
-
             border: none;
-
             padding: 1rem 1.5rem;
-
             cursor: pointer;
-
             font-weight: 600;
-
             transition: all 0.2s ease-in-out;
-
             box-shadow: 0 4px 8px var(--shadow-medium);
-
             color: black;
-
             border-radius: 0.75rem;
-
         }
-
         .action-button-secondary:hover {
-
             background: #4b5563;
-
         }
-
         .chart-main-container {
-
             width: 100%;
-
             height: 300px;
-
             margin-top: 1rem;
-
         }
-
         .digital-control-grid {
-
             display: flex;
-
             flex-wrap: wrap;
-
             gap: 1rem;
-
         }
-
         .digital-control-card-wrapper {
-
             flex-grow: 1;
-
             flex-basis: 0;
-
         }
-
         .section-toggle-header {
-
             cursor: pointer;
-
             user-select: none;
-
         }
-
         
-
         .header .icon-btn i {
-
             color: white;
-
         }
-
         .rename-btn i {
-
             color: var(--text-color);
-
         }
-
         .modal-content h3,
-
         .modal-content label {
-
             color: var(--text-color);
-
         }
-
         .modal-content input {
-
             background-color: #ffffff;
-
             color: #1f2937;
-
         }
-
     </style>
-
 </head>
-
 <body>
-
     <div id="connection-status-bar" class="status-bar"></div>
-
     <header class="header">
-
         <div class="flex items-center justify-between w-full">
-
             <button id="go-to-firebase-btn" class="icon-btn rounded-full" aria-label="انتقل إلى Firebase Console">
-
                 <i class="fas fa-database text-xl"></i>
-
             </button>
-
             <button id="theme-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير المظهر">
-
                 <i class="fas fa-moon text-xl"></i>
-
             </button>
-
             <button id="viewport-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير طريقة العرض">
-
                 <i class="fas fa-desktop text-xl"></i>
-
             </button>
-
             <button id="open-system-settings-btn" class="icon-btn rounded-full" aria-label="إعدادات النظام">
-
                 <i class="fas fa-cog text-xl"></i>
-
             </button>
-
         </div>
-
     </header>
-
     <main class="p-4">
-
         <section>
-
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="ai-section">
-
                 <h2 class="font-semibold text-right flex-grow">المداخل التناظرية (AI)</h2>
-
                 <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
-
                     <i class="fas fa-chevron-left"></i>
-
                 </button>
-
             </div>
-
             <div id="ai-section" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 mb-4 hidden"></div>
-
         </section>
-
         
-
         <section>
-
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="do-section">
-
                 <h2 class="font-semibold text-right flex-grow">المخارج الرقمية (DO)</h2>
-
                 <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
-
                     <i class="fas fa-chevron-left"></i>
-
                 </button>
-
             </div>
-
             <div id="do-section" class="digital-control-grid mb-4 hidden"></div>
-
         </section>
-
         
-
         <section>
-
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="di-section">
-
                 <h2 class="font-semibold text-right flex-grow">المداخل الرقمية (DI)</h2>
-
                 <button class="toggle-section-btn icon-btn" aria-label="طي القسم">
-
                     <i class="fas fa-chevron-left"></i>
-
                 </button>
-
             </div>
-
             <div id="di-section" class="digital-control-grid hidden"></div>
-
         </section>
-
     </main>
-
     <div id="renameModal" class="modal">
-
         <div class="modal-content text-right">
-
             <h3 id="modal-title" class="text-2xl font-bold mb-4">تغيير الاسم</h3>
-
             <button class="close-btn" data-modal-id="renameModal"><i class="fas fa-times"></i></button>
-
             <p id="renameLabel" class="rename-label mb-4"></p>
-
             <input type="text" id="renameInput" placeholder="أدخل اسماً جديداً..." class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
-
             
-
             <div id="unit-options-container" class="mt-4">
-
                 <label for="unitInput" class="block text-sm font-medium mb-2">تغيير الوحدة:</label>
-
                 <input type="text" id="unitInput" placeholder="أدخل الوحدة (مثال: mA)" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
-
             </div>
             <div id="scaling-options-container" class="mt-4">
-
                 <label class="block text-sm font-medium mb-2">نطاق القيمة:</label>
-
                 <div class="flex gap-2">
-
                     <input type="number" id="minAnalogInput" placeholder="القيمة الدنيا" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2">
-
                     <input type="number" id="maxAnalogInput" placeholder="القيمة العليا" class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2">
-
                 </div>
-
             </div>
-
             
-
             <div class="flex flex-col gap-2 mt-6">
-
                 <button id="saveRenameBtn" class="w-full action-button">حفظ التغييرات</button>
-
                 <button id="export-chart-data-btn" class="w-full action-button">تصدير بيانات المبيان (CSV)</button>
-
                 <button id="delete-chart-data-btn" class="w-full action-button-secondary bg-red-500 hover:bg-red-700 text-white">حذف بيانات المبيان</button>
-
             </div>
-
         </div>
-
     </div>
-
     <div id="systemSettingsModal" class="modal">
-
         <div class="modal-content text-right">
-
             <h3 class="text-2xl font-bold mb-4">إعدادات النظام</h3>
-
             <button class="close-btn" data-modal-id="systemSettingsModal"><i class="fas fa-times"></i></button>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-
                 <div class="flex flex-col">
-
                     <label for="db_url" class="text-sm font-medium mb-2">عنوان قاعدة البيانات (URL)</label>
-
                     <input type="text" id="db_url" placeholder="مثال: https://my-project.firebaseio.com" class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
-
                 </div>
-
                 <div class="flex flex-col">
-
                     <label for="db_device" class="text-sm font-medium mb-2">اسم الجهاز</label>
-
                     <input type="text" id="db_device" placeholder="مثال: my-device-name" class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
-
                 </div>
-
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <button id="save-settings-btn" class="w-full action-button">حفظ الإعدادات</button>
-
                 <button id="reset-names-btn" class="w-full action-button">إعادة التسمية الافتراضية</button>
-
             </div>
-
         </div>
-
     </div>
-
     
-
     <script>
-
         const controlsConfig = {
-
             AI: [
-
                 { id: 'AI1', label: 'مقياس التيار 1', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
-
                 { id: 'AI2', label: 'مقياس التيار 2', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
-
                 { id: 'AI3', label: 'مقياس التيار 3', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' },
-
                 { id: 'AI4', label: 'مقياس التيار 4', type: 'slider', min: 0, max: 4096, step: 1, unit: 'mA', realMin: 4, realMax: 20, icon: 'fas fa-chart-line' }
-
             ],
-
             DO: [
-
                 { id: 'DO1', label: 'مفتاح التشغيل 1', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO2', label: 'مفتاح التشغيل 2', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO3', label: 'مفتاح التشغيل 3', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO4', label: 'مفتاح التشغيل 4', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO5', label: 'مفتاح التشغيل 5', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO6', label: 'مفتاح التشغيل 6', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO7', label: 'مفتاح التشغيل 7', icon: 'fas fa-lightbulb' },
-
                 { id: 'DO8', label: 'مفتاح التشغيل 8', icon: 'fas fa-lightbulb' }
-
             ],
-
             DI: [
-
                 { id: 'DI1', label: 'حساس الحالة 1', icon: 'fas fa-door-open' },
-
                 { id: 'DI2', label: 'حساس الحالة 2', icon: 'fas fa-door-open' },
-
                 { id: 'DI3', label: 'حساس الحالة 3', icon: 'fas fa-door-open' },
-
                 { id: 'DI4', label: 'حساس الحالة 4', icon: 'fas fa-door-open' },
-
                 { id: 'DI5', label: 'حساس الحالة 5', icon: 'fas fa-door-open' },
-
                 { id: 'DI6', label: 'حساس الحالة 6', icon: 'fas fa-door-open' },
-
                 { id: 'DI7', label: 'حساس الحالة 7', icon: 'fas fa-door-open' },
-
                 { id: 'DI8', label: 'حساس الحالة 8', icon: 'fas fa-door-open' }
-
             ]
-
         };
-
         const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
-
         const timeRangeLabels = ['ساعة', '24 ساعة', 'الكل'];
-
         const aiUnits = ['mA', 'V', '°C', 'Value'];
-
         const unitMappings = JSON.parse(localStorage.getItem('unitMappings')) || {};
-
         const renamedLabels = JSON.parse(localStorage.getItem('renamedLabels')) || {};
-
         const scalingMappings = JSON.parse(localStorage.getItem('scalingMappings')) || {};
-
         let firebaseInitialized = false;
-
         let deviceRef = null;
-
         const chartInstances = {};
-
         const aiDataCache = {};
-
         
+        const notificationQueue = [];
+        let isShowingNotification = false;
 
         function getCssVariable(variable) {
-
             return getComputedStyle(document.body).getPropertyValue(variable).trim();
-
         }
-        function showMessage(message, isError = false) {
-
-            const messageElement = document.createElement('div');
-
-            messageElement.className = `notification-message ${isError ? 'bg-red-500' : 'bg-green-500'}`;
-
-            messageElement.textContent = message;
-
-            document.body.appendChild(messageElement);
-
-            setTimeout(() => messageElement.remove(), 3000);
-
-        }
-        function openModal(modalId) {
-
-            document.getElementById(modalId).style.display = 'flex';
-
-        }
-        function closeModal(modalId) {
-
-            document.getElementById(modalId).style.display = 'none';
-
-        }
-
         
-
-        function scaleValue(rawValue, controlId) {
-
-            const config = controlsConfig.AI.find(c => c.id === controlId);
-
-            const { realMin, realMax } = scalingMappings[controlId] || config;
-
-            const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
-
-            return scaledValue;
-
+        function showMessage(message, isError = false) {
+            notificationQueue.push({ message, isError });
+            if (!isShowingNotification) {
+                processNotificationQueue();
+            }
         }
-        function createOrUpdateChart(ctx, id, type, dataPoints = []) {
-
-            const isDigital = (type === 'DI' || type === 'DO');
-
-            const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
-
-            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || {}).unit;
-
+        
+        function processNotificationQueue() {
+            if (notificationQueue.length === 0) {
+                isShowingNotification = false;
+                return;
+            }
+            isShowingNotification = true;
+            const notification = notificationQueue.shift();
             
-
+            const messageElement = document.createElement('div');
+            messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
+            messageElement.textContent = notification.message;
+            document.body.appendChild(messageElement);
+            
+            setTimeout(() => {
+                messageElement.remove();
+                processNotificationQueue();
+            }, 5000);
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function scaleValue(rawValue, controlId) {
+            const config = controlsConfig.AI.find(c => c.id === controlId);
+            const { realMin, realMax } = scalingMappings[controlId] || config;
+            const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
+            return scaledValue;
+        }
+        
+        function createOrUpdateChart(ctx, id, type, dataPoints = []) {
+            const isDigital = (type === 'DI' || type === 'DO');
+            const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
+            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || {}).unit;
+            
             let yMin = 0;
-
             let yMax = 4096;
-
             if (id.startsWith('AI')) {
-
                 const config = controlsConfig.AI.find(c => c.id === id);
-
                 const { realMin, realMax } = scalingMappings[id] || config;
-
                 yMin = realMin;
-
                 yMax = realMax;
-
             }
             if (chartInstances[id]) {
-
                 const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
-
                 chartInstances[id].data.datasets[0].data = scaledDataPoints;
-
                 chartInstances[id].options.scales.y.ticks.callback = isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value.toFixed(2)} ${currentUnit}`;
-
                 chartInstances[id].options.scales.y.min = yMin;
-
                 chartInstances[id].options.scales.y.max = yMax;
-
                 chartInstances[id].update();
-
             } else {
-
                 const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
-
                 const chartConfig = {
-
                     type: 'line',
-
                     data: { datasets: [{ label: isDigital ? 'الحالة' : 'القيمة', data: scaledDataPoints, borderColor, fill: true, stepped: isDigital ? 'after' : false, tension: isDigital ? 0 : 0.4, pointRadius: 0, borderWidth: 2 }] },
-
                     options: {
-
                         responsive: true,
-
                         maintainAspectRatio: false,
-
                         font: { family: 'Inter, sans-serif' },
-
                         layout: { padding: { bottom: 40 } },
-
                         scales: {
-
                             y: {
-
                                 beginAtZero: false,
-
                                 title: { display: false },
-
                                 min: isDigital ? -0.1 : yMin,
-
                                 max: isDigital ? 1.1 : yMax,
-
                                 ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: getCssVariable('--text-color'), maxTicksLimit: 5, callback: isDigital ? (value) => value === 1 ? 'مفعل' : value === 0 ? 'غير مفعل' : '' : (value) => `${value.toFixed(2)} ${currentUnit}` },
-
                                 grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
-
                             },
-
                             x: {
-
                                 type: 'time',
-
                                 time: {
-
                                     unit: 'minute',
-
                                     displayFormats: { second: 'HH:mm:ss', minute: 'HH:mm', hour: 'HH:mm', day: 'd MMM', week: 'd MMM', month: 'MMM yyyy' },
-
                                     tooltipFormat: 'dd/MM/yyyy HH:mm:ss'
-
                                 },
-
                                 title: { display: false },
-
                                 ticks: { font: { size: 10, family: 'Inter, sans-serif' }, color: getCssVariable('--text-color'), maxTicksLimit: 8, callback: (value) => { const date = new Date(value); const day = date.getDate().toString().padStart(2, '0'); const month = (date.getMonth() + 1).toString().padStart(2, '0'); const year = date.getFullYear(); const hours = date.getHours().toString().padStart(2, '0'); const minutes = date.getMinutes().toString().padStart(2, '0'); return [`${day}/${month}/${year}`, `${hours}:${minutes}`]; }, autoSkip: false },
-
                                 grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
-
                             }
-
                         },
-
                         plugins: {
-
                             legend: { display: false },
-
                             tooltip: { 
-
                                 rtl: true, 
-
                                 bodyFont: { size: 12 }, 
-
                                 titleFont: { size: 14, weight: 'bold' },
-
                                 backgroundColor: getCssVariable('--card-bg'),
-
                                 titleColor: getCssVariable('--text-color'),
-
                                 bodyColor: getCssVariable('--text-color'),
-
                                 callbacks: { 
-
                                     title: (context) => new Date(context[0].parsed.x).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'medium' }), 
-
                                     label: (context) => { 
-
                                         if (context.dataset.label.includes('الحالة')) { 
-
                                             return `الحالة: ${context.raw.y === 1 ? 'مفعل' : 'غير مفعل'}`; 
-
                                         } else if (id.startsWith('AI')) { 
-
                                             return `القيمة: ${context.raw.y.toFixed(2)} ${currentUnit}`; 
-
                                         } 
-
                                         return `القيمة: ${context.raw.y}`; 
-
                                     } 
-
                                 } 
-
                             },
-
                             zoom: { pan: { enabled: true, mode: 'x' }, zoom: { pinch: { enabled: true }, wheel: { enabled: true }, mode: 'x' } }
-
                         }
-
                     }
-
                 };
-
                 Chart.register(ChartZoom);
-
                 chartInstances[id] = new Chart(ctx, chartConfig);
-
             }
-
         }
+        
         function updateTimeRange(newIndex, chartId) {
-
             localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
-
             const buttonContainer = document.getElementById(`${chartId}-time-options`);
-
             if (buttonContainer) {
-
                 const buttons = buttonContainer.querySelectorAll('button');
-
                 buttons.forEach(btn => btn.classList.toggle('bg-primary-color', parseInt(btn.dataset.timeIndex) === newIndex));
-
                 buttons.forEach(btn => btn.classList.toggle('text-white', parseInt(btn.dataset.timeIndex) === newIndex));
-
                 buttons.forEach(btn => btn.classList.toggle('text-gray-400', parseInt(btn.dataset.timeIndex) !== newIndex));
-
             }
-
             updateChartDisplay(chartId, newIndex);
-
         }
+        
         function updateChartDisplay(chartId, newIndex) {
-
             const dataPoints = aiDataCache[chartId];
-
             if (!dataPoints || !dataPoints.length) return;
-
             const now = Date.now();
-
             const timeRange = timeRanges[newIndex];
-
             const startTimestamp = timeRange === 'all' ? 0 : now - timeRange;
-
             const filteredData = dataPoints.filter(point => point.x >= startTimestamp);
-
             const ctx = document.getElementById(`${chartId}-chart`);
-
             if (ctx) {
-
                 createOrUpdateChart(ctx, chartId, 'AI', filteredData);
-
             }
-
         }
+        
         async function toggleState(ref, type, id) {
-
             const indicator = document.getElementById(`${id}-indicator`);
-
             if (indicator && indicator.classList.contains('pending')) return;
-
             if (indicator) indicator.classList.add('pending');
-
             try {
-
                 const snapshot = await ref.once('value');
-
                 const currentValue = snapshot.val();
-
                 const newValue = (currentValue === 1) ? 0 : 1;
-
                 await ref.set(newValue);
-
-                // إضافة إشعار النجاح عند تغيير حالة المفتاح
                 const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
                 showMessage(`تم تغيير حالة ${controlName} إلى: ${newValue === 1 ? 'مفعل' : 'معطل'}.`);
-
             } catch (error) {
-
                 console.error("فشل في تحديث القيمة:", error);
-
                 showMessage('فشل في تحديث الحالة.', true);
-
             } finally {
-
                 if (indicator) indicator.classList.remove('pending');
-
             }
-
         }
+        
         function saveToArchive(type, id, value) {
-
             if (!deviceRef) return;
-
             const timestamp = firebase.database.ServerValue.TIMESTAMP;
-
             const archiveRef = deviceRef.child('archive').child(type).child(id);
-
             archiveRef.push({ value, timestamp });
-
         }
+        
         async function setDefaultValues() {
-
             if (!deviceRef) return;
-
             const snapshot = await deviceRef.once('value');
-
             
-
             if (!snapshot.exists()) {
-
                 const updates = {};
-
                 controlsConfig.DO.forEach(config => updates[`DO/${config.id}`] = 0);
-
                 controlsConfig.DI.forEach(config => updates[`DI/${config.id}`] = 0);
-
                 controlsConfig.AI.forEach(config => updates[`AI/${config.id}`] = 0);
-
                 
-
                 try {
-
                     await deviceRef.update(updates);
-
                     console.log("تم حفظ البيانات الافتراضية بنجاح.");
-
                 } catch (error) {
-
                     console.error("فشل في حفظ البيانات الافتراضية:", error);
-
                 }
-
             } else {
-
                 console.log("قاعدة البيانات تحتوي بالفعل على بيانات، لا داعي لحفظ القيم الافتراضية.");
-
             }
-
         }
+        
         function setupListeners() {
-
             if (!deviceRef) return;
-
             ['DO', 'DI'].forEach(type => {
-
                 controlsConfig[type].forEach(config => {
-
                     const ref = deviceRef.child(type).child(config.id);
-
                     ref.on('value', snapshot => {
-
                         const value = snapshot.val();
-                        
-                        // ✨ إضافة الإشعار هنا لتغيير حالة المداخل والمخارج الرقمية ✨
                         const controlName = renamedLabels[config.id] || config.label;
-                        const status = value === 1 ? 'مفعّلة' : 'معطّلة';
-                        
-                        // نتحقق إذا كانت القيمة قد تغيرت قبل إظهار الإشعار
+                        const status = value === 1 ? 'مفعلة' : 'معطلة';
                         const lastValueKey = `${type}-${config.id}`;
-                        const lastKnownValue = sessionStorage.getItem(lastValueKey);
+                        const lastKnownValue = localStorage.getItem(lastValueKey);
+                        
                         if (lastKnownValue !== null && parseInt(lastKnownValue) !== value) {
                             showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
                         }
-                        sessionStorage.setItem(lastValueKey, value);
-
+                        localStorage.setItem(lastValueKey, value);
                         const indicator = document.getElementById(`${config.id}-indicator`);
-
                         if (indicator) {
-
                             indicator.classList.toggle('active', value === 1);
-
                             if (type === 'DO') indicator.classList.remove('pending');
-
                         }
-
                     });
-
                 });
-
             });
-
             
-
             controlsConfig.AI.forEach(config => {
-
                 const aiRef = deviceRef.child('AI').child(config.id);
-
                 aiRef.on('value', snapshot => {
-
                     const data = snapshot.val();
-
                     const displayElement = document.getElementById(`${config.id}-display`);
-
                     const labelValueRawElement = document.getElementById(`${config.id}-label-value-raw`);
-
                     const slider = document.getElementById(`${config.id}-slider`);
-
                     
-
                     if (displayElement && slider) {
-
                         const currentRaw = typeof data === 'number' ? data : '--';
-
                         const currentUnit = unitMappings[config.id] || controlsConfig.AI.find(c => c.id === config.id).unit;
-
                         const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, config.id) : '--';
-
                         const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
-
                         
-
                         displayElement.textContent = displayText;
-
                         if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
-
                         if (typeof currentRaw === 'number') slider.value = currentRaw;
-
                     }
-
+                    const lastValueKey = `AI-${config.id}`;
+                    const lastKnownValue = localStorage.getItem(lastValueKey);
+                    
+                    if (lastKnownValue !== null && parseFloat(lastKnownValue) !== data) {
+                        const controlName = renamedLabels[config.id] || config.label;
+                        const scaledValue = typeof data === 'number' ? scaleValue(data, id) : '--';
+                        const currentUnit = unitMappings[id] || config.unit;
+                        showMessage(`قيمة ${controlName} تغيرت إلى: ${typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--'} ${currentUnit}`);
+                    }
+                    
+                    localStorage.setItem(lastValueKey, data);
                 });
-
                 const archiveRef = deviceRef.child('archive').child('AI').child(config.id);
-
                 archiveRef.on('value', snapshot => {
-
                     const dataPoints = [];
-
                     snapshot.forEach(childSnapshot => {
-
                         const val = childSnapshot.val();
-
                         dataPoints.push({ x: val.timestamp, y: val.value });
-
                     });
-
                     aiDataCache[config.id] = dataPoints;
-
                     const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
-
                     updateChartDisplay(config.id, lastTimeRangeIndex);
-
                 });
-
             });
-
         }
-
         
-
         function exportChartDataAsFile(chartId) {
-
             const dataPoints = aiDataCache[chartId];
-
             if (!dataPoints || dataPoints.length === 0) {
-
                 showMessage('لا توجد بيانات لتصديرها.', true);
-
                 return;
-
             }
-
             const renamedLabel = renamedLabels[chartId] || chartId;
-
             
-
             let csvContent = "\uFEFFDate,Time,Value\n";
-
             
-
             dataPoints.forEach(point => {
-
                 const dateObj = new Date(point.x);
-
                 
-
                 const date = dateObj.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
-
                 const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-
                 const scaledValue = scaleValue(point.y, chartId);
-
                 
-
                 csvContent += `${date},${time},${scaledValue.toFixed(2)}\n`;
-
             });
-
             
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
-
             a.href = url;
-
             a.download = `${renamedLabel}_data_${new Date().toISOString().slice(0, 10)}.csv`;
-
             document.body.appendChild(a);
-
             a.click();
-
             document.body.removeChild(a);
-
             URL.revokeObjectURL(url);
-
             showMessage('تم تصدير بيانات المخطط بنجاح!');
-
         }
-
         
-
         async function deleteChartData(chartId) {
-
             if (!deviceRef) {
-
                 showMessage('لم يتم إعداد Firebase بعد.', true);
-
                 return;
-
             }
-
             const confirmDelete = confirm("هل أنت متأكد من أنك تريد حذف كافة بيانات هذا المبيان؟ لا يمكن التراجع عن هذا الإجراء.");
-
             if (confirmDelete) {
-
                 try {
-
                     const archiveRef = deviceRef.child('archive').child('AI').child(chartId);
-
                     await archiveRef.remove();
-
                     showMessage('تم حذف البيانات بنجاح!');
-
                     location.reload();
-
                 } catch (error) {
-
                     console.error("فشل في حذف البيانات:", error);
-
                     showMessage('فشل في حذف البيانات. يرجى المحاولة مرة أخرى.', true);
-
                 } finally {
-
                     closeModal('renameModal');
-
                 }
-
             }
-
         }
-        function createAiControlElement(config) {
-
-            const controlId = config.id;
-
-            const controlName = renamedLabels[controlId] || config.label;
-
-            const currentUnit = unitMappings[controlId] || config.unit;
-
-            const div = document.createElement('div');
-
-            div.className = 'card';
-
-            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
-
-            div.innerHTML = `
-
-                <div class="p-4">
-
-                    <div class="flex items-center justify-between mb-2">
-
-                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
-
-                        <div class="flex items-center space-x-2">
-
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
-
-                        </div>
-
-                    </div>
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="control-label">${controlName}</span>
-
-                    </div>
-
-                    <div class="mt-4">
-
-                        <label class="block text-xs font-medium text-right">
-
-                            القيمة التناظرية: <span id="${controlId}-label-value-raw">--</span>
-
-                        </label>
-
-                        <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
-
-                    </div>
-
-                    <div class="digital-display-container mx-auto my-2">
-
-                        <span id="${controlId}-display" class="digital-display-text">-- ${currentUnit}</span>
-
-                    </div>
-
-                    <div class="chart-main-container relative">
-
-                        <div id="${controlId}-time-options" class="flex flex-wrap justify-center items-center gap-2 mb-2">
-
-                            ${timeRangeLabels.map((label, index) => `
-
-                                <button
-
-                                    class="time-range-btn text-xs font-semibold px-2 py-1 rounded-full transition-colors ${index === currentTimeRangeIndex ? 'bg-primary-color text-white' : 'text-gray-400'}"
-
-                                    data-time-index="${index}"
-
-                                    data-id="${controlId}"
-
-                                >
-
-                                    ${label}
-
-                                </button>
-
-                            `).join('')}
-
-                        </div>
-
-                        <canvas id="${controlId}-chart"></canvas>
-
-                    </div>
-
-                </div>
-
-            `;
-
-            return div;
-
-        }
-        function createDigitalControlElement(config, type) {
-
-            const controlId = config.id;
-
-            const controlName = renamedLabels[controlId] || config.label;
-
-            const cardWrapper = document.createElement('div');
-
-            cardWrapper.className = 'digital-control-card-wrapper';
-
-            cardWrapper.innerHTML = `
-
-                <div class="card p-4">
-
-                    <div class="flex items-center justify-between mb-2">
-
-                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
-
-                        <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
-
-                    </div>
-
-                    <span class="control-label">${controlName}</span>
-
-                    <div class="flex justify-center mt-4">
-
-                        <div class="industrial-button" data-id="${controlId}" data-type="${type}">
-
-                            <div id="${controlId}-indicator" class="indicator-light">
-
-                                <i id="${controlId}-icon" class="${config.icon} do-icon"></i>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            `;
-
-            return cardWrapper;
-
-        }
-        function renderAllControls() {
-
-            const aiSection = document.getElementById('ai-section');
-
-            const doSection = document.getElementById('do-section');
-
-            const diSection = document.getElementById('di-section');
-
-            aiSection.innerHTML = '';
-
-            doSection.innerHTML = '';
-
-            diSection.innerHTML = '';
-
-            controlsConfig.AI.forEach(config => aiSection.appendChild(createAiControlElement(config)));
-
-            controlsConfig.DO.forEach(config => doSection.appendChild(createDigitalControlElement(config, 'DO')));
-
-            controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
-
-        }
-        function initFirebaseAndControls(url, deviceName) {
-
-            try {
-
-                if (!firebaseInitialized) {
-
-                    firebase.initializeApp({ databaseURL: url });
-
-                    firebaseInitialized = true;
-
-                } else {
-
-                    firebase.database().goOffline();
-
-                    firebase.database().goOnline();
-
-                }
-
-                deviceRef = firebase.database().ref(deviceName);
-
-                renderAllControls();
-
-                setupListeners();
-
-                setDefaultValues();
-
-                firebase.database().ref('.info/connected').on('value', snapshot => {
-
-                    const connectionStatusBar = document.getElementById('connection-status-bar');
-
-                    if (snapshot.val() === true) {
-
-                        connectionStatusBar.classList.remove('status-disconnected');
-
-                        connectionStatusBar.classList.add('status-connected');
-
-                    } else {
-
-                        connectionStatusBar.classList.remove('status-connected');
-
-                        connectionStatusBar.classList.add('status-disconnected');
-
-                    }
-
-                });
-
-            } catch (error) {
-
-                console.error("Firebase initialization failed:", error);
-
-                showMessage('فشل في تهيئة Firebase. تحقق من URL.', true);
-
-            }
-
-        }
-
         
-
-        document.addEventListener('click', (event) => {
-
-            const target = event.target.closest('button, [data-id], [data-target]');
-
-            if (!target) return;
-
-            
-
-            const modalId = target.dataset.modalId;
-
-            const controlId = target.dataset.id;
-
-            const targetSectionId = target.dataset.target;
-            const sectionHeader = event.target.closest('.section-toggle-header');
-
-            if (sectionHeader && sectionHeader.dataset.target) {
-
-                const targetSection = document.getElementById(sectionHeader.dataset.target);
-
-                const icon = sectionHeader.querySelector('i');
-
-                const isHidden = targetSection.classList.toggle('hidden');
-
-                localStorage.setItem(`sectionState-${sectionHeader.dataset.target}`, !isHidden);
-
-                icon.classList.toggle('fa-chevron-down', !isHidden);
-
-                icon.classList.toggle('fa-chevron-left', isHidden);
-
-            }
-            if (target.id === 'open-system-settings-btn') {
-
-                document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
-
-                document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
-
-                openModal('systemSettingsModal');
-
-            } else if (target.id === 'save-settings-btn') {
-
-                const newUrl = document.getElementById('db_url').value.trim();
-
-                const newDevice = document.getElementById('db_device').value.trim();
-
-                
-
-                if (!newUrl || !newDevice) {
-
-                    showMessage('الرجاء إدخال عنوان قاعدة البيانات واسم الجهاز.', true);
-
-                    return;
-
-                }
-
-                
-
-                localStorage.setItem('firebaseURL', newUrl);
-
-                localStorage.setItem('firebaseDevice', newDevice);
-
-                showMessage('تم حفظ الإعدادات بنجاح!');
-
-                
-
-                initFirebaseAndControls(newUrl, newDevice);
-
-                
-
-                closeModal('systemSettingsModal');
-
-                location.reload();
-
-            } else if (target.id === 'reset-names-btn') {
-
-                const confirmReset = confirm("هل أنت متأكد من أنك تريد إعادة تعيين جميع الأسماء والوحدات والنطاقات إلى القيم الافتراضية؟");
-
-                if (!confirmReset) return;
-                const newRenamedLabels = {};
-
-                controlsConfig.DO.forEach(config => newRenamedLabels[config.id] = config.label);
-
-                controlsConfig.DI.forEach(config => newRenamedLabels[config.id] = config.label);
-
-                controlsConfig.AI.forEach(config => newRenamedLabels[config.id] = 'النسبة المئوية');
-
-                localStorage.setItem('renamedLabels', JSON.stringify(newRenamedLabels));
-                const newUnitMappings = {};
-
-                const newScalingMappings = {};
-
-                controlsConfig.AI.forEach(config => {
-
-                    newUnitMappings[config.id] = '%';
-
-                    newScalingMappings[config.id] = { realMin: 0, realMax: 100 };
-
-                });
-
-                localStorage.setItem('unitMappings', JSON.stringify(newUnitMappings));
-
-                localStorage.setItem('scalingMappings', JSON.stringify(newScalingMappings));
-
-                
-
-                showMessage('تمت إعادة تعيين جميع إعدادات المبيانات إلى الافتراضي بنجاح!');
-
-                location.reload();
-
-            } else if (target.id === 'export-chart-data-btn') {
-
-                const chartId = document.getElementById('renameModal').dataset.id;
-
-                exportChartDataAsFile(chartId);
-
-            } else if (target.id === 'delete-chart-data-btn') {
-
-                const chartId = document.getElementById('renameModal').dataset.id;
-
-                deleteChartData(chartId);
-
-            } else if (target.id === 'saveRenameBtn') {
-
-                const currentControlId = document.getElementById('renameModal').dataset.id;
-
-                const newName = document.getElementById('renameInput').value.trim();
-
-                const newUnit = document.getElementById('unitInput').value.trim();
-
-                
-
-                const minVal = parseFloat(document.getElementById('minAnalogInput').value);
-
-                const maxVal = parseFloat(document.getElementById('maxAnalogInput').value);
-
-                
-
-                if (newName) {
-
-                    renamedLabels[currentControlId] = newName;
-
-                    localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
-
-                }
-
-                
-
-                if (currentControlId.startsWith('AI')) {
-
-                    if (newUnit) {
-
-                        unitMappings[currentControlId] = newUnit;
-
-                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
-
-                    } else {
-
-                        delete unitMappings[currentControlId];
-
-                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
-
-                    }
-
-                    if (!isNaN(minVal) && !isNaN(maxVal)) {
-
-                        scalingMappings[currentControlId] = { realMin: minVal, realMax: maxVal };
-
-                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
-
-                    } else {
-
-                        delete scalingMappings[currentControlId];
-
-                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
-
-                    }
-
-                }
-
-                
-
-                showMessage('تم حفظ التغييرات بنجاح!');
-
-                closeModal('renameModal');
-
-                location.reload();
-
-            } else if (target.id === 'go-to-firebase-btn') {
-
-                const url = localStorage.getItem('firebaseURL');
-
-                const match = url ? url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/) : null;
-
-                const projectId = match ? match[1] : null;
-
-                const firebaseConsoleUrl = projectId ? `https://console.firebase.google.com/u/0/project/${projectId}/database/data` : 'https://console.firebase.google.com/u/0/';
-
-                window.open(firebaseConsoleUrl, '_blank');
-
-            } else if (target.closest('.close-btn')) {
-
-                const parentModal = target.closest('.modal');
-
-                if (parentModal) closeModal(parentModal.id);
-
-            } else if (target.closest('.rename-btn')) {
-
-                const btn = target.closest('.rename-btn');
-
-                const controlId = btn.getAttribute('data-id');
-
-                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId);
-
-                const name = renamedLabels[controlId] || config.label;
-
-                document.getElementById('renameLabel').textContent = `تغيير اسم: ${name}`;
-
-                document.getElementById('renameInput').value = name;
-
-                document.getElementById('renameModal').dataset.id = controlId;
-
-                
-
-                const unitOptionsContainer = document.getElementById('unit-options-container');
-
-                const unitInput = document.getElementById('unitInput');
-
-                const scalingOptionsContainer = document.getElementById('scaling-options-container');
-
-                const exportChartDataBtn = document.getElementById('export-chart-data-btn');
-
-                const deleteChartDataBtn = document.getElementById('delete-chart-data-btn');
-
-                
-
-                if (controlId.startsWith('AI')) {
-
-                    unitOptionsContainer.style.display = 'block';
-
-                    scalingOptionsContainer.style.display = 'block';
-
-                    exportChartDataBtn.style.display = 'block';
-
-                    deleteChartDataBtn.style.display = 'block';
-
-                    document.getElementById('modal-title').textContent = 'إعدادات المبيان';
-
-                    
-
-                    const currentUnit = unitMappings[controlId] || config.unit;
-
-                    unitInput.value = currentUnit;
-
-                    
-
-                    const scaling = scalingMappings[controlId] || config;
-
-                    document.getElementById('minAnalogInput').value = scaling.realMin;
-
-                    document.getElementById('maxAnalogInput').value = scaling.realMax;
-
+        function createAiControlElement(config) {
+            const controlId = config.id;
+            const controlName = renamedLabels[controlId] || config.label;
+            const currentUnit = unitMappings[controlId] || config.unit;
+            const div = document.createElement('div');
+            div.className = 'card';
+            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
+            div.innerHTML = `
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
+                        <div class="flex items-center space-x-2">
+                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="control-label">${controlName}</span>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-right">
+                            القيمة التناظرية: <span id="${controlId}-label-value-raw">--</span>
+                        </label>
+                        <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
+                    </div>
+                    <div class="digital-display-container mx-auto my-2">
+                        <span id="${controlId}-display" class="digital-display-text">-- ${currentUnit}</span>
+                    </div>
+                    <div class="chart-main-container relative">
+                        <div id="${controlId}-time-options" class="flex flex-wrap justify-center items-center gap-2 mb-2">
+                            ${timeRangeLabels.map((label, index) => `
+                                <button
+                                    class="time-range-btn text-xs font-semibold px-2 py-1 rounded-full transition-colors ${index === currentTimeRangeIndex ? 'bg-primary-color text-white' : 'text-gray-400'}"
+                                    data-time-index="${index}"
+                                    data-id="${controlId}"
+                                >
+                                    ${label}
+                                </button>
+                            `).join('')}
+                        </div>
+                        <canvas id="${controlId}-chart"></canvas>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+        
+        function createDigitalControlElement(config, type) {
+            const controlId = config.id;
+            const controlName = renamedLabels[controlId] || config.label;
+            const cardWrapper = document.createElement('div');
+            cardWrapper.className = 'digital-control-card-wrapper';
+            cardWrapper.innerHTML = `
+                <div class="card p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="control-label text-sm text-gray-400 dark:text-gray-500">${controlId}</span>
+                        <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="تغيير اسم العنصر"><i class="fas fa-pencil-alt"></i></button>
+                    </div>
+                    <span class="control-label">${controlName}</span>
+                    <div class="flex justify-center mt-4">
+                        <div class="industrial-button" data-id="${controlId}" data-type="${type}">
+                            <div id="${controlId}-indicator" class="indicator-light">
+                                <i id="${controlId}-icon" class="${config.icon} do-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return cardWrapper;
+        }
+        
+        function renderAllControls() {
+            const aiSection = document.getElementById('ai-section');
+            const doSection = document.getElementById('do-section');
+            const diSection = document.getElementById('di-section');
+            aiSection.innerHTML = '';
+            doSection.innerHTML = '';
+            diSection.innerHTML = '';
+            controlsConfig.AI.forEach(config => aiSection.appendChild(createAiControlElement(config)));
+            controlsConfig.DO.forEach(config => doSection.appendChild(createDigitalControlElement(config, 'DO')));
+            controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
+        }
+        
+        function initFirebaseAndControls(url, deviceName) {
+            try {
+                if (!firebaseInitialized) {
+                    firebase.initializeApp({ databaseURL: url });
+                    firebaseInitialized = true;
                 } else {
-
-                    unitOptionsContainer.style.display = 'none';
-
-                    scalingOptionsContainer.style.display = 'none';
-
-                    exportChartDataBtn.style.display = 'none';
-
-                    deleteChartDataBtn.style.display = 'none';
-
-                    document.getElementById('modal-title').textContent = 'تغيير الاسم';
-
+                    firebase.database().goOffline();
+                    firebase.database().goOnline();
                 }
-
+                deviceRef = firebase.database().ref(deviceName);
+                renderAllControls();
+                setDefaultValues();
                 
-
-                openModal('renameModal');
-
-            } else if (target.closest('.toggle-section-btn')) {
-
-                const btn = target.closest('.toggle-section-btn');
-
-                const targetSection = document.getElementById(targetSectionId);
-
-                const icon = sectionHeader.querySelector('i');
-
-                const isHidden = targetSection.classList.toggle('hidden');
-
-                localStorage.setItem(`sectionState-${targetSectionId}`, !isHidden);
-
-                icon.classList.toggle('fa-chevron-down', !isHidden);
-
-                icon.classList.toggle('fa-chevron-left', isHidden);
-
-            } else if (target.closest('.industrial-button[data-type="DO"]')) {
-
-                const btn = target.closest('.industrial-button[data-type="DO"]');
-
-                const doId = btn.dataset.id;
-
-                toggleState(deviceRef.child('DO').child(doId), 'DO', doId);
-
-            } else if (target.closest('.time-range-btn')) {
-
-                const btn = target.closest('.time-range-btn');
-
-                const chartId = btn.dataset.id;
-
-                const newIndex = parseInt(btn.dataset.timeIndex);
-
-                updateTimeRange(newIndex, chartId);
-
-            } else if (target.id === 'theme-toggle-btn') {
-
-                const htmlElement = document.documentElement;
-
-                const isDarkMode = htmlElement.classList.toggle('dark');
-
-                if (isDarkMode) {
-
-                    localStorage.setItem('theme', 'dark');
-
-                } else {
-
-                    localStorage.setItem('theme', 'light');
-
-                }
-
-                location.reload();
-
-            } else if (target.id === 'viewport-toggle-btn') {
-
-                const viewportMeta = document.getElementById('viewport-meta');
-
-                const currentContent = viewportMeta.getAttribute('content');
-
-                const isDesktop = currentContent.includes('width=1200');
-
-                if (isDesktop) {
-
-                    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-
-                    localStorage.setItem('viewportMode', 'mobile');
-
-                } else {
-
-                    viewportMeta.setAttribute('content', 'width=1200, user-scalable=yes');
-
-                    localStorage.setItem('viewportMode', 'desktop');
-
-                }
-
-                location.reload();
-
-            } else if (target.id === 'subscribe-notifications-btn') {
-
-                if ('serviceWorker' in navigator && 'PushManager' in window) {
-
-                    navigator.serviceWorker.ready.then(registration => {
-
-                        registration.pushManager.subscribe({
-
-                            userVisibleOnly: true,
-
-                            applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY_HERE'
-
-                        }).then(subscription => {
-
-                            const key = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))));
-
-                            const auth = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))));
-
-                            const endpoint = subscription.endpoint;
-
-                            const subscriptionData = { endpoint, key, auth };
-
-                            
-
-                            if (deviceRef) {
-
-                                const subscriptionsRef = firebase.database().ref('subscriptions');
-
-                                subscriptionsRef.push(subscriptionData)
-
-                                    .then(() => {
-
-                                        showMessage('تم تفعيل الإشعارات بنجاح!');
-
-                                        console.log('Push subscription saved to database.');
-
-                                    })
-
-                                    .catch(error => {
-
-                                        showMessage('فشل في حفظ بيانات الاشتراك.', true);
-
-                                        console.error('Error saving subscription:', error);
-
-                                    });
-
+                deviceRef.once('value').then(snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        ['DO', 'DI'].forEach(type => {
+                            if (data[type]) {
+                                Object.keys(data[type]).forEach(id => {
+                                    const value = data[type][id];
+                                    const lastValueKey = `${type}-${id}`;
+                                    const lastKnownValue = localStorage.getItem(lastValueKey);
+                                    
+                                    if (lastKnownValue === null || parseInt(lastKnownValue) !== value) {
+                                        if (lastKnownValue !== null) {
+                                            const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
+                                            const status = value === 1 ? 'مفعلة' : 'معطلة';
+                                            showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
+                                        }
+                                        localStorage.setItem(lastValueKey, value);
+                                    }
+                                });
                             }
-
-                        }).catch(error => {
-
-                            showMessage('فشل تفعيل الإشعارات.', true);
-
-                            console.error('Push subscription failed:', error);
-
                         });
-
-                    });
-
-                } else {
-
-                    showMessage('متصفحك لا يدعم الإشعارات.', true);
-
-                }
-
+                        controlsConfig.AI.forEach(config => {
+                            const id = config.id;
+                            const value = data.AI[id];
+                            const lastValueKey = `AI-${id}`;
+                            const lastKnownValue = localStorage.getItem(lastValueKey);
+                            
+                            if (lastKnownValue === null || parseFloat(lastKnownValue) !== value) {
+                                if (lastKnownValue !== null) {
+                                    const controlName = renamedLabels[id] || config.label;
+                                    const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
+                                    const currentUnit = unitMappings[id] || config.unit;
+                                    showMessage(`قيمة ${controlName} تغيرت إلى: ${typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--'} ${currentUnit}`);
+                                }
+                                localStorage.setItem(lastValueKey, value);
+                            }
+                        });
+                    }
+                    setupListeners();
+                }).catch(error => {
+                    console.error("فشل في قراءة البيانات الأولية:", error);
+                });
+                firebase.database().ref('.info/connected').on('value', snapshot => {
+                    const connectionStatusBar = document.getElementById('connection-status-bar');
+                    if (snapshot.val() === true) {
+                        connectionStatusBar.classList.remove('status-disconnected');
+                        connectionStatusBar.classList.add('status-connected');
+                    } else {
+                        connectionStatusBar.classList.remove('status-connected');
+                        connectionStatusBar.classList.add('status-disconnected');
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                showMessage('فشل في تهيئة Firebase. تحقق من URL.', true);
             }
+        }
+        
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
 
-        });
         const updateFirebaseAI = debounce((aiId, value) => {
-
             if (deviceRef) {
-
                 deviceRef.child('AI').child(aiId).set(value)
                     .then(() => {
                         const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
@@ -2200,163 +1003,276 @@
                         showMessage('فشل في تحديث القيمة.', true);
                     });
                 saveToArchive('AI', aiId, value);
-
             }
-
         }, 500);
-        function debounce(func, delay) {
 
-            let timeout;
-
-            return function(...args) {
-
-                const context = this;
-
-                clearTimeout(timeout);
-
-                timeout = setTimeout(() => func.apply(context, args), delay);
-
-            };
-
-        }
-
-        
-
-        const lastDiValues = {};
-
-        const lastDoValues = {};
-
-        const lastAiValues = {};
-        document.addEventListener('input', (event) => {
-
-            if (event.target.matches('[id$="-slider"]')) {
-
-                const slider = event.target;
-
-                const rawValue = parseFloat(slider.value);
-
-                const aiId = slider.id.replace('-slider', '');
-
-                const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
-
-                const scaledValue = scaleValue(rawValue, aiId);
-
+        document.addEventListener('click', (event) => {
+            const target = event.target.closest('button, [data-id], [data-target]');
+            if (!target) return;
+            
+            const modalId = target.dataset.modalId;
+            const controlId = target.dataset.id;
+            const targetSectionId = target.dataset.target;
+            const sectionHeader = event.target.closest('.section-toggle-header');
+            
+            if (sectionHeader && sectionHeader.dataset.target) {
+                const targetSection = document.getElementById(sectionHeader.dataset.target);
+                const icon = sectionHeader.querySelector('i');
+                const isHidden = targetSection.classList.toggle('hidden');
+                localStorage.setItem(`sectionState-${sectionHeader.dataset.target}`, !isHidden);
+                icon.classList.toggle('fa-chevron-down', !isHidden);
+                icon.classList.toggle('fa-chevron-left', isHidden);
+            }
+            
+            if (target.id === 'open-system-settings-btn') {
+                document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
+                document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
+                openModal('systemSettingsModal');
+            } else if (target.id === 'save-settings-btn') {
+                const newUrl = document.getElementById('db_url').value.trim();
+                const newDevice = document.getElementById('db_device').value.trim();
                 
-
-                document.getElementById(`${aiId}-display`).textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
-
-                
-
-                const labelValueRawElement = document.getElementById(`${aiId}-label-value-raw`);
-
-                if (labelValueRawElement) {
-
-                    labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
-
+                if (!newUrl || !newDevice) {
+                    showMessage('الرجاء إدخال عنوان قاعدة البيانات واسم الجهاز.', true);
+                    return;
                 }
-
                 
+                localStorage.setItem('firebaseURL', newUrl);
+                localStorage.setItem('firebaseDevice', newDevice);
+                showMessage('تم حفظ الإعدادات بنجاح!');
+                
+                initFirebaseAndControls(newUrl, newDevice);
+                
+                closeModal('systemSettingsModal');
+            } else if (target.id === 'reset-names-btn') {
+                const confirmReset = confirm("هل أنت متأكد من أنك تريد إعادة تعيين جميع الأسماء والوحدات والنطاقات إلى القيم الافتراضية؟");
+                if (!confirmReset) return;
+                
+                const newRenamedLabels = {};
+                controlsConfig.DO.forEach(config => newRenamedLabels[config.id] = config.label);
+                controlsConfig.DI.forEach(config => newRenamedLabels[config.id] = config.label);
+                controlsConfig.AI.forEach(config => {
+                    newRenamedLabels[config.id] = config.label;
+                });
+                localStorage.setItem('renamedLabels', JSON.stringify(newRenamedLabels));
+                
+                const newUnitMappings = {};
+                const newScalingMappings = {};
+                controlsConfig.AI.forEach(config => {
+                    newUnitMappings[config.id] = config.unit;
+                    newScalingMappings[config.id] = { realMin: config.realMin, realMax: config.realMax };
+                });
+                localStorage.setItem('unitMappings', JSON.stringify(newUnitMappings));
+                localStorage.setItem('scalingMappings', JSON.stringify(newScalingMappings));
+                
+                showMessage('تمت إعادة تعيين جميع إعدادات المبيانات إلى الافتراضي بنجاح!');
+                location.reload();
+            } else if (target.id === 'export-chart-data-btn') {
+                const chartId = document.getElementById('renameModal').dataset.id;
+                exportChartDataAsFile(chartId);
+            } else if (target.id === 'delete-chart-data-btn') {
+                const chartId = document.getElementById('renameModal').dataset.id;
+                deleteChartData(chartId);
+            } else if (target.id === 'saveRenameBtn') {
+                const currentControlId = document.getElementById('renameModal').dataset.id;
+                const newName = document.getElementById('renameInput').value.trim();
+                const newUnit = document.getElementById('unitInput').value.trim();
+                
+                const minVal = parseFloat(document.getElementById('minAnalogInput').value);
+                const maxVal = parseFloat(document.getElementById('maxAnalogInput').value);
+                
+                if (newName) {
+                    renamedLabels[currentControlId] = newName;
+                    localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
+                }
+                
+                if (currentControlId.startsWith('AI')) {
+                    if (newUnit) {
+                        unitMappings[currentControlId] = newUnit;
+                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
+                    } else {
+                        delete unitMappings[currentControlId];
+                        localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
+                    }
+                    if (!isNaN(minVal) && !isNaN(maxVal)) {
+                        scalingMappings[currentControlId] = { realMin: minVal, realMax: maxVal };
+                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
+                    } else {
+                        delete scalingMappings[currentControlId];
+                        localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
+                    }
+                }
+                
+                showMessage('تم حفظ التغييرات بنجاح!');
+                closeModal('renameModal');
+                location.reload();
+            } else if (target.id === 'go-to-firebase-btn') {
+                const url = localStorage.getItem('firebaseURL');
+                const match = url ? url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/) : null;
+                const projectId = match ? match[1] : null;
+                const firebaseConsoleUrl = projectId ? `https://console.firebase.google.com/u/0/project/${projectId}/database/data` : 'https://console.firebase.google.com/u/0/';
+                window.open(firebaseConsoleUrl, '_blank');
+            } else if (target.closest('.close-btn')) {
+                const parentModal = target.closest('.modal');
+                if (parentModal) closeModal(parentModal.id);
+            } else if (target.closest('.rename-btn')) {
+                const btn = target.closest('.rename-btn');
+                const controlId = btn.getAttribute('data-id');
+                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId);
+                const name = renamedLabels[controlId] || config.label;
+                document.getElementById('renameLabel').textContent = `تغيير اسم: ${name}`;
+                document.getElementById('renameInput').value = name;
+                document.getElementById('renameModal').dataset.id = controlId;
+                
+                const unitOptionsContainer = document.getElementById('unit-options-container');
+                const unitInput = document.getElementById('unitInput');
+                const scalingOptionsContainer = document.getElementById('scaling-options-container');
+                const exportChartDataBtn = document.getElementById('export-chart-data-btn');
+                const deleteChartDataBtn = document.getElementById('delete-chart-data-btn');
+                
+                if (controlId.startsWith('AI')) {
+                    unitOptionsContainer.style.display = 'block';
+                    scalingOptionsContainer.style.display = 'block';
+                    exportChartDataBtn.style.display = 'block';
+                    deleteChartDataBtn.style.display = 'block';
+                    document.getElementById('modal-title').textContent = 'إعدادات المبيان';
+                    
+                    const currentUnit = unitMappings[controlId] || config.unit;
+                    unitInput.value = currentUnit;
+                    
+                    const scaling = scalingMappings[controlId] || config;
+                    document.getElementById('minAnalogInput').value = scaling.realMin;
+                    document.getElementById('maxAnalogInput').value = scaling.realMax;
+                } else {
+                    unitOptionsContainer.style.display = 'none';
+                    scalingOptionsContainer.style.display = 'none';
+                    exportChartDataBtn.style.display = 'none';
+                    deleteChartDataBtn.style.display = 'none';
+                    document.getElementById('modal-title').textContent = 'تغيير الاسم';
+                }
+                
+                openModal('renameModal');
+            } else if (target.closest('.toggle-section-btn')) {
+                const btn = target.closest('.toggle-section-btn');
+                const targetSection = document.getElementById(targetSectionId);
+                const icon = sectionHeader.querySelector('i');
+                const isHidden = targetSection.classList.toggle('hidden');
+                localStorage.setItem(`sectionState-${targetSectionId}`, !isHidden);
+                icon.classList.toggle('fa-chevron-down', !isHidden);
+                icon.classList.toggle('fa-chevron-left', isHidden);
+            } else if (target.closest('.industrial-button[data-type="DO"]')) {
+                const btn = target.closest('.industrial-button[data-type="DO"]');
+                const doId = btn.dataset.id;
+                toggleState(deviceRef.child('DO').child(doId), 'DO', doId);
+            } else if (target.closest('.time-range-btn')) {
+                const btn = target.closest('.time-range-btn');
+                const chartId = btn.dataset.id;
+                const newIndex = parseInt(btn.dataset.timeIndex);
+                updateTimeRange(newIndex, chartId);
+            } else if (target.id === 'theme-toggle-btn') {
+                const htmlElement = document.documentElement;
+                const isDarkMode = htmlElement.classList.toggle('dark');
+                if (isDarkMode) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+                location.reload();
+            } else if (target.id === 'viewport-toggle-btn') {
+                const viewportMeta = document.getElementById('viewport-meta');
+                const currentContent = viewportMeta.getAttribute('content');
+                const isDesktop = currentContent.includes('width=1200');
+                const iconElement = target.querySelector('i');
+                if (isDesktop) {
+                    viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
+                    localStorage.setItem('viewportMode', 'mobile');
+                    if (iconElement) {
+                        iconElement.classList.remove('fa-desktop');
+                        iconElement.classList.add('fa-mobile-alt');
+                    }
+                } else {
+                    viewportMeta.setAttribute('content', 'width=1200, user-scalable=yes');
+                    localStorage.setItem('viewportMode', 'desktop');
+                    if (iconElement) {
+                        iconElement.classList.remove('fa-mobile-alt');
+                        iconElement.classList.add('fa-desktop');
+                    }
+                }
+            }
+        });
+        
+        document.addEventListener('input', (event) => {
+            if (event.target.matches('[id$="-slider"]')) {
+                const slider = event.target;
+                const rawValue = parseFloat(slider.value);
+                const aiId = slider.id.replace('-slider', '');
+                const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
+                const scaledValue = scaleValue(rawValue, aiId);
+                
+                document.getElementById(`${aiId}-display`).textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
+                
+                const labelValueRawElement = document.getElementById(`${aiId}-label-value-raw`);
+                if (labelValueRawElement) {
+                    labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
+                }
+                
+                // Store the raw value in localStorage immediately
+                localStorage.setItem(`AI-${aiId}`, rawValue);
 
                 updateFirebaseAI(aiId, rawValue);
-
             }
-
         });
-
         
-
         window.addEventListener('load', () => {
-
             const storedUrl = localStorage.getItem('firebaseURL');
-
             const storedDevice = localStorage.getItem('firebaseDevice');
-
             if (storedUrl && storedDevice) {
-
                 initFirebaseAndControls(storedUrl, storedDevice);
-
             } else {
-
                 renderAllControls();
-
                 showMessage('الرجاء إدخال إعدادات Firebase من زر الإعدادات في الأعلى.', false);
-
             }
             ['ai-section', 'do-section', 'di-section'].forEach(sectionId => {
-
                 const isVisible = localStorage.getItem(`sectionState-${sectionId}`) === 'true';
-
                 const section = document.getElementById(sectionId);
-
                 const toggleButton = document.querySelector(`.section-toggle-header[data-target="${sectionId}"] i`);
-
                 if (section && toggleButton) {
-
                     if (isVisible) {
-
                         section.classList.remove('hidden');
-
                         toggleButton.classList.replace('fa-chevron-left', 'fa-chevron-down');
-
                     } else {
-
                         section.classList.add('hidden');
-
                         toggleButton.classList.replace('fa-chevron-down', 'fa-chevron-left');
-
                     }
-
                 }
-
             });
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
-
             const htmlElement = document.documentElement;
-
             if (themeToggleBtn) {
-
                 const iconElement = themeToggleBtn.querySelector('i');
-
                 if (htmlElement.classList.contains('dark')) {
-
                     iconElement.classList.replace('fa-moon', 'fa-sun');
-
                 } else {
-
                     iconElement.classList.replace('fa-sun', 'fa-moon');
-
                 }
-
             }
-
+            
             const viewportMode = localStorage.getItem('viewportMode') || 'mobile';
-
             const viewportMeta = document.getElementById('viewport-meta');
-
             const viewportToggleBtn = document.getElementById('viewport-toggle-btn');
-
             if (viewportToggleBtn) {
-
                 const iconElement = viewportToggleBtn.querySelector('i');
-
                 if (viewportMode === 'desktop') {
-
                     viewportMeta.setAttribute('content', 'width=1200, user-scalable=yes');
-
-                    iconElement.classList.replace('fa-desktop', 'fa-mobile-alt');
-
+                    iconElement.classList.remove('fa-mobile-alt');
+                    iconElement.classList.add('fa-desktop');
                 } else {
-
                     viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
-
-                    iconElement.classList.replace('fa-mobile-alt', 'fa-desktop');
-
+                    iconElement.classList.remove('fa-desktop');
+                    iconElement.classList.add('fa-mobile-alt');
                 }
-
             }
-
         });
-
     </script>
 </body>
 </html>
