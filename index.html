@@ -707,59 +707,77 @@
         
         function setupListeners() {
             if (!deviceRef) return;
-            ['DO', 'DI'].forEach(type => {
-                controlsConfig[type].forEach(config => {
-                    const ref = deviceRef.child(type).child(config.id);
-                    ref.on('value', snapshot => {
-                        const value = snapshot.val();
-                        const controlName = renamedLabels[config.id] || config.label;
-                        const status = value === 1 ? 'مفعلة' : 'معطلة';
-                        const lastValueKey = `${type}-${config.id}`;
-                        const lastKnownValue = localStorage.getItem(lastValueKey);
-                        
-                        if (lastKnownValue !== null && parseInt(lastKnownValue) !== value) {
-                            showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
-                        }
-                        localStorage.setItem(lastValueKey, value);
-                        const indicator = document.getElementById(`${config.id}-indicator`);
-                        if (indicator) {
-                            indicator.classList.toggle('active', value === 1);
-                            if (type === 'DO') indicator.classList.remove('pending');
+            
+            // Flag to prevent notifications on initial load
+            let isFirstLoad = true;
+            
+            deviceRef.on('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    ['DO', 'DI'].forEach(type => {
+                        if (data[type]) {
+                            Object.keys(data[type]).forEach(id => {
+                                const value = data[type][id];
+                                const lastValueKey = `${type}-${id}`;
+                                const lastKnownValue = localStorage.getItem(lastValueKey);
+                                
+                                // Show notification only if a value was already stored and it changed
+                                if (!isFirstLoad && lastKnownValue !== null && parseInt(lastKnownValue) !== value) {
+                                    const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
+                                    const status = value === 1 ? 'مفعلة' : 'معطلة';
+                                    showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
+                                }
+                                
+                                localStorage.setItem(lastValueKey, value);
+                                
+                                const indicator = document.getElementById(`${id}-indicator`);
+                                if (indicator) {
+                                    indicator.classList.toggle('active', value === 1);
+                                    if (type === 'DO') indicator.classList.remove('pending');
+                                }
+                            });
                         }
                     });
-                });
-            });
-            
-            controlsConfig.AI.forEach(config => {
-                const aiRef = deviceRef.child('AI').child(config.id);
-                aiRef.on('value', snapshot => {
-                    const data = snapshot.val();
-                    const displayElement = document.getElementById(`${config.id}-display`);
-                    const labelValueRawElement = document.getElementById(`${config.id}-label-value-raw`);
-                    const slider = document.getElementById(`${config.id}-slider`);
                     
-                    if (displayElement && slider) {
-                        const currentRaw = typeof data === 'number' ? data : '--';
-                        const currentUnit = unitMappings[config.id] || controlsConfig.AI.find(c => c.id === config.id).unit;
-                        const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, config.id) : '--';
-                        const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
+                    controlsConfig.AI.forEach(config => {
+                        const id = config.id;
+                        const value = data.AI[id];
+                        const displayElement = document.getElementById(`${id}-display`);
+                        const labelValueRawElement = document.getElementById(`${id}-label-value-raw`);
+                        const slider = document.getElementById(`${id}-slider`);
                         
-                        displayElement.textContent = displayText;
-                        if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
-                        if (typeof currentRaw === 'number') slider.value = currentRaw;
-                    }
-                    const lastValueKey = `AI-${config.id}`;
-                    const lastKnownValue = localStorage.getItem(lastValueKey);
-                    
-                    if (lastKnownValue !== null && parseFloat(lastKnownValue) !== data) {
-                        const controlName = renamedLabels[config.id] || config.label;
-                        const scaledValue = typeof data === 'number' ? scaleValue(data, id) : '--';
-                        const currentUnit = unitMappings[id] || config.unit;
-                        showMessage(`قيمة ${controlName} تغيرت إلى: ${typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--'} ${currentUnit}`);
-                    }
-                    
-                    localStorage.setItem(lastValueKey, data);
-                });
+                        const lastValueKey = `AI-${id}`;
+                        const lastKnownValue = localStorage.getItem(lastValueKey);
+                        
+                        // Show notification only if a value was already stored and it changed
+                        if (!isFirstLoad && lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
+                            const controlName = renamedLabels[id] || config.label;
+                            const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
+                            const currentUnit = unitMappings[id] || config.unit;
+                            showMessage(`قيمة ${controlName} تغيرت إلى: ${typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--'} ${currentUnit}`);
+                        }
+                        
+                        localStorage.setItem(lastValueKey, value);
+                        
+                        if (displayElement && slider) {
+                            const currentRaw = typeof value === 'number' ? value : '--';
+                            const currentUnit = unitMappings[id] || controlsConfig.AI.find(c => c.id === id).unit;
+                            const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, id) : '--';
+                            const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
+                            
+                            displayElement.textContent = displayText;
+                            if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
+                            if (typeof currentRaw === 'number') slider.value = currentRaw;
+                        }
+                    });
+                }
+                
+                if (isFirstLoad) {
+                    isFirstLoad = false;
+                }
+            });
+
+            controlsConfig.AI.forEach(config => {
                 const archiveRef = deviceRef.child('archive').child('AI').child(config.id);
                 archiveRef.on('value', snapshot => {
                     const dataPoints = [];
@@ -922,48 +940,9 @@
                 renderAllControls();
                 setDefaultValues();
                 
-                deviceRef.once('value').then(snapshot => {
-                    const data = snapshot.val();
-                    if (data) {
-                        ['DO', 'DI'].forEach(type => {
-                            if (data[type]) {
-                                Object.keys(data[type]).forEach(id => {
-                                    const value = data[type][id];
-                                    const lastValueKey = `${type}-${id}`;
-                                    const lastKnownValue = localStorage.getItem(lastValueKey);
-                                    
-                                    if (lastKnownValue === null || parseInt(lastKnownValue) !== value) {
-                                        if (lastKnownValue !== null) {
-                                            const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
-                                            const status = value === 1 ? 'مفعلة' : 'معطلة';
-                                            showMessage(`حالة ${controlName} تغيرت إلى: ${status}`);
-                                        }
-                                        localStorage.setItem(lastValueKey, value);
-                                    }
-                                });
-                            }
-                        });
-                        controlsConfig.AI.forEach(config => {
-                            const id = config.id;
-                            const value = data.AI[id];
-                            const lastValueKey = `AI-${id}`;
-                            const lastKnownValue = localStorage.getItem(lastValueKey);
-                            
-                            if (lastKnownValue === null || parseFloat(lastKnownValue) !== value) {
-                                if (lastKnownValue !== null) {
-                                    const controlName = renamedLabels[id] || config.label;
-                                    const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
-                                    const currentUnit = unitMappings[id] || config.unit;
-                                    showMessage(`قيمة ${controlName} تغيرت إلى: ${typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--'} ${currentUnit}`);
-                                }
-                                localStorage.setItem(lastValueKey, value);
-                            }
-                        });
-                    }
-                    setupListeners();
-                }).catch(error => {
-                    console.error("فشل في قراءة البيانات الأولية:", error);
-                });
+                // Moved the main logic to setupListeners
+                setupListeners();
+                
                 firebase.database().ref('.info/connected').on('value', snapshot => {
                     const connectionStatusBar = document.getElementById('connection-status-bar');
                     if (snapshot.val() === true) {
@@ -1216,7 +1195,7 @@
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
                 
-                // Store the raw value in localStorage immediately
+                // Store the raw value in localStorage immediately to prevent self-notification
                 localStorage.setItem(`AI-${aiId}`, rawValue);
 
                 updateFirebaseAI(aiId, rawValue);
