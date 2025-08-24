@@ -381,6 +381,9 @@
             <button id="viewport-toggle-btn" class="icon-btn rounded-full" aria-label="تغيير طريقة العرض">
                 <i class="fas fa-desktop text-xl"></i>
             </button>
+            <button id="notification-toggle-btn" class="icon-btn rounded-full" aria-label="تفعيل الإشعارات">
+                <i class="fas fa-bell-slash text-xl"></i>
+            </button>
             <button id="open-system-settings-btn" class="icon-btn rounded-full" aria-label="إعدادات النظام">
                 <i class="fas fa-cog text-xl"></i>
             </button>
@@ -506,12 +509,19 @@
         
         const notificationQueue = [];
         let isShowingNotification = false;
+        let notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
+        let soundPlayed = false;
+
+        // Load the notification sound
+        const notificationSound = new Audio('https://s3.amazonaws.com/freecodecamp/relaxing-sounds-notification.mp3');
 
         function getCssVariable(variable) {
             return getComputedStyle(document.body).getPropertyValue(variable).trim();
         }
         
         function showMessage(message, isError = false) {
+            if (!notificationsEnabled) return;
+            
             notificationQueue.push({ message, isError });
             if (!isShowingNotification) {
                 processNotificationQueue();
@@ -526,6 +536,12 @@
             isShowingNotification = true;
             const notification = notificationQueue.shift();
             
+            if (!soundPlayed && !notification.isError) {
+                notificationSound.play().then(() => {
+                    soundPlayed = true;
+                }).catch(e => console.error("Error playing sound:", e));
+            }
+
             const messageElement = document.createElement('div');
             messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
             messageElement.textContent = notification.message;
@@ -533,8 +549,34 @@
             
             setTimeout(() => {
                 messageElement.remove();
+                soundPlayed = false;
                 processNotificationQueue();
             }, 5000);
+        }
+
+        function toggleNotifications() {
+            notificationsEnabled = !notificationsEnabled;
+            localStorage.setItem('notificationsEnabled', notificationsEnabled);
+            updateNotificationButton();
+            if (notificationsEnabled) {
+                showMessage('تم تفعيل الإشعارات بنجاح!');
+            } else {
+                showMessage('تم تعطيل الإشعارات.', true);
+            }
+        }
+
+        function updateNotificationButton() {
+            const btn = document.getElementById('notification-toggle-btn');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (notificationsEnabled) {
+                    icon.classList.remove('fa-bell-slash');
+                    icon.classList.add('fa-bell');
+                } else {
+                    icon.classList.remove('fa-bell');
+                    icon.classList.add('fa-bell-slash');
+                }
+            }
         }
         
         function openModal(modalId) {
@@ -708,7 +750,6 @@
         function setupListeners() {
             if (!deviceRef) return;
             
-            // Flag to prevent notifications on initial load
             let isFirstLoad = true;
             
             deviceRef.on('value', snapshot => {
@@ -721,7 +762,6 @@
                                 const lastValueKey = `${type}-${id}`;
                                 const lastKnownValue = localStorage.getItem(lastValueKey);
                                 
-                                // Show notification only if a value was already stored and it changed
                                 if (!isFirstLoad && lastKnownValue !== null && parseInt(lastKnownValue) !== value) {
                                     const controlName = renamedLabels[id] || (controlsConfig[type].find(c => c.id === id) || {}).label;
                                     const status = value === 1 ? 'مفعلة' : 'معطلة';
@@ -749,7 +789,6 @@
                         const lastValueKey = `AI-${id}`;
                         const lastKnownValue = localStorage.getItem(lastValueKey);
                         
-                        // Show notification only if a value was already stored and it changed
                         if (!isFirstLoad && lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
                             const controlName = renamedLabels[id] || config.label;
                             const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
@@ -940,7 +979,6 @@
                 renderAllControls();
                 setDefaultValues();
                 
-                // Moved the main logic to setupListeners
                 setupListeners();
                 
                 firebase.database().ref('.info/connected').on('value', snapshot => {
@@ -975,7 +1013,8 @@
                         const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
                         const scaledValue = scaleValue(value, aiId);
                         const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
-                        showMessage(`تم تحديث قيمة ${controlName} إلى: ${scaledValue.toFixed(2)} ${currentUnit}`);
+                        // The notification is now handled by the 'value' listener, so we don't need it here.
+                        // showMessage(`تم تحديث قيمة ${controlName} إلى: ${scaledValue.toFixed(2)} ${currentUnit}`);
                     })
                     .catch(error => {
                         console.error("فشل في تحديث القيمة التناظرية:", error);
@@ -1177,6 +1216,8 @@
                         iconElement.classList.add('fa-desktop');
                     }
                 }
+            } else if (target.id === 'notification-toggle-btn') {
+                toggleNotifications();
             }
         });
         
@@ -1195,8 +1236,9 @@
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
                 
-                // Store the raw value in localStorage immediately to prevent self-notification
-                localStorage.setItem(`AI-${aiId}`, rawValue);
+                // Show notification immediately on slider change
+                const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
+                showMessage(`تم تحديث قيمة ${controlName} إلى: ${scaledValue.toFixed(2)} ${currentUnit}`);
 
                 updateFirebaseAI(aiId, rawValue);
             }
@@ -1251,6 +1293,7 @@
                     iconElement.classList.add('fa-mobile-alt');
                 }
             }
+            updateNotificationButton();
         });
     </script>
 </body>
