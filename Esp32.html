@@ -1082,7 +1082,8 @@
             const filteredData = dataPoints.filter(point => point.x >= startTimestamp);
             const ctx = document.getElementById(`${chartId}-chart`);
             if (ctx) {
-                createOrUpdateChart(ctx, chartId, 'AI', filteredData);
+                const controlType = chartId.startsWith('AI') ? 'AI' : 'AO';
+                createOrUpdateChart(ctx, chartId, controlType, filteredData);
             }
         }
         async function toggleState(ref, type, id) {
@@ -1388,17 +1389,19 @@
                     }
                 });
             });
-            controlsConfig.AI.forEach(config => {
-                const archiveRef = deviceRef.child('archive').child(config.id);
-                archiveRef.on('value', snapshot => {
-                    const dataPoints = [];
-                    snapshot.forEach(childSnapshot => {
-                        const val = childSnapshot.val();
-                        dataPoints.push({ x: val.timestamp, y: val.value });
+            ['AI', 'AO'].forEach(type => {
+                controlsConfig[type].forEach(config => {
+                    const archiveRef = deviceRef.child('archive').child(config.id);
+                    archiveRef.on('value', snapshot => {
+                        const dataPoints = [];
+                        snapshot.forEach(childSnapshot => {
+                            const val = childSnapshot.val();
+                            dataPoints.push({ x: val.timestamp, y: val.value });
+                        });
+                        aiDataCache[config.id] = dataPoints;
+                        const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
+                        updateChartDisplay(config.id, lastTimeRangeIndex);
                     });
-                    aiDataCache[config.id] = dataPoints;
-                    const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
-                    updateChartDisplay(config.id, lastTimeRangeIndex);
                 });
             });
         }
@@ -1486,7 +1489,7 @@
             } else if (target.closest('.rename-btn')) {
                 const btn = target.closest('.rename-btn');
                 const controlId = btn.getAttribute('data-id');
-                const controlType = btn.getAttribute('data-type');
+                const controlType = controlId.substring(0, 2);
                 const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
                 const name = renamedLabels[controlId] || translations[currentLanguage][config.label];
                 document.getElementById('renameLabel').textContent = `${translations[currentLanguage].renameLabel} ${name}`;
@@ -1573,15 +1576,7 @@
                 const rawValue = parseFloat(slider.value);
                 const controlId = slider.id.replace('-slider', '');
                 
-                let config = controlsConfig.AI.find(c => c.id === controlId);
-                let controlType = 'AI';
-                if (!config) {
-                    config = controlsConfig.AO.find(c => c.id === controlId);
-                    if (config) {
-                        controlType = 'AO';
-                    }
-                }
-                
+                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
                 if (!config) return;
 
                 const displayElement = document.getElementById(`${controlId}-display`);
@@ -1596,9 +1591,9 @@
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
                 
-                if (controlType === 'AI') {
+                if (controlId.startsWith('AI')) {
                     updateFirebaseAI(controlId, rawValue);
-                } else if (controlType === 'AO') {
+                } else if (controlId.startsWith('AO')) {
                     updateFirebaseAO(controlId, rawValue);
                 }
             }
