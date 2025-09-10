@@ -1,37 +1,37 @@
-
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord KC868-A16</title>
+    <title>لوحة التحكم KC868-A6</title>
     <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
     <link rel="apple-touch-icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js">
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script>
-        // Configuration du mode sombre depuis le stockage local
-        if (localStorage.getItem('theme') === 'dark') {
+        // ضبط الوضع الداكن من التخزين المحلي
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
     </script>
     <style>
-        /* Réinitialisation des styles de base */
+        /* إعادة تعيين الأنماط الأساسية */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        /* Définition des variables CSS pour les couleurs et les ombres (clair/sombre) */
+        /* تعريف متغيرات CSS للألوان والظلال (فاتح/داكن) */
         :root {
             --primary-color: #075e54;
             --secondary-color: #dcf8c6;
@@ -49,7 +49,7 @@
             --chart-grid-color-digital: rgba(16, 185, 129, 0.2);
             --chart-grid-color-analog: rgba(59, 130, 246, 0.2);
         }
-        /* Variables du mode sombre */
+        /* متغيرات الوضع الداكن */
         .dark {
             --primary-color: #128c7e;
             --secondary-color: #262d31;
@@ -64,9 +64,9 @@
             --chart-grid-color-digital: rgba(16, 185, 129, 0.5);
             --chart-grid-color-analog: rgba(59, 130, 246, 0.5);
         }
-        /* Styles de base du corps et des éléments */
+        /* أنماط الجسم والعناصر الأساسية */
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Cairo', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
@@ -75,9 +75,7 @@
             margin: 0 auto;
             max-width: 1200px;
         }
-        h1,
-        h2,
-        h3 {
+        h1, h2, h3 {
             font-weight: 700;
             color: var(--text-color);
         }
@@ -85,20 +83,87 @@
             font-size: clamp(1.5rem, 3.5vw, 1.75rem);
             color: var(--text-color);
             margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
+            border-right: 4px solid var(--primary-color);
+            padding-right: 1rem;
+            border-left: none;
+            padding-left: 0;
         }
-        /* Styles de l'en-tête */
-        .header {
-            padding: 1.5rem;
+        /* أنماط الحاوية الرئيسية للأزرار العائمة */
+        .floating-menu-container {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.3s ease-in-out;
+            padding: 0.5rem;
+            background-color: transparent;
+        }
+        /* أنماط الأزرار الفعلية */
+        .floating-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: transparent;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(-100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .floating-buttons.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(0);
+        }
+        /* أنماط الشريط المرافق */
+        .menu-handle {
+            position: fixed;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 100px;
+            background-color: var(--primary-color);
+            border-radius: 0 10px 10px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            z-index: 101;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            background-color: var(--primary-color);
-            color: white;
-            width: 100%;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+            opacity: 1;
+            pointer-events: auto;
         }
-        /* Styles des modales */
+        /* حالة الإخفاء للشريط المرافق */
+        .menu-handle.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        /* أنماط أزرار الأيقونات الدائرية */
+        .floating-menu-container .icon-btn {
+            background-color: var(--primary-color);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            font-size: 1.25rem;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .floating-menu-container .icon-btn:hover {
+            background-color: #2563eb;
+            transform: scale(1.05);
+        }
+        /* أنماط النوافذ المنبثقة (Modals) */
         .modal {
             display: none;
             position: fixed;
@@ -130,16 +195,17 @@
             cursor: pointer;
             position: absolute;
             top: 1rem;
-            right: 1rem;
+            left: 1rem;
+            right: auto;
             transition: color 0.3s;
         }
         .close-btn:hover {
             color: var(--danger-color);
         }
-        /* Styles des notifications */
+        /* أنماط الإشعارات */
         .notification-message {
             position: fixed;
-            top: 2%;
+            bottom: 2%;
             left: 50%;
             transform: translateX(-50%);
             color: white;
@@ -153,11 +219,11 @@
         }
         @keyframes slideIn {
             from {
-                top: -50px;
+                bottom: -50px;
                 opacity: 0;
             }
             to {
-                top: 2%;
+                bottom: 2%;
                 opacity: 1;
             }
         }
@@ -169,7 +235,7 @@
                 opacity: 0;
             }
         }
-        /* Styles des cartes */
+        /* أنماط البطاقات */
         .card {
             background-color: var(--card-bg);
             border-radius: 0.5rem;
@@ -187,7 +253,7 @@
             font-size: 1rem;
             margin-bottom: 0.25rem;
         }
-        /* Styles des boutons d'icônes */
+        /* أنماط أزرار الأيقونات */
         .icon-btn {
             background: none;
             border: none;
@@ -200,7 +266,7 @@
             color: var(--secondary-color);
             transform: scale(1.1);
         }
-        /* Styles des boutons de commande industriels */
+        /* أنماط أزرار التحكم الصناعية */
         .industrial-button {
             width: 70px;
             height: 70px;
@@ -223,7 +289,7 @@
             transform: none;
             box-shadow: 4px 8px var(--shadow-medium);
         }
-        /* Styles des voyants lumineux */
+        /* أنماط المؤشرات الضوئية */
         .indicator-light {
             width: 63px;
             height: 63px;
@@ -256,7 +322,7 @@
             font-size: 1.5rem;
             color: white;
         }
-        /* Styles de l'affichage numérique */
+        /* أنماط الشاشة الرقمية */
         .digital-display-container {
             width: 100%;
             height: 60px;
@@ -275,7 +341,7 @@
             line-height: 1;
             font-weight: 500;
         }
-        /* Styles du curseur (Slider) */
+        /* أنماط المنزلق (Slider) */
         input[type="range"] {
             background: var(--border-color);
             border: 1px solid var(--border-color);
@@ -301,13 +367,13 @@
         .dark input[type="range"]::-webkit-slider-thumb {
             background: var(--primary-color);
         }
-        /* Styles de la barre d'état de connexion */
+        /* أنماط شريط حالة الاتصال */
         .status-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 6px;
+            height: 5px;
             background-color: var(--danger-color);
             z-index: 1000;
         }
@@ -317,7 +383,7 @@
         .status-disconnected {
             background-color: var(--danger-color);
         }
-        /* Autres styles */
+        /* أنماط أخرى */
         .rename-label {
             font-weight: 600;
             font-size: 1.1rem;
@@ -357,24 +423,21 @@
         .action-button-secondary:hover {
             background: #4b5563;
         }
-        
         .chart-main-container {
             width: 100%;
             height: 300px;
             margin-top: 1rem;
         }
-        
         .ai-grid {
-             display: grid;
-             grid-template-columns: repeat(1, minmax(0, 1fr));
-             gap: 1rem;
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1rem;
         }
         @media (min-width: 768px) {
             .ai-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-        
         .digital-control-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -382,10 +445,9 @@
         }
         @media (min-width: 768px) {
             .digital-control-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
         }
-        
         .digital-control-card-wrapper {
             flex-grow: 1;
             flex-basis: 0;
@@ -394,212 +456,279 @@
             cursor: pointer;
             user-select: none;
         }
-        /* Styles supplémentaires pour la compatibilité avec le mode sombre */
-        .header .icon-btn i {
-            color: white;
-        }
+        /* أنماط إضافية للتعريب والوضع الداكن */
         .rename-btn i {
             color: var(--text-color);
         }
-        .modal-content h3,
-        .modal-content label {
+        .modal-content h3, .modal-content label {
             color: var(--text-color);
         }
         .modal-content input {
             background-color: #ffffff;
             color: #1f2937;
+            text-align: right;
+        }
+        input[type="range"] {
+            direction: ltr;
+        }
+        .digital-display-text, .rename-label {
+            direction: ltr;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .close-btn {
+            left: 1rem;
+            right: auto;
+        }
+        h2 {
+            border-right: 4px solid var(--primary-color);
+            border-left: none;
+            padding-left: 0;
+            padding-right: 1rem;
         }
     </style>
 </head>
 <body>
     <div id="connection-status-bar" class="status-bar"></div>
-    <header class="header">
-        <div class="flex items-center justify-between w-full">
-            <button id="rename-all-btn" class="icon-btn rounded-full" aria-label="Tout renommer">
+    <div id="floating-menu-container" class="floating-menu-container">
+        <div id="floating-buttons" class="floating-buttons">
+            <button id="rename-all-btn" class="icon-btn" aria-label="إعادة تسمية الكل">
                 <i class="fas fa-pencil-alt text-xl"></i>
             </button>
-            <button id="theme-toggle-btn" class="icon-btn rounded-full" aria-label="Changer de thème">
+            <button id="theme-toggle-btn" class="icon-btn" aria-label="تبديل المظهر">
                 <i class="fas fa-moon text-xl"></i>
             </button>
-            <button id="notification-toggle-btn" class="icon-btn rounded-full" aria-label="Activer les notifications">
+            <button id="notification-toggle-btn" class="icon-btn" aria-label="تمكين الإشعارات">
                 <i class="fas fa-bell-slash text-xl"></i>
             </button>
-            <button id="open-system-settings-btn" class="icon-btn rounded-full" aria-label="Paramètres système">
+            <button id="open-system-settings-btn" class="icon-btn" aria-label="إعدادات النظام">
                 <i class="fas fa-cog text-xl"></i>
             </button>
         </div>
-    </header>
+    </div>
+    <div id="menu-handle" class="menu-handle"></div>
     <main class="p-4">
         <section>
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="do-section">
-                <h2 class="font-semibold flex-grow" id="do-section-title">Sorties numériques (DO)</h2>
-                <button class="toggle-section-btn icon-btn" aria-label="Fermer la section">
+                <h2 class="font-semibold flex-grow" id="do-section-title">المخارج الرقمية (DO)</h2>
+                <button class="toggle-section-btn icon-btn text-gray-600 dark:text-gray-300" aria-label="إخفاء القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
             <div id="do-section" class="digital-control-grid mb-4 hidden"></div>
         </section>
-
         <section>
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="di-section">
-                <h2 class="font-semibold flex-grow" id="di-section-title">Entrées numériques (DI)</h2>
-                <button class="toggle-section-btn icon-btn" aria-label="Fermer la section">
+                <h2 class="font-semibold flex-grow" id="di-section-title">المدخلات الرقمية (DI)</h2>
+                <button class="toggle-section-btn icon-btn text-gray-600 dark:text-gray-300" aria-label="إخفاء القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
             <div id="di-section" class="digital-control-grid hidden"></div>
         </section>
-
         <section>
             <div class="section-toggle-header flex justify-between items-center mb-4" data-target="ai-section">
-                <h2 class="font-semibold flex-grow" id="ai-section-title">Entrées analogiques (AI)</h2>
-                <button class="toggle-section-btn icon-btn" aria-label="Fermer la section">
+                <h2 class="font-semibold flex-grow" id="ai-section-title">المدخلات التناظرية (AI)</h2>
+                <button class="toggle-section-btn icon-btn text-gray-600 dark:text-gray-300" aria-label="إخفاء القسم">
                     <i class="fas fa-chevron-left"></i>
                 </button>
             </div>
             <div id="ai-section" class="ai-grid gap-4 mb-4 hidden"></div>
         </section>
+        <section>
+            <div class="section-toggle-header flex justify-between items-center mb-4" data-target="ao-section">
+                <h2 class="font-semibold flex-grow" id="ao-section-title">المخارج التناظرية (AO)</h2>
+                <button class="toggle-section-btn icon-btn text-gray-600 dark:text-gray-300" aria-label="إخفاء القسم">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            </div>
+            <div id="ao-section" class="ai-grid gap-4 mb-4 hidden"></div>
+        </section>
     </main>
     <div id="renameModal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title" class="text-2xl font-bold mb-4">Renommer</h3>
+            <h3 id="modal-title" class="text-2xl font-bold mb-4">إعادة تسمية</h3>
             <button class="close-btn" data-modal-id="renameModal"><i class="fas fa-times"></i></button>
-            <p id="renameLabel" class="rename-label mb-4"></p>
-            <input type="text" id="renameInput" placeholder="Entrez un nouveau nom..."
-                class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
+            <p id="renameLabel" class="rename-label mb-4 text-right"></p>
+            <input type="text" id="renameInput" placeholder="أدخل اسمًا جديدًا..."
+                class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-right">
             <div id="unit-options-container" class="mt-4">
-                <label for="unitInput" class="block text-sm font-medium mb-2">Changer l'unité:</label>
-                <input type="text" id="unitInput" placeholder="Entrez l'unité (ex: mA)"
-                    class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
+                <label for="unitInput" class="block text-sm font-medium mb-2 text-right">تغيير الوحدة:</label>
+                <input type="text" id="unitInput" placeholder="أدخل الوحدة (مثال: mA)"
+                    class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-right">
             </div>
             <div id="scaling-options-container" class="mt-4">
-                <label class="block text-sm font-medium mb-2">Plage de valeurs:</label>
+                <label class="block text-sm font-medium mb-2 text-right">نطاق القيم:</label>
                 <div class="flex gap-2">
-                    <input type="number" id="minAnalogInput" placeholder="Valeur Min"
-                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2">
-                    <input type="number" id="maxAnalogInput" placeholder="Valeur Max"
-                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2">
+                    <input type="number" id="minAnalogInput" placeholder="قيمة دنيا"
+                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 text-right">
+                    <input type="number" id="maxAnalogInput" placeholder="قيمة قصوى"
+                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 text-right">
                 </div>
             </div>
             <div class="flex flex-col gap-2 mt-6">
-                <button id="saveRenameBtn" class="w-full action-button">Enregistrer les changements</button>
+                <button id="saveRenameBtn" class="w-full action-button">حفظ التغييرات</button>
             </div>
         </div>
     </div>
     <div id="confirmationModal" class="modal">
         <div class="modal-content">
-            <h3 id="confirm-title" class="text-2xl font-bold mb-4">Confirmer l'action</h3>
+            <h3 id="confirm-title" class="text-2xl font-bold mb-4">تأكيد الإجراء</h3>
             <button class="close-btn" data-modal-id="confirmationModal"><i class="fas fa-times"></i></button>
-            <p id="confirm-message" class="text-lg mb-6"></p>
+            <p id="confirm-message" class="text-lg mb-6 text-right"></p>
             <div class="flex justify-between gap-4">
-                <button id="cancel-action-btn" class="w-full action-button">Annuler</button>
-                <button id="confirm-action-btn" class="w-full action-button bg-red-500">Confirmer</button>
+                <button id="cancel-action-btn" class="w-full action-button">إلغاء</button>
+                <button id="confirm-action-btn" class="w-full action-button bg-red-500">تأكيد</button>
             </div>
         </div>
     </div>
     <div id="systemSettingsModal" class="modal">
         <div class="modal-content">
-            <h3 id="system-settings-title" class="text-2xl font-bold mb-4">Paramètres système</h3>
+            <h3 id="system-settings-title" class="text-2xl font-bold mb-4">إعدادات النظام</h3>
             <button class="close-btn" data-modal-id="systemSettingsModal"><i class="fas fa-times"></i></button>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div class="flex flex-col">
-                    <label for="db_url" class="text-sm font-medium mb-2"
-                        id="db-url-label">URL de la base de données</label>
-                    <input type="text" id="db_url" placeholder="Exemple: https://my-project.firebaseio.com"
-                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
+                    <label for="db_url" class="text-sm font-medium mb-2 text-right" id="db-url-label">رابط قاعدة البيانات</label>
+                    <input type="text" id="db_url" placeholder="مثال: https://my-project.firebaseio.com"
+                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-right">
                 </div>
                 <div class="flex flex-col">
-                    <label for="db_device" class="text-sm font-medium mb-2"
-                        id="db-device-label">Nom de l'appareil</label>
-                    <input type="text" id="db_device" placeholder="Exemple: my-device-name"
-                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full">
+                    <label for="db_device" class="text-sm font-medium mb-2 text-right" id="db-device-label">اسم الجهاز</label>
+                    <input type="text" id="db_device" placeholder="مثال: my-device-name"
+                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-right">
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button id="save-settings-btn" class="w-full action-button">Enregistrer les paramètres</button>
+                <button id="save-settings-btn" class="w-full action-button">حفظ الإعدادات</button>
                 <button id="go-to-firebase-btn" class="w-full action-button">
                     <i class="fas fa-database mr-2"></i>
-                    <span>Aller à la base de données</span>
+                    <span>الذهاب إلى قاعدة البيانات</span>
                 </button>
                 <button id="go-to-firebase-rules-btn" class="w-full action-button">
                     <i class="fas fa-gavel mr-2"></i>
-                    <span>Règles de la base de données</span>
+                    <span>قواعد قاعدة البيانات</span>
                 </button>
             </div>
         </div>
     </div>
     <script>
-        // Configuration du mode sombre depuis le stockage local
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
         const translations = {
-            fr: {
-                title: 'Tableau de bord KC868-A16',
-                aiTitle: 'Entrées analogiques (AI)',
-                doTitle: 'Sorties numériques (DO)',
-                diTitle: 'Entrées numériques (DI)',
-                renameAllBtn: 'Tout renommer',
-                changeThemeBtn: 'Changer de thème',
-                notificationsBtn: 'Activer les notifications',
-                settingsBtn: 'Paramètres système',
-                renameModalTitle: 'Renommer',
-                aiSettingsModalTitle: 'Paramètres du graphique',
-                renameLabel: 'Renommer:',
-                renamePlaceholder: 'Entrez un nouveau nom...',
-                unitLabel: 'Changer l\'unité:',
-                unitPlaceholder: 'Entrez l\'unité (ex: mA)',
-                scalingLabel: 'Plage de valeurs:',
-                minValuePlaceholder: 'Valeur Min',
-                maxValuePlaceholder: 'Valeur Max',
-                saveBtn: 'Enregistrer les changements',
-                confirmAction: 'Confirmer l\'action',
-                confirmResetTitle: 'Confirmer la réinitialisation',
-                confirmResetMessage: 'Êtes-vous sûr de vouloir réinitialiser tous les noms, unités et échelles aux valeurs par défaut ? Cette action est irréversible.',
-                confirmDeleteTitle: 'Confirmer la suppression',
-                confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer toutes les données pour ce graphique ? Cette action est irréversible.',
-                cancelBtn: 'Annuler',
-                confirmBtn: 'Confirmer',
-                systemSettingsTitle: 'Paramètres système',
-                dbUrlLabel: 'URL de la base de données',
-                dbUrlPlaceholder: 'Exemple: https://my-project.firebaseio.com',
-                dbDeviceLabel: 'Nom de l\'appareil',
-                dbDevicePlaceholder: 'Exemple: my-device-name',
-                saveSettingsBtn: 'Enregistrer les paramètres',
-                goToDbBtn: 'Aller à la base de données',
-                goToRulesBtn: 'Règles de la base de données',
-                noDataToExport: 'Aucune donnée à exporter.',
-                exportSuccess: 'Données du graphique exportées avec succès !',
-                deleteSuccess: 'Données supprimées avec succès !',
-                deleteFail: 'Échec de la suppression des données. Veuillez réessayer.',
-                firebaseInitFail: 'Échec de l\'initialisation de Firebase. Vérifiez l\'URL.',
-                requiredFields: 'Veuillez saisir à la fois l\'URL de la base de données et le nom de l\'appareil.',
-                settingsSaved: 'Paramètres enregistrés avec succès !',
-                renameSuccess: 'Modifications enregistrées avec succès !',
-                resetSuccess: 'Tous les paramètres ont été réinitialisés avec succès !',
-                notificationEnabled: 'Notifications activées avec succès !',
-                notificationDisabled: 'Notifications désactivées.',
-                stateChange: 'Le statut de "${name}" est passé à : ${status}',
-                valueChange: 'La valeur de "${name}" a changé à : ${value} ${unit}',
-                connected: 'Connecté',
-                disconnected: 'Déconnecté',
-                active: 'Actif',
-                inactive: 'Inactif',
-                value: 'Valeur',
-                status: 'Statut',
-                hour: '1 heure',
-                hours24: '24 heures',
-                all: 'Tout',
-                aiLabel1: 'Compteur de courant 1',
-                doLabel1: 'Interrupteur 1',
-                diLabel1: 'Capteur de statut 1',
+            ar: {
+                title: 'لوحة التحكم KC868-A6',
+                aiTitle: 'المدخلات التناظرية (AI)',
+                doTitle: 'المخارج الرقمية (DO)',
+                diTitle: 'المدخلات الرقمية (DI)',
+                aoTitle: 'المخارج التناظرية (AO)',
+                renameAllBtn: 'إعادة تسمية الكل',
+                changeThemeBtn: 'تبديل المظهر',
+                notificationsBtn: 'تمكين الإشعارات',
+                settingsBtn: 'إعدادات النظام',
+                renameModalTitle: 'إعادة تسمية',
+                aiSettingsModalTitle: 'إعدادات الرسم البياني',
+                renameLabel: 'الاسم الجديد:',
+                renamePlaceholder: 'أدخل اسمًا جديدًا...',
+                unitLabel: 'تغيير الوحدة:',
+                unitPlaceholder: 'أدخل الوحدة (مثال: mA)',
+                scalingLabel: 'نطاق القيم:',
+                minValuePlaceholder: 'قيمة دنيا',
+                maxValuePlaceholder: 'قيمة قصوى',
+                saveBtn: 'حفظ التغييرات',
+                confirmAction: 'تأكيد الإجراء',
+                confirmResetTitle: 'تأكيد إعادة التعيين',
+                confirmResetMessage: 'هل أنت متأكد من أنك تريد إعادة تعيين جميع الأسماء والوحدات والقياسات إلى القيم الافتراضية؟ هذا الإجراء لا يمكن التراجع عنه.',
+                confirmDeleteTitle: 'تأكيد الحذف',
+                confirmDeleteMessage: 'هل أنت متأكد من أنك تريد حذف جميع البيانات لهذا الرسم البياني؟ هذا الإجراء لا يمكن التراجع عنه.',
+                cancelBtn: 'إلغاء',
+                confirmBtn: 'تأكيد',
+                systemSettingsTitle: 'إعدادات النظام',
+                dbUrlLabel: 'رابط قاعدة البيانات',
+                dbUrlPlaceholder: 'مثال: https://my-project.firebaseio.com',
+                dbDeviceLabel: 'اسم الجهاز',
+                dbDevicePlaceholder: 'مثال: my-device-name',
+                saveSettingsBtn: 'حفظ الإعدادات',
+                goToDbBtn: 'الذهاب إلى قاعدة البيانات',
+                goToRulesBtn: 'قواعد قاعدة البيانات',
+                noDataToExport: 'لا توجد بيانات للتصدير.',
+                exportSuccess: 'تم تصدير بيانات الرسم البياني بنجاح!',
+                deleteSuccess: 'تم حذف البيانات بنجاح!',
+                deleteFail: 'فشل في حذف البيانات. يرجى المحاولة مرة أخرى.',
+                firebaseInitFail: 'فشل تهيئة Firebase. يرجى التحقق من الرابط.',
+                requiredFields: 'يرجى إدخال رابط قاعدة البيانات واسم الجهاز.',
+                settingsSaved: 'تم حفظ الإعدادات بنجاح!',
+                renameSuccess: 'تم حفظ التعديلات بنجاح!',
+                resetSuccess: 'تمت إعادة تعيين جميع الإعدادات بنجاح!',
+                notificationEnabled: 'تم تفعيل الإشعارات بنجاح!',
+                notificationDisabled: 'تم تعطيل الإشعارات.',
+                stateChange: 'حالة "${name}" تغيرت إلى: ${status}',
+                valueChange: 'قيمة "${name}" تغيرت إلى: ${value} ${unit}',
+                connected: 'متصل',
+                disconnected: 'غير متصل',
+                active: 'نشط',
+                inactive: 'غير نشط',
+                value: 'القيمة',
+                status: 'الحالة',
+                hour: 'آخر ساعة',
+                hours24: 'آخر 24 ساعة',
+                all: 'الكل',
+                doLabel1: 'مفتاح 1',
+                doLabel2: 'مفتاح 2',
+                doLabel3: 'مفتاح 3',
+                doLabel4: 'مفتاح 4',
+                doLabel5: 'مفتاح 5',
+                doLabel6: 'مفتاح 6',
+                diLabel1: 'مستشعر الحالة 1',
+                diLabel2: 'مستشعر الحالة 2',
+                diLabel3: 'مستشعر الحالة 3',
+                diLabel4: 'مستشعر الحالة 4',
+                diLabel5: 'مستشعر الحالة 5',
+                diLabel6: 'مستشعر الحالة 6',
+                aiLabel1: 'مستشعر التيار 1',
+                aiLabel2: 'مستشعر التيار 2',
+                aiLabel3: 'مستشعر التيار 3',
+                aiLabel4: 'مستشعر التيار 4',
+                aoLabel1: 'مخرج التيار 1',
+                aoLabel2: 'مخرج التيار 2',
             },
         };
-        const currentLanguage = 'fr';
+        const currentLanguage = 'ar';
         const controlsConfig = {
             AI: [{
                 id: 'AI1',
                 label: 'aiLabel1',
+                type: 'slider',
+                min: 0,
+                max: 4096,
+                step: 1,
+                unit: 'mA',
+                realMin: 4,
+                realMax: 20,
+                icon: 'fas fa-chart-line'
+            }, {
+                id: 'AI2',
+                label: 'aiLabel2',
+                type: 'slider',
+                min: 0,
+                max: 4096,
+                step: 1,
+                unit: 'mA',
+                realMin: 4,
+                realMax: 20,
+                icon: 'fas fa-chart-line'
+            }, {
+                id: 'AI3',
+                label: 'aiLabel3',
+                type: 'slider',
+                min: 0,
+                max: 4096,
+                step: 1,
+                unit: 'mA',
+                realMin: 4,
+                realMax: 20,
+                icon: 'fas fa-chart-line'
+            }, {
+                id: 'AI4',
+                label: 'aiLabel4',
                 type: 'slider',
                 min: 0,
                 max: 4096,
@@ -613,15 +742,80 @@
                 id: 'DO1',
                 label: 'doLabel1',
                 icon: 'fas fa-lightbulb'
+            }, {
+                id: 'DO2',
+                label: 'doLabel2',
+                icon: 'fas fa-lightbulb'
+            }, {
+                id: 'DO3',
+                label: 'doLabel3',
+                icon: 'fas fa-lightbulb'
+            }, {
+                id: 'DO4',
+                label: 'doLabel4',
+                icon: 'fas fa-lightbulb'
+            }, {
+                id: 'DO5',
+                label: 'doLabel5',
+                icon: 'fas fa-lightbulb'
+            }, {
+                id: 'DO6',
+                label: 'doLabel6',
+                icon: 'fas fa-lightbulb'
             }],
             DI: [{
                 id: 'DI1',
                 label: 'diLabel1',
                 icon: 'fas fa-door-open'
+            }, {
+                id: 'DI2',
+                label: 'diLabel2',
+                icon: 'fas fa-door-open'
+            }, {
+                id: 'DI3',
+                label: 'diLabel3',
+                icon: 'fas fa-door-open'
+            }, {
+                id: 'DI4',
+                label: 'diLabel4',
+                icon: 'fas fa-door-open'
+            }, {
+                id: 'DI5',
+                label: 'diLabel5',
+                icon: 'fas fa-door-open'
+            }, {
+                id: 'DI6',
+                label: 'diLabel6',
+                icon: 'fas fa-door-open'
+            }],
+            AO: [{
+                id: 'AO1',
+                label: 'aoLabel1',
+                type: 'slider',
+                min: 0,
+                max: 4096,
+                step: 1,
+                unit: 'mA',
+                realMin: 4,
+                realMax: 20,
+                icon: 'fas fa-cogs'
+            }, {
+                id: 'AO2',
+                label: 'aoLabel2',
+                type: 'slider',
+                min: 0,
+                max: 4096,
+                step: 1,
+                unit: 'V',
+                realMin: 0,
+                realMax: 10,
+                icon: 'fas fa-cogs'
             }]
         };
         const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
-        const timeRangeLabels = [translations[currentLanguage].hour, translations[currentLanguage].hours24, translations[currentLanguage].all];
+        const timeRangeLabels = [translations[currentLanguage].hour, translations[currentLanguage].hours24,
+            translations[currentLanguage].all
+        ];
         const notificationSound = new Audio('https://s3.amazonaws.com/freecodecamp/relaxing-sounds-notification.mp3');
         const unitMappings = JSON.parse(localStorage.getItem('unitMappings')) || {};
         const renamedLabels = JSON.parse(localStorage.getItem('renamedLabels')) || {};
@@ -638,24 +832,24 @@
         const notificationQueue = [];
         let isShowingNotification = false;
         // =========================================================================
-        // Fonctions utilitaires
+        // وظائف مساعدة
         // =========================================================================
         function updateUIForLanguage(lang) {
             const translation = translations[lang];
             document.documentElement.lang = lang;
-            document.documentElement.dir = 'ltr';
-            // Mise à jour des titres principaux
+            document.documentElement.dir = 'rtl';
+            // تحديث العناوين الرئيسية
             document.title = translation.title;
             document.getElementById('ai-section-title').textContent = translation.aiTitle;
             document.getElementById('do-section-title').textContent = translation.doTitle;
             document.getElementById('di-section-title').textContent = translation.diTitle;
-            // Mise à jour des attributs des boutons de l'en-tête
+            document.getElementById('ao-section-title').textContent = translation.aoTitle;
+            // تحديث سمات أزرار الرأس
             document.getElementById('rename-all-btn').setAttribute('aria-label', translation.renameAllBtn);
             document.getElementById('theme-toggle-btn').setAttribute('aria-label', translation.changeThemeBtn);
             document.getElementById('notification-toggle-btn').setAttribute('aria-label', translation.notificationsBtn);
             document.getElementById('open-system-settings-btn').setAttribute('aria-label', translation.settingsBtn);
-            
-            // Mise à jour des textes des modales
+            // تحديث نصوص النوافذ المنبثقة
             document.getElementById('modal-title').textContent = translation.renameModalTitle;
             document.getElementById('renameInput').setAttribute('placeholder', translation.renamePlaceholder);
             document.getElementById('unit-options-container').querySelector('label').textContent = translation.unitLabel;
@@ -664,8 +858,6 @@
             document.getElementById('minAnalogInput').setAttribute('placeholder', translation.minValuePlaceholder);
             document.getElementById('maxAnalogInput').setAttribute('placeholder', translation.maxValuePlaceholder);
             document.getElementById('saveRenameBtn').textContent = translation.saveBtn;
-            document.getElementById('confirm-title').textContent = translation.confirmAction;
-            document.getElementById('cancel-action-btn').textContent = translation.cancelBtn;
             document.getElementById('confirm-action-btn').textContent = translation.confirmBtn;
             document.getElementById('system-settings-title').textContent = translation.systemSettingsTitle;
             document.getElementById('db-url-label').textContent = translation.dbUrlLabel;
@@ -675,7 +867,7 @@
             document.getElementById('save-settings-btn').textContent = translation.saveSettingsBtn;
             document.getElementById('go-to-firebase-btn').querySelector('span').textContent = translation.goToDbBtn;
             document.getElementById('go-to-firebase-rules-btn').querySelector('span').textContent = translation.goToRulesBtn;
-            // Recréer les contrôles pour appliquer les nouveaux textes
+            // إعادة إنشاء عناصر التحكم لتطبيق النصوص الجديدة
             renderAllControls();
         }
         function getCssVariable(variable) {
@@ -683,10 +875,7 @@
         }
         function showMessage(message, isError = false) {
             if (!notificationsEnabled) return;
-            notificationQueue.push({
-                message,
-                isError
-            });
+            notificationQueue.push({ message, isError });
             if (!isShowingNotification) {
                 processNotificationQueue();
             }
@@ -699,7 +888,7 @@
             isShowingNotification = true;
             const notification = notificationQueue.shift();
             if (!notification.isError) {
-                notificationSound.play().catch(e => console.error("Erreur lors de la lecture du son :", e));
+                notificationSound.play().catch(e => console.error("خطأ في تشغيل الصوت:", e));
             }
             const messageElement = document.createElement('div');
             messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
@@ -730,7 +919,6 @@
                 icon.classList.replace('fa-bell', 'fa-bell-slash');
             }
         }
-        
         function updateThemeButton() {
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
             const htmlElement = document.documentElement;
@@ -750,44 +938,35 @@
             document.getElementById(modalId).style.display = 'none';
         }
         function scaleValue(rawValue, controlId) {
-            const config = controlsConfig.AI.find(c => c.id === controlId);
-            const {
-                realMin,
-                realMax
-            } = scalingMappings[controlId] || config;
+            const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
+            if (!config) return rawValue;
+            const { realMin, realMax } = scalingMappings[controlId] || config;
             const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
             return scaledValue;
         }
         function createOrUpdateChart(ctx, id, type, dataPoints = []) {
             const isDigital = (type === 'DI' || type === 'DO');
             const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
-            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || {}).unit;
+            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || controlsConfig.AO.find(c => c.id === id) || {}).unit;
             let yMin = 0;
             let yMax = 4096;
-            if (id.startsWith('AI')) {
-                const config = controlsConfig.AI.find(c => c.id === id);
-                const {
-                    realMin,
-                    realMax
-                } = scalingMappings[id] || config;
-                yMin = realMin;
-                yMax = realMax;
+            if (id.startsWith('AI') || id.startsWith('AO')) {
+                const config = controlsConfig.AI.find(c => c.id === id) || controlsConfig.AO.find(c => c.id === id);
+                if (config) {
+                    const { realMin, realMax } = scalingMappings[id] || config;
+                    yMin = realMin;
+                    yMax = realMax;
+                }
             }
             if (chartInstances[id]) {
-                const scaledDataPoints = dataPoints.map(p => ({
-                    x: p.x,
-                    y: scaleValue(p.y, id)
-                }));
+                const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
                 chartInstances[id].data.datasets[0].data = scaledDataPoints;
                 chartInstances[id].options.scales.y.ticks.callback = isDigital ? (value) => value === 1 ? translations[currentLanguage].active : value === 0 ? translations[currentLanguage].inactive : '' : (value) => `${value.toFixed(2)} ${currentUnit}`;
                 chartInstances[id].options.scales.y.min = yMin;
                 chartInstances[id].options.scales.y.max = yMax;
                 chartInstances[id].update();
             } else {
-                const scaledDataPoints = dataPoints.map(p => ({
-                    x: p.x,
-                    y: scaleValue(p.y, id)
-                }));
+                const scaledDataPoints = dataPoints.map(p => ({ x: p.x, y: scaleValue(p.y, id) }));
                 const chartConfig = {
                     type: 'line',
                     data: {
@@ -805,57 +984,32 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        font: {
-                            family: 'Inter, sans-serif'
-                        },
-                        layout: {
-                            padding: {
-                                bottom: 40
-                            }
-                        },
+                        font: { family: 'Cairo, sans-serif' },
+                        layout: { padding: { bottom: 40 } },
                         scales: {
                             y: {
                                 beginAtZero: false,
-                                title: {
-                                    display: false
-                                },
+                                title: { display: false },
                                 min: isDigital ? -0.1 : yMin,
                                 max: isDigital ? 1.1 : yMax,
                                 ticks: {
-                                    font: {
-                                        size: 10,
-                                        family: 'Inter, sans-serif'
-                                    },
+                                    font: { size: 10, family: 'Cairo, sans-serif' },
                                     color: getCssVariable('--text-color'),
                                     maxTicksLimit: 5,
                                     callback: isDigital ? (value) => value === 1 ? translations[currentLanguage].active : value === 0 ? translations[currentLanguage].inactive : '' : (value) => `${value.toFixed(2)} ${currentUnit}`
                                 },
-                                grid: {
-                                    color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog')
-                                }
+                                grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
                             },
                             x: {
                                 type: 'time',
                                 time: {
                                     unit: 'minute',
-                                    displayFormats: {
-                                        second: 'HH:mm:ss',
-                                        minute: 'HH:mm',
-                                        hour: 'HH:mm',
-                                        day: 'd MMM',
-                                        week: 'd MMM',
-                                        month: 'MMM yyyy'
-                                    },
+                                    displayFormats: { second: 'HH:mm:ss', minute: 'HH:mm', hour: 'HH:mm', day: 'd MMM', week: 'd MMM', month: 'MMM yyyy' },
                                     tooltipFormat: 'dd/MM/yyyy HH:mm:ss'
                                 },
-                                title: {
-                                    display: false
-                                },
+                                title: { display: false },
                                 ticks: {
-                                    font: {
-                                        size: 10,
-                                        family: 'Inter, sans-serif'
-                                    },
+                                    font: { size: 10, family: 'Cairo, sans-serif' },
                                     color: getCssVariable('--text-color'),
                                     maxTicksLimit: 8,
                                     callback: (value) => {
@@ -869,36 +1023,24 @@
                                     },
                                     autoSkip: false
                                 },
-                                grid: {
-                                    color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog')
-                                }
+                                grid: { color: isDigital ? getCssVariable('--chart-grid-color-digital') : getCssVariable('--chart-grid-color-analog') }
                             }
                         },
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 rtl: false,
-                                bodyFont: {
-                                    size: 12
-                                },
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
+                                bodyFont: { size: 12 },
+                                titleFont: { size: 14, weight: 'bold' },
                                 backgroundColor: getCssVariable('--card-bg'),
                                 titleColor: getCssVariable('--text-color'),
                                 bodyColor: getCssVariable('--text-color'),
                                 callbacks: {
-                                    title: (context) => new Date(context[0].parsed.x).toLocaleString(currentLanguage, {
-                                        dateStyle: 'short',
-                                        timeStyle: 'medium'
-                                    }),
+                                    title: (context) => new Date(context[0].parsed.x).toLocaleString(currentLanguage, { dateStyle: 'short', timeStyle: 'medium' }),
                                     label: (context) => {
                                         if (context.dataset.label.includes(translations[currentLanguage].status)) {
                                             return `${translations[currentLanguage].status}: ${context.raw.y === 1 ? translations[currentLanguage].active : translations[currentLanguage].inactive}`;
-                                        } else if (id.startsWith('AI')) {
+                                        } else if (id.startsWith('AI') || id.startsWith('AO')) {
                                             return `${translations[currentLanguage].value}: ${context.raw.y.toFixed(2)} ${currentUnit}`;
                                         }
                                         return `${translations[currentLanguage].value}: ${context.raw.y}`;
@@ -906,17 +1048,10 @@
                                 }
                             },
                             zoom: {
-                                pan: {
-                                    enabled: true,
-                                    mode: 'x'
-                                },
+                                pan: { enabled: true, mode: 'x' },
                                 zoom: {
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    wheel: {
-                                        enabled: true
-                                    },
+                                    pinch: { enabled: true },
+                                    wheel: { enabled: true },
                                     mode: 'x'
                                 }
                             }
@@ -927,11 +1062,6 @@
                 chartInstances[id] = new Chart(ctx, chartConfig);
             }
         }
-        /**
-         * Met à jour la plage d'affichage des données dans le graphique.
-         * @param {number} newIndex - L'index de la nouvelle plage de temps.
-         * @param {string} chartId - L'ID du graphique.
-         */
         function updateTimeRange(newIndex, chartId) {
             localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
             const buttonContainer = document.getElementById(`${chartId}-time-options`);
@@ -943,11 +1073,6 @@
             }
             updateChartDisplay(chartId, newIndex);
         }
-        /**
-         * Filtre les données وredessine le graphique.
-         * @param {string} chartId - L'ID du graphique.
-         * @param {number} newIndex - L'index de la nouvelle plage de temps.
-         */
         function updateChartDisplay(chartId, newIndex) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || dataPoints.length === 0) return;
@@ -960,12 +1085,6 @@
                 createOrUpdateChart(ctx, chartId, 'AI', filteredData);
             }
         }
-        /**
-         * Envoie une requête pour basculer l'état d'un contrôle numérique (DO/DI) dans Firebase.
-         * @param {object} ref - La référence Firebase de l'élément.
-         * @param {string} type - Le type de contrôle (DO ou DI).
-         * @param {string} id - L'ID du contrôle.
-         */
         async function toggleState(ref, type, id) {
             const indicator = document.getElementById(`${id}-indicator`);
             if (indicator && indicator.classList.contains('pending')) return;
@@ -980,50 +1099,36 @@
                     if (indicator) indicator.classList.remove('pending');
                 }
             } catch (error) {
-                console.error("Échec de la mise à jour de la valeur :", error);
+                console.error("فشل في تحديث القيمة:", error);
                 showMessage(translations[currentLanguage].deleteFail, true);
                 if (indicator) indicator.classList.remove('pending');
             }
         }
-        /**
-         * Sauvegarde la valeur d'un contrôle analogique dans les archives (pour le graphique).
-         * @param {string} id - L'ID du contrôle.
-         * @param {number} value - La valeur à sauvegarder.
-         */
         function saveToArchive(id, value) {
             if (!deviceRef) return;
             const timestamp = firebase.database.ServerValue.TIMESTAMP;
             const archiveRef = deviceRef.child('archive').child(id);
-            archiveRef.push({
-                value,
-                timestamp
-            });
+            archiveRef.push({ value, timestamp });
         }
-        /**
-         * Définit les valeurs par défaut pour les contrôles dans Firebase s'ils n'existent pas.
-         */
         async function setDefaultValues() {
             if (!deviceRef) return;
             const snapshot = await deviceRef.once('value');
             if (snapshot.exists()) {
-                console.log("La base de données contient déjà des données, pas besoin de sauvegarder les valeurs par défaut.");
+                console.log("قاعدة البيانات تحتوي بالفعل على بيانات، لا حاجة لحفظ القيم الافتراضية.");
                 return;
             }
             const updates = {};
             controlsConfig.DO.forEach(config => updates[`DO/${config.id}`] = 0);
             controlsConfig.DI.forEach(config => updates[`DI/${config.id}`] = 0);
             controlsConfig.AI.forEach(config => updates[`AI/${config.id}`] = 0);
+            controlsConfig.AO.forEach(config => updates[`AO/${config.id}`] = 0);
             try {
                 await deviceRef.update(updates);
-                console.log("Données par défaut sauvegardées avec succès.");
+                console.log("تم حفظ البيانات الافتراضية بنجاح.");
             } catch (error) {
-                console.error("Échec de la sauvegarde des données par défaut :", error);
+                console.error("فشل في حفظ البيانات الافتراضية:", error);
             }
         }
-        /**
-         * Exporte les données d'un graphique spécifique au format CSV.
-         * @param {string} chartId - L'ID du graphique.
-         */
         function exportChartDataAsFile(chartId) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || dataPoints.length === 0) {
@@ -1031,26 +1136,15 @@
                 return;
             }
             const renamedLabel = renamedLabels[chartId] || chartId;
-            let csvContent = "\uFEFFDate,Time,Value\n";
+            let csvContent = "\uFEFFالتاريخ,الوقت,القيمة\n";
             dataPoints.forEach(point => {
                 const dateObj = new Date(point.x);
-                const date = dateObj.toLocaleDateString('en-CA', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                }).replace(/\//g, '-');
-                const time = dateObj.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                });
+                const date = dateObj.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+                const time = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                 const scaledValue = scaleValue(point.y, chartId);
                 csvContent += `${date},${time},${scaledValue.toFixed(2)}\n`;
             });
-            const blob = new Blob([csvContent], {
-                type: 'text/csv;charset=utf-8;'
-            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1061,10 +1155,6 @@
             URL.revokeObjectURL(url);
             showMessage(translations[currentLanguage].exportSuccess);
         }
-        /**
-         * Supprime les données d'un graphique spécifique de Firebase.
-         * @param {string} chartId - L'ID du graphique.
-         */
         async function deleteChartData(chartId) {
             if (!deviceRef) {
                 showMessage(translations[currentLanguage].firebaseInitFail, true);
@@ -1076,17 +1166,12 @@
                 showMessage(translations[currentLanguage].deleteSuccess);
                 location.reload();
             } catch (error) {
-                console.error("Échec de la suppression des données :", error);
+                console.error("فشل في حذف البيانات:", error);
                 showMessage(translations[currentLanguage].deleteFail, true);
             } finally {
                 closeModal('confirmationModal');
             }
         }
-        /**
-         * Crée un élément de contrôle d'entrée analogique (AI).
-         * @param {object} config - La configuration du contrôle.
-         * @returns {HTMLElement} L'élément div du contrôle.
-         */
         function createAiControlElement(config) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
@@ -1094,26 +1179,27 @@
             const div = document.createElement('div');
             div.className = 'card';
             const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
+            const isAO = controlId.startsWith('AO');
             div.innerHTML = `
                 <div class="p-4">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center justify-between w-full">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="Renommer l'élément"><i class="fas fa-pencil-alt"></i></button>
-                            <button class="export-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="Exporter les données"><i class="fas fa-file-export"></i></button>
-                            <button class="delete-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="Supprimer les données"><i class="fas fa-trash-alt"></i></button>
+                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="AI" aria-label="إعادة تسمية العنصر"><i class="fas fa-pencil-alt"></i></button>
+                            <button class="export-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="تصدير البيانات"><i class="fas fa-file-export"></i></button>
+                            <button class="delete-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="حذف البيانات"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="control-label">${controlName}</span>
                     </div>
                     <div class="mt-4">
-                        <label class="block text-xs font-medium">
-                            <span class="analog-value-label">${translations[currentLanguage].analogValue}</span> <span id="${controlId}-label-value-raw">--</span>
+                        <label class="block text-xs font-medium text-right">
+                            <span class="analog-value-label">${translations[currentLanguage].value}</span> <span id="${controlId}-label-value-raw">--</span>
                         </label>
                         <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
                     </div>
                     <div class="digital-display-container mx-auto my-2">
-                        <span id="${controlId}-display" class="digital-display-text">-- ${currentUnit}</span>
+                        <span id="${controlId}-display" class="digital-display-text text-right">-- ${currentUnit}</span>
                     </div>
                     <div class="chart-main-container relative">
                         <div id="${controlId}-time-options" class="flex flex-wrap justify-center items-center gap-2 mb-2">
@@ -1133,12 +1219,6 @@
             `;
             return div;
         }
-        /**
-         * Crée un élément de contrôle d'entrée/sortie numérique (DO/DI).
-         * @param {object} config - La configuration du contrôle.
-         * @param {string} type - Le type de contrôle (DO ou DI).
-         * @returns {HTMLElement} L'élément div du contrôle.
-         */
         function createDigitalControlElement(config, type) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
@@ -1148,7 +1228,7 @@
                 <div class="card p-4">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center justify-between w-full">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" aria-label="Renommer l'élément"><i class="fas fa-pencil-alt"></i></button>
+                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="إعادة تسمية العنصر"><i class="fas fa-pencil-alt"></i></button>
                         </div>
                     </div>
                     <span class="control-label">${controlName}</span>
@@ -1163,26 +1243,22 @@
             `;
             return cardWrapper;
         }
-        /**
-         * Crée tous les éléments de contrôle sur la page.
-         */
         function renderAllControls() {
             const aiSection = document.getElementById('ai-section');
             const doSection = document.getElementById('do-section');
             const diSection = document.getElementById('di-section');
-            // Vider les sections avant de les recréer pour éviter les doublons
+            const aoSection = document.getElementById('ao-section');
+            
             aiSection.innerHTML = '';
             doSection.innerHTML = '';
             diSection.innerHTML = '';
+            aoSection.innerHTML = '';
+            
             controlsConfig.AI.forEach(config => aiSection.appendChild(createAiControlElement(config)));
             controlsConfig.DO.forEach(config => doSection.appendChild(createDigitalControlElement(config, 'DO')));
             controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
+            controlsConfig.AO.forEach(config => aoSection.appendChild(createAiControlElement(config)));
         }
-        /**
-         * Fonction de debounce pour éviter les requêtes répétitives.
-         * @param {Function} func - La fonction à retarder.
-         * @param {number} delay - Le délai en millisecondes.
-         */
         function debounce(func, delay) {
             let timeout;
             return function(...args) {
@@ -1195,33 +1271,40 @@
             if (!deviceRef) return;
             deviceRef.child('AI').child(aiId).set(value)
                 .then(() => {
-                    const controlName = renamedLabels[aiId] || `Entrée analogique ${aiId}`;
+                    const controlName = renamedLabels[aiId] || `المدخل التناظري ${aiId}`;
                     const scaledValue = scaleValue(value, aiId);
-                    const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
+                    const currentUnit = unitMappings[aiId] || (controlsConfig.AI.find(c => c.id === aiId) || {}).unit;
                 })
                 .catch(error => {
-                    console.error("Échec de la mise à jour de la valeur analogique :", error);
+                    console.error("فشل في تحديث القيمة التناظرية:", error);
                     showMessage(translations[currentLanguage].deleteFail, true);
                 });
             saveToArchive(aiId, value);
         }, 500);
+        const updateFirebaseAO = debounce((aoId, value) => {
+            if (!deviceRef) return;
+            deviceRef.child('AO').child(aoId).set(value)
+                .then(() => {
+                    const controlName = renamedLabels[aoId] || `المخرج التناظري ${aoId}`;
+                    const scaledValue = scaleValue(value, aoId);
+                    const currentUnit = unitMappings[aoId] || (controlsConfig.AO.find(c => c.id === aoId) || {}).unit;
+                    showMessage(translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit));
+                })
+                .catch(error => {
+                    console.error("فشل في تحديث قيمة المخرج التناظري:", error);
+                    showMessage(translations[currentLanguage].deleteFail, true);
+                });
+            saveToArchive(aoId, value);
+        }, 500);
         // =========================================================================
-        // Fonctions Firebase
+        // وظائف Firebase
         // =========================================================================
-        /**
-         * Initialise Firebase et configure les écouteurs de la base de données.
-         * @param {string} url - L'URL de la base de données Firebase.
-         * @param {string} deviceName - Le nom de l'appareil dans la base de données.
-         */
         function initFirebaseAndControls(url, deviceName) {
             try {
                 if (!firebaseInitialized) {
-                    firebase.initializeApp({
-                        databaseURL: url
-                    });
+                    firebase.initializeApp({ databaseURL: url });
                     firebaseInitialized = true;
                 } else {
-                    // Reconnexion en cas de changement de paramètres
                     firebase.database().goOffline();
                     firebase.database().goOnline();
                 }
@@ -1230,16 +1313,12 @@
                 setDefaultValues();
                 setupListeners();
             } catch (error) {
-                console.error("Échec de l'initialisation de Firebase :", error);
+                console.error("فشل تهيئة Firebase:", error);
                 showMessage(translations[currentLanguage].firebaseInitFail, true);
             }
         }
-        /**
-         * Configure les écouteurs pour les mises à jour de données dans Firebase.
-         */
         function setupListeners() {
             if (!deviceRef) return;
-            // Écouteur de l'état de connexion
             firebase.database().ref('.info/connected').on('value', snapshot => {
                 const connectionStatusBar = document.getElementById('connection-status-bar');
                 if (snapshot.val() === true) {
@@ -1250,11 +1329,9 @@
                     connectionStatusBar.classList.add('status-disconnected');
                 }
             });
-            // Écouteur des changements de données dans Firebase
             deviceRef.on('value', snapshot => {
                 const data = snapshot.val();
                 if (!data) return;
-                // Traitement des mises à jour des contrôles numériques (DO/DI)
                 ['DO', 'DI'].forEach(type => {
                     if (data[type]) {
                         Object.keys(data[type]).forEach(id => {
@@ -1276,46 +1353,48 @@
                         });
                     }
                 });
-                // Traitement des mises à jour des entrées analogiques (AI)
-                controlsConfig.AI.forEach(config => {
-                    const id = config.id;
-                    const value = data.AI[id];
-                    const displayElement = document.getElementById(`${id}-display`);
-                    const labelValueRawElement = document.getElementById(`${id}-label-value-raw`);
-                    const slider = document.getElementById(`${id}-slider`);
-                    const lastValueKey = `AI-${id}`;
-                    const lastKnownValue = localStorage.getItem(lastValueKey);
-                    if (lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
-                        const controlName = renamedLabels[id] || translations[currentLanguage][`aiLabel${id.substring(2)}`];
-                        const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
-                        const currentUnit = unitMappings[id] || config.unit;
-                        const message = translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit);
-                        showMessage(message);
-                    }
-                    localStorage.setItem(lastValueKey, value);
-                    if (displayElement && slider) {
-                        const currentRaw = typeof value === 'number' ? value : '--';
-                        const currentUnit = unitMappings[id] || controlsConfig.AI.find(c => c.id === id).unit;
-                        const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, id) : '--';
-                        const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
-                        displayElement.textContent = displayText;
-                        if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
-                        if (typeof currentRaw === 'number') slider.value = currentRaw;
+                ['AI', 'AO'].forEach(type => {
+                    if (data[type]) {
+                        Object.keys(data[type]).forEach(id => {
+                            const value = data[type][id];
+                            const config = controlsConfig[type].find(c => c.id === id);
+                            if (!config) return;
+                            const displayElement = document.getElementById(`${id}-display`);
+                            const labelValueRawElement = document.getElementById(`${id}-label-value-raw`);
+                            const slider = document.getElementById(`${id}-slider`);
+                            const lastValueKey = `${type}-${id}`;
+                            const lastKnownValue = localStorage.getItem(lastValueKey);
+                            
+                            if (lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
+                                const controlName = renamedLabels[id] || translations[currentLanguage][`${type.toLowerCase()}Label${id.substring(2)}`];
+                                const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
+                                const currentUnit = unitMappings[id] || config.unit;
+                                const message = translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit);
+                                showMessage(message);
+                            }
+                            
+                            localStorage.setItem(lastValueKey, value);
+                            
+                            if (displayElement && slider) {
+                                const currentRaw = typeof value === 'number' ? value : '--';
+                                const currentUnit = unitMappings[id] || config.unit;
+                                const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, id) : '--';
+                                const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
+                                displayElement.textContent = displayText;
+                                if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
+                                if (typeof currentRaw === 'number') slider.value = currentRaw;
+                            }
+                        });
                     }
                 });
             });
-            // Écouteور des données d'archive pour les graphiques
             controlsConfig.AI.forEach(config => {
-                // تم تعديل المسار هنا
                 const archiveRef = deviceRef.child('archive').child(config.id);
                 archiveRef.on('value', snapshot => {
                     const dataPoints = [];
                     snapshot.forEach(childSnapshot => {
                         const val = childSnapshot.val();
-                        dataPoints.push({
-                            x: val.timestamp,
-                            y: val.value
-                        });
+                        dataPoints.push({ x: val.timestamp, y: val.value });
                     });
                     aiDataCache[config.id] = dataPoints;
                     const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
@@ -1324,7 +1403,7 @@
             });
         }
         // =========================================================================
-        // Gestionnaires d'événements
+        // معالجات الأحداث
         // =========================================================================
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button, [data-id], [data-target]');
@@ -1363,15 +1442,13 @@
                 const newUnit = document.getElementById('unitInput').value.trim();
                 const minVal = parseFloat(document.getElementById('minAnalogInput').value);
                 const maxVal = parseFloat(document.getElementById('maxAnalogInput').value);
-
                 if (newName) {
                     renamedLabels[currentControlId] = newName;
                 } else {
                     delete renamedLabels[currentControlId];
                 }
                 localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
-
-                if (currentControlId.startsWith('AI')) {
+                if (currentControlId.startsWith('AI') || currentControlId.startsWith('AO')) {
                     if (newUnit) {
                         unitMappings[currentControlId] = newUnit;
                     } else {
@@ -1379,10 +1456,7 @@
                     }
                     localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
                     if (!isNaN(minVal) && !isNaN(maxVal)) {
-                        scalingMappings[currentControlId] = {
-                            realMin: minVal,
-                            realMax: maxVal
-                        };
+                        scalingMappings[currentControlId] = { realMin: minVal, realMax: maxVal };
                     } else {
                         delete scalingMappings[currentControlId];
                     }
@@ -1412,14 +1486,15 @@
             } else if (target.closest('.rename-btn')) {
                 const btn = target.closest('.rename-btn');
                 const controlId = btn.getAttribute('data-id');
-                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId);
+                const controlType = btn.getAttribute('data-type');
+                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
                 const name = renamedLabels[controlId] || translations[currentLanguage][config.label];
                 document.getElementById('renameLabel').textContent = `${translations[currentLanguage].renameLabel} ${name}`;
                 document.getElementById('renameInput').value = name;
                 document.getElementById('renameModal').dataset.id = controlId;
                 const unitOptionsContainer = document.getElementById('unit-options-container');
                 const scalingOptionsContainer = document.getElementById('scaling-options-container');
-                if (controlId.startsWith('AI')) {
+                if (controlType === 'AI' || controlType === 'AO') {
                     unitOptionsContainer.style.display = 'block';
                     scalingOptionsContainer.style.display = 'block';
                     document.getElementById('modal-title').textContent = translations[currentLanguage].aiSettingsModalTitle;
@@ -1456,7 +1531,6 @@
                     localStorage.setItem('theme', 'light');
                 }
                 updateThemeButton();
-                // لا حاجة لإعادة تحميل الصفحة
             } else if (target.id === 'notification-toggle-btn') {
                 toggleNotifications();
             } else if (target.id === 'rename-all-btn') {
@@ -1497,20 +1571,61 @@
             if (event.target.matches('[id$="-slider"]')) {
                 const slider = event.target;
                 const rawValue = parseFloat(slider.value);
-                const aiId = slider.id.replace('-slider', '');
-                const currentUnit = unitMappings[aiId] || controlsConfig.AI.find(c => c.id === aiId).unit;
-                const scaledValue = scaleValue(rawValue, aiId);
-                const displayElement = document.getElementById(`${aiId}-display`);
-                const labelValueRawElement = document.getElementById(`${aiId}-label-value-raw`);
-                displayElement.textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
+                const controlId = slider.id.replace('-slider', '');
+                
+                let config = controlsConfig.AI.find(c => c.id === controlId);
+                let controlType = 'AI';
+                if (!config) {
+                    config = controlsConfig.AO.find(c => c.id === controlId);
+                    if (config) {
+                        controlType = 'AO';
+                    }
+                }
+                
+                if (!config) return;
+
+                const displayElement = document.getElementById(`${controlId}-display`);
+                const labelValueRawElement = document.getElementById(`${controlId}-label-value-raw`);
+                
+                const currentUnit = unitMappings[controlId] || config.unit;
+                const scaledValue = scaleValue(rawValue, controlId);
+                const displayText = typeof scaledValue === 'number' ? `${scaledValue.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
+                
+                if (displayElement) displayElement.textContent = displayText;
                 if (labelValueRawElement) {
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
-                updateFirebaseAI(aiId, rawValue);
+                
+                if (controlType === 'AI') {
+                    updateFirebaseAI(controlId, rawValue);
+                } else if (controlType === 'AO') {
+                    updateFirebaseAO(controlId, rawValue);
+                }
             }
         });
         // =========================================================================
-        // Initialisation au chargement de la page
+        // وظائف الشريط العائم الجديدة
+        // =========================================================================
+        const floatingButtons = document.getElementById('floating-buttons');
+        const menuHandle = document.getElementById('menu-handle');
+        document.addEventListener('DOMContentLoaded', () => {
+            floatingButtons.classList.remove('visible');
+            menuHandle.classList.remove('hidden');
+        });
+        menuHandle.addEventListener('click', () => {
+            floatingButtons.classList.add('visible');
+            menuHandle.classList.add('hidden');
+        });
+        let lastScrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            if (window.scrollY !== lastScrollY) {
+                floatingButtons.classList.remove('visible');
+                menuHandle.classList.remove('hidden');
+            }
+            lastScrollY = window.scrollY;
+        });
+        // =========================================================================
+        // التهيئة عند تحميل الصفحة
         // =========================================================================
         window.addEventListener('load', () => {
             updateUIForLanguage(currentLanguage);
@@ -1521,7 +1636,7 @@
             } else {
                 showMessage(translations[currentLanguage].requiredFields, false);
             }
-            ['ai-section', 'do-section', 'di-section'].forEach(sectionId => {
+            ['ai-section', 'do-section', 'di-section', 'ao-section'].forEach(sectionId => {
                 const isVisible = localStorage.getItem(`sectionState-${sectionId}`) === 'true';
                 const section = document.getElementById(sectionId);
                 const toggleButton = document.querySelector(`.section-toggle-header[data-target="${sectionId}"] i`);
@@ -1541,4 +1656,3 @@
     </script>
 </body>
 </html>
-
