@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script>
-        // ضبط الوضع الداكن من التخزين المحلي
+        // Adjust dark mode from local storage
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
@@ -25,69 +25,96 @@
         }
     </script>
     <style>
-        /* إعادة تعيين الأنماط الأساسية */
+        /* Base styles reset and Tailwind config override */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        /* تعريف متغيرات CSS للألوان والظلال (فاتح/داكن) */
+
+        /* Weather-inspired theme variables */
         :root {
-            --primary-color: #075e54;
-            --secondary-color: #dcf8c6;
+            --primary-color: #55aaff;
+            --secondary-color: #87ceeb;
             --text-color: #1f2937;
-            --bg-color: #ffffff;
-            --card-bg: #e5e7eb;
-            --border-color: #d1d5db;
-            --success-color: #25d366;
+            --bg-color: #e0f2fe;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --border-color: rgba(255, 255, 255, 0.5);
+            --success-color: #10b981;
             --danger-color: #ef4444;
             --pending-color: #f59e0b;
-            --digital-display-bg: #f3f4f6;
+            --digital-display-bg: rgba(255, 255, 255, 0.8);
             --digital-display-text: #1a202c;
-            --shadow-light: rgba(0, 0, 0, 0.05);
-            --shadow-medium: rgba(0, 0, 0, 0.1);
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.2);
             --chart-grid-color-digital: rgba(16, 185, 129, 0.2);
             --chart-grid-color-analog: rgba(59, 130, 246, 0.2);
         }
-        /* متغيرات الوضع الداكن */
+
+        /* Dark mode variables */
         .dark {
-            --primary-color: #128c7e;
-            --secondary-color: #262d31;
-            --text-color: #f0fff0;
-            --bg-color: #111b21;
-            --card-bg: #1f2c34;
-            --border-color: #2a3136;
+            --primary-color: #0077b6;
+            --secondary-color: #023e8a;
+            --text-color: #e0f2fe;
+            --bg-color: #001838;
+            --card-bg: rgba(0, 25, 51, 0.7);
+            --border-color: rgba(0, 50, 102, 0.5);
             --danger-color: #ff3333;
             --pending-color: #ffcc00;
-            --digital-display-bg: #111b21;
+            --digital-display-bg: rgba(0, 25, 51, 0.8);
             --digital-display-text: #00ff41;
             --chart-grid-color-digital: rgba(16, 185, 129, 0.5);
             --chart-grid-color-analog: rgba(59, 130, 246, 0.5);
         }
-        /* أنماط الجسم والعناصر الأساسية */
+
+        /* Base body and element styles */
         body {
             font-family: 'Cairo', sans-serif;
             background-color: var(--bg-color);
+            background-image: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
             color: var(--text-color);
             line-height: 1.6;
             transition: background-color 0.3s ease, color 0.3s ease;
             min-height: 100vh;
-            display: flex; /* لتمكين Flexbox */
+            display: flex;
             flex-direction: column;
-            align-items: center; /* لتوسيط المحتوى أفقياً */
+            align-items: center;
             justify-content: flex-start;
             margin: 0;
             width: 100vw;
         }
-        /* الحاوية الجديدة للمحتوى لتحديد عرضه الأقصى وتوسيعه */
+        
+        /* Weather-inspired background effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><filter id="f1" x="0" y="0"><feGaussianBlur in="SourceGraphic" stdDeviation="5" /></filter></defs><g filter="url(%23f1)" fill="white" opacity="0.3"><circle cx="20" cy="80" r="15"/><circle cx="50" cy="50" r="20"/><circle cx="80" cy="20" r="18"/><circle cx="90" cy="70" r="12"/></g></svg>');
+            background-size: cover;
+            opacity: 0.15;
+            z-index: -1;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .dark body::before {
+            opacity: 0.05;
+        }
+        
+        /* Main container for content */
         .main-container {
             width: 100%;
             max-width: 1200px;
         }
+
         h1, h2, h3 {
             font-weight: 700;
             color: var(--text-color);
         }
+
         h2 {
             font-size: clamp(1.5rem, 3.5vw, 1.75rem);
             color: var(--text-color);
@@ -97,7 +124,8 @@
             border-left: none;
             padding-left: 0;
         }
-        /* أنماط الحاوية الرئيسية للأزرار العائمة */
+
+        /* Floating menu styles */
         .floating-menu-container {
             position: fixed;
             top: 50%;
@@ -111,7 +139,7 @@
             padding: 0.5rem;
             background-color: transparent;
         }
-        /* أنماط الأزرار الفعلية */
+
         .floating-buttons {
             display: flex;
             flex-direction: column;
@@ -122,12 +150,13 @@
             transform: translateX(-100%);
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
+
         .floating-buttons.visible {
             opacity: 1;
             pointer-events: auto;
             transform: translateX(0);
         }
-        /* أنماط الشريط المرافق */
+
         .menu-handle {
             position: fixed;
             top: 50%;
@@ -147,12 +176,12 @@
             opacity: 1;
             pointer-events: auto;
         }
-        /* حالة الإخفاء للشريط المرافق */
+
         .menu-handle.hidden {
             opacity: 0;
             pointer-events: none;
         }
-        /* أنماط أزرار الأيقونات الدائرية */
+
         .floating-menu-container .icon-btn {
             background-color: var(--primary-color);
             border: none;
@@ -168,11 +197,12 @@
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
+        
         .floating-menu-container .icon-btn:hover {
-            background-color: #2563eb;
+            background-color: #005f9c;
             transform: scale(1.05);
         }
-        /* أنماط النوافذ المنبثقة (Modals) */
+        
         .modal {
             display: none;
             position: fixed;
@@ -187,15 +217,17 @@
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
             background-color: var(--card-bg);
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 10px 25px var(--shadow-medium);
             padding: 2rem;
             max-width: 90%;
             width: 500px;
             position: relative;
         }
+
         .close-btn {
             background: none;
             border: none;
@@ -208,10 +240,11 @@
             right: auto;
             transition: color 0.3s;
         }
+
         .close-btn:hover {
             color: var(--danger-color);
         }
-        /* أنماط الإشعارات */
+
         .notification-message {
             position: fixed;
             bottom: 2%;
@@ -226,59 +259,57 @@
             font-size: 1rem;
             font-weight: 500;
         }
+
         @keyframes slideIn {
-            from {
-                bottom: -50px;
-                opacity: 0;
-            }
-            to {
-                bottom: 2%;
-                opacity: 1;
-            }
+            from { bottom: -50px; opacity: 0; }
+            to { bottom: 2%; opacity: 1; }
         }
         @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
-        /* أنماط البطاقات */
+
+        /* Card styles with weather-inspired touch */
         .card {
             background-color: var(--card-bg);
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 2px var(--shadow-light);
-            transition: transform 0.2s, box-shadow 0.2s;
+            border-radius: 1.5rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px var(--shadow-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             height: 100%;
+            border: 1px solid var(--border-color);
         }
+
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px var(--shadow-medium);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow-medium);
         }
+
         .control-label {
             font-weight: 600;
             color: var(--text-color);
-            font-size: 1rem;
-            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
         }
-        /* أنماط أزرار الأيقونات */
+        
         .icon-btn {
             background: none;
             border: none;
             cursor: pointer;
             transition: color 0.2s, transform 0.2s;
             font-size: 1.25rem;
-            color: white;
+            color: var(--text-color);
         }
+
         .icon-btn:hover {
-            color: var(--secondary-color);
+            color: var(--primary-color);
             transform: scale(1.1);
         }
-        /* أنماط أزرار التحكم الصناعية */
+
         .industrial-button {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             box-shadow: 0 4px 8px var(--shadow-medium);
             position: relative;
@@ -290,18 +321,20 @@
             background-color: var(--border-color);
             transition: none;
         }
+        
         .industrial-button:hover {
             transform: none;
             box-shadow: 0 4px 8px var(--shadow-medium);
         }
+
         .industrial-button:active {
             transform: none;
             box-shadow: 4px 8px var(--shadow-medium);
         }
-        /* أنماط المؤشرات الضوئية */
+
         .indicator-light {
-            width: 63px;
-            height: 63px;
+            width: 73px;
+            height: 73px;
             border-radius: 50%;
             background-color: var(--danger-color);
             transition: all 0.3s ease-in-out;
@@ -309,29 +342,28 @@
             justify-content: center;
             align-items: center;
         }
+        
         .indicator-light.active {
             background-color: var(--success-color);
         }
+
         .indicator-light.pending {
             background-color: var(--pending-color);
             animation: pulse 1s infinite;
         }
+
         @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
+
         .do-icon {
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             color: white;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
         }
-        /* أنماط الشاشة الرقمية */
+
         .digital-display-container {
             width: 100%;
             height: 60px;
@@ -342,7 +374,9 @@
             justify-content: center;
             align-items: center;
             border-radius: 0.5rem;
+            margin-top: 1rem;
         }
+        
         .digital-display-text {
             color: var(--digital-display-text);
             font-family: 'Digital-7 Mono', monospace;
@@ -350,7 +384,7 @@
             line-height: 1;
             font-weight: 500;
         }
-        /* أنماط المنزلق (Slider) */
+        
         input[type="range"] {
             background: var(--border-color);
             border: 1px solid var(--border-color);
@@ -360,6 +394,7 @@
             border-radius: 5px;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
         }
+
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 20px;
@@ -370,13 +405,15 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             transition: background 0.2s;
         }
+
         input[type="range"]::-webkit-slider-thumb:hover {
             background: #2563eb;
         }
+
         .dark input[type="range"]::-webkit-slider-thumb {
             background: var(--primary-color);
         }
-        /* أنماط شريط حالة الاتصال */
+        
         .status-bar {
             position: fixed;
             top: 0;
@@ -386,19 +423,23 @@
             background-color: var(--danger-color);
             z-index: 1000;
         }
+        
         .status-connected {
             background-color: var(--success-color);
         }
+
         .status-disconnected {
             background-color: var(--danger-color);
         }
-        /* أنماط أخرى */
+
+        /* Other styles */
         .rename-label {
             font-weight: 600;
             font-size: 1.1rem;
             color: var(--text-color);
             margin-bottom: 0.25rem;
         }
+
         .action-button {
             background: var(--primary-color);
             border: none;
@@ -410,14 +451,17 @@
             color: white;
             border-radius: 0.75rem;
         }
+
         .action-button:hover {
-            background: #2563eb;
+            background: #005f9c;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
+
         .action-button:active {
             transform: translateY(0);
         }
+
         .action-button-secondary {
             background: var(--secondary-color);
             border: none;
@@ -429,52 +473,63 @@
             color: black;
             border-radius: 0.75rem;
         }
+        
         .action-button-secondary:hover {
             background: #4b5563;
         }
+        
         .chart-main-container {
             width: 100%;
             height: 300px;
             margin-top: 1rem;
         }
+
         .ai-grid {
             display: grid;
             grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
         }
+        
         @media (min-width: 768px) {
             .ai-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+        
         .digital-control-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem;
+            gap: 1.5rem;
         }
+        
         @media (min-width: 768px) {
             .digital-control-grid {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
         }
+        
         .digital-control-card-wrapper {
             flex-grow: 1;
             flex-basis: 0;
         }
+        
         .section-toggle-header {
             cursor: pointer;
             user-select: none;
         }
-        /* أنماط إضافية للتعريب والوضع الداكن */
-        .rename-btn i {
-            color: var(--text-color);
+
+        input[type="text"], input[type="number"] {
+            color: black;
         }
-        .modal-content h3, .modal-content label {
-            color: var(--text-color);
+        .dark input[type="text"], .dark input[type="number"] {
+            color: black;
         }
-        .modal-content input {
-            background-color: #ffffff;
-            color: #1f2937;
+
+        /* RTL Specific Adjustments */
+        .rename-label {
+            text-align: right;
+        }
+        .text-right {
             text-align: right;
         }
         input[type="range"] {
@@ -482,9 +537,6 @@
         }
         .digital-display-text, .rename-label {
             direction: ltr;
-        }
-        .text-right {
-            text-align: right;
         }
         .close-btn {
             left: 1rem;
@@ -503,7 +555,7 @@
     <div id="floating-menu-container" class="floating-menu-container">
         <div id="floating-buttons" class="floating-buttons">
             <button id="rename-all-btn" class="icon-btn" aria-label="إعادة تسمية الكل">
-                <i class="fas fa-pencil-alt text-xl"></i>
+                <i class="fas fa-undo-alt text-xl"></i>
             </button>
             <button id="theme-toggle-btn" class="icon-btn" aria-label="تبديل المظهر">
                 <i class="fas fa-moon text-xl"></i>
@@ -517,8 +569,8 @@
         </div>
     </div>
     <div id="menu-handle" class="menu-handle"></div>
-    <div class="main-container">
-        <main class="p-4">
+    <div class="main-container p-6">
+        <main class="space-y-6">
             <section>
                 <div class="section-toggle-header flex justify-between items-center mb-4" data-target="do-section">
                     <h2 class="font-semibold flex-grow" id="do-section-title">المخارج الرقمية (DO)</h2>
@@ -526,7 +578,7 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 </div>
-                <div id="do-section" class="digital-control-grid mb-4 hidden"></div>
+                <div id="do-section" class="digital-control-grid hidden"></div>
             </section>
             <section>
                 <div class="section-toggle-header flex justify-between items-center mb-4" data-target="di-section">
@@ -544,7 +596,7 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 </div>
-                <div id="ai-section" class="ai-grid gap-4 mb-4 hidden"></div>
+                <div id="ai-section" class="ai-grid hidden"></div>
             </section>
             <section>
                 <div class="section-toggle-header flex justify-between items-center mb-4" data-target="ao-section">
@@ -553,7 +605,7 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 </div>
-                <div id="ao-section" class="ai-grid gap-4 mb-4 hidden"></div>
+                <div id="ao-section" class="ai-grid hidden"></div>
             </section>
         </main>
     </div>
@@ -589,7 +641,7 @@
             <button class="close-btn" data-modal-id="confirmationModal"><i class="fas fa-times"></i></button>
             <p id="confirm-message" class="text-lg mb-6 text-right"></p>
             <div class="flex justify-between gap-4">
-                <button id="cancel-action-btn" class="w-full action-button">إلغاء</button>
+                <button id="cancel-action-btn" class="w-full action-button-secondary">إلغاء</button>
                 <button id="confirm-action-btn" class="w-full action-button bg-red-500">تأكيد</button>
             </div>
         </div>
@@ -631,7 +683,7 @@
                 doTitle: 'المخارج الرقمية (DO)',
                 diTitle: 'المدخلات الرقمية (DI)',
                 aoTitle: 'المخارج التناظرية (AO)',
-                renameAllBtn: 'إعادة تسمية الكل',
+                renameAllBtn: 'إعادة تعيين الكل',
                 changeThemeBtn: 'تبديل المظهر',
                 notificationsBtn: 'تمكين الإشعارات',
                 settingsBtn: 'إعدادات النظام',
@@ -752,52 +804,52 @@
             DO: [{
                 id: 'DO1',
                 label: 'doLabel1',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'DO2',
                 label: 'doLabel2',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'DO3',
                 label: 'doLabel3',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'DO4',
                 label: 'doLabel4',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'DO5',
                 label: 'doLabel5',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'DO6',
                 label: 'doLabel6',
-                icon: 'fas fa-lightbulb'
+                icon: 'fas fa-sign-out-alt'
             }],
             DI: [{
                 id: 'DI1',
                 label: 'diLabel1',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }, {
                 id: 'DI2',
                 label: 'diLabel2',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }, {
                 id: 'DI3',
                 label: 'diLabel3',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }, {
                 id: 'DI4',
                 label: 'diLabel4',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }, {
                 id: 'DI5',
                 label: 'diLabel5',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }, {
                 id: 'DI6',
                 label: 'diLabel6',
-                icon: 'fas fa-door-open'
+                icon: 'fas fa-sign-in-alt'
             }],
             AO: [{
                 id: 'AO1',
@@ -809,7 +861,7 @@
                 unit: 'V',
                 realMin: 0,
                 realMax: 10,
-                icon: 'fas fa-cogs'
+                icon: 'fas fa-sign-out-alt'
             }, {
                 id: 'AO2',
                 label: 'aoLabel2',
@@ -820,7 +872,7 @@
                 unit: 'V',
                 realMin: 0,
                 realMax: 10,
-                icon: 'fas fa-cogs'
+                icon: 'fas fa-sign-out-alt'
             }]
         };
         const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
@@ -842,25 +894,23 @@
         const aiDataCache = {};
         const notificationQueue = [];
         let isShowingNotification = false;
+        
         // =========================================================================
-        // وظائف مساعدة
+        // Helper Functions
         // =========================================================================
         function updateUIForLanguage(lang) {
             const translation = translations[lang];
             document.documentElement.lang = lang;
             document.documentElement.dir = 'rtl';
-            // تحديث العناوين الرئيسية
             document.title = translation.title;
             document.getElementById('ai-section-title').textContent = translation.aiTitle;
             document.getElementById('do-section-title').textContent = translation.doTitle;
             document.getElementById('di-section-title').textContent = translation.diTitle;
             document.getElementById('ao-section-title').textContent = translation.aoTitle;
-            // تحديث سمات أزرار الرأس
             document.getElementById('rename-all-btn').setAttribute('aria-label', translation.renameAllBtn);
             document.getElementById('theme-toggle-btn').setAttribute('aria-label', translation.changeThemeBtn);
             document.getElementById('notification-toggle-btn').setAttribute('aria-label', translation.notificationsBtn);
             document.getElementById('open-system-settings-btn').setAttribute('aria-label', translation.settingsBtn);
-            // تحديث نصوص النوافذ المنبثقة
             document.getElementById('modal-title').textContent = translation.renameModalTitle;
             document.getElementById('renameInput').setAttribute('placeholder', translation.renamePlaceholder);
             document.getElementById('unit-options-container').querySelector('label').textContent = translation.unitLabel;
@@ -878,12 +928,13 @@
             document.getElementById('save-settings-btn').textContent = translation.saveSettingsBtn;
             document.getElementById('go-to-firebase-btn').querySelector('span').textContent = translation.goToDbBtn;
             document.getElementById('go-to-firebase-rules-btn').querySelector('span').textContent = translation.goToRulesBtn;
-            // إعادة إنشاء عناصر التحكم لتطبيق النصوص الجديدة
             renderAllControls();
         }
+
         function getCssVariable(variable) {
             return getComputedStyle(document.body).getPropertyValue(variable).trim();
         }
+
         function showMessage(message, isError = false) {
             if (!notificationsEnabled) return;
             notificationQueue.push({ message, isError });
@@ -891,6 +942,7 @@
                 processNotificationQueue();
             }
         }
+
         function processNotificationQueue() {
             if (notificationQueue.length === 0) {
                 isShowingNotification = false;
@@ -899,7 +951,7 @@
             isShowingNotification = true;
             const notification = notificationQueue.shift();
             if (!notification.isError) {
-                notificationSound.play().catch(e => console.error("خطأ في تشغيل الصوت:", e));
+                notificationSound.play().catch(e => console.error("Error playing audio:", e));
             }
             const messageElement = document.createElement('div');
             messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
@@ -910,6 +962,7 @@
                 processNotificationQueue();
             }, 5000);
         }
+
         function toggleNotifications() {
             notificationsEnabled = !notificationsEnabled;
             localStorage.setItem('notificationsEnabled', notificationsEnabled);
@@ -920,6 +973,7 @@
                 showMessage(translations[currentLanguage].notificationDisabled, true);
             }
         }
+
         function updateNotificationButton() {
             const btn = document.getElementById('notification-toggle-btn');
             if (!btn) return;
@@ -930,6 +984,7 @@
                 icon.classList.replace('fa-bell', 'fa-bell-slash');
             }
         }
+
         function updateThemeButton() {
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
             const htmlElement = document.documentElement;
@@ -942,12 +997,34 @@
                 }
             }
         }
+        
+        function updateChartsTheme() {
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const newTextColor = getCssVariable('--text-color');
+            const newGridColorDigital = getCssVariable('--chart-grid-color-digital');
+            const newGridColorAnalog = getCssVariable('--chart-grid-color-analog');
+
+            Object.values(chartInstances).forEach(chart => {
+                const isDigital = (chart.canvas.id.startsWith('DI') || chart.canvas.id.startsWith('DO'));
+                chart.options.scales.y.ticks.color = newTextColor;
+                chart.options.scales.x.ticks.color = newTextColor;
+                chart.options.scales.y.grid.color = isDigital ? newGridColorDigital : newGridColorAnalog;
+                chart.options.scales.x.grid.color = isDigital ? newGridColorDigital : newGridColorAnalog;
+                chart.options.plugins.tooltip.titleColor = newTextColor;
+                chart.options.plugins.tooltip.bodyColor = newTextColor;
+                chart.options.plugins.tooltip.backgroundColor = getCssVariable('--card-bg');
+                chart.update();
+            });
+        }
+        
         function openModal(modalId) {
             document.getElementById(modalId).style.display = 'flex';
         }
+
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+
         function scaleValue(rawValue, controlId) {
             const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
             if (!config) return rawValue;
@@ -955,6 +1032,7 @@
             const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
             return scaledValue;
         }
+
         function createOrUpdateChart(ctx, id, type, dataPoints = []) {
             const isDigital = (type === 'DI' || type === 'DO');
             const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
@@ -1073,6 +1151,7 @@
                 chartInstances[id] = new Chart(ctx, chartConfig);
             }
         }
+
         function updateTimeRange(newIndex, chartId) {
             localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
             const buttonContainer = document.getElementById(`${chartId}-time-options`);
@@ -1084,6 +1163,7 @@
             }
             updateChartDisplay(chartId, newIndex);
         }
+
         function updateChartDisplay(chartId, newIndex) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || dataPoints.length === 0) return;
@@ -1097,6 +1177,7 @@
                 createOrUpdateChart(ctx, chartId, controlType, filteredData);
             }
         }
+
         async function toggleState(ref, type, id) {
             const indicator = document.getElementById(`${id}-indicator`);
             if (indicator && indicator.classList.contains('pending')) return;
@@ -1111,22 +1192,24 @@
                     if (indicator) indicator.classList.remove('pending');
                 }
             } catch (error) {
-                console.error("فشل في تحديث القيمة:", error);
+                console.error("Failed to update value:", error);
                 showMessage(translations[currentLanguage].deleteFail, true);
                 if (indicator) indicator.classList.remove('pending');
             }
         }
+
         function saveToArchive(id, value) {
             if (!deviceRef) return;
             const timestamp = firebase.database.ServerValue.TIMESTAMP;
             const archiveRef = deviceRef.child('archive').child(id);
             archiveRef.push({ value, timestamp });
         }
+
         async function setDefaultValues() {
             if (!deviceRef) return;
             const snapshot = await deviceRef.once('value');
             if (snapshot.exists()) {
-                console.log("قاعدة البيانات تحتوي بالفعل على بيانات، لا حاجة لحفظ القيم الافتراضية.");
+                console.log("Database already contains data, no need to save default values.");
                 return;
             }
             const updates = {};
@@ -1136,11 +1219,12 @@
             controlsConfig.AO.forEach(config => updates[`AO/${config.id}`] = 0);
             try {
                 await deviceRef.update(updates);
-                console.log("تم حفظ البيانات الافتراضية بنجاح.");
+                console.log("Default data saved successfully.");
             } catch (error) {
-                console.error("فشل في حفظ البيانات الافتراضية:", error);
+                console.error("Failed to save default data:", error);
             }
         }
+
         function exportChartDataAsFile(chartId) {
             const dataPoints = aiDataCache[chartId];
             if (!dataPoints || dataPoints.length === 0) {
@@ -1148,7 +1232,7 @@
                 return;
             }
             const renamedLabel = renamedLabels[chartId] || chartId;
-            let csvContent = "\uFEFFالتاريخ,الوقت,القيمة\n";
+            let csvContent = "\uFEFFDate,Time,Value\n";
             dataPoints.forEach(point => {
                 const dateObj = new Date(point.x);
                 const date = dateObj.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
@@ -1167,6 +1251,7 @@
             URL.revokeObjectURL(url);
             showMessage(translations[currentLanguage].exportSuccess);
         }
+
         async function deleteChartData(chartId) {
             if (!deviceRef) {
                 showMessage(translations[currentLanguage].firebaseInitFail, true);
@@ -1178,12 +1263,13 @@
                 showMessage(translations[currentLanguage].deleteSuccess);
                 location.reload();
             } catch (error) {
-                console.error("فشل في حذف البيانات:", error);
+                console.error("Failed to delete data:", error);
                 showMessage(translations[currentLanguage].deleteFail, true);
             } finally {
                 closeModal('confirmationModal');
             }
         }
+
         function createAiControlElement(config) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
@@ -1231,6 +1317,7 @@
             `;
             return div;
         }
+
         function createDigitalControlElement(config, type) {
             const controlId = config.id;
             const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
@@ -1255,6 +1342,7 @@
             `;
             return cardWrapper;
         }
+
         function renderAllControls() {
             const aiSection = document.getElementById('ai-section');
             const doSection = document.getElementById('do-section');
@@ -1271,6 +1359,7 @@
             controlsConfig.DI.forEach(config => diSection.appendChild(createDigitalControlElement(config, 'DI')));
             controlsConfig.AO.forEach(config => aoSection.appendChild(createAiControlElement(config)));
         }
+
         function debounce(func, delay) {
             let timeout;
             return function(...args) {
@@ -1279,6 +1368,7 @@
                 timeout = setTimeout(() => func.apply(context, args), delay);
             };
         }
+
         const updateFirebaseAI = debounce((aiId, value) => {
             if (!deviceRef) return;
             deviceRef.child('AI').child(aiId).set(value)
@@ -1288,11 +1378,12 @@
                     const currentUnit = unitMappings[aiId] || (controlsConfig.AI.find(c => c.id === aiId) || {}).unit;
                 })
                 .catch(error => {
-                    console.error("فشل في تحديث القيمة التناظرية:", error);
+                    console.error("Failed to update analog value:", error);
                     showMessage(translations[currentLanguage].deleteFail, true);
                 });
             saveToArchive(aiId, value);
         }, 500);
+
         const updateFirebaseAO = debounce((aoId, value) => {
             if (!deviceRef) return;
             deviceRef.child('AO').child(aoId).set(value)
@@ -1303,13 +1394,14 @@
                     showMessage(translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit));
                 })
                 .catch(error => {
-                    console.error("فشل في تحديث قيمة المخرج التناظري:", error);
+                    console.error("Failed to update analog output value:", error);
                     showMessage(translations[currentLanguage].deleteFail, true);
                 });
             saveToArchive(aoId, value);
         }, 500);
+
         // =========================================================================
-        // وظائف Firebase
+        // Firebase Functions
         // =========================================================================
         function initFirebaseAndControls(url, deviceName) {
             try {
@@ -1325,10 +1417,11 @@
                 setDefaultValues();
                 setupListeners();
             } catch (error) {
-                console.error("فشل تهيئة Firebase:", error);
+                console.error("Firebase initialization failed:", error);
                 showMessage(translations[currentLanguage].firebaseInitFail, true);
             }
         }
+
         function setupListeners() {
             if (!deviceRef) return;
             firebase.database().ref('.info/connected').on('value', snapshot => {
@@ -1341,6 +1434,7 @@
                     connectionStatusBar.classList.add('status-disconnected');
                 }
             });
+
             deviceRef.on('value', snapshot => {
                 const data = snapshot.val();
                 if (!data) return;
@@ -1394,7 +1488,9 @@
                                 const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
                                 
                                 if (displayElement) displayElement.textContent = displayText;
-                                if (labelValueRawElement) labelValueRawElement.textContent = `${currentRaw}`;
+                                if (labelValueRawElement) {
+                                    labelValueRawElement.textContent = `${currentRaw}`;
+                                }
                                 
                                 if (typeof currentRaw === 'number') slider.value = currentRaw;
                             }
@@ -1402,6 +1498,7 @@
                     }
                 });
             });
+
             ['AI', 'AO'].forEach(type => {
                 controlsConfig[type].forEach(config => {
                     const archiveRef = deviceRef.child('archive').child(config.id);
@@ -1418,8 +1515,9 @@
                 });
             });
         }
+        
         // =========================================================================
-        // معالجات الأحداث
+        // Event Handlers
         // =========================================================================
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button, [data-id], [data-target]');
@@ -1547,6 +1645,7 @@
                     localStorage.setItem('theme', 'light');
                 }
                 updateThemeButton();
+                updateChartsTheme();
             } else if (target.id === 'notification-toggle-btn') {
                 toggleNotifications();
             } else if (target.id === 'rename-all-btn') {
@@ -1583,6 +1682,7 @@
                 closeModal('confirmationModal');
             }
         });
+
         document.addEventListener('input', (event) => {
             if (event.target.matches('[id$="-slider"]')) {
                 const slider = event.target;
@@ -1610,8 +1710,9 @@
                 }
             }
         });
+
         // =========================================================================
-        // وظائف الشريط العائم الجديدة
+        // New Floating Button Functions
         // =========================================================================
         const floatingButtons = document.getElementById('floating-buttons');
         const menuHandle = document.getElementById('menu-handle');
@@ -1619,10 +1720,12 @@
             floatingButtons.classList.remove('visible');
             menuHandle.classList.remove('hidden');
         });
+
         menuHandle.addEventListener('click', () => {
             floatingButtons.classList.add('visible');
             menuHandle.classList.add('hidden');
         });
+
         let lastScrollY = window.scrollY;
         window.addEventListener('scroll', () => {
             if (window.scrollY !== lastScrollY) {
@@ -1631,8 +1734,9 @@
             }
             lastScrollY = window.scrollY;
         });
+        
         // =========================================================================
-        // التهيئة عند تحميل الصفحة
+        // Initialization on page load
         // =========================================================================
         window.addEventListener('load', () => {
             updateUIForLanguage(currentLanguage);
