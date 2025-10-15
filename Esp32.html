@@ -831,6 +831,7 @@
             display: block;
         }
 
+        /* تحسين المسافات للهواتف */
         @media (max-width: 768px) {
             .digital-control-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -864,6 +865,7 @@
             
             .gauge-container {
                 height: 200px;
+                margin-bottom: 1.5rem !important;
             }
             
             .gauge-chart {
@@ -874,6 +876,35 @@
             .gauge-value {
                 font-size: 1.3rem;
                 padding: 4px 12px;
+                margin-bottom: 1.5rem !important;
+            }
+            
+            /* زيادة المسافة بين القيمة والسلايدر في المخارج التناظرية */
+            .card .mt-4 {
+                margin-top: 1.5rem !important;
+            }
+            
+            /* تحسين المسافات العامة للبطاقات */
+            .card .p-4 {
+                padding: 1.5rem 1rem !important;
+            }
+        }
+
+        /* تحسين إضافي للهواتف الصغيرة جداً */
+        @media (max-width: 480px) {
+            .gauge-value {
+                margin-bottom: 0.5rem !important;
+                font-size: 1.4rem !important;
+                padding: 8px 6px !important;
+            }
+            
+            .gauge-container {
+                margin-bottom: 2rem !important;
+            }
+            
+            /* زيادة المسافة بين المخطط والسلايدر */
+            .gauge-container + .mt-4 {
+                margin-top: 2.5rem !important;
             }
         }
 
@@ -2346,58 +2377,57 @@
         }
 
         function createAnalogControlWithDisplay(config, type) {
-            const controlId = config.id;
-            const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
-            const currentUnit = unitMappings[controlId] || config.unit;
-            const isAO = type === 'AO';
-            const div = document.createElement('div');
-            div.className = 'card';
-            
-            div.innerHTML = `
-                <div class="p-4">
-                    <!-- 1. أزرار التحكم (أعلى) -->
-                    <div class="flex items-center justify-center mb-2">
-                        <div class="flex items-center gap-2">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 2. العنوان -->
-                    <div class="title-container mb-2">
-                        <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
-                    </div>
-                    
-                    <!-- 3. مخطط القياس -->
-                    <div class="gauge-container">
-                        <canvas id="${controlId}-gauge" class="gauge-chart"></canvas>
-                        
-                        <!-- 4. مجال القيم (أول عنصر تحت المخطط) -->
-                        <div class="gauge-min-max">
-                            <span class="gauge-min">${scalingMappings[controlId] ? scalingMappings[controlId].realMin : config.realMin} ${currentUnit}</span>
-                            <span class="gauge-max">${scalingMappings[controlId] ? scalingMappings[controlId].realMax : config.realMax} ${currentUnit}</span>
-                        </div>
-                        
-                        <!-- 5. القيمة الحالية (ثاني عنصر تحت المخطط) -->
-                        <div class="text-center mt-2">
-                            <div id="${controlId}-gauge-value" class="gauge-value">-- ${currentUnit}</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 6. السلايدر (ثالث عنصر - لـ AO فقط) -->
-                    ${isAO ? `
-                    <div class="mt-4">
-                        <label class="block text-xs font-medium text-left">
-                            <span class="analog-value-label">${translations[currentLanguage].value}</span> <span id="${controlId}-label-value-raw">--</span>
-                        </label>
-                        <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
-                    </div>
-                    ` : ''}
+    const controlId = config.id;
+    const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
+    const currentUnit = unitMappings[controlId] || config.unit;
+    const isAO = type === 'AO';
+    const div = document.createElement('div');
+    div.className = 'card';
+    
+    div.innerHTML = `
+        <div class="p-4">
+            <!-- 1. أزرار التحكم (أعلى) -->
+            <div class="flex items-center justify-center mb-2">
+                <div class="flex items-center gap-2">
+                    <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
                 </div>
-            `;
-            return div;
-        }
+            </div>
+            
+            <!-- 2. العنوان -->
+            <div class="title-container mb-2">
+                <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
+            </div>
+            
+            <!-- 3. مخطط القياس -->
+            <div class="gauge-container">
+                <canvas id="${controlId}-gauge" class="gauge-chart"></canvas>
+                
+                <!-- 4. مجال القيم (أول عنصر تحت المخطط) -->
+                <div class="gauge-min-max">
+                    <span class="gauge-min">${scalingMappings[controlId] ? scalingMappings[controlId].realMin : config.realMin} ${currentUnit}</span>
+                    <span class="gauge-max">${scalingMappings[controlId] ? scalingMappings[controlId].realMax : config.realMax} ${currentUnit}</span>
+                </div>
+                
+                <!-- 5. القيمة الحالية (ثاني عنصر تحت المخطط) -->
+                <div class="text-center mt-2">
+                    <div id="${controlId}-gauge-value" class="gauge-value">-- ${currentUnit}</div>
+                </div>
+            </div>
+            
+            <!-- 6. السلايدر (ثالث عنصر - لـ AO فقط) -->
+            ${isAO ? `
+            <div class="mt-4 flex justify-center">
+                <div class="w-4/5"> <!-- حاوية لتقليل العرض إلى 80% -->
+                    <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full">
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+    return div;
+}
 
         function createDigitalControlElement(config, type) {
             const controlId = config.id;
