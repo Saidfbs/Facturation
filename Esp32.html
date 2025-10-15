@@ -87,6 +87,52 @@
             --gradient-success: linear-gradient(135deg, #047857 0%, #10b981 100%);
         }
 
+        /* أنماط جديدة لمخططات القياس */
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-chart {
+            width: 280px !important;
+            height: 280px !important;
+            max-width: 100%;
+        }
+
+        .gauge-value {
+            position: relative;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            z-index: 10;
+            background: var(--card-bg);
+            padding: 5px 15px;
+            border-radius: var(--border-radius);
+            width: auto;
+            display: inline-block;
+        }
+
+        .gauge-min-max {
+            display: flex;
+            justify-content: space-between;
+            width: 80%;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+
+        .gauge-min, .gauge-max {
+            padding: 0 10px;
+        }
+
         .title-container {
             width: 100%;
             overflow: hidden;
@@ -235,6 +281,25 @@
             padding-left: 1rem;
             border-right: none;
             padding-right: 0;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        h2:hover {
+            color: var(--primary-color);
+        }
+
+        h2 .toggle-icon {
+            margin-left: 1rem;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        h2.collapsed .toggle-icon {
+            transform: rotate(-90deg);
         }
 
         .floating-menu-container {
@@ -501,25 +566,13 @@
             filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
         }
 
+        /* إزالة الأنماط القديمة للعرض الرقمي */
         .digital-display-container {
-            width: 100%;
-            height: 60px;
-            background-color: var(--digital-display-bg);
-            border: 2px solid var(--border-color);
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: var(--border-radius);
-            margin-top: 1rem;
+            display: none;
         }
 
         .digital-display-text {
-            color: var(--digital-display-text);
-            font-family: 'Courier New', monospace;
-            font-size: 2rem;
-            line-height: 1;
-            font-weight: 600;
+            display: none;
         }
 
         input[type="range"] {
@@ -808,6 +861,20 @@
             .do-icon {
                 font-size: 2rem;
             }
+            
+            .gauge-container {
+                height: 200px;
+            }
+            
+            .gauge-chart {
+                width: 260px !important;
+                height: 260px !important;
+            }
+            
+            .gauge-value {
+                font-size: 1.3rem;
+                padding: 4px 12px;
+            }
         }
 
         /* إضافة أنماط جديدة للأقسام المخفية */
@@ -816,6 +883,14 @@
         }
 
         .section-visible {
+            display: block;
+        }
+
+        .section-collapsed .section-content {
+            display: none;
+        }
+
+        .section-expanded .section-content {
             display: block;
         }
 
@@ -1019,8 +1094,6 @@
 
     <header id="floating-menu-container" class="floating-menu-container">
         <div id="floating-buttons" class="floating-buttons">
-            <!-- تم إزالة أزرار الأقسام من هنا -->
-
             <!-- أزرار التحكم -->
             <button id="rename-all-btn" class="icon-btn" aria-label="Réinitialiser tout" title="Réinitialiser tout">
                 <i class="fas fa-undo-alt"></i>
@@ -1043,41 +1116,64 @@
 
     <div class="main-container p-6">
         <main class="space-y-6">
-            <!-- قسم البيانات الجديد -->
-            <section id="data-section-container" class="section-hidden">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow" id="data-section-title">Données et Graphiques</h2>
-                </div>
-                <div id="data-section" class="ai-grid"></div>
-            </section>
-
-            <section id="do-section-container" class="section-hidden">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow" id="do-section-title">Sorties numériques (DO)</h2>
-                </div>
-                <div id="do-section" class="digital-control-grid"></div>
-            </section>
-            <section id="di-section-container" class="section-hidden">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow" id="di-section-title">Entrées numériques (DI)</h2>
-                </div>
-                <div id="di-section" class="digital-control-grid"></div>
-            </section>
-            <section id="ai-section-container" class="section-hidden">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow" id="ai-section-title">Entrées analogiques (AI)</h2>
-                </div>
-                <div id="ai-section" class="ai-grid"></div>
-            </section>
+            <!-- المخارج التناظرية أولاً -->
             <section id="ao-section-container" class="section-hidden">
                 <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow" id="ao-section-title">Sorties analogiques (AO)</h2>
+                    <h2 class="font-semibold flex-grow section-title" id="ao-section-title" data-section="ao">
+                        <span>Sorties analogiques (AO)</span>
+                        <i class="toggle-icon fas fa-chevron-down"></i>
+                    </h2>
                 </div>
-                <div id="ao-section" class="ai-grid"></div>
+                <div id="ao-section" class="section-content ai-grid"></div>
+            </section>
+
+            <!-- المداخل التناظرية ثانياً -->
+            <section id="ai-section-container" class="section-hidden">
+                <div class="section-toggle-header flex justify-between items-center mb-4">
+                    <h2 class="font-semibold flex-grow section-title" id="ai-section-title" data-section="ai">
+                        <span>Entrées analogiques (AI)</span>
+                        <i class="toggle-icon fas fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div id="ai-section" class="section-content ai-grid"></div>
+            </section>
+
+            <!-- المخارج الرقمية ثالثاً -->
+            <section id="do-section-container" class="section-hidden">
+                <div class="section-toggle-header flex justify-between items-center mb-4">
+                    <h2 class="font-semibold flex-grow section-title" id="do-section-title" data-section="do">
+                        <span>Sorties numériques (DO)</span>
+                        <i class="toggle-icon fas fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div id="do-section" class="section-content digital-control-grid"></div>
+            </section>
+
+            <!-- المداخل الرقمية رابعاً -->
+            <section id="di-section-container" class="section-hidden">
+                <div class="section-toggle-header flex justify-between items-center mb-4">
+                    <h2 class="font-semibold flex-grow section-title" id="di-section-title" data-section="di">
+                        <span>Entrées numériques (DI)</span>
+                        <i class="toggle-icon fas fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div id="di-section" class="section-content digital-control-grid"></div>
+            </section>
+
+            <!-- قسم البيانات خامساً (سيحتوي على مبيانات AO ثم AI) -->
+            <section id="data-section-container" class="section-hidden">
+                <div class="section-toggle-header flex justify-between items-center mb-4">
+                    <h2 class="font-semibold flex-grow section-title" id="data-section-title" data-section="data">
+                        <span>Données et Graphiques</span>
+                        <i class="toggle-icon fas fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div id="data-section" class="section-content ai-grid"></div>
             </section>
         </main>
     </div>
 
+    <!-- باقي النماذج (Modals) -->
     <div id="renameModal" class="modal">
         <div class="modal-content">
             <h3 id="modal-title" class="text-2xl font-bold mb-4">Renommer</h3>
@@ -1402,7 +1498,7 @@
             });
         });
 
-        // إعدادات الأقسام - الآن جميع الأقسام مخفية بشكل افتراضي
+        // إعدادات الأقسام
         const initialSectionSettings = {
             sectionData: false,
             sectionDigital: false,
@@ -1410,8 +1506,18 @@
             firstVisit: true
         };
 
+        // إعدادات طي/فتح الأقسام
+        const initialSectionCollapseState = {
+            'ao': false,
+            'ai': false,
+            'do': false,
+            'di': false,
+            'data': false
+        };
+
         const uiSettings = JSON.parse(localStorage.getItem('uiSettings')) || initialUiSettings;
         const sectionSettings = JSON.parse(localStorage.getItem('sectionSettings')) || initialSectionSettings;
+        const sectionCollapseState = JSON.parse(localStorage.getItem('sectionCollapseState')) || initialSectionCollapseState;
         const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
         const timeRangeLabels = [translations[currentLanguage].hour, translations[currentLanguage].hours24, translations[currentLanguage].all];
         const notificationSound = new Audio('https://s3.amazonaws.com/freecodecamp/relaxing-sounds-notification.mp3');
@@ -1426,11 +1532,44 @@
         let firebaseInitialized = false;
         let deviceRef = null;
         const chartInstances = {};
+        const gaugeInstances = {};
         const aiDataCache = {};
         const notificationQueue = [];
         let isShowingNotification = false;
 
-        // ========== التعديلات الجديدة ==========
+        // ========== الدوال الجديدة لطي وفتح الأقسام ==========
+
+        // تبديل حالة طي/فتح القسم
+        function toggleSectionCollapse(sectionId) {
+            sectionCollapseState[sectionId] = !sectionCollapseState[sectionId];
+            localStorage.setItem('sectionCollapseState', JSON.stringify(sectionCollapseState));
+            updateSectionCollapseState(sectionId);
+        }
+
+        // تحديث حالة القسم بناءً على الإعدادات المحفوظة
+        function updateSectionCollapseState(sectionId) {
+            const sectionContainer = document.getElementById(`${sectionId}-section-container`);
+            const sectionTitle = document.getElementById(`${sectionId}-section-title`);
+            
+            if (sectionContainer && sectionTitle) {
+                if (sectionCollapseState[sectionId]) {
+                    sectionContainer.classList.add('section-collapsed');
+                    sectionTitle.classList.add('collapsed');
+                } else {
+                    sectionContainer.classList.remove('section-collapsed');
+                    sectionTitle.classList.remove('collapsed');
+                }
+            }
+        }
+
+        // تهيئة جميع حالات طي/فتح الأقسام
+        function initializeSectionCollapseStates() {
+            Object.keys(sectionCollapseState).forEach(sectionId => {
+                updateSectionCollapseState(sectionId);
+            });
+        }
+
+        // ========== نهاية الدوال الجديدة ==========
 
         // دالة للتحقق مما إذا كان القسم يحتوي على عناصر معروضة
         function checkSectionHasVisibleItems(sectionId) {
@@ -1444,11 +1583,11 @@
         // تحديث إظهار/إخفاء الأقسام مع التحقق من العناصر
         function updateSectionVisibility() {
             const sections = {
-                'data-section-container': 'sectionData',
-                'do-section-container': 'sectionDigital',
-                'di-section-container': 'sectionDigital', 
-                'ai-section-container': 'sectionAnalog',
-                'ao-section-container': 'sectionAnalog'
+                'ao-section-container': 'sectionAnalog',    // المخارج التناظرية
+                'ai-section-container': 'sectionAnalog',    // المداخل التناظرية  
+                'do-section-container': 'sectionDigital',   // المخارج الرقمية
+                'di-section-container': 'sectionDigital',   // المداخل الرقمية
+                'data-section-container': 'sectionData'     // البيانات
             };
 
             for (const [sectionId, sectionKey] of Object.entries(sections)) {
@@ -1459,6 +1598,9 @@
                     if (sectionSettings[sectionKey] && hasVisibleItems) {
                         section.classList.remove('section-hidden');
                         section.classList.add('section-visible');
+                        // تأكد من تحديث حالة الطي/الفتح
+                        const sectionType = sectionId.split('-')[0];
+                        updateSectionCollapseState(sectionType);
                     } else {
                         section.classList.remove('section-visible');
                         section.classList.add('section-hidden');
@@ -1466,8 +1608,6 @@
                 }
             }
         }
-
-        // ========== نهاية التعديلات الجديدة ==========
 
         // تطبيق تأثير التمرير على العناوين الطويلة
         function applyScrollingEffect() {
@@ -1581,6 +1721,7 @@
             localStorage.removeItem('scalingMappings');
             localStorage.removeItem('uiSettings');
             localStorage.removeItem('sectionSettings');
+            localStorage.removeItem('sectionCollapseState');
             
             // إعادة تعيين إعدادات الأقسام إلى القيم الافتراضية (جميع الأقسام مرئية)
             const defaultSectionSettings = {
@@ -1592,6 +1733,12 @@
             
             localStorage.setItem('sectionSettings', JSON.stringify(defaultSectionSettings));
             Object.assign(sectionSettings, defaultSectionSettings);
+            
+            // إعادة تعيين حالات الطي/الفتح
+            Object.keys(sectionCollapseState).forEach(key => {
+                sectionCollapseState[key] = false;
+            });
+            localStorage.setItem('sectionCollapseState', JSON.stringify(sectionCollapseState));
             
             showMessage(translations[currentLanguage].resetSuccess);
             
@@ -1606,11 +1753,11 @@
             document.documentElement.lang = lang;
             document.documentElement.dir = 'ltr';
             document.title = translation.title;
-            document.getElementById('data-section-title').textContent = translation.dataTitle;
-            document.getElementById('ai-section-title').textContent = translation.aiTitle;
-            document.getElementById('do-section-title').textContent = translation.doTitle;
-            document.getElementById('di-section-title').textContent = translation.diTitle;
-            document.getElementById('ao-section-title').textContent = translation.aoTitle;
+            document.getElementById('data-section-title').querySelector('span').textContent = translation.dataTitle;
+            document.getElementById('ai-section-title').querySelector('span').textContent = translation.aiTitle;
+            document.getElementById('do-section-title').querySelector('span').textContent = translation.doTitle;
+            document.getElementById('di-section-title').querySelector('span').textContent = translation.diTitle;
+            document.getElementById('ao-section-title').querySelector('span').textContent = translation.aoTitle;
             document.getElementById('rename-all-btn').setAttribute('aria-label', translation.renameAllBtn);
             document.getElementById('theme-toggle-btn').setAttribute('aria-label', translation.changeThemeBtn);
             document.getElementById('notification-toggle-btn').setAttribute('aria-label', translation.notificationsBtn);
@@ -1713,11 +1860,19 @@
             const isDarkMode = document.documentElement.classList.contains('dark');
             const newTextColor = getCssVariable('--text-color');
             Object.values(chartInstances).forEach(chart => {
-                chart.options.scales.y.ticks.color = newTextColor;
-                chart.options.scales.x.ticks.color = newTextColor;
-                chart.options.plugins.tooltip.titleColor = newTextColor;
-                chart.options.plugins.tooltip.bodyColor = newTextColor;
-                chart.options.plugins.tooltip.backgroundColor = getCssVariable('--card-bg');
+                if (chart.options && chart.options.scales) {
+                    if (chart.options.scales.y && chart.options.scales.y.ticks) {
+                        chart.options.scales.y.ticks.color = newTextColor;
+                    }
+                    if (chart.options.scales.x && chart.options.scales.x.ticks) {
+                        chart.options.scales.x.ticks.color = newTextColor;
+                    }
+                }
+                if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
+                    chart.options.plugins.tooltip.titleColor = newTextColor;
+                    chart.options.plugins.tooltip.bodyColor = newTextColor;
+                    chart.options.plugins.tooltip.backgroundColor = getCssVariable('--card-bg');
+                }
                 chart.update();
             });
         }
@@ -1752,6 +1907,7 @@
                     yMax = realMax;
                 }
             }
+            
             if (chartInstances[id]) {
                 const scaledDataPoints = dataPoints.map(p => ({
                     x: p.x,
@@ -1932,6 +2088,107 @@
             }
         }
 
+        // دالة لإنشاء مخطط قياس
+        function createGauge(chartId, value, config) {
+            const ctx = document.getElementById(`${chartId}-gauge`);
+            if (!ctx) return null;
+            
+            const currentUnit = unitMappings[chartId] || config.unit;
+            const { realMin, realMax } = scalingMappings[chartId] || config;
+            const scaledValue = scaleValue(value, chartId);
+            const percentage = Math.min(100, Math.max(0, ((scaledValue - realMin) / (realMax - realMin)) * 100));
+            
+            // تحديد الألوان حسب القيمة
+            let gaugeColor;
+            if (percentage < 30) {
+                gaugeColor = '#10b981'; // أخضر للقيم المنخفضة
+            } else if (percentage < 70) {
+                gaugeColor = '#f59e0b'; // أصفر للقيم المتوسطة
+            } else {
+                gaugeColor = '#ef4444'; // أحمر للقيم العالية
+            }
+
+            // إنشاء المخطط
+            const gauge = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [percentage, 100 - percentage],
+                        backgroundColor: [gaugeColor, 'rgba(200, 200, 200, 0.3)'],
+                        borderWidth: 0,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+
+            // حفظ المرجع للمخطط
+            gaugeInstances[chartId] = gauge;
+            return gauge;
+        }
+
+        // تحديث مخطط القياس
+        function updateGauge(chartId, value, config) {
+            const gaugeElement = document.getElementById(`${chartId}-gauge-value`);
+            if (gaugeElement) {
+                const scaledValue = scaleValue(value, chartId);
+                const currentUnit = unitMappings[chartId] || config.unit;
+                gaugeElement.textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
+            }
+
+            // تحديث المخطط إذا كان موجوداً
+            if (gaugeInstances[chartId]) {
+                const { realMin, realMax } = scalingMappings[chartId] || config;
+                const scaledValue = scaleValue(value, chartId);
+                const percentage = Math.min(100, Math.max(0, ((scaledValue - realMin) / (realMax - realMin)) * 100));
+                
+                let gaugeColor;
+                if (percentage < 30) {
+                    gaugeColor = '#10b981';
+                } else if (percentage < 70) {
+                    gaugeColor = '#f59e0b';
+                } else {
+                    gaugeColor = '#ef4444';
+                }
+
+                gaugeInstances[chartId].data.datasets[0].data = [percentage, 100 - percentage];
+                gaugeInstances[chartId].data.datasets[0].backgroundColor[0] = gaugeColor;
+                gaugeInstances[chartId].update();
+            } else {
+                // إنشاء المخطط إذا لم يكن موجوداً
+                createGauge(chartId, value, config);
+            }
+        }
+
+        // تهيئة جميع مخططات القياس
+        function initializeAllGauges() {
+            ['AI', 'AO'].forEach(type => {
+                controlsConfig[type].forEach(config => {
+                    if (uiSettings[config.id]) {
+                        // إنشاء مخطط افتراضي بقيمة 0
+                        createGauge(config.id, 0, config);
+                    }
+                });
+            });
+        }
+
         async function toggleState(ref, type, id) {
             const indicator = document.getElementById(`${id}-indicator`);
             if (indicator && indicator.classList.contains('pending')) return;
@@ -2098,6 +2355,7 @@
             
             div.innerHTML = `
                 <div class="p-4">
+                    <!-- 1. أزرار التحكم (أعلى) -->
                     <div class="flex items-center justify-center mb-2">
                         <div class="flex items-center gap-2">
                             <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
@@ -2105,9 +2363,29 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- 2. العنوان -->
                     <div class="title-container mb-2">
                         <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
                     </div>
+                    
+                    <!-- 3. مخطط القياس -->
+                    <div class="gauge-container">
+                        <canvas id="${controlId}-gauge" class="gauge-chart"></canvas>
+                        
+                        <!-- 4. مجال القيم (أول عنصر تحت المخطط) -->
+                        <div class="gauge-min-max">
+                            <span class="gauge-min">${scalingMappings[controlId] ? scalingMappings[controlId].realMin : config.realMin} ${currentUnit}</span>
+                            <span class="gauge-max">${scalingMappings[controlId] ? scalingMappings[controlId].realMax : config.realMax} ${currentUnit}</span>
+                        </div>
+                        
+                        <!-- 5. القيمة الحالية (ثاني عنصر تحت المخطط) -->
+                        <div class="text-center mt-2">
+                            <div id="${controlId}-gauge-value" class="gauge-value">-- ${currentUnit}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 6. السلايدر (ثالث عنصر - لـ AO فقط) -->
                     ${isAO ? `
                     <div class="mt-4">
                         <label class="block text-xs font-medium text-left">
@@ -2116,9 +2394,6 @@
                         <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full mt-2">
                     </div>
                     ` : ''}
-                    <div class="digital-display-container mx-auto my-2">
-                        <span id="${controlId}-display" class="digital-display-text text-left">-- ${currentUnit}</span>
-                    </div>
                 </div>
             `;
             return div;
@@ -2160,19 +2435,19 @@
             
             let hasDataCards = false;
             
-            // إضافة المبيانات من المداخل التناظرية (AI)
-            controlsConfig.AI.forEach(config => {
+            // عرض مبيانات المخارج التناظرية (AO) أولاً
+            controlsConfig.AO.forEach(config => {
                 if (uiSettings[config.id]) {
-                    const dataCard = createDataCardElement(config, 'AI');
+                    const dataCard = createDataCardElement(config, 'AO');
                     dataSection.appendChild(dataCard);
                     hasDataCards = true;
                 }
             });
             
-            // إضافة المبيانات من المخارج التناظرية (AO)
-            controlsConfig.AO.forEach(config => {
+            // ثم عرض مبيانات المداخل التناظرية (AI)
+            controlsConfig.AI.forEach(config => {
                 if (uiSettings[config.id]) {
-                    const dataCard = createDataCardElement(config, 'AO');
+                    const dataCard = createDataCardElement(config, 'AI');
                     dataSection.appendChild(dataCard);
                     hasDataCards = true;
                 }
@@ -2184,11 +2459,11 @@
 
         function renderAllControls() {
             const sections = {
-                'data-section-container': 'DATA',
-                'do-section-container': 'DO',
-                'di-section-container': 'DI',
-                'ai-section-container': 'AI',
-                'ao-section-container': 'AO'
+                'ao-section-container': 'AO',      // المخارج التناظرية أولاً
+                'ai-section-container': 'AI',      // المداخل التناظرية ثانياً
+                'do-section-container': 'DO',      // المخارج الرقمية ثالثاً
+                'di-section-container': 'DI',      // المداخل الرقمية رابعاً
+                'data-section-container': 'DATA'   // البيانات خامساً
             };
             
             for (const sectionId in sections) {
@@ -2215,6 +2490,10 @@
             
             setTimeout(() => {
                 applyScrollingEffect();
+                // تهيئة مخططات القياس
+                initializeAllGauges();
+                // تهيئة حالات طي/فتح الأقسام
+                initializeSectionCollapseStates();
                 // تحديث إظهار الأقسام بعد تحميل جميع العناصر
                 updateSectionVisibility();
             }, 100);
@@ -2326,7 +2605,10 @@
                             const value = data[type][id];
                             const config = controlsConfig[type].find(c => c.id === id);
                             if (!config) return;
-                            const displayElement = document.getElementById(`${id}-display`);
+                            
+                            // تحديث مخطط القياس
+                            updateGauge(id, value, config);
+                            
                             const labelValueRawElement = document.getElementById(`${id}-label-value-raw`);
                             const slider = document.getElementById(`${id}-slider`);
                             const lastValueKey = `${type}-${id}`;
@@ -2339,17 +2621,10 @@
                                 showMessage(message);
                             }
                             localStorage.setItem(lastValueKey, value);
-                            if (displayElement) {
-                                const currentRaw = typeof value === 'number' ? value : '--';
-                                const currentUnit = unitMappings[id] || config.unit;
-                                const currentScaled = typeof currentRaw === 'number' ? scaleValue(currentRaw, id) : '--';
-                                const displayText = typeof currentScaled === 'number' ? `${currentScaled.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
-                                if (displayElement) displayElement.textContent = displayText;
-                                if (labelValueRawElement) {
-                                    labelValueRawElement.textContent = `${currentRaw}`;
-                                }
-                                if (slider) slider.value = currentRaw;
+                            if (labelValueRawElement) {
+                                labelValueRawElement.textContent = `${value}`;
                             }
+                            if (slider) slider.value = value;
                         });
                     }
                 });
@@ -2461,18 +2736,28 @@
             showMessage(translations[currentLanguage].uiSettingsSaved);
             closeModal('customizeUiModal');
             
-            // ========== التعديل الجديد: تحديث الصفحة تلقائياً ==========
+            // إعادة تحميل الواجهة مع تحديث إظهار الأقسام
             setTimeout(() => {
-                location.reload();
-            }, 1000);
+                renderAllControls();
+            }, 500);
         }
 
         // معالجات الأحداث
         document.addEventListener('click', (event) => {
-            const target = event.target.closest('button, [data-id], .custom-checkbox-container, .section-checkbox-container, .section-option');
+            const target = event.target.closest('button, [data-id], .custom-checkbox-container, .section-checkbox-container, .section-option, .section-title');
             if (!target) return;
             const modalId = target.dataset.modalId;
             const controlId = target.dataset.id;
+            
+            // التحقق مما إذا كان الضغط على عنوان قسم لطي/فتحه
+            if (target.classList.contains('section-title') || target.closest('.section-title')) {
+                const sectionTitle = target.classList.contains('section-title') ? target : target.closest('.section-title');
+                if (sectionTitle) {
+                    const sectionId = sectionTitle.dataset.section;
+                    toggleSectionCollapse(sectionId);
+                    return;
+                }
+            }
             
             if (target.id === 'toggle-data-btn-modal') {
                 toggleSection('sectionData');
@@ -2695,12 +2980,7 @@
                 const controlId = slider.id.replace('-slider', '');
                 const config = controlsConfig.AO.find(c => c.id === controlId);
                 if (!config) return;
-                const displayElement = document.getElementById(`${controlId}-display`);
                 const labelValueRawElement = document.getElementById(`${controlId}-label-value-raw`);
-                const currentUnit = unitMappings[controlId] || config.unit;
-                const scaledValue = scaleValue(rawValue, controlId);
-                const displayText = typeof scaledValue === 'number' ? `${scaledValue.toFixed(2)} ${currentUnit}` : `-- ${currentUnit}`;
-                if (displayElement) displayElement.textContent = displayText;
                 if (labelValueRawElement) {
                     labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
                 }
@@ -2708,6 +2988,9 @@
                 if (controlId.startsWith('AO')) {
                     updateFirebaseAO(controlId, rawValue);
                 }
+                
+                // تحديث مخطط القياس
+                updateGauge(controlId, rawValue, config);
             }
         });
 
