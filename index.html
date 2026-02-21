@@ -2,2051 +2,820 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schneider Electric | دورة Unity Pro PLC</title>
-    <!-- Font Awesome for icons -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Schneider Electric | برنامج Unity Pro PLC الشامل</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Cairo', sans-serif;
-            background: #f4f7fc;
+            background: #f0f4fa;
             color: #1E3F5E;
             line-height: 1.6;
         }
-
-        /* Schneider Electric Colors */
         :root {
             --schneider-green: #3AB795;
             --schneider-dark-green: #2E8B6F;
             --schneider-blue: #1E3F5E;
             --schneider-light-blue: #EFF7FF;
-            --schneider-grey: #F5F5F5;
-            --schneider-dark-grey: #5a6f7e;
-            --schneider-black: #1A2A3A;
             --schneider-white: #FFFFFF;
             --schneider-accent: #FF6B4A;
-            --text-primary: #1E3F5E;
-            --text-secondary: #2c3e50;
-            --text-light: #5a6f7e;
+            --card-shadow: 0 12px 30px -10px rgba(0,40,60,0.15);
+            --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
         }
 
-        /* Header and Navigation */
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #d9e2eb; }
+        ::-webkit-scrollbar-thumb { background: var(--schneider-green); border-radius: 10px; }
+
+        /* Header */
         .header {
-            background: var(--schneider-white);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
             position: fixed;
             width: 100%;
             top: 0;
-            z-index: 1000;
-            border-bottom: 3px solid var(--schneider-green);
+            z-index: 100;
+            border-bottom: 1px solid rgba(58,183,149,0.2);
         }
-
         .nav-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0.8rem 2rem;
+            padding: 0.7rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
         .logo {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
-
-        .logo svg {
-            height: 40px;
-            width: auto;
-        }
-
+        .logo svg { height: 36px; width: auto; }
         .logo-text {
-            font-size: 1.3rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 800;
             color: var(--schneider-blue);
             border-right: 2px solid var(--schneider-green);
-            padding-right: 15px;
+            padding-right: 12px;
         }
-
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
             list-style: none;
         }
-
         .nav-links a {
             text-decoration: none;
             color: var(--schneider-blue);
             font-weight: 600;
-            transition: color 0.3s;
             font-size: 1rem;
-            padding: 0.5rem 0;
+            padding: 0.4rem 0;
             position: relative;
         }
-
         .nav-links a::after {
             content: '';
             position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2.5px;
+            background: var(--schneider-green);
+            transform: scaleX(0);
+            transition: transform 0.2s;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+        .menu-toggle { display: none; font-size: 1.8rem; color: var(--schneider-blue); cursor: pointer; }
+
+        /* Mobile Bottom Nav */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: var(--schneider-green);
-            transform: scaleX(0);
-            transition: transform 0.3s;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(15px);
+            z-index: 99;
+            padding: 0.6rem 1rem;
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
-
-        .nav-links a:hover::after {
-            transform: scaleX(1);
-        }
-
-        .menu-toggle {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--schneider-blue);
-        }
-
-        /* Fixed Progress Bar */
-        .fixed-progress {
-            position: fixed;
-            top: 85px;
-            left: 0;
-            right: 0;
-            background: var(--schneider-white);
-            padding: 1rem 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            z-index: 999;
-            border-bottom: 1px solid rgba(58, 183, 149, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .progress-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .progress-header {
+        .bottom-nav-items {
             display: flex;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
-            margin-bottom: 0.5rem;
         }
-
-        .progress-title {
-            font-size: 1rem;
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #5a6f7e;
+            font-size: 0.7rem;
             font-weight: 600;
-            color: var(--schneider-blue);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .progress-title i {
-            color: var(--schneider-green);
-        }
-
-        .progress-percentage {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--schneider-green);
-        }
-
-        .progress-bar-container {
-            height: 8px;
-            background: #E8EEF2;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 0.5rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--schneider-green), var(--schneider-dark-green));
-            border-radius: 20px;
-            transition: width 0.5s ease;
-            width: 0%;
-            position: relative;
-        }
-
-        .progress-stats {
-            display: flex;
-            justify-content: space-between;
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 1400px;
-            margin: 180px auto 50px;
-            padding: 0 2rem;
-        }
-
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, var(--schneider-blue) 0%, #15304C 100%);
-            border-radius: 20px;
-            padding: 4rem;
-            color: white;
-            margin-bottom: 3rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: var(--schneider-green);
-            padding: 0.5rem 1.5rem;
+            padding: 0.3rem 0.8rem;
             border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+            transition: 0.2s;
+            text-decoration: none;
+        }
+        .bottom-nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
+        .bottom-nav-item.active {
+            background: var(--schneider-green);
             color: white;
         }
 
-        .hero h1 {
-            font-size: 3.5rem;
+        /* Main */
+        .container { max-width: 1400px; margin: 85px auto 90px; padding: 0 1.5rem; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, var(--schneider-blue) 0%, #10344e 100%);
+            border-radius: 32px;
+            padding: 3rem 3.5rem;
+            color: white;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: 'Unity Pro';
+            position: absolute;
+            bottom: -20px; left: -20px;
+            font-size: 8rem;
             font-weight: 900;
-            margin-bottom: 1rem;
-            line-height: 1.3;
+            opacity: 0.06;
             color: white;
+            transform: rotate(-5deg);
+            pointer-events: none;
         }
-
-        .hero p {
-            font-size: 1.2rem;
-            opacity: 0.95;
-            margin-bottom: 2rem;
-            max-width: 600px;
-            color: rgba(255,255,255,0.95);
+        .hero-badge {
+            background: var(--schneider-green);
+            padding: 0.4rem 1.6rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 1.2rem;
         }
-
+        .hero h1 { font-size: 3.2rem; font-weight: 900; line-height: 1.2; margin-bottom: 0.8rem; }
+        .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin-bottom: 1.8rem; }
         .hero-stats {
             display: flex;
             gap: 2rem;
-            margin-top: 2rem;
             flex-wrap: wrap;
         }
-
         .stat-item {
-            text-align: center;
             background: rgba(255,255,255,0.1);
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
         }
+        .stat-number { font-size: 2rem; font-weight: 900; color: var(--schneider-green); }
+        .stat-label { font-size: 0.85rem; }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 900;
-            display: block;
-            color: var(--schneider-green);
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.95;
-            color: white;
-        }
-
-        /* Course Info Cards */
+        /* Info Cards */
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
         }
-
         .info-card {
             background: var(--schneider-white);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            transition: all 0.3s;
+            border-radius: 26px;
+            padding: 1.8rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
             cursor: pointer;
-            border: 1px solid #E8EEF2;
-            position: relative;
-            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
         }
-
-        .info-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--schneider-green);
-            transform: scaleY(0);
-            transition: transform 0.3s;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(58, 183, 149, 0.15);
-            border-color: var(--schneider-green);
-        }
-
-        .info-card:hover::before {
-            transform: scaleY(1);
-        }
-
-        .info-card i {
-            font-size: 2.5rem;
-            color: var(--schneider-green);
-            margin-bottom: 1rem;
-        }
-
-        .info-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--schneider-blue);
-            font-weight: 700;
-        }
-
-        .info-card p {
-            color: var(--text-light);
-            margin-bottom: 1rem;
-        }
-
-        .card-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
+        .info-card:hover { transform: translateY(-5px); box-shadow: 0 18px 35px -12px rgba(58,183,149,0.3); }
+        .info-card i { font-size: 2.2rem; color: var(--schneider-green); margin-bottom: 1rem; }
+        .info-card h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .tag {
             background: var(--schneider-light-blue);
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: var(--schneider-blue);
-            font-weight: 600;
-        }
-
-        /* Pricing Card - دورة رمضان */
-        .ramadan-section {
-            background: linear-gradient(135deg, var(--schneider-green), var(--schneider-dark-green));
-            border-radius: 20px;
-            padding: 3rem;
-            color: white;
-            margin: 3rem 0;
-            text-align: center;
-        }
-
-        .ramadan-section h2 {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 1rem;
-            color: white;
-        }
-
-        .ramadan-section p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
-            color: white;
-        }
-
-        .price-box {
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            border: 2px dashed rgba(255,255,255,0.3);
-        }
-
-        .price-box .price {
-            font-size: 4rem;
-            font-weight: 900;
-            color: white;
-            line-height: 1;
-        }
-
-        .price-box .price small {
-            font-size: 1.5rem;
-            font-weight: 400;
-            opacity: 0.9;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--schneider-green);
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            text-decoration: none;
+            padding: 0.2rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
             font-weight: 700;
-            font-size: 1.2rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            border: none;
-            cursor: pointer;
         }
 
-        .btn-primary:hover {
-            transform: scale(1.05);
-            background: var(--schneider-blue);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.2rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s;
-            border: 2px solid white;
-            cursor: pointer;
-        }
-
-        .btn-secondary:hover {
-            background: white;
-            color: var(--schneider-green);
-            transform: scale(1.05);
-        }
-
-        /* Units Section */
+        /* Pricing */
+        .pricing-section { margin: 3rem 0; }
         .section-title {
-            font-size: 2.5rem;
+            font-size: 2.3rem;
             font-weight: 900;
-            color: var(--schneider-blue);
-            margin-bottom: 2rem;
             text-align: center;
+            margin-bottom: 2rem;
             position: relative;
-            padding-bottom: 1rem;
+            padding-bottom: 0.8rem;
         }
-
         .section-title::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 50%;
+            bottom: 0; left: 50%;
             transform: translateX(-50%);
             width: 100px;
             height: 4px;
             background: linear-gradient(90deg, var(--schneider-green), var(--schneider-blue));
             border-radius: 2px;
         }
-
-        .units-grid {
+        .pricing-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
             gap: 2rem;
-            margin-bottom: 3rem;
         }
-
-        .unit-card {
+        .pricing-card {
             background: var(--schneider-white);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #E8EEF2;
-        }
-
-        .unit-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(58, 183, 149, 0.15);
-        }
-
-        .unit-header {
-            background: var(--schneider-blue);
-            color: white;
-            padding: 1.5rem;
+            border-radius: 36px;
+            padding: 2.5rem 2rem;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            border: 2px solid transparent;
             position: relative;
             overflow: hidden;
         }
-
-        .unit-header::after {
-            content: 'Unity Pro';
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            font-size: 4rem;
-            font-weight: 900;
-            opacity: 0.1;
-            color: white;
-        }
-
-        .unit-number {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--schneider-green);
-            font-weight: 600;
-        }
-
-        .unit-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: white;
-        }
-
-        .unit-duration {
-            display: inline-block;
-            background: rgba(255,255,255,0.15);
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-        }
-
-        .unit-body {
-            padding: 1.5rem;
-        }
-
-        .unit-topic {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid #E8EEF2;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .unit-topic:hover {
-            padding-right: 15px;
-            color: var(--schneider-green);
-        }
-
-        .unit-topic i {
-            color: var(--schneider-green);
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-        }
-
-        .unit-topic span {
-            flex: 1;
-            color: var(--text-primary);
-        }
-
-        .topic-details {
-            display: none;
-            padding: 1.5rem;
-            background: var(--schneider-light-blue);
-            border-radius: 10px;
-            margin: 0.5rem 0 1rem 0;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-            border-right: 3px solid var(--schneider-green);
-        }
-
-        .topic-details.active {
-            display: block;
-        }
-
-        .topic-details i {
-            color: var(--schneider-green);
-            margin-left: 0.5rem;
-        }
-
-        .expand-icon {
-            transition: transform 0.3s;
-        }
-
-        .expanded .expand-icon {
-            transform: rotate(180deg);
-        }
-
-        .topic-answer {
+        .pricing-card.popular {
+            border-color: var(--schneider-green);
             background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 0.5rem 0;
-            border-right: 2px solid var(--schneider-green);
-            color: var(--text-primary);
         }
-
-        .topic-question {
-            font-weight: 700;
-            color: var(--schneider-blue);
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
+        .pricing-card.popular::before {
+            content: "الأكثر شمولاً";
+            position: absolute;
+            top: 16px; left: -38px;
+            background: var(--schneider-green);
+            color: white;
+            padding: 0.4rem 4rem;
+            transform: rotate(-45deg);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
-
-        .discussion-box {
-            background: rgba(58, 183, 149, 0.05);
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            border: 1px dashed var(--schneider-green);
+        .pricing-header { text-align: center; margin-bottom: 2rem; }
+        .pricing-name { font-size: 2rem; font-weight: 900; color: var(--schneider-blue); }
+        .pricing-price { font-size: 3.5rem; font-weight: 900; color: var(--schneider-green); line-height: 1; }
+        .pricing-price small { font-size: 1.2rem; font-weight: 500; color: #7a8f9f; }
+        .pricing-features {
+            list-style: none;
+            margin: 2rem 0;
+            padding: 0;
         }
-
-        .discussion-box h4 {
-            color: var(--schneider-green);
-            margin-bottom: 0.5rem;
+        .pricing-features li {
+            padding: 0.7rem 0;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            border-bottom: 1px solid #ecf3f8;
         }
-
-        .topic-note {
-            background: rgba(255, 107, 74, 0.05);
-            padding: 0.8rem;
-            border-radius: 8px;
-            margin: 0.5rem 0;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            border-right: 2px solid var(--schneider-accent);
-        }
-
-        .code-block {
-            background: #f8f9fa;
-            color: var(--text-primary);
+        .pricing-features i { width: 24px; color: var(--schneider-green); font-size: 1.1rem; }
+        .pricing-features .disabled i { color: #cbd5e0; }
+        .pricing-features .disabled { color: #a5b9cc; }
+        .pricing-actions { display: flex; flex-direction: column; gap: 0.8rem; }
+        .btn-pricing {
+            display: block;
+            width: 100%;
             padding: 1rem;
-            border-radius: 10px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-align: center;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            border: none;
+            cursor: pointer;
+        }
+        .btn-basic {
+            background: var(--schneider-light-blue);
+            color: var(--schneider-blue);
+        }
+        .btn-basic:hover { background: var(--schneider-blue); color: white; }
+        .btn-pro {
+            background: var(--schneider-green);
+            color: white;
+            box-shadow: 0 8px 18px rgba(58,183,149,0.4);
+        }
+        .btn-pro:hover { background: var(--schneider-dark-green); transform: scale(1.02); }
+        .btn-outline-units {
+            background: transparent;
+            border: 2px solid var(--schneider-blue);
+            color: var(--schneider-blue);
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .btn-outline-units:hover { background: var(--schneider-blue); color: white; }
+
+        /* Units Wrapper */
+        .units-wrapper {
+            margin: 3rem 0 5rem;
+            display: none;
+            animation: slideFade 0.4s ease;
+        }
+        .units-wrapper.visible { display: block; }
+        @keyframes slideFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .units-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .selected-badge {
+            background: linear-gradient(135deg, var(--schneider-green), var(--schneider-dark-green));
+            color: white;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 8px 15px rgba(58,183,149,0.3);
+        }
+        .btn-hide-units {
+            background: white;
+            border: 1px solid var(--schneider-blue);
+            color: var(--schneider-blue);
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-hide-units:active { transform: scale(0.96); }
+
+        /* Units Grid - Comprehensive */
+        .units-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+        }
+        .unit-card {
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        .unit-card:hover { transform: translateY(-6px); box-shadow: 0 25px 40px -15px rgba(58,183,149,0.3); }
+        .unit-header {
+            padding: 1.8rem;
+            color: white;
+        }
+        .unit-header.basic-header { background: #1e3f5e; }
+        .unit-header.advanced-header { background: var(--schneider-dark-green); }
+        .unit-number { font-size: 0.85rem; opacity: 0.9; display: block; margin-bottom: 0.2rem; }
+        .unit-title { font-size: 1.4rem; font-weight: 800; margin: 0.2rem 0 0.5rem; }
+        .unit-duration {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            padding: 0.3rem 1.3rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+        .unit-body { padding: 1.8rem; }
+        
+        /* Detailed points with comprehensive info */
+        .unit-topic {
+            margin-bottom: 1.8rem;
+            border-bottom: 1px solid #e2ebf3;
+            padding-bottom: 1.5rem;
+        }
+        .topic-question {
+            font-weight: 900;
+            color: var(--schneider-blue);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+        }
+        .topic-question i {
+            color: var(--schneider-green);
+            font-size: 1rem;
+        }
+        .topic-answer {
+            font-size: 1rem;
+            color: #1e3f5e;
+            background: #f6faff;
+            padding: 1rem 1.2rem;
+            border-radius: 20px;
+            margin: 0.7rem 0;
+            border-right: 4px solid var(--schneider-green);
+            line-height: 1.7;
+        }
+        .topic-example {
+            background: #fffaf0;
+            padding: 1rem 1.2rem;
+            border-radius: 18px;
+            margin-top: 0.7rem;
+            font-size: 0.95rem;
+            border-right: 4px solid #FFB800;
+        }
+        .topic-example i { color: #FFB800; margin-left: 0.7rem; }
+        .code-snippet {
+            background: #1e2b3a;
+            color: #b2f0b2;
+            padding: 1rem;
+            border-radius: 16px;
             font-family: 'Courier New', monospace;
             direction: ltr;
             text-align: left;
-            margin: 1rem 0;
+            margin: 0.8rem 0;
+            font-size: 0.9rem;
             overflow-x: auto;
-            border: 1px solid #e1e4e8;
+            border: 1px solid #3a4a5a;
         }
-
-        .info-box {
-            background: #e3f2fd;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            border-right: 4px solid var(--schneider-blue);
-            color: var(--text-primary);
+        .advanced-tag {
+            display: inline-block;
+            background: var(--schneider-accent);
+            color: white;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            margin-right: 0.8rem;
+            letter-spacing: 0.3px;
         }
-
-        .warning-box {
-            background: #fff3e0;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            border-right: 4px solid var(--schneider-accent);
-            color: var(--text-primary);
+        
+        .book-unit-btn {
+            display: block;
+            width: 100%;
+            margin-top: 1.8rem;
+            padding: 0.9rem;
+            background: var(--schneider-green);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            text-align: center;
+            text-decoration: none;
+            transition: 0.2s;
         }
+        .book-unit-btn:active { transform: scale(0.97); background: var(--schneider-blue); }
 
         /* Modal */
         .modal {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
             z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
+            justify-content: center; align-items: center;
+            backdrop-filter: blur(8px);
         }
-
-        .modal.active {
-            display: flex;
-        }
-
+        .modal.active { display: flex; }
         .modal-content {
-            background: var(--schneider-white);
-            border-radius: 30px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
+            background: white;
+            border-radius: 36px;
+            max-width: 450px;
+            width: 85%;
+            padding: 2.2rem 2rem;
             position: relative;
-            animation: modalSlideIn 0.3s;
-            border: 1px solid rgba(58, 183, 149, 0.2);
+            text-align: center;
+            animation: modalPop 0.3s;
         }
-
-        @keyframes modalSlideIn {
-            from {
-                transform: translateY(-100px) scale(0.9);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--schneider-blue), #15304C);
-            color: white;
-            padding: 2rem;
-            border-radius: 30px 30px 0 0;
-            position: sticky;
-            top: 0;
-            z-index: 1;
-        }
-
-        .modal-header h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: white;
-        }
-
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         .modal-close {
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            font-size: 1.5rem;
-            color: white;
+            position: absolute; top: 1rem; left: 1rem;
+            font-size: 1.4rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
+            width: 38px; height: 38px;
+            background: #f0f0f0;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .modal-close:hover {
-            background: var(--schneider-green);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 2rem;
-        }
-
-        .modal-section {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #E8EEF2;
-        }
-
-        .modal-section h3 {
-            color: var(--schneider-blue);
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-section h3 i {
-            color: var(--schneider-green);
-        }
-
-        .modal-section h4 {
-            color: var(--schneider-blue);
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 1rem 0 0.5rem;
-        }
-
-        .modal-section ul, .modal-section ol {
-            padding-right: 1.5rem;
-            margin: 0.5rem 0;
-        }
-
-        .modal-section li {
-            padding: 0.3rem 0;
-            color: var(--text-primary);
-        }
-
-        /* Floating Action Button */
+        /* FAB */
         .fab {
             position: fixed;
-            bottom: 2rem;
-            left: 2rem;
-            width: 60px;
-            height: 60px;
+            bottom: 85px; left: 1.8rem;
+            width: 55px; height: 55px;
             background: var(--schneider-green);
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(58, 183, 149, 0.4);
-            transition: all 0.3s;
-            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(58,183,149,0.5);
+            z-index: 90;
+            transition: 0.2s;
+            border: none;
         }
+        .fab:active { transform: scale(0.9); }
 
-        .fab:hover {
-            transform: scale(1.1) rotate(360deg);
-            background: var(--schneider-blue);
-        }
-
-        /* Checkbox styling */
-        .checkbox-container {
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            margin-top: 0.5rem;
-            padding: 0.3rem 1rem;
-            background: var(--schneider-white);
-            border-radius: 20px;
-            border: 1px solid var(--schneider-green);
-        }
-
-        .checkbox-container input[type="checkbox"] {
-            margin-left: 8px;
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--schneider-green);
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #E8EEF2;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--schneider-green);
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--schneider-dark-green);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Responsive Design */
+        /* Responsive */
         @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: var(--schneider-white);
-                flex-direction: column;
-                padding: 2rem;
-                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            }
-
-            .nav-links.active {
-                display: flex;
-            }
-
-            .menu-toggle {
-                display: block;
-            }
-
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero-stats {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .container {
-                padding: 0 1rem;
-                margin-top: 220px;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .fixed-progress {
-                top: 70px;
-                padding: 0.8rem 1rem;
-            }
-
-            .logo-text {
-                display: none;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .price-box .price {
-                font-size: 3rem;
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease forwards;
+            .nav-links { display: none; }
+            .menu-toggle { display: block; }
+            .mobile-bottom-nav { display: block; }
+            .container { margin-bottom: 75px; }
+            .hero { padding: 2rem 1.5rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero-stats { gap: 1rem; }
+            .stat-item { padding: 0.5rem 1.2rem; }
+            .fab { bottom: 85px; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <nav class="nav-container">
             <div class="logo">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#3AB795" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M2 17L12 22L22 17" stroke="#3AB795" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M2 12L12 17L22 12" stroke="#3AB795" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#3AB795" stroke-width="2"/>
+                    <path d="M2 17L12 22L22 17" stroke="#3AB795" stroke-width="2"/>
+                    <path d="M2 12L12 17L22 12" stroke="#3AB795" stroke-width="2"/>
                 </svg>
                 <span class="logo-text">Schneider Electric</span>
             </div>
-            <div class="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
+            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
             <ul class="nav-links">
-                <li><a href="#home">الرئيسية</a></li>
-                <li><a href="#units">الوحدات</a></li>
-                <li><a href="#ramadan">دورة رمضان</a></li>
+                <li><a href="#home" class="active">الرئيسية</a></li>
+                <li><a href="#pricing">الباقات</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Fixed Progress Bar -->
-    <div class="fixed-progress">
-        <div class="progress-wrapper">
-            <div class="progress-header">
-                <span class="progress-title"><i class="fas fa-chart-line"></i> تقدمك في الدورة</span>
-                <span class="progress-percentage" id="progressPercentage">0%</span>
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-            </div>
-            <div class="progress-stats">
-                <span><i class="fas fa-cubes"></i> الوحدات: <span id="completedUnits">0</span>/7</span>
-                <span><i class="fas fa-check-circle"></i> المحاور: <span id="completedTopics">0</span>/28</span>
-            </div>
+    <div class="mobile-bottom-nav">
+        <div class="bottom-nav-items">
+            <a href="#home" class="bottom-nav-item active"><i class="fas fa-home"></i><span>الرئيسية</span></a>
+            <a href="#pricing" class="bottom-nav-item"><i class="fas fa-tags"></i><span>الباقات</span></a>
+            <a href="#" class="bottom-nav-item" onclick="window.scrollTo({top:0,behavior:'smooth'});"><i class="fas fa-arrow-up"></i><span>للأعلى</span></a>
         </div>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
-        <!-- Hero Section -->
-        <section id="home" class="hero fade-in">
-            <div class="hero-content">
-                <span class="hero-badge"><i class="fas fa-microchip"></i> Schneider Electric</span>
-                <h1>دورة Unity Pro XL<br>برمجة PLCs من Schneider Electric</h1>
-                <p>برنامج تدريبي متكامل للمهندسين والفنيين - شرح مفصل مع أمثلة تطبيقية على برنامج Unity Pro</p>
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">7</span>
-                        <span class="stat-label">وحدات تدريبية</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">30</span>
-                        <span class="stat-label">ساعة تدريبية</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">28</span>
-                        <span class="stat-label">محور للنقاش</span>
-                    </div>
-                </div>
+        <!-- Hero -->
+        <section id="home" class="hero">
+            <span class="hero-badge"><i class="fas fa-microchip"></i> Schneider Electric</span>
+            <h1>البرنامج الشامل<br>لـ Unity Pro PLC</h1>
+            <p>من الأساسيات للمبتدئين إلى الاحتراف وبناء الأنظمة المتكاملة</p>
+            <div class="hero-stats">
+                <div class="stat-item"><span class="stat-number">7</span><span class="stat-label">وحدات</span></div>
+                <div class="stat-item"><span class="stat-number">30+</span><span class="stat-label">ساعة</span></div>
+                <div class="stat-item"><span class="stat-number">28</span><span class="stat-label">محور متكامل</span></div>
             </div>
         </section>
 
-        <!-- Course Info Cards -->
+        <!-- Info Cards -->
         <div class="info-grid">
             <div class="info-card" onclick="showModal('prerequisites')">
-                <i class="fas fa-users"></i>
-                <h3>الجمهور المستهدف</h3>
-                <p>فنيو ومهندسو الكهرباء والتحكم</p>
-                <div class="card-tags">
-                    <span class="tag">مبتدئ</span>
-                    <span class="tag">متوسط</span>
-                </div>
+                <i class="fas fa-users"></i><h3>الجمهور</h3><p>مهندسون، فنيون، طلاب</p>
+                <div class="card-tags"><span class="tag">مبتدئ</span><span class="tag">متوسط</span><span class="tag">متقدم</span></div>
             </div>
-
             <div class="info-card" onclick="showModal('requirements')">
-                <i class="fas fa-laptop-code"></i>
-                <h3>المتطلبات</h3>
-                <p>برنامج Unity Pro XL (سيتم توفيره)</p>
-                <div class="card-tags">
-                    <span class="tag">Unity Pro</span>
-                    <span class="tag">EcoStruxure</span>
-                </div>
+                <i class="fas fa-laptop-code"></i><h3>المتطلبات</h3><p>Unity Pro XL + محاكاة</p>
+                <div class="card-tags"><span class="tag">برنامج</span><span class="tag">ويندوز</span></div>
             </div>
-
             <div class="info-card" onclick="showModal('objectives')">
-                <i class="fas fa-bullseye"></i>
-                <h3>مخرجات التعلم</h3>
-                <p>7 مهارات أساسية في برمجة Schneider</p>
-                <div class="card-tags">
-                    <span class="tag">Ladder Logic</span>
-                    <span class="tag">ST Language</span>
-                </div>
+                <i class="fas fa-bullseye"></i><h3>المخرجات</h3><p>مبتدئ → خبير في PLC</p>
+                <div class="card-tags"><span class="tag">Ladder</span><span class="tag">ST</span><span class="tag">مشاريع</span></div>
             </div>
         </div>
 
-        <!-- Ramadan Course Section - Communication Only -->
-        <section id="ramadan" class="ramadan-section">
-            <h2><i class="fas fa-moon"></i> دورة رمضان المبارك</h2>
-            <p>برنامج Unity Pro XL متكامل - 30 ساعة تدريبية مكثفة</p>
-            
-            <div class="price-box">
-                <div class="price">250 <small>درهم</small></div>
-                <p>✅ برنامج Unity Pro سيتم توفيره للمشتركين</p>
-                <p>✅ شروحات مفصلة مع أمثلة تطبيقية</p>
-                <p>✅ 7 وحدات تدريبية - 28 محور للنقاش</p>
-            </div>
-
-            <div class="button-group">
-                <a href="https://wa.me/212671243653?text=السلام%20عليكم%2C%20أرغب%20في%20التسجيل%20في%20دورة%20Unity%20Pro%20لشهر%20رمضان" class="btn-primary" target="_blank">
-                    <i class="fab fa-whatsapp"></i> احجز الآن
-                </a>
-                <a href="https://wa.me/212671243653?text=السلام%20عليكم%2C%20أرغب%20في%20الاستفسار%20عن%20دورة%20Unity%20Pro%20في%20رمضان" class="btn-secondary" target="_blank">
-                    <i class="fab fa-whatsapp"></i> استفسار
-                </a>
+        <!-- Pricing -->
+        <section id="pricing" class="pricing-section">
+            <h2 class="section-title">اختر مسارك التدريبي</h2>
+            <div class="pricing-grid">
+                <!-- Basic: شامل للمبتدئين -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <div class="pricing-name">المسار الأساسي الشامل</div>
+                        <div class="pricing-price">250 <small>درهم</small></div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check-circle"></i> 4 وحدات تأسيسية كاملة</li>
+                        <li><i class="fas fa-check-circle"></i> 40+ نقطة أساسية مع شرح وافي</li>
+                        <li><i class="fas fa-check-circle"></i> أمثلة تطبيقية لكل مفهوم</li>
+                        <li><i class="fab fa-facebook"></i> مجموعة فيسبوك للمبتدئين</li>
+                        <li><i class="fab fa-whatsapp"></i> دعم واتساب للمسار</li>
+                        <li><i class="fas fa-check-circle"></i> أساسيات Ladder, ST, الذاكرة</li>
+                        <li class="disabled"><i class="fas fa-times-circle"></i> مشاريع متقدمة واتصالات</li>
+                    </ul>
+                    <div class="pricing-actions">
+                        <a href="https://wa.me/212671243653?text=حجز%20المسار%20الأساسي%20الشامل%20250" class="btn-pricing btn-basic" target="_blank">احجز المسار الأساسي</a>
+                        <button class="btn-pricing btn-outline-units" onclick="showUnits('basic')"><i class="fas fa-eye"></i> استعرض الوحدات</button>
+                    </div>
+                </div>
+                <!-- Advanced: احترافي + متقدم -->
+                <div class="pricing-card popular">
+                    <div class="pricing-header">
+                        <div class="pricing-name">المسار المتقدم + الاحتراف</div>
+                        <div class="pricing-price">500 <small>درهم</small></div>
+                    </div>
+                    <ul class="pricing-features">
+                        <li><i class="fas fa-check-circle"></i> كل محتوى المسار الأساسي (4 وحدات)</li>
+                        <li><i class="fas fa-check-circle"></i> 3 وحدات متقدمة: تطبيقي، اتصالات، مشروع شامل</li>
+                        <li><i class="fas fa-check-circle"></i> 70+ نقطة تعليمية (أساسي + متقدم)</li>
+                        <li><i class="fas fa-check-circle"></i> شروحات معمقة + أمثلة صناعية</li>
+                        <li><i class="fas fa-check-circle"></i> بناء نظام تعبئة كامل (مشروع)</li>
+                        <li><i class="fas fa-check-circle"></i> اتصالات Modbus وربط HMI</li>
+                        <li><i class="fas fa-check-circle"></i> مجموعة واتساب تفاعلية + استشارات</li>
+                    </ul>
+                    <div class="pricing-actions">
+                        <a href="https://wa.me/212671243653?text=حجز%20المسار%20المتقدم%20500" class="btn-pricing btn-pro" target="_blank">احجز المسار المتقدم</a>
+                        <button class="btn-pricing btn-outline-units" onclick="showUnits('advanced')"><i class="fas fa-eye"></i> استعرض الوحدات</button>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- Units Section with 4 Questions Each -->
-        <h2 id="units" class="section-title">وحدات الدورة التدريبية</h2>
-        <div class="units-grid" id="unitsContainer"></div>
+        <!-- Units Wrapper -->
+        <div id="unitsWrapper" class="units-wrapper">
+            <div class="units-header">
+                <div class="selected-badge"><i class="fas fa-crown"></i> <span id="basketName"></span></div>
+                <button class="btn-hide-units" onclick="hideUnits()"><i class="fas fa-times"></i> إغلاق</button>
+            </div>
+            <div id="unitsContainer" class="units-grid"></div>
+        </div>
     </div>
 
-    <!-- Floating Action Button -->
-    <div class="fab" onclick="scrollToTop()">
-        <i class="fas fa-arrow-up"></i>
-    </div>
+    <button class="fab" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
 
-    <!-- Modal -->
     <div class="modal" id="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle"></h2>
-                <div class="modal-close" onclick="closeModal()">×</div>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-close" onclick="closeModal()">×</div>
+            <h2 id="modalTitle" style="color:var(--schneider-blue); margin-bottom:1rem;"></h2>
+            <div id="modalBody" style="text-align:right;"></div>
         </div>
     </div>
 
     <script>
-        // Course Data with 4 Questions per Unit
-        const courseData = {
-            units: [
-                {
-                    number: 1,
-                    title: "مقدمة في Unity Pro و Schneider PLCs",
-                    duration: "4 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: ما هو Unity Pro وما هي استخداماته؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: ما هو برنامج Unity Pro وما المجالات التي يستخدم فيها؟</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> Unity Pro هو بيئة تطوير متكاملة (IDE) من Schneider Electric لبرمجة PLCs. يستخدم في:
-                                    <ul>
-                                        <li>برمجة وحدات التحكم المنطقية (PLCs)</li>
-                                        <li>محاكاة العمليات الصناعية قبل التنفيذ</li>
-                                        <li>تشخيص أعطال الأنظمة الآلية</li>
-                                        <li>ربط الـ PLC بأنظمة التحكم العليا (SCADA)</li>
-                                    </ul>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>هل سبق لك استخدام برامج مشابهة؟ ما الفرق بينها وبين Unity Pro؟</p>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: ما هي عائلات PLCs المدعومة في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اذكر العائلات الرئيسية لـ PLCs التي يدعمها Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> يدعم Unity Pro العائلات التالية:
-                                    <ul>
-                                        <li><strong>Modicon M340:</strong> للأنظمة المتوسطة - سرعة عالية</li>
-                                        <li><strong>Modicon Premium:</strong> للأنظمة المعقدة - أداء موثوق</li>
-                                        <li><strong>Modicon Quantum:</strong> للأنظمة الكبيرة - تحكم موزع</li>
-                                        <li><strong>Modicon Momentum:</strong> للأنظمة المدمجة</li>
-                                    </ul>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>أي من هذه العائلات تعتقد أنها الأنسب لمشروع تحكم في مياه الصرف الصحي؟ ولماذا؟</p>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: كيف تنشئ مشروعاً جديداً في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح خطوات إنشاء مشروع جديد في Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> خطوات إنشاء مشروع جديد:
-                                    <ol>
-                                        <li>فتح البرنامج واختيار File → New Project</li>
-                                        <li>اختيار نوع الـ PLC (Modicon M340 مثلاً)</li>
-                                        <li>تحديد لغة البرمجة الرئيسية (Ladder, ST, FBD)</li>
-                                        <li>إضافة وحدات I/O من مكتبة البرنامج</li>
-                                        <li>تسمية المشروع وحفظه في المجلد المناسب</li>
-                                    </ol>
-                                </div>
-                                <div class="topic-note">
-                                    <i class="fas fa-lightbulb"></i>
-                                    <strong>نصيحة:</strong> استخدم تسمية واضحة للمشروع تعكس اسم الآلة أو العملية.
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: ما هي لغات البرمجة المدعومة في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: عدد لغات البرمجة التي يدعمها Unity Pro مع شرح مبسط لكل منها.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> يدعم Unity Pro 5 لغات برمجة رئيسية:
-                                    <ul>
-                                        <li><strong>Ladder Diagram (LD):</strong> لغة رسومية تشبه الدوائر الكهربائية</li>
-                                        <li><strong>Structured Text (ST):</strong> لغة نصية عالية المستوى تشبه Pascal</li>
-                                        <li><strong>Function Block Diagram (FBD):</strong> لغة رسومية باستخدام البلوكات</li>
-                                        <li><strong>Sequential Function Chart (SFC):</strong> لغة تتابعية للعمليات المتسلسلة</li>
-                                        <li><strong>Instruction List (IL):</strong> لغة شبيهة بلغة التجميع (نادر الاستخدام)</li>
-                                    </ul>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>أي لغة تفضل ولماذا؟ في أي الحالات تستخدم كل لغة؟</p>
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 2,
-                    title: "البرمجة بلغة Ladder في Unity Pro",
-                    duration: "5 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: ما هي العناصر الأساسية في لغة Ladder؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح العناصر الأساسية المستخدمة في رسم مخططات Ladder.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> العناصر الأساسية:
-                                    <ul>
-                                        <li><strong>--| |-- (Contact NO):</strong> ملامس مفتوح Normally Open</li>
-                                        <li><strong>--|/|-- (Contact NC):</strong> ملامس مغلق Normally Closed</li>
-                                        <li><strong>--( )-- (Coil):</strong> ملف إخراج (Output)</li>
-                                        <li><strong>--(S)-- (Set Coil):</strong> ملف تعيين (يبقى نشطاً)</li>
-                                        <li><strong>--(R)-- (Reset Coil):</strong> ملف إعادة تعيين</li>
-                                    </ul>
-                                </div>
-                                <div class="code-block">
-                                    // مثال على استخدام العناصر
-                                    ||---[ Start ]----[ Stop ]----[ Motor ]---|
-                                    |        |                      |
-                                    |        |----[ Motor ]---------|
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تصمم دائرة Start/Stop مع Latching؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح مبدأ Latching وكيف تصمم دائرة Start/Stop كاملة.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> دائرة Latching تستخدم للحفاظ على تشغيل المخرج:
-                                    <ul>
-                                        <li>عند الضغط على Start، يعمل المخرج</li>
-                                        <li>يقوم المخرج بتغذية نفسه عبر فرع موازٍ</li>
-                                        <li>يستمر التشغيل حتى الضغط على Stop</li>
-                                    </ul>
-                                    <div class="code-block">
-                                        // دائرة Latching كاملة
-                                        Network 1:
-                                        ||---[ %I0.0 ]----[ %I0.1 ]----[ %Q0.0 ]---|
-                                        |        |                      |
-                                        |        |----[ %Q0.0 ]---------|
-                                    </div>
-                                </div>
-                                <div class="topic-note">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>هام:</strong> استخدم Stop من النوع NC (Normally Closed) لأسباب تتعلق بالسلامة.
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: ما هي أنواع المؤقتات في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اذكر أنواع المؤقتات في Unity Pro مع شرح استخداماتها.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> ثلاثة أنواع رئيسية:
-                                    <ul>
-                                        <li><strong>TON (Timer ON Delay):</strong> يتأخر في التشغيل - يستخدم لتأخير بدء الحركة</li>
-                                        <li><strong>TOF (Timer OFF Delay):</strong> يتأخر في الإيقاف - يستخدم لإبقاء شيء يعمل بعد زوال الإشارة</li>
-                                        <li><strong>TP (Pulse Timer):</strong> مؤقت نبضي - يعطي نبضة محددة المدة</li>
-                                    </ul>
-                                </div>
-                                <div class="code-block">
-                                    // مثال على TON
-                                    ||---[ %I0.0 ]---[ Timer1(IN:=%I0.0, PT:=T#5S) ]---|
-                                    ||---[ Timer1.Q ]---[ %Q0.0 ]---|
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف تستخدم العدادات في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح أنواع العدادات وكيفية استخدامها مع مثال.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> أنواع العدادات:
-                                    <ul>
-                                        <li><strong>CTU:</strong> عداد تصاعدي (Count Up)</li>
-                                        <li><strong>CTD:</strong> عداد تنازلي (Count Down)</li>
-                                        <li><strong>CTUD:</strong> عداد ثنائي الاتجاه (Up/Down)</li>
-                                    </ul>
-                                    <div class="code-block">
-                                        // مثال على CTU
-                                        VAR
-                                            ProductCounter : CTU;
-                                        END_VAR
-                                        
-                                        // في Ladder
-                                        ||---[ %I0.0 ]---[ ProductCounter(CU:=%I0.0, R:=%I0.1, PV:=10) ]---|
-                                        ||---[ ProductCounter.Q ]---[ %Q0.0 ]---|
-                                    </div>
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 3,
-                    title: "لغة ST (Structured Text) في Unity Pro",
-                    duration: "5 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: ما هي لغة ST وما مزاياها؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: عرف لغة ST واذكر مزاياها مقارنة بلغة Ladder.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> ST هي لغة نصية عالية المستوى تشبه Pascal. مزاياها:
-                                    <ul>
-                                        <li>مناسبة للعمليات الحسابية المعقدة</li>
-                                        <li>سهولة في كتابة الخوارزميات والحلقات التكرارية</li>
-                                        <li>إمكانية التعامل مع المصفوفات والهياكل</li>
-                                        <li>أسهل في الصيانة للمشاريع الكبيرة</li>
-                                    </ul>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>في أي الحالات تفضل استخدام ST على Ladder؟ ومتى تفضل العكس؟</p>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تكتب جملة IF في ST؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح تركيب جملة IF في ST مع مثال عملي.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> تركيب جملة IF:
-                                    <div class="code-block">
-                                        IF condition THEN
-                                            // أوامر إذا تحقق الشرط
-                                        ELSIF condition2 THEN
-                                            // أوامر إذا تحقق الشرط الثاني
-                                        ELSE
-                                            // أوامر إذا لم يتحقق أي شرط
-                                        END_IF;
-                                        
-                                        // مثال عملي
-                                        IF Start AND NOT Stop THEN
-                                            Motor := TRUE;
-                                            Counter := Counter + 1;
-                                        ELSE
-                                            Motor := FALSE;
-                                        END_IF;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: كيف تكتب حلقة FOR في ST؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح استخدام حلقة FOR في ST مع مثال لملء مصفوفة.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> تركيب حلقة FOR:
-                                    <div class="code-block">
-                                        FOR i := 1 TO 10 DO
-                                            // أوامر تتكرر 10 مرات
-                                            Array[i] := i * 2;
-                                        END_FOR;
-                                        
-                                        // مثال تطبيقي
-                                        VAR
-                                            Values : ARRAY[1..5] OF INT;
-                                            i : INT;
-                                        END_VAR
-                                        
-                                        FOR i := 1 TO 5 DO
-                                            Values[i] := i * 10;
-                                        END_FOR;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف تستخدم جملة CASE في ST؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: متى نستخدم CASE بدلاً من IF؟ اشرح مع مثال.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> CASE تستخدم عند وجود عدة خيارات لقيمة متغير واحد:
-                                    <div class="code-block">
-                                        CASE Mode OF
-                                            1: Speed := 1000;
-                                            2: Speed := 2000;
-                                            3: Speed := 3000;
-                                            4,5: Speed := 4000;  // لعدة قيم
-                                        ELSE
-                                            Speed := 0;
-                                        END_CASE;
-                                        
-                                        // مثال تطبيقي
-                                        CASE OperatingMode OF
-                                            0: MotorState := 'STOP';
-                                            1: MotorState := 'START';
-                                            2: MotorState := 'JOG';
-                                        ELSE
-                                            MotorState := 'ERROR';
-                                        END_CASE;
-                                    </div>
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 4,
-                    title: "إدارة الذاكرة والعناوين في Unity Pro",
-                    duration: "4 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: ما هي أنواع المتغيرات في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اذكر أنواع المتغيرات الأساسية في Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> أنواع المتغيرات:
-                                    <ul>
-                                        <li><strong>BOOL:</strong> متغير منطقي (True/False)</li>
-                                        <li><strong>INT:</strong> عدد صحيح (16 bit) من -32768 إلى 32767</li>
-                                        <li><strong>DINT:</strong> عدد صحيح طويل (32 bit)</li>
-                                        <li><strong>REAL:</strong> عدد عشري (32 bit)</li>
-                                        <li><strong>WORD:</strong> كلمة ثنائية (16 bit)</li>
-                                        <li><strong>DWORD:</strong> كلمة ثنائية مزدوجة (32 bit)</li>
-                                    </ul>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تقرأ وتكتب عناوين الذاكرة في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح صيغ العناوين المختلفة في Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> صيغ العناوين:
-                                    <div class="code-block">
-                                        %I0.0.0    // مدخل في الوحدة 0، القناة 0
-                                        %Q0.1.2    // مخرج في الوحدة 0، القناة 1، النقطة 2
-                                        %M0        // Bit ذاكرة
-                                        %MW0       // Word ذاكرة
-                                        %MD0       // Double Word ذاكرة
-                                        %KW0       // Word ثابت (Constant)
-                                    </div>
-                                </div>
-                                <div class="topic-note">
-                                    <i class="fas fa-lightbulb"></i>
-                                    <strong>ملاحظة:</strong> في Unity Pro، كل 4 Bits تشكل خانة واحدة في النظام السداسي عشر.
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: ما الفرق بين المتغيرات المحلية والعامة؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح الفرق بين Local Variables و Global Variables.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> الفروقات الرئيسية:
-                                    <ul>
-                                        <li><strong>المتغيرات العامة (Global):</strong> ترى في كل البرنامج، تستخدم للبيانات المشتركة</li>
-                                        <li><strong>المتغيرات المحلية (Local):</strong> ترى فقط داخل البرنامج أو الوظيفة، تحفظ الذاكرة</li>
-                                    </ul>
-                                    <div class="code-block">
-                                        // متغيرات عامة في Variables Table
-                                        VAR_GLOBAL
-                                            SystemReady AT %M0 : BOOL;
-                                            TotalCount AT %MW0 : INT;
-                                        END_VAR
-                                        
-                                        // متغيرات محلية في برنامج
-                                        VAR
-                                            LocalCounter : INT;
-                                            TempValue : REAL;
-                                        END_VAR
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف تتعامل مع المصفوفات في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح كيفية تعريف واستخدام المصفوفات (Arrays).</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> المصفوفات في Unity Pro:
-                                    <div class="code-block">
-                                        // تعريف مصفوفة
-                                        VAR
-                                            Temperatures : ARRAY[1..10] OF INT;
-                                            Products[1..100] AT %MW100 : INT;  // في الذاكرة
-                                        END_VAR
-                                        
-                                        // استخدام المصفوفة في ST
-                                        FOR i := 1 TO 10 DO
-                                            IF Temperatures[i] > 100 THEN
-                                                Alarm := TRUE;
-                                            END_IF;
-                                        END_FOR;
-                                        
-                                        // استخدام في Ladder
-                                        // يمكن الوصول لعنصر باستخدام [Index]
-                                    </div>
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 5,
-                    title: "برامج عملية على Unity Pro",
-                    duration: "4 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: كيف تصمم برنامج تحكم بمحرك مع حماية؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: صمم برنامجاً كاملاً للتحكم بمحرك مع حماية حرارية.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> برنامج متكامل مع الحماية:
-                                    <div class="code-block">
-                                        PROGRAM MotorControl
-                                        VAR
-                                            Start AT %I0.0 : BOOL;
-                                            Stop AT %I0.1 : BOOL;
-                                            Overload AT %I0.2 : BOOL;
-                                            Motor AT %Q0.0 : BOOL;
-                                            Light AT %Q0.1 : BOOL;
-                                            Run AT %M0 : BOOL;
-                                        END_VAR
-                                        
-                                        // دائرة التشغيل مع الحماية
-                                        Run := (Start OR Run) AND NOT Stop AND NOT Overload;
-                                        
-                                        // المخرجات
-                                        Motor := Run;
-                                        Light := Run;
-                                        
-                                        // إشارة للحالة
-                                        IF Overload THEN
-                                            %Q0.2 := TRUE;  // لمبة إنذار
-                                        ELSE
-                                            %Q0.2 := FALSE;
-                                        END_IF;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تنفذ نظام خلاط أوتوماتيكي؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: صمم نظام خلاط أوتوماتيكي مع حساسات مستوى.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> نظام خلاط كامل:
-                                    <div class="code-block">
-                                        PROGRAM MixerControl
-                                        VAR
-                                            LevelSensor AT %I0.0 : BOOL;
-                                            Start AT %I0.1 : BOOL;
-                                            Stop AT %I0.2 : BOOL;
-                                            MixerMotor AT %Q0.0 : BOOL;
-                                            Valve AT %Q0.1 : BOOL;
-                                            Timer1 : TON;
-                                            SystemRun AT %M0 : BOOL;
-                                        END_VAR
-                                        
-                                        // تشغيل النظام
-                                        SystemRun := (Start OR SystemRun) AND NOT Stop;
-                                        
-                                        // التحكم في الصمام
-                                        Valve := SystemRun AND NOT LevelSensor;
-                                        
-                                        // تشغيل المحرك بعد ملء الخزان
-                                        Timer1(IN:=NOT LevelSensor, PT:=T#5S);
-                                        MixerMotor := Timer1.Q;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: كيف تصمم عداد منتجات مع فرز؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: صمم نظام عد وفرز للمنتجات على سير ناقل.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> نظام عد وفرز:
-                                    <div class="code-block">
-                                        PROGRAM CountingSystem
-                                        VAR
-                                            Sensor AT %I0.0 : BOOL;
-                                            Reset AT %I0.1 : BOOL;
-                                            Good AT %Q0.0 : BOOL;
-                                            Reject AT %Q0.1 : BOOL;
-                                            
-                                            Count AT %MW0 : INT;
-                                            GoodCount AT %MW1 : INT;
-                                            BadCount AT %MW2 : INT;
-                                        END_VAR
-                                        
-                                        // العد عند كل نبضة
-                                        IF Sensor AND NOT Sensor_Prev THEN
-                                            Count := Count + 1;
-                                            
-                                            // فحص الجودة (مثال: العد فردي أو زوجي)
-                                            IF Count MOD 2 = 0 THEN
-                                                Good := TRUE;
-                                                GoodCount := GoodCount + 1;
-                                            ELSE
-                                                Reject := TRUE;
-                                                BadCount := BadCount + 1;
-                                            END_IF;
-                                        END_IF;
-                                        
-                                        Sensor_Prev := Sensor;
-                                        
-                                        // إعادة التعيين
-                                        IF Reset THEN
-                                            Count := 0;
-                                            GoodCount := 0;
-                                            BadCount := 0;
-                                        END_IF;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف تنفذ نظام إضاءة أوتوماتيكي موفر للطاقة؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: صمم نظام إضاءة لممر مع حساسات حركة وتوفير طاقة.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> نظام إضاءة ذكي:
-                                    <div class="code-block">
-                                        PROGRAM LightingControl
-                                        VAR
-                                            MotionSensor AT %I0.0 : BOOL;
-                                            LightSensor AT %I0.1 : BOOL;  // حساس ضوء النهار
-                                            Lights AT %Q0.0 : BOOL;
-                                            TimerOff : TOF;
-                                            DayMode : BOOL;
-                                        END_VAR
-                                        
-                                        // وضع النهار/الليل (افترض أن حساس الضوء يعطي 1 في النهار)
-                                        DayMode := LightSensor;
-                                        
-                                        // إضاءة الممر
-                                        IF NOT DayMode THEN
-                                            // في الليل، تعمل الأضواء مع الحركة
-                                            TimerOff(IN:=MotionSensor, PT:=T#30S);
-                                            Lights := MotionSensor OR TimerOff.Q;
-                                        ELSE
-                                            // في النهار، أضواء خافتة أو متوقفة
-                                            Lights := FALSE;
-                                        END_IF;
-                                        
-                                        // حفظ الطاقة مع مراقبة التوفير
-                                        %MW0 := TimerOff.ET;  // وقت التشغيل المتبقي
-                                    </div>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>كم وفرنا من الطاقة مقارنة بنظام الإضاءة التقليدي؟ كيف نقيس ذلك؟</p>
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 6,
-                    title: "الاتصالات والشبكات في Unity Pro",
-                    duration: "4 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: ما هو بروتوكول Modbus وكيف يعمل؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح بروتوكول Modbus واستخداماته في Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> Modbus هو بروتوكول اتصال صناعي:
-                                    <ul>
-                                        <li><strong>Modbus RTU:</strong> عبر serial (RS232/485)</li>
-                                        <li><strong>Modbus TCP:</strong> عبر Ethernet</li>
-                                        <li>يستخدم لربط الـ PLC بأجهزة أخرى (HMI, VFD, Sensors)</li>
-                                    </ul>
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>لماذا يعتبر Modbus الأكثر انتشاراً في الصناعة؟ ما مميزاته وعيوبه؟</p>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تقرأ بيانات من جهاز Modbus في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح خطوات قراءة بيانات من جهاز خارجي باستخدام Modbus.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> قراءة بيانات Modbus:
-                                    <div class="code-block">
-                                        // إعداد الاتصال
-                                        ModbusCom.IP := '192.168.1.100';
-                                        ModbusCom.Port := 502;
-                                        
-                                        // قراءة 10 كلمات من العنوان 40001
-                                        Modbus_Read(Addr:=40001, 
-                                                    Quantity:=10, 
-                                                    Data:=ReadData);
-                                        
-                                        // كتابة 5 كلمات
-                                        Modbus_Write(Addr:=40001, 
-                                                     Quantity:=5, 
-                                                     Data:=WriteData);
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: كيف تربط Unity Pro مع HMI أو SCADA؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح طرق ربط الـ PLC بأنظمة التشغيل والمراقبة.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> طرق الربط:
-                                    <ul>
-                                        <li><strong>مباشر عبر Ethernet:</strong> باستخدام OPC Server</li>
-                                        <li><strong>Modbus TCP:</strong> أسهل الطرق وأكثرها شيوعاً</li>
-                                        <li><strong>Profibus/Profinet:</strong> للأنظمة الألمانية</li>
-                                        <li><strong>CANopen:</strong> للأنظمة المدمجة</li>
-                                    </ul>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف تشخص أعطال الاتصالات في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اذكر خطوات تشخيص مشاكل الاتصالات في Unity Pro.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> خطوات تشخيص أعطال الاتصالات:
-                                    <ol>
-                                        <li>فحص الكابلات والتوصيلات الفيزيائية</li>
-                                        <li>استخدام Network Scanner للبحث عن الأجهزة</li>
-                                        <li>مراجعة إعدادات IP و Subnet Mask</li>
-                                        <li>استخدام Ping للتأكد من وصول الإشارة</li>
-                                        <li>مراجعة Animation Tables لمراقبة البيانات</li>
-                                    </ol>
-                                </div>
-                                <div class="topic-note">
-                                    <i class="fas fa-wrench"></i>
-                                    <strong>نصيحة:</strong> استخدم Wireshark لتحليل حركة الشبكة في الحالات المعقدة.
-                                </div>
-                            `
-                        }
-                    ]
-                },
-                {
-                    number: 7,
-                    title: "مشروع تخرج متكامل",
-                    duration: "4 ساعات",
-                    topics: [
-                        { 
-                            title: "السؤال 1: كيف تحلل متطلبات مشروع آلة تعبئة؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح خطوات تحليل متطلبات نظام تعبئة أوتوماتيكي.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> خطوات تحليل المشروع:
-                                    <ol>
-                                        <li>فهم العملية الفيزيائية للآلة</li>
-                                        <li>تحديد جميع المداخل (Inputs): أزرار، حساسات</li>
-                                        <li>تحديد جميع المخارج (Outputs): محركات، صمامات</li>
-                                        <li>رسم مخطط التدفق (Flowchart)</li>
-                                        <li>تحديد متطلبات السلامة</li>
-                                    </ol>
-                                </div>
-                                <div class="table-container">
-                                    <table class="info-table">
-                                        <tr><th>النوع</th><th>العدد</th><th>الوظيفة</th></tr>
-                                        <tr><td>حساس قارورة</td><td>1</td><td>كشف وجود القارورة</td></tr>
-                                        <tr><td>حساس مستوى</td><td>1</td><td>كشف امتلاء القارورة</td></tr>
-                                        <tr><td>محرك سير</td><td>1</td><td>تحريك القوارير</td></tr>
-                                        <tr><td>صمام تعبئة</td><td>1</td><td>فتح/غلق تدفق السائل</td></tr>
-                                    </table>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 2: كيف تصمم برنامج آلة تعبئة كاملاً؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اكتب برنامجاً كاملاً لآلة تعبئة أوتوماتيكية.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> برنامج آلة التعبئة:
-                                    <div class="code-block">
-                                        PROGRAM FillingMachine
-                                        VAR
-                                            Start AT %I0.0 : BOOL;
-                                            Stop AT %I0.1 : BOOL;
-                                            BottleSensor AT %I0.2 : BOOL;
-                                            LevelSensor AT %I0.3 : BOOL;
-                                            
-                                            Conveyor AT %Q0.0 : BOOL;
-                                            Valve AT %Q0.1 : BOOL;
-                                            GreenLight AT %Q0.2 : BOOL;
-                                            
-                                            SystemRun AT %M0 : BOOL;
-                                            TimerFill : TON;
-                                            TimerPause : TON;
-                                            Count AT %MW0 : INT;
-                                        END_VAR
-                                        
-                                        // تشغيل النظام
-                                        SystemRun := (Start OR SystemRun) AND NOT Stop;
-                                        
-                                        // السير يعمل باستمرار
-                                        Conveyor := SystemRun;
-                                        
-                                        // مراحل التعبئة
-                                        IF BottleSensor AND SystemRun THEN
-                                            Conveyor := FALSE;  // إيقاف السير
-                                            TimerFill(IN:=TRUE, PT:=T#2S);
-                                            Valve := TimerFill.Q;
-                                            
-                                            IF TimerFill.Q THEN
-                                                TimerPause(IN:=TRUE, PT:=T#1S);
-                                                IF TimerPause.Q THEN
-                                                    Count := Count + 1;
-                                                    Conveyor := TRUE;  // إعادة تشغيل السير
-                                                END_IF;
-                                            END_IF;
-                                        END_IF;
-                                        
-                                        // لمبة البيان
-                                        GreenLight := SystemRun;
-                                    </div>
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 3: كيف تختبر وتصحح أخطاء البرنامج؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: اشرح طرق اختبار البرنامج واكتشاف الأخطاء.</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> استراتيجيات الاختبار:
-                                    <ul>
-                                        <li><strong>المحاكاة (Simulation):</strong> اختبار البرنامج بدون أجهزة حقيقية</li>
-                                        <li><strong>Animation Tables:</strong> مراقبة المتغيرات في الوقت الحقيقي</li>
-                                        <li><strong>Breakpoints:</strong> إيقاف التنفيذ عند نقاط محددة</li>
-                                        <li><strong>Step by Step:</strong> تنفيذ البرنامج خطوة بخطوة</li>
-                                    </ul>
-                                </div>
-                                <div class="warning-box">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <strong>تحذير:</strong> اختبر دائماً في وضع المحاكاة قبل التحميل على الـ PLC الحقيقي.
-                                </div>
-                            `
-                        },
-                        { 
-                            title: "السؤال 4: كيف توثق مشروعك في Unity Pro؟", 
-                            details: `
-                                <div class="topic-question">🔍 السؤال: ما أهمية التوثيق وكيف تقوم به في Unity Pro؟</div>
-                                <div class="topic-answer">
-                                    <strong>الإجابة:</strong> التوثيق الجيد للمشروع:
-                                    <ul>
-                                        <li>إضافة Comments لكل شبكة Ladder</li>
-                                        <li>توثيق المتغيرات في Variables Table</li>
-                                        <li>رسم مخططات توضيحية للعملية</li>
-                                        <li>كتابة دليل تشغيل وصيانة</li>
-                                        <li>حفظ نسخ احتياطية من المشروع</li>
-                                    </ul>
-                                </div>
-                                <div class="code-block">
-                                    // مثال على توثيق المتغيرات
-                                    VAR
-                                        Start AT %I0.0 : BOOL := FALSE;  // زر بدء التشغيل - لون أزرق
-                                        Stop AT %I0.1 : BOOL := TRUE;    // زر إيقاف - نوع NC
-                                        Motor AT %Q0.0 : BOOL;            // مخرج المحرك - 24V DC
-                                        
-                                        // مؤقتات
-                                        Timer1 : TON;  // تأخير بدء التشغيل 5 ثواني
-                                    END_VAR
-                                </div>
-                                <div class="discussion-box">
-                                    <h4><i class="fas fa-comments"></i> للنقاش:</h4>
-                                    <p>لماذا يعتبر التوثيق مهماً؟ ما الذي يحدث عندما لا نوثق مشاريعنا؟</p>
-                                </div>
-                            `
-                        }
-                    ]
-                }
-            ],
-            modalContent: {
-                prerequisites: {
-                    title: "الجمهور المستهدف",
-                    content: `
-                        <div class="modal-section">
-                            <h3><i class="fas fa-users"></i> الفئات المستهدفة:</h3>
-                            <ul>
-                                <li><i class="fas fa-user-tie"></i> مهندسو كهرباء وتحكم - لتعزيز مهاراتهم في Unity Pro</li>
-                                <li><i class="fas fa-user-cog"></i> فنيو صيانة - لتطوير قدراتهم في تشخيص الأعطال</li>
-                                <li><i class="fas fa-user-graduate"></i> خريجو المعاهد الفنية - لدخول سوق العمل</li>
-                                <li><i class="fas fa-user-clock"></i> مشرفو مشاريع أتمتة - لفهم التقنيات المستخدمة</li>
-                            </ul>
-                        </div>
-                        <div class="modal-section">
-                            <h3><i class="fas fa-level-up-alt"></i> المستوى المطلوب:</h3>
-                            <ul>
-                                <li>معرفة أساسية بالدوائر الكهربائية</li>
-                                <li>فهم عمل الكونتاكتور والريلاي</li>
-                                <li>أساسيات قراءة المخططات الكهربائية</li>
-                                <li>لا يشترط خبرة سابقة في البرمجة</li>
-                            </ul>
-                        </div>
-                    `
-                },
-                requirements: {
-                    title: "المتطلبات والأدوات",
-                    content: `
-                        <div class="modal-section">
-                            <h3><i class="fas fa-laptop"></i> المتطلبات البرمجية:</h3>
-                            <ul>
-                                <li><i class="fas fa-windows"></i> Windows 10 أو 11</li>
-                                <li><i class="fas fa-download"></i> Unity Pro XL (سيتم توفيره للمشتركين)</li>
-                                <li><i class="fas fa-memory"></i> 8GB RAM على الأقل</li>
-                            </ul>
-                        </div>
-                        <div class="modal-section">
-                            <h3><i class="fas fa-microchip"></i> المتطلبات العتادية:</h3>
-                            <ul>
-                                <li><i class="fas fa-ethernet"></i> كابل USB/Ethernet للبرمجة</li>
-                                <li><i class="fas fa-microchip"></i> PLC Modicon M340 أو Premium (اختياري - يمكن استخدام المحاكاة)</li>
-                            </ul>
-                        </div>
-                        <div class="info-box">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>ملاحظة:</strong> سنستخدم وضع المحاكاة (Simulation) في Unity Pro، لا حاجة لـ PLC حقيقي.
-                        </div>
-                    `
-                },
-                objectives: {
-                    title: "مخرجات التعلم",
-                    content: `
-                        <div class="modal-section">
-                            <h3><i class="fas fa-star"></i> بعد إتمام الدورة ستكون قادراً على:</h3>
-                            <ul>
-                                <li><i class="fas fa-check"></i> استخدام Unity Pro XL بكفاءة عالية</li>
-                                <li><i class="fas fa-check"></i> كتابة برامج بلغة Ladder Diagram</li>
-                                <li><i class="fas fa-check"></i> كتابة برامج بلغة Structured Text (ST)</li>
-                                <li><i class="fas fa-check"></i> التعامل مع المؤقتات والعدادات</li>
-                                <li><i class="fas fa-check"></i> تشخيص وإصلاح الأعطال الشائعة</li>
-                                <li><i class="fas fa-check"></i> تنفيذ مشاريع تحكم صناعية كاملة</li>
-                                <li><i class="fas fa-check"></i> ربط الـ PLC بأنظمة خارجية عبر Modbus</li>
-                            </ul>
-                        </div>
-                    `
-                }
+        // ========== بيانات شاملة وكاملة ==========
+        // المسار الأساسي (مبتدئ شامل)
+        const basicUnits = [
+            {
+                num: 1,
+                title: "مقدمة شاملة في Unity Pro",
+                duration: "4 س",
+                points: [
+                    { q: "ما هو Unity Pro؟", a: "بيئة تطوير متكاملة (IDE) من Schneider Electric تعتمد على معيار IEC 61131-3. تستخدم لبرمجة PLCs من عائلات Modicon.", example: "يستخدم في أنظمة التحكم الصناعي، خطوط الإنتاج، ومحطات المياه." },
+                    { q: "عائلات PLCs المدعومة بالتفصيل", a: "Modicon M340 (متوسط)، Premium (معقد)، Quantum (كبير موزع)، Momentum (مدمج). كل عائلة تناسب تطبيقات معينة.", example: "M340 لأنظمة الأتمتة المتوسطة مثل ماكينات التعبئة." },
+                    { q: "خطوات إنشاء مشروع جديد (بالشرح)", a: "1. File > New Project. 2. اختيار العائلة (مثلاً M340). 3. تحديد وحدة المعالجة (CPU). 4. اختيار اللغة الرئيسية. 5. إضافة وحدات I/O. 6. حفظ المشروع.", example: "اختر CPU 340-20 مع لغة Ladder كلغة رئيسية." },
+                    { q: "لغات البرمجة الخمس (شرح مبسط)", a: "Ladder (رسومي كهربائي)، ST (نصي عالٍ)، FBD (بلوكات)، SFC (تتابعي)، IL (شبيه التجميع).", example: "Ladder للتحكم البسيط، ST للحسابات." }
+                ]
+            },
+            {
+                num: 2,
+                title: "لغة Ladder بشكل معمق",
+                duration: "5 س",
+                points: [
+                    { q: "العناصر الأساسية (Contacts & Coils)", a: "ملامس مفتوح (--| |--)، ملامس مغلق (--|/|--)، ملف خرج (--( )--)، ملف Set (--(S)--)، ملف Reset (--(R)--).", example: "--| |-- Start يعمل عند الضغط." },
+                    { q: "دائرة Latching (Start/Stop) مع شرح", a: "عند الضغط على Start، يشتغل المخرج ويغذي نفسه عبر فرع موازٍ. يستمر حتى Stop.", example: "Start | |---- Motor\nMotor | |----" },
+                    { q: "أنواع المؤقتات واستخداماتها", a: "TON (تأخير التشغيل)، TOF (تأخير الإيقاف)، TP (نبضي).", example: "TON(IN:=Start, PT:=T#5S) -> ينتظر 5 ثوان ثم يخرج." },
+                    { q: "العدادات (Counters) بالتفصيل", a: "CTU (تصاعدي)، CTD (تنازلي)، CTUD (ثنائي).", example: "CTU(CU:=Sensor, R:=Reset, PV:=10) -> يعد حتى 10." }
+                ]
+            },
+            {
+                num: 3,
+                title: "لغة Structured Text (ST) من الصفر",
+                duration: "5 س",
+                points: [
+                    { q: "مقدمة إلى ST", a: "لغة نصية تشبه باسكال، مثالية للعمليات الحسابية والمنطق المعقد.", example: "IF Level > 100 THEN Pump := TRUE; END_IF;" },
+                    { q: "جملة IF الشرطية", a: "IF condition THEN ... ELSIF ... ELSE ... END_IF;", example: "IF Start AND NOT Stop THEN Motor := TRUE; ELSE Motor := FALSE; END_IF;" },
+                    { q: "الحلقات التكرارية FOR", a: "FOR index FROM 1 TO 10 DO ... END_FOR;", example: "FOR i:=1 TO 5 DO Array[i] := i*10; END_FOR;" },
+                    { q: "جملة CASE لتعدد الخيارات", a: "CASE Value OF 1: ... 2: ... ELSE ... END_CASE;", example: "CASE Mode OF 1: Speed:=1000; 2: Speed:=2000; END_CASE;" }
+                ]
+            },
+            {
+                num: 4,
+                title: "إدارة الذاكرة والمتغيرات",
+                duration: "4 س",
+                points: [
+                    { q: "أنواع المتغيرات الأساسية", a: "BOOL (boolean), INT (integer), DINT (long), REAL (float), WORD, DWORD.", example: "BOOL: TRUE/FALSE, INT: -32768..32767." },
+                    { q: "صيغ العناوين (Addresses)", a: "%I (مدخل), %Q (مخرج), %M (bit), %MW (word), %MD (double word).", example: "%I0.0.0 أول مدخل، %MW10 كلمة ذاكرة رقم 10." },
+                    { q: "الفرق بين متغير عام ومحلي", a: "Global (VAR_GLOBAL) يُرى في كل المشروع. Local (VAR) داخل POU واحد.", example: "VAR_GLOBAL SystemReady : BOOL; END_VAR" },
+                    { q: "المصفوفات (Arrays)", a: "ARRAY[ابدأ..نهاية] OF نوع.", example: "Temps : ARRAY[1..10] OF INT;" }
+                ]
             }
-        };
+        ];
 
-        // Track completed topics
-        let completedTopics = new Set();
-        const totalTopics = 28;
+        // المسار المتقدم (يحتوي على كل الأساسيات + إضافات متقدمة)
+        const advancedUnits = [
+            // الوحدات الأساسية نفسها (مع إضافة وسوم متقدم)
+            { num: 1, title: "مقدمة في Unity Pro (أساسي)", duration: "4 س", points: basicUnits[0].points },
+            { num: 2, title: "لغة Ladder (أساسي)", duration: "5 س", points: basicUnits[1].points },
+            { num: 3, title: "لغة ST (أساسي)", duration: "5 س", points: basicUnits[2].points },
+            { num: 4, title: "إدارة الذاكرة (أساسي)", duration: "4 س", points: basicUnits[3].points },
+            {
+                num: 5,
+                title: "برامج تطبيقية متقدمة",
+                duration: "4 س",
+                points: [
+                    { q: "برنامج تحكم بمحرك مع حماية كاملة", a: "يتم استخدام Latching مع إضافة حساس حرارة ومراقبة التيار.", example: "MotorRun := (Start OR MotorRun) AND NOT Stop AND NOT Thermal;" },
+                    { q: "نظام خلاط أوتوماتيكي مع حساسات مستوى", a: "يتم تعبئة الخزان حتى حساس المستوى، ثم تشغيل الخلاط لمدة زمنية.", example: "Valve := NOT LevelHigh; Timer(IN:=LevelHigh, PT:=T#30S); Mixer := Timer.Q;" },
+                    { q: "عداد فرز المنتجات (متقدم)", a: "يتم عد المنتجات وتصنيفها (جيد/تالف) باستخدام CTU ومقارنات.", example: "GoodCount := CTU(CU:=GoodSensor, R:=Reset);" },
+                    { q: "نظام إضاءة ذكي موفر للطاقة", a: "إضاءة الممرات تعمل بالحركة مع مراعاة ضوء النهار.", example: "Lights := (Motion OR TimerOff.Q) AND NOT Daylight;" }
+                ]
+            },
+            {
+                num: 6,
+                title: "الاتصالات الصناعية Modbus",
+                duration: "4 س",
+                points: [
+                    { q: "بروتوكول Modbus (شرح متقدم)", a: "Modbus RTU (RS485) و Modbus TCP (Ethernet). هيكل الإطار، عناوين التسجيلات.", example: "قراءة 10 Holding Registers من عنوان 40001." },
+                    { q: "تطبيق عملي: قراءة بيانات من جهاز خارجي", a: "استخدام بلوكات Modbus في Unity Pro: Modbus_Read, Modbus_Write.", example: "Modbus_Read(Addr:=40001, Quantity:=5, Data:=ReceiveArray);" },
+                    { q: "ربط PLC مع HMI أو SCADA", a: "تكوين OPC server، ربط عبر Modbus TCP، إعدادات IP.", example: "استخدام Vijeo Designer مع Modbus TCP." },
+                    { q: "تشخيص أعطال الشبكة (متقدم)", a: "استخدام Wireshark، Network Scanner، Animation Tables لمراقبة البيانات.", example: "تحليل حزم Modbus لاكتشاف الأخطاء." }
+                ]
+            },
+            {
+                num: 7,
+                title: "مشروع شامل: نظام تعبئة أوتوماتيكي",
+                duration: "4 س",
+                points: [
+                    { q: "تحليل ودراسة المشروع", a: "تحديد المداخل (حساس قارورة، حساس مستوى، أزرار) والمخارج (سير، صمام، لمبات). رسم مخطط الحالات.", example: "Inputs: BottleSensor, LevelSensor, Start, Stop. Outputs: Conveyor, Valve, Light." },
+                    { q: "برمجة المشروع (هيكل كامل)", a: "كتابة البرنامج باستخدام ST و Ladder. إدارة الحالات: انتظار، تعبئة، تأخير، عد.", example: "FillingMachine Program كامل مع مؤقتات." },
+                    { q: "اختبار ومحاكاة المشروع", a: "استخدام Simulation و Animation Tables لمراقبة المتغيرات. استخدام Breakpoints.", example: "محاكاة وصول القوارير وامتلائها." },
+                    { q: "توثيق المشروع احترافياً", a: "إضافة Comments، توثيق المتغيرات، رسم Block Diagram.", example: "شرح كل Network في Ladder." }
+                ]
+            }
+        ];
 
-        // Load units dynamically
-        function loadUnits() {
+        // Show units
+        window.showUnits = function(pkg) {
+            const wrapper = document.getElementById('unitsWrapper');
             const container = document.getElementById('unitsContainer');
+            const basketSpan = document.getElementById('basketName');
+            
+            let units = pkg === 'basic' ? basicUnits : advancedUnits;
+            basketSpan.textContent = pkg === 'basic' ? 'المسار الأساسي (250 درهم)' : 'المسار المتقدم (500 درهم)';
+            
             container.innerHTML = '';
+            units.forEach(unit => {
+                const card = document.createElement('div');
+                card.className = 'unit-card';
+                const headerClass = pkg === 'basic' ? 'basic-header' : 'advanced-header';
+                
+                let pointsHtml = '';
+                unit.points.forEach(point => {
+                    pointsHtml += `
+                        <div class="unit-topic">
+                            <div class="topic-question"><i class="fas fa-question-circle"></i> ${point.q}</div>
+                            <div class="topic-answer">${point.a}</div>
+                            <div class="topic-example"><i class="fas fa-lightbulb"></i> مثال: ${point.example}</div>
+                        </div>
+                    `;
+                });
 
-            courseData.units.forEach(unit => {
-                const unitCard = document.createElement('div');
-                unitCard.className = 'unit-card fade-in';
-                unitCard.innerHTML = `
-                    <div class="unit-header">
-                        <span class="unit-number">الوحدة ${unit.number}</span>
-                        <h3 class="unit-title">${unit.title}</h3>
+                card.innerHTML = `
+                    <div class="unit-header ${headerClass}">
+                        <span class="unit-number">الوحدة ${unit.num}</span>
+                        <div class="unit-title">${unit.title}</div>
                         <span class="unit-duration"><i class="far fa-clock"></i> ${unit.duration}</span>
                     </div>
                     <div class="unit-body">
-                        ${unit.topics.map((topic, index) => {
-                            const topicId = `topic-${unit.number}-${index}`;
-                            return `
-                                <div>
-                                    <div class="unit-topic" onclick="toggleTopicDetails(this, ${unit.number}, ${index})">
-                                        <i class="fas fa-circle"></i>
-                                        <span>${topic.title}</span>
-                                        <i class="fas fa-chevron-down expand-icon"></i>
-                                    </div>
-                                    <div class="topic-details" id="${topicId}">
-                                        ${topic.details}
-                                        <br>
-                                        <label class="checkbox-container">
-                                            <input type="checkbox" onchange="markTopicCompleted('${topicId}')" ${completedTopics.has(topicId) ? 'checked' : ''}>
-                                            <span>✓ تمت المناقشة</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
+                        ${pointsHtml}
+                        <a href="https://wa.me/212671243653?text=استفسار%20عن%20الوحدة%20${unit.num}%20من%20${pkg === 'basic' ? 'المسار%20الأساسي' : 'المسار%20المتقدم'}" class="book-unit-btn" target="_blank">احجز هذه الوحدة</a>
                     </div>
                 `;
-                container.appendChild(unitCard);
+                container.appendChild(card);
             });
-        }
+            wrapper.classList.add('visible');
+            setTimeout(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        };
 
-        // Toggle topic details
-        function toggleTopicDetails(element, unitNum, topicIndex) {
-            const details = document.getElementById(`topic-${unitNum}-${topicIndex}`);
-            details.classList.toggle('active');
-            element.classList.toggle('expanded');
-        }
+        window.hideUnits = function() {
+            document.getElementById('unitsWrapper').classList.remove('visible');
+        };
 
-        // Mark topic as completed
-        function markTopicCompleted(topicId) {
-            if (completedTopics.has(topicId)) {
-                completedTopics.delete(topicId);
-            } else {
-                completedTopics.add(topicId);
-            }
-            
-            localStorage.setItem('unityProProgress', JSON.stringify([...completedTopics]));
-            updateProgress();
-        }
-
-        // Update progress
-        function updateProgress() {
-            const completedCount = completedTopics.size;
-            const percentage = Math.round((completedCount / totalTopics) * 100);
-            
-            document.getElementById('progressPercentage').textContent = percentage + '%';
-            document.getElementById('progressFill').style.width = percentage + '%';
-            
-            let completedUnitsCount = 0;
-            courseData.units.forEach(unit => {
-                const unitTopics = unit.topics.length;
-                let unitCompletedTopics = 0;
-                unit.topics.forEach((topic, index) => {
-                    if (completedTopics.has(`topic-${unit.number}-${index}`)) {
-                        unitCompletedTopics++;
-                    }
-                });
-                if (unitCompletedTopics === unitTopics) {
-                    completedUnitsCount++;
-                }
-            });
-            
-            document.getElementById('completedUnits').textContent = completedUnitsCount;
-            document.getElementById('completedTopics').textContent = completedCount;
-        }
-
-        // Show functions
-        function showModal(type) {
+        // Modal functions
+        window.showModal = function(type) {
             const modal = document.getElementById('modal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalBody = document.getElementById('modalBody');
-            
-            if (courseData.modalContent[type]) {
-                modalTitle.textContent = courseData.modalContent[type].title;
-                modalBody.innerHTML = courseData.modalContent[type].content;
-                modal.classList.add('active');
+            const title = document.getElementById('modalTitle');
+            const body = document.getElementById('modalBody');
+            if (type === 'prerequisites') {
+                title.textContent = 'الجمهور المستهدف';
+                body.innerHTML = '<p>✓ مهندسو كهرباء وتحكم<br>✓ فنيو صيانة وأتمتة<br>✓ طلاب الهندسة والمعاهد<br>✓ مبتدئون يريدون الاحتراف</p>';
+            } else if (type === 'requirements') {
+                title.textContent = 'المتطلبات';
+                body.innerHTML = '<p>✓ Windows 10/11 (64-bit)<br>✓ برنامج Unity Pro XL (سيتم توفيره)<br>✓ 8GB RAM أو أكثر<br>✓ لا حاجة لـ PLC فعلي (محاكاة)</p>';
+            } else if (type === 'objectives') {
+                title.textContent = 'مخرجات التعلم';
+                body.innerHTML = '<p>✓ إتقان Unity Pro من الصفر<br>✓ برمجة Ladder و ST باحترافية<br>✓ تنفيذ مشاريع تحكم صناعية<br>✓ ربط PLC مع الأنظمة الخارجية<br>✓ تشخيص وحل الأعطال<br>✓ بناء نظام متكامل (للمتقدمين)</p>';
             }
-        }
+            modal.classList.add('active');
+        };
+        window.closeModal = () => document.getElementById('modal').classList.remove('active');
+        window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Mobile menu
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('active');
-        });
-
-        // Smooth scroll
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId && targetId !== '#') {
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        targetElement.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }
-                document.querySelector('.nav-links').classList.remove('active');
+        // Mobile bottom nav
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
             });
         });
 
-        // Close modal when clicking outside
-        window.addEventListener('click', function(e) {
-            const modal = document.getElementById('modal');
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
+        window.addEventListener('click', e => { if(e.target.classList.contains('modal')) closeModal(); });
+        document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedProgress = localStorage.getItem('unityProProgress');
-            if (savedProgress) {
-                completedTopics = new Set(JSON.parse(savedProgress));
-            }
-            
-            loadUnits();
-            updateProgress();
-        });
-
-        // Keyboard shortcut
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
-
-        // Make functions global
-        window.showModal = showModal;
-        window.closeModal = closeModal;
-        window.toggleTopicDetails = toggleTopicDetails;
-        window.markTopicCompleted = markTopicCompleted;
-        window.scrollToTop = scrollToTop;
+        document.addEventListener('DOMContentLoaded', () => document.getElementById('unitsWrapper').classList.remove('visible'));
     </script>
 </body>
 </html>
