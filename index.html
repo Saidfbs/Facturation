@@ -2,820 +2,2563 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Schneider Electric | برنامج Unity Pro PLC الشامل</title>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>منصة التواصل المتكاملة - دردشة واتساب</title>
+    <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* جميع الأنماط السابقة مع تعديلات السويتش */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #075e54;
+            --primary-dark: #054a42;
+            --primary-light: #128c7e;
+            --secondary: #25d366;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --gray: #6b7280;
+            --light: #f9fafb;
+            --white: #ffffff;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --radius: 1rem;
+            --radius-lg: 1.5rem;
+            --sidebar-width: 280px;
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
-            background: #f0f4fa;
-            color: #1E3F5E;
-            line-height: 1.6;
-        }
-        :root {
-            --schneider-green: #3AB795;
-            --schneider-dark-green: #2E8B6F;
-            --schneider-blue: #1E3F5E;
-            --schneider-light-blue: #EFF7FF;
-            --schneider-white: #FFFFFF;
-            --schneider-accent: #FF6B4A;
-            --card-shadow: 0 12px 30px -10px rgba(0,40,60,0.15);
-            --transition-smooth: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+            background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+            min-height: 100vh;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #d9e2eb; }
-        ::-webkit-scrollbar-thumb { background: var(--schneider-green); border-radius: 10px; }
+        /* أنماط السويتش (Toggle Switch) */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
 
-        /* Header */
-        .header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(12px);
-            position: fixed;
-            width: 100%;
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
             top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(58,183,149,0.2);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 34px;
         }
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0.7rem 2rem;
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #25d366;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .status-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .toast-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 1rem;
+            z-index: 10001;
+            animation: fadeInCenter 0.3s ease, fadeOutCenter 2.5s ease 2s forwards;
+            text-align: center;
+            min-width: 250px;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+        
+        .toast-notification.error {
+            background: rgba(239, 68, 68, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .toast-notification.success {
+            background: rgba(37, 211, 102, 0.95);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes fadeInCenter {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        
+        @keyframes fadeOutCenter {
+            to {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+                visibility: hidden;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loader {
+            text-align: center;
+            color: white;
+        }
+
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sidebar {
+            position: fixed;
+            right: -100%;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1rem;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--gray);
+        }
+
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .sidebar-item i {
+            width: 24px;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .menu-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 998;
+            transition: all 0.2s;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .auth-card {
+            max-width: 500px;
+            margin: 2rem auto;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .auth-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .auth-header h2 {
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .auth-body {
+            padding: 1.75rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .email-dropdown {
+            position: relative;
+        }
+
+        .email-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow);
+        }
+
+        .email-item {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
+
+        .email-item:hover {
+            background: var(--light);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .switch-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            height: calc(100vh - 2rem);
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-        .logo svg { height: 36px; width: auto; }
-        .logo-text {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--schneider-blue);
-            border-right: 2px solid var(--schneider-green);
-            padding-right: 12px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 2.5rem;
-            list-style: none;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: var(--schneider-blue);
-            font-weight: 600;
+            gap: 0.5rem;
             font-size: 1rem;
-            padding: 0.4rem 0;
-            position: relative;
-        }
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            height: 2.5px;
-            background: var(--schneider-green);
-            transform: scaleX(0);
-            transition: transform 0.2s;
-        }
-        .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
-        .menu-toggle { display: none; font-size: 1.8rem; color: var(--schneider-blue); cursor: pointer; }
-
-        /* Mobile Bottom Nav */
-        .mobile-bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(255,255,255,0.97);
-            backdrop-filter: blur(15px);
-            z-index: 99;
-            padding: 0.6rem 1rem;
-            border-top: 1px solid rgba(0,0,0,0.05);
-        }
-        .bottom-nav-items {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-        .bottom-nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #5a6f7e;
-            font-size: 0.7rem;
             font-weight: 600;
-            padding: 0.3rem 0.8rem;
-            border-radius: 30px;
-            transition: 0.2s;
-            text-decoration: none;
-        }
-        .bottom-nav-item i { font-size: 1.3rem; margin-bottom: 2px; }
-        .bottom-nav-item.active {
-            background: var(--schneider-green);
-            color: white;
         }
 
-        /* Main */
-        .container { max-width: 1400px; margin: 85px auto 90px; padding: 0 1.5rem; }
-
-        /* Hero */
-        .hero {
-            background: linear-gradient(135deg, var(--schneider-blue) 0%, #10344e 100%);
-            border-radius: 32px;
-            padding: 3rem 3.5rem;
-            color: white;
-            margin-bottom: 2.5rem;
-            box-shadow: var(--card-shadow);
-            position: relative;
-            overflow: hidden;
-        }
-        .hero::after {
-            content: 'Unity Pro';
-            position: absolute;
-            bottom: -20px; left: -20px;
-            font-size: 8rem;
-            font-weight: 900;
-            opacity: 0.06;
-            color: white;
-            transform: rotate(-5deg);
-            pointer-events: none;
-        }
-        .hero-badge {
-            background: var(--schneider-green);
-            padding: 0.4rem 1.6rem;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 1.2rem;
-        }
-        .hero h1 { font-size: 3.2rem; font-weight: 900; line-height: 1.2; margin-bottom: 0.8rem; }
-        .hero p { font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin-bottom: 1.8rem; }
-        .hero-stats {
+        .header-actions {
             display: flex;
-            gap: 2rem;
+            gap: 0.5rem;
+            align-items: center;
             flex-wrap: wrap;
         }
-        .stat-item {
-            background: rgba(255,255,255,0.1);
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.15);
-            text-align: center;
-        }
-        .stat-number { font-size: 2rem; font-weight: 900; color: var(--schneider-green); }
-        .stat-label { font-size: 0.85rem; }
 
-        /* Info Cards */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-        .info-card {
-            background: var(--schneider-white);
-            border-radius: 26px;
-            padding: 1.8rem;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition-smooth);
-            cursor: pointer;
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-        .info-card:hover { transform: translateY(-5px); box-shadow: 0 18px 35px -12px rgba(58,183,149,0.3); }
-        .info-card i { font-size: 2.2rem; color: var(--schneider-green); margin-bottom: 1rem; }
-        .info-card h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .card-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .tag {
-            background: var(--schneider-light-blue);
-            padding: 0.2rem 1.2rem;
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        /* Pricing */
-        .pricing-section { margin: 3rem 0; }
-        .section-title {
-            font-size: 2.3rem;
-            font-weight: 900;
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-            padding-bottom: 0.8rem;
-        }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 50%;
-            transform: translateX(-50%);
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--schneider-green), var(--schneider-blue));
-            border-radius: 2px;
-        }
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-            gap: 2rem;
-        }
-        .pricing-card {
-            background: var(--schneider-white);
-            border-radius: 36px;
-            padding: 2.5rem 2rem;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition-smooth);
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        .pricing-card.popular {
-            border-color: var(--schneider-green);
-            background: white;
-        }
-        .pricing-card.popular::before {
-            content: "الأكثر شمولاً";
-            position: absolute;
-            top: 16px; left: -38px;
-            background: var(--schneider-green);
+        .action-btn {
+            background: rgba(255, 255, 255, 0.15);
             color: white;
-            padding: 0.4rem 4rem;
-            transform: rotate(-45deg);
-            font-size: 0.8rem;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-        .pricing-header { text-align: center; margin-bottom: 2rem; }
-        .pricing-name { font-size: 2rem; font-weight: 900; color: var(--schneider-blue); }
-        .pricing-price { font-size: 3.5rem; font-weight: 900; color: var(--schneider-green); line-height: 1; }
-        .pricing-price small { font-size: 1.2rem; font-weight: 500; color: #7a8f9f; }
-        .pricing-features {
-            list-style: none;
-            margin: 2rem 0;
-            padding: 0;
-        }
-        .pricing-features li {
-            padding: 0.7rem 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            font-size: 1rem;
-            border-bottom: 1px solid #ecf3f8;
-        }
-        .pricing-features i { width: 24px; color: var(--schneider-green); font-size: 1.1rem; }
-        .pricing-features .disabled i { color: #cbd5e0; }
-        .pricing-features .disabled { color: #a5b9cc; }
-        .pricing-actions { display: flex; flex-direction: column; gap: 0.8rem; }
-        .btn-pricing {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 1.1rem;
-            text-align: center;
-            text-decoration: none;
-            transition: var(--transition-smooth);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
             border: none;
             cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
         }
-        .btn-basic {
-            background: var(--schneider-light-blue);
-            color: var(--schneider-blue);
-        }
-        .btn-basic:hover { background: var(--schneider-blue); color: white; }
-        .btn-pro {
-            background: var(--schneider-green);
-            color: white;
-            box-shadow: 0 8px 18px rgba(58,183,149,0.4);
-        }
-        .btn-pro:hover { background: var(--schneider-dark-green); transform: scale(1.02); }
-        .btn-outline-units {
-            background: transparent;
-            border: 2px solid var(--schneider-blue);
-            color: var(--schneider-blue);
-            font-size: 1rem;
-            font-weight: 700;
-        }
-        .btn-outline-units:hover { background: var(--schneider-blue); color: white; }
 
-        /* Units Wrapper */
-        .units-wrapper {
-            margin: 3rem 0 5rem;
-            display: none;
-            animation: slideFade 0.4s ease;
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
         }
-        .units-wrapper.visible { display: block; }
-        @keyframes slideFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .units-header {
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.8);
+        }
+
+        .control-bar {
+            background: var(--white);
+            padding: 0.75rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--light);
+            padding: 0.25rem;
+            border-radius: var(--radius);
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: transparent;
+            color: var(--gray);
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .users-list {
+            padding: 1rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1rem;
+        }
+
+        .user-card {
+            background: var(--white);
+            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            padding: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .user-card.current-user {
+            background: #e8f5e9;
+            border: 2px solid var(--primary);
+            order: -1 !important;
+        }
+
+        .user-card.online {
+            border-right: 4px solid var(--secondary);
+        }
+
+        .user-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
+            margin-bottom: 0.75rem;
         }
-        .selected-badge {
-            background: linear-gradient(135deg, var(--schneider-green), var(--schneider-dark-green));
-            color: white;
-            padding: 0.6rem 2rem;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 1.2rem;
-            box-shadow: 0 8px 15px rgba(58,183,149,0.3);
-        }
-        .btn-hide-units {
-            background: white;
-            border: 1px solid var(--schneider-blue);
-            color: var(--schneider-blue);
-            padding: 0.6rem 2rem;
-            border-radius: 60px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .btn-hide-units:active { transform: scale(0.96); }
 
-        /* Units Grid - Comprehensive */
-        .units-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 2rem;
-        }
-        .unit-card {
-            background: white;
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition-smooth);
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-        .unit-card:hover { transform: translateY(-6px); box-shadow: 0 25px 40px -15px rgba(58,183,149,0.3); }
-        .unit-header {
-            padding: 1.8rem;
-            color: white;
-        }
-        .unit-header.basic-header { background: #1e3f5e; }
-        .unit-header.advanced-header { background: var(--schneider-dark-green); }
-        .unit-number { font-size: 0.85rem; opacity: 0.9; display: block; margin-bottom: 0.2rem; }
-        .unit-title { font-size: 1.4rem; font-weight: 800; margin: 0.2rem 0 0.5rem; }
-        .unit-duration {
-            display: inline-block;
-            background: rgba(255,255,255,0.18);
-            padding: 0.3rem 1.3rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
-        }
-        .unit-body { padding: 1.8rem; }
-        
-        /* Detailed points with comprehensive info */
-        .unit-topic {
-            margin-bottom: 1.8rem;
-            border-bottom: 1px solid #e2ebf3;
-            padding-bottom: 1.5rem;
-        }
-        .topic-question {
-            font-weight: 900;
-            color: var(--schneider-blue);
-            margin-bottom: 0.8rem;
+        .user-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
-        .topic-question i {
-            color: var(--schneider-green);
-            font-size: 1rem;
-        }
-        .topic-answer {
-            font-size: 1rem;
-            color: #1e3f5e;
-            background: #f6faff;
-            padding: 1rem 1.2rem;
-            border-radius: 20px;
-            margin: 0.7rem 0;
-            border-right: 4px solid var(--schneider-green);
-            line-height: 1.7;
-        }
-        .topic-example {
-            background: #fffaf0;
-            padding: 1rem 1.2rem;
-            border-radius: 18px;
-            margin-top: 0.7rem;
-            font-size: 0.95rem;
-            border-right: 4px solid #FFB800;
-        }
-        .topic-example i { color: #FFB800; margin-left: 0.7rem; }
-        .code-snippet {
-            background: #1e2b3a;
-            color: #b2f0b2;
-            padding: 1rem;
-            border-radius: 16px;
-            font-family: 'Courier New', monospace;
-            direction: ltr;
-            text-align: left;
-            margin: 0.8rem 0;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            border: 1px solid #3a4a5a;
-        }
-        .advanced-tag {
-            display: inline-block;
-            background: var(--schneider-accent);
+
+        .current-badge {
+            background: var(--primary);
             color: white;
-            padding: 0.2rem 1rem;
-            border-radius: 30px;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             font-size: 0.7rem;
-            font-weight: 800;
-            margin-right: 0.8rem;
-            letter-spacing: 0.3px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.online {
+            background: var(--secondary);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.offline {
+            background: var(--danger);
+        }
+
+        .whatsapp-icon {
+            background: #25d366;
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+
+        .whatsapp-icon:hover {
+            background: #128c7e;
+            transform: scale(1.1);
+        }
+
+        .whatsapp-icon.disabled {
+            background: #9e9e9e;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .whatsapp-icon.disabled:hover {
+            transform: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-tag {
+            background: var(--light);
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--gray);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .distance-tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+        }
+
+        .age-badge {
+            display: inline-block;
+            background: var(--warning);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+        }
+
+        .map-area {
+            flex: 1;
+            position: relative;
+            min-height: 400px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+
+        .filter-modal, .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-panel, .modal-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            max-width: 550px;
+            width: 90%;
+            overflow: hidden;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .filter-header, .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-body, .modal-body {
+            padding: 1.5rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.85rem;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-family: 'Cairo', sans-serif;
+            background: white;
+        }
+
+        .filter-actions, .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .profile-info {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .location-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .notifications-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notifications-content {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .notifications-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .notification-text {
+            flex: 1;
+            font-size: 0.85rem;
+        }
+
+        .notification-time {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        .custom-popup {
+            text-align: right;
+            min-width: 250px;
+            max-width: 300px;
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 8px 12px;
+            margin: -8px -8px 8px -8px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-info {
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--gray);
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 10px;
+        }
+
+        .popup-btn {
+            flex: 1;
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .popup-btn.disabled {
+            background: #9e9e9e;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .verification-section {
+            background: #fff3e0;
+            border: 1px solid #ffd966;
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            display: none;
         }
         
-        .book-unit-btn {
-            display: block;
-            width: 100%;
-            margin-top: 1.8rem;
-            padding: 0.9rem;
-            background: var(--schneider-green);
-            color: white;
-            border: none;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 1.05rem;
+        .verification-title {
+            color: #e67e22;
+            font-weight: bold;
+            margin-bottom: 0.75rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .warning-text {
+            font-size: 0.7rem;
+            color: #e67e22;
+            margin-top: 0.5rem;
             text-align: center;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-        .book-unit-btn:active { transform: scale(0.97); background: var(--schneider-blue); }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 2000;
-            justify-content: center; align-items: center;
-            backdrop-filter: blur(8px);
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: white;
-            border-radius: 36px;
-            max-width: 450px;
-            width: 85%;
-            padding: 2.2rem 2rem;
-            position: relative;
-            text-align: center;
-            animation: modalPop 0.3s;
-        }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        .modal-close {
-            position: absolute; top: 1rem; left: 1rem;
-            font-size: 1.4rem;
-            cursor: pointer;
-            width: 38px; height: 38px;
-            background: #f0f0f0;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
         }
 
-        /* FAB */
-        .fab {
-            position: fixed;
-            bottom: 85px; left: 1.8rem;
-            width: 55px; height: 55px;
-            background: var(--schneider-green);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(58,183,149,0.5);
-            z-index: 90;
-            transition: 0.2s;
-            border: none;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
-        .fab:active { transform: scale(0.9); }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .menu-toggle { display: block; }
-            .mobile-bottom-nav { display: block; }
-            .container { margin-bottom: 75px; }
-            .hero { padding: 2rem 1.5rem; }
-            .hero h1 { font-size: 2.2rem; }
-            .hero-stats { gap: 1rem; }
-            .stat-item { padding: 0.5rem 1.2rem; }
-            .fab { bottom: 85px; }
+            body {
+                padding: 0.5rem;
+            }
+            .app-container {
+                height: calc(100vh - 1rem);
+            }
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+            .app-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-actions {
+                justify-content: center;
+            }
+            .control-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .view-toggle {
+                align-self: center;
+            }
+            .menu-toggle {
+                bottom: 1rem;
+                right: 1rem;
+            }
+            .sidebar {
+                width: 85%;
+            }
+            .toast-notification {
+                width: 90%;
+                font-size: 0.9rem;
+                padding: 0.75rem 1rem;
+            }
+            .switch {
+                width: 35px;
+                height: 18px;
+            }
+            .slider:before {
+                height: 12px;
+                width: 12px;
+            }
+            input:checked + .slider:before {
+                transform: translateX(17px);
+            }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-container">
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fab fa-whatsapp fa-2x"></i>
+            <h3 style="margin-top: 0.5rem;">القائمة الرئيسية</h3>
+        </div>
+        <div class="sidebar-menu">
+            <div class="sidebar-item active" data-section="home">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </div>
+            <div class="sidebar-item" data-section="map">
+                <i class="fas fa-map"></i>
+                <span>الخريطة</span>
+            </div>
+            <div class="sidebar-item" data-section="notifications">
+                <i class="fas fa-bell"></i>
+                <span>الإشعارات</span>
+            </div>
+            <div class="sidebar-item" data-section="profile">
+                <i class="fas fa-user-circle"></i>
+                <span>ملفي الشخصي</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">جاري الاتصال بقاعدة البيانات...</div>
+        </div>
+    </div>
+
+    <div id="loginCard" class="auth-card" style="display: none;">
+        <div class="auth-header">
+            <i class="fab fa-whatsapp fa-2x"></i>
+            <h2>مرحباً بعودتك</h2>
+            <p>سجل الدخول للتواصل مع الأصدقاء عبر واتساب</p>
+        </div>
+        <div class="auth-body">
+            <form id="loginForm">
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <div class="email-dropdown">
+                        <input type="email" id="loginEmail" autocomplete="off" required placeholder="انقر لاختيار بريد إلكتروني">
+                        <div id="emailSuggestions" class="email-suggestions"></div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary">دخول</button>
+            </form>
+            <div class="switch-link" onclick="showRegister()">
+                <i class="fas fa-user-plus"></i> ليس لديك حساب؟ إنشاء حساب جديد
+            </div>
+        </div>
+    </div>
+
+    <div id="registerCard" class="auth-card" style="display: none;">
+        <div class="auth-header">
+            <i class="fas fa-user-plus fa-2x"></i>
+            <h2>إنشاء حساب جديد</h2>
+            <p>أنشئ حسابك للتواصل مع الآخرين عبر واتساب</p>
+        </div>
+        <div class="auth-body">
+            <form id="registerForm">
+                <div class="profile-info" style="background: var(--white); padding: 0;">
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">الاسم الكامل</span>
+                        <input type="text" id="regName" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">العمر</span>
+                        <input type="number" id="regAge" min="18" max="80" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">الحالة العائلية</span>
+                        <select id="regMarital" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                            <option value="متزوج">متزوج</option>
+                            <option value="أعزب">أعزب</option>
+                            <option value="مطلق">مطلق</option>
+                            <option value="طالب">طالب</option>
+                            <option value="مرتبط">مرتبط</option>
+                            <option value="حر">حر</option>
+                        </select>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">الجنس</span>
+                        <select id="regGender" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                            <option value="ذكر">ذكر</option>
+                            <option value="أنثى">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">المدينة</span>
+                        <select id="regCity" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                            <option value="الدار البيضاء">الدار البيضاء</option>
+                            <option value="الرباط">الرباط</option>
+                            <option value="فاس">فاس</option>
+                            <option value="مراكش">مراكش</option>
+                            <option value="طنجة">طنجة</option>
+                            <option value="أكادير">أكادير</option>
+                            <option value="مكناس">مكناس</option>
+                            <option value="وجدة">وجدة</option>
+                            <option value="تطوان">تطوان</option>
+                            <option value="القنيطرة">القنيطرة</option>
+                            <option value="آسفي">آسفي</option>
+                            <option value="الناظور">الناظور</option>
+                            <option value="خريبكة">خريبكة</option>
+                            <option value="بركان">بركان</option>
+                            <option value="تازة">تازة</option>
+                            <option value="الجديدة">الجديدة</option>
+                            <option value="سيدي قاسم">سيدي قاسم</option>
+                            <option value="العرائش">العرائش</option>
+                            <option value="الحسيمة">الحسيمة</option>
+                        </select>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">الموقع الجغرافي</span>
+                        <button type="button" id="regGetLocationBtn" class="location-btn" style="width: 60%; background: var(--primary); color: white; padding: 0.4rem; border-radius: 0.75rem; border: none; cursor: pointer;">
+                            <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
+                        </button>
+                        <input type="hidden" id="regLat">
+                        <input type="hidden" id="regLng">
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">رقم الهاتف (واتساب)</span>
+                        <input type="tel" id="regPhone" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required placeholder="06xxxxxxxx">
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">البريد الإلكتروني</span>
+                        <input type="email" id="regEmail" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">كلمة المرور</span>
+                        <input type="password" id="regPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                    </div>
+                    <div class="info-row" style="padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">تأكيد كلمة المرور</span>
+                        <input type="password" id="regConfirmPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary">إنشاء حساب</button>
+                </div>
+            </form>
+            <div class="switch-link" onclick="showLogin()">لديك حساب بالفعل؟ سجل الدخول هنا</div>
+        </div>
+    </div>
+
+    <div id="appContainer" class="app-container" style="display: none;">
+        <div class="app-header">
             <div class="logo">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#3AB795" stroke-width="2"/>
-                    <path d="M2 17L12 22L22 17" stroke="#3AB795" stroke-width="2"/>
-                    <path d="M2 12L12 17L22 12" stroke="#3AB795" stroke-width="2"/>
-                </svg>
-                <span class="logo-text">Schneider Electric</span>
+                <i class="fab fa-whatsapp"></i>
+                <span>تواصل واتساب</span>
             </div>
-            <div class="menu-toggle"><i class="fas fa-bars"></i></div>
-            <ul class="nav-links">
-                <li><a href="#home" class="active">الرئيسية</a></li>
-                <li><a href="#pricing">الباقات</a></li>
-            </ul>
-        </nav>
-    </header>
+            <div class="header-actions">
+                <button id="openFiltersBtn" class="action-btn"><i class="fas fa-sliders-h"></i> فلترة</button>
+                <button id="profileBtn" class="action-btn"><i class="fas fa-user-circle"></i> <span id="profileBtnName">ملفي</span></button>
+                <button id="logoutBtn" class="action-btn logout-btn"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            </div>
+        </div>
+        
+        <div class="control-bar">
+            <div class="view-toggle">
+                <button id="listViewBtn" class="view-btn active"><i class="fas fa-list"></i> قائمة</button>
+                <button id="mapViewBtn" class="view-btn"><i class="fas fa-map"></i> خريطة</button>
+            </div>
+        </div>
+        
+        <div id="listView" class="users-list" style="display: block;">
+            <div class="users-grid"></div>
+        </div>
+        <div id="mapView" class="map-area" style="display: none;"><div id="map"></div></div>
+    </div>
 
-    <div class="mobile-bottom-nav">
-        <div class="bottom-nav-items">
-            <a href="#home" class="bottom-nav-item active"><i class="fas fa-home"></i><span>الرئيسية</span></a>
-            <a href="#pricing" class="bottom-nav-item"><i class="fas fa-tags"></i><span>الباقات</span></a>
-            <a href="#" class="bottom-nav-item" onclick="window.scrollTo({top:0,behavior:'smooth'});"><i class="fas fa-arrow-up"></i><span>للأعلى</span></a>
+    <div id="filterModal" class="filter-modal">
+        <div class="filter-panel">
+            <div class="filter-header">
+                <h3><i class="fas fa-sliders-h"></i> فرز وتصفية</h3>
+                <button class="close-btn" onclick="closeFilterModal()">&times;</button>
+            </div>
+            <div class="filter-body">
+                <div class="filter-group">
+                    <label><i class="fas fa-city"></i> المدينة</label>
+                    <select id="filterCityModal">
+                        <option value="all">جميع المدن</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-venus-mars"></i> الجنس</label>
+                    <select id="filterGenderModal">
+                        <option value="all">جميع الأجناس</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-heart"></i> الحالة العائلية</label>
+                    <select id="filterMaritalModal">
+                        <option value="all">جميع الحالات</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label><i class="fas fa-chart-line"></i> ترتيب حسب</label>
+                    <select id="sortByModal">
+                        <option value="online">المتصلين أولاً</option>
+                        <option value="distance">المسافة</option>
+                        <option value="age">العمر</option>
+                        <option value="name">الاسم</option>
+                    </select>
+                </div>
+                <div class="filter-actions">
+                    <button id="applyFiltersBtn" class="btn btn-primary">تطبيق</button>
+                    <button id="resetFiltersBtn" class="btn" style="background: #f3f4f6; color: #1f2937;">إعادة ضبط</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="container">
-        <!-- Hero -->
-        <section id="home" class="hero">
-            <span class="hero-badge"><i class="fas fa-microchip"></i> Schneider Electric</span>
-            <h1>البرنامج الشامل<br>لـ Unity Pro PLC</h1>
-            <p>من الأساسيات للمبتدئين إلى الاحتراف وبناء الأنظمة المتكاملة</p>
-            <div class="hero-stats">
-                <div class="stat-item"><span class="stat-number">7</span><span class="stat-label">وحدات</span></div>
-                <div class="stat-item"><span class="stat-number">30+</span><span class="stat-label">ساعة</span></div>
-                <div class="stat-item"><span class="stat-number">28</span><span class="stat-label">محور متكامل</span></div>
-            </div>
-        </section>
-
-        <!-- Info Cards -->
-        <div class="info-grid">
-            <div class="info-card" onclick="showModal('prerequisites')">
-                <i class="fas fa-users"></i><h3>الجمهور</h3><p>مهندسون، فنيون، طلاب</p>
-                <div class="card-tags"><span class="tag">مبتدئ</span><span class="tag">متوسط</span><span class="tag">متقدم</span></div>
-            </div>
-            <div class="info-card" onclick="showModal('requirements')">
-                <i class="fas fa-laptop-code"></i><h3>المتطلبات</h3><p>Unity Pro XL + محاكاة</p>
-                <div class="card-tags"><span class="tag">برنامج</span><span class="tag">ويندوز</span></div>
-            </div>
-            <div class="info-card" onclick="showModal('objectives')">
-                <i class="fas fa-bullseye"></i><h3>المخرجات</h3><p>مبتدئ → خبير في PLC</p>
-                <div class="card-tags"><span class="tag">Ladder</span><span class="tag">ST</span><span class="tag">مشاريع</span></div>
-            </div>
-        </div>
-
-        <!-- Pricing -->
-        <section id="pricing" class="pricing-section">
-            <h2 class="section-title">اختر مسارك التدريبي</h2>
-            <div class="pricing-grid">
-                <!-- Basic: شامل للمبتدئين -->
-                <div class="pricing-card">
-                    <div class="pricing-header">
-                        <div class="pricing-name">المسار الأساسي الشامل</div>
-                        <div class="pricing-price">250 <small>درهم</small></div>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check-circle"></i> 4 وحدات تأسيسية كاملة</li>
-                        <li><i class="fas fa-check-circle"></i> 40+ نقطة أساسية مع شرح وافي</li>
-                        <li><i class="fas fa-check-circle"></i> أمثلة تطبيقية لكل مفهوم</li>
-                        <li><i class="fab fa-facebook"></i> مجموعة فيسبوك للمبتدئين</li>
-                        <li><i class="fab fa-whatsapp"></i> دعم واتساب للمسار</li>
-                        <li><i class="fas fa-check-circle"></i> أساسيات Ladder, ST, الذاكرة</li>
-                        <li class="disabled"><i class="fas fa-times-circle"></i> مشاريع متقدمة واتصالات</li>
-                    </ul>
-                    <div class="pricing-actions">
-                        <a href="https://wa.me/212671243653?text=حجز%20المسار%20الأساسي%20الشامل%20250" class="btn-pricing btn-basic" target="_blank">احجز المسار الأساسي</a>
-                        <button class="btn-pricing btn-outline-units" onclick="showUnits('basic')"><i class="fas fa-eye"></i> استعرض الوحدات</button>
-                    </div>
+    <div id="profileModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-header"><h3><i class="fas fa-id-card"></i> ملفي الشخصي</h3><button class="close-btn" onclick="closeProfileModal()">&times;</button></div>
+            <div class="modal-body">
+                <div class="profile-info">
+                    <div class="info-row"><span>الاسم:</span><span id="profileName"></span></div>
+                    <div class="info-row"><span>العمر:</span><span id="profileAge"></span></div>
+                    <div class="info-row"><span>الحالة:</span><span id="profileMarital"></span></div>
+                    <div class="info-row"><span>الجنس:</span><span id="profileGender"></span></div>
+                    <div class="info-row"><span>المدينة:</span><span id="profileCity"></span></div>
+                    <div class="info-row"><span>رقم الهاتف:</span><span id="profilePhone"></span></div>
+                    <div class="info-row"><span>البريد:</span><span id="profileEmail"></span></div>
                 </div>
-                <!-- Advanced: احترافي + متقدم -->
-                <div class="pricing-card popular">
-                    <div class="pricing-header">
-                        <div class="pricing-name">المسار المتقدم + الاحتراف</div>
-                        <div class="pricing-price">500 <small>درهم</small></div>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check-circle"></i> كل محتوى المسار الأساسي (4 وحدات)</li>
-                        <li><i class="fas fa-check-circle"></i> 3 وحدات متقدمة: تطبيقي، اتصالات، مشروع شامل</li>
-                        <li><i class="fas fa-check-circle"></i> 70+ نقطة تعليمية (أساسي + متقدم)</li>
-                        <li><i class="fas fa-check-circle"></i> شروحات معمقة + أمثلة صناعية</li>
-                        <li><i class="fas fa-check-circle"></i> بناء نظام تعبئة كامل (مشروع)</li>
-                        <li><i class="fas fa-check-circle"></i> اتصالات Modbus وربط HMI</li>
-                        <li><i class="fas fa-check-circle"></i> مجموعة واتساب تفاعلية + استشارات</li>
-                    </ul>
-                    <div class="pricing-actions">
-                        <a href="https://wa.me/212671243653?text=حجز%20المسار%20المتقدم%20500" class="btn-pricing btn-pro" target="_blank">احجز المسار المتقدم</a>
-                        <button class="btn-pricing btn-outline-units" onclick="showUnits('advanced')"><i class="fas fa-eye"></i> استعرض الوحدات</button>
-                    </div>
+                <div class="modal-actions">
+                    <button id="editProfileBtn" class="btn btn-primary">تعديل الملف</button>
+                    <button id="deleteAccountBtn" class="btn" style="background: #ef4444; color: white;">حذف الحساب</button>
                 </div>
             </div>
-        </section>
-
-        <!-- Units Wrapper -->
-        <div id="unitsWrapper" class="units-wrapper">
-            <div class="units-header">
-                <div class="selected-badge"><i class="fas fa-crown"></i> <span id="basketName"></span></div>
-                <button class="btn-hide-units" onclick="hideUnits()"><i class="fas fa-times"></i> إغلاق</button>
-            </div>
-            <div id="unitsContainer" class="units-grid"></div>
         </div>
     </div>
 
-    <button class="fab" onclick="scrollToTop()"><i class="fas fa-arrow-up"></i></button>
+    <div id="editProfileModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> تعديل الملف الشخصي</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="edit-options" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                        <button type="button" id="optionUpdateCurrent" class="edit-option-btn active" style="flex:1; padding:0.6rem; border:2px solid var(--primary); border-radius: var(--radius); background: var(--primary); color: white; cursor: pointer; font-weight:600;">تحديث الحساب الحالي</button>
+                        <button type="button" id="optionCreateNew" class="edit-option-btn" style="flex:1; padding:0.6rem; border:2px solid #e5e7eb; border-radius: var(--radius); background: var(--white); cursor: pointer; font-weight:600;">إنشاء حساب جديد</button>
+                    </div>
+                    
+                    <div class="profile-info" style="background: var(--white); padding: 0;">
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الاسم الكامل</span><input type="text" id="editName" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required></div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">العمر</span><input type="number" id="editAge" min="18" max="80" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required></div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الحالة العائلية</span><select id="editMarital" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;"><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="طالب">طالب</option><option value="مرتبط">مرتبط</option><option value="حر">حر</option></select></div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الجنس</span><select id="editGender" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">المدينة</span>
+                            <select id="editCity" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" onchange="updateCityCoordinates()">
+                                <option value="الدار البيضاء">الدار البيضاء</option>
+                                <option value="الرباط">الرباط</option>
+                                <option value="فاس">فاس</option>
+                                <option value="مراكش">مراكش</option>
+                                <option value="طنجة">طنجة</option>
+                                <option value="أكادير">أكادير</option>
+                                <option value="مكناس">مكناس</option>
+                                <option value="وجدة">وجدة</option>
+                                <option value="تطوان">تطوان</option>
+                                <option value="القنيطرة">القنيطرة</option>
+                                <option value="آسفي">آسفي</option>
+                                <option value="الناظور">الناظور</option>
+                                <option value="خريبكة">خريبكة</option>
+                                <option value="بركان">بركان</option>
+                                <option value="تازة">تازة</option>
+                                <option value="الجديدة">الجديدة</option>
+                                <option value="سيدي قاسم">سيدي قاسم</option>
+                                <option value="العرائش">العرائش</option>
+                                <option value="الحسيمة">الحسيمة</option>
+                            </select>
+                        </div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الموقع الجغرافي</span><button type="button" id="editGetLocationBtn" class="location-btn" style="width: 60%; background: var(--primary); color: white; padding: 0.4rem; border-radius: 0.75rem; border: none; cursor: pointer;"><i class="fas fa-location-dot"></i> تحديد موقعي الحالي</button><input type="hidden" id="editLat"><input type="hidden" id="editLng"></div>
+                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">رقم الهاتف (واتساب)</span><input type="tel" id="editPhone" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required placeholder="06xxxxxxxx"></div>
+                    </div>
+                    
+                    <div id="verificationSection" class="verification-section">
+                        <div class="verification-title">
+                            <i class="fas fa-shield-alt"></i> 🔐 تأكيد الهوية مطلوب
+                        </div>
+                        <div class="info-row" style="padding: 0.75rem 0;">
+                            <span style="font-weight: 600;">كلمة المرور الحالية <span style="color: red;">*</span></span>
+                            <input type="password" id="currentPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أدخل كلمة المرور الحالية">
+                        </div>
+                        <div class="info-row" style="padding: 0.75rem 0;">
+                            <span style="font-weight: 600;">تأكيد كلمة المرور الحالية <span style="color: red;">*</span></span>
+                            <input type="password" id="confirmCurrentPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أعد إدخال كلمة المرور الحالية">
+                        </div>
+                        <div class="warning-text">
+                            <i class="fas fa-info-circle"></i> ⚠️ مطلوب فقط عند تغيير البريد الإلكتروني أو كلمة المرور
+                        </div>
+                    </div>
+                    
+                    <div id="authFieldsSection" class="auth-fields-section">
+                        <div class="auth-fields-title"><i class="fas fa-key"></i> معلومات تسجيل الدخول</div>
+                        <div class="info-row" style="padding: 0.75rem 0;">
+                            <span style="font-weight: 600;">البريد الإلكتروني</span>
+                            <input type="email" id="editEmail" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="البريد الإلكتروني (اتركه كما هو لعدم التغيير)">
+                        </div>
+                        <div class="info-row" style="padding: 0.75rem 0;">
+                            <span style="font-weight: 600;">كلمة المرور الجديدة</span>
+                            <input type="password" id="editPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="اتركه فارغاً لعدم التغيير">
+                        </div>
+                        <div class="info-row" style="padding: 0.75rem 0;">
+                            <span style="font-weight: 600;">تأكيد كلمة المرور الجديدة</span>
+                            <input type="password" id="editConfirmPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أعد إدخال كلمة المرور الجديدة">
+                        </div>
+                    </div>
+                    
+                    <div class="modal-actions" style="margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <div class="modal-close" onclick="closeModal()">×</div>
-            <h2 id="modalTitle" style="color:var(--schneider-blue); margin-bottom:1rem;"></h2>
-            <div id="modalBody" style="text-align:right;"></div>
+    <div id="notificationsPanel" class="notifications-panel">
+        <div class="notifications-content">
+            <div class="notifications-header">
+                <h3><i class="fas fa-bell"></i> الإشعارات</h3>
+                <button class="close-btn" onclick="closeNotificationsPanel()">&times;</button>
+            </div>
+            <div id="notificationsList" class="notifications-list"></div>
         </div>
     </div>
 
     <script>
-        // ========== بيانات شاملة وكاملة ==========
-        // المسار الأساسي (مبتدئ شامل)
-        const basicUnits = [
-            {
-                num: 1,
-                title: "مقدمة شاملة في Unity Pro",
-                duration: "4 س",
-                points: [
-                    { q: "ما هو Unity Pro؟", a: "بيئة تطوير متكاملة (IDE) من Schneider Electric تعتمد على معيار IEC 61131-3. تستخدم لبرمجة PLCs من عائلات Modicon.", example: "يستخدم في أنظمة التحكم الصناعي، خطوط الإنتاج، ومحطات المياه." },
-                    { q: "عائلات PLCs المدعومة بالتفصيل", a: "Modicon M340 (متوسط)، Premium (معقد)، Quantum (كبير موزع)، Momentum (مدمج). كل عائلة تناسب تطبيقات معينة.", example: "M340 لأنظمة الأتمتة المتوسطة مثل ماكينات التعبئة." },
-                    { q: "خطوات إنشاء مشروع جديد (بالشرح)", a: "1. File > New Project. 2. اختيار العائلة (مثلاً M340). 3. تحديد وحدة المعالجة (CPU). 4. اختيار اللغة الرئيسية. 5. إضافة وحدات I/O. 6. حفظ المشروع.", example: "اختر CPU 340-20 مع لغة Ladder كلغة رئيسية." },
-                    { q: "لغات البرمجة الخمس (شرح مبسط)", a: "Ladder (رسومي كهربائي)، ST (نصي عالٍ)، FBD (بلوكات)، SFC (تتابعي)، IL (شبيه التجميع).", example: "Ladder للتحكم البسيط، ST للحسابات." }
-                ]
-            },
-            {
-                num: 2,
-                title: "لغة Ladder بشكل معمق",
-                duration: "5 س",
-                points: [
-                    { q: "العناصر الأساسية (Contacts & Coils)", a: "ملامس مفتوح (--| |--)، ملامس مغلق (--|/|--)، ملف خرج (--( )--)، ملف Set (--(S)--)، ملف Reset (--(R)--).", example: "--| |-- Start يعمل عند الضغط." },
-                    { q: "دائرة Latching (Start/Stop) مع شرح", a: "عند الضغط على Start، يشتغل المخرج ويغذي نفسه عبر فرع موازٍ. يستمر حتى Stop.", example: "Start | |---- Motor\nMotor | |----" },
-                    { q: "أنواع المؤقتات واستخداماتها", a: "TON (تأخير التشغيل)، TOF (تأخير الإيقاف)، TP (نبضي).", example: "TON(IN:=Start, PT:=T#5S) -> ينتظر 5 ثوان ثم يخرج." },
-                    { q: "العدادات (Counters) بالتفصيل", a: "CTU (تصاعدي)، CTD (تنازلي)، CTUD (ثنائي).", example: "CTU(CU:=Sensor, R:=Reset, PV:=10) -> يعد حتى 10." }
-                ]
-            },
-            {
-                num: 3,
-                title: "لغة Structured Text (ST) من الصفر",
-                duration: "5 س",
-                points: [
-                    { q: "مقدمة إلى ST", a: "لغة نصية تشبه باسكال، مثالية للعمليات الحسابية والمنطق المعقد.", example: "IF Level > 100 THEN Pump := TRUE; END_IF;" },
-                    { q: "جملة IF الشرطية", a: "IF condition THEN ... ELSIF ... ELSE ... END_IF;", example: "IF Start AND NOT Stop THEN Motor := TRUE; ELSE Motor := FALSE; END_IF;" },
-                    { q: "الحلقات التكرارية FOR", a: "FOR index FROM 1 TO 10 DO ... END_FOR;", example: "FOR i:=1 TO 5 DO Array[i] := i*10; END_FOR;" },
-                    { q: "جملة CASE لتعدد الخيارات", a: "CASE Value OF 1: ... 2: ... ELSE ... END_CASE;", example: "CASE Mode OF 1: Speed:=1000; 2: Speed:=2000; END_CASE;" }
-                ]
-            },
-            {
-                num: 4,
-                title: "إدارة الذاكرة والمتغيرات",
-                duration: "4 س",
-                points: [
-                    { q: "أنواع المتغيرات الأساسية", a: "BOOL (boolean), INT (integer), DINT (long), REAL (float), WORD, DWORD.", example: "BOOL: TRUE/FALSE, INT: -32768..32767." },
-                    { q: "صيغ العناوين (Addresses)", a: "%I (مدخل), %Q (مخرج), %M (bit), %MW (word), %MD (double word).", example: "%I0.0.0 أول مدخل، %MW10 كلمة ذاكرة رقم 10." },
-                    { q: "الفرق بين متغير عام ومحلي", a: "Global (VAR_GLOBAL) يُرى في كل المشروع. Local (VAR) داخل POU واحد.", example: "VAR_GLOBAL SystemReady : BOOL; END_VAR" },
-                    { q: "المصفوفات (Arrays)", a: "ARRAY[ابدأ..نهاية] OF نوع.", example: "Temps : ARRAY[1..10] OF INT;" }
-                ]
-            }
+        // إحداثيات المدن المغربية
+        const cityCoords = {
+            'الدار البيضاء': [33.5731, -7.5898],
+            'الرباط': [34.0209, -6.8416],
+            'فاس': [34.0333, -5.0000],
+            'مراكش': [31.6295, -7.9811],
+            'طنجة': [35.7595, -5.8340],
+            'أكادير': [30.4278, -9.5981],
+            'مكناس': [33.8950, -5.5547],
+            'وجدة': [34.6869, -1.9114],
+            'تطوان': [35.5733, -5.3745],
+            'القنيطرة': [34.2610, -6.5801],
+            'آسفي': [32.2994, -9.2372],
+            'الناظور': [35.1697, -2.9336],
+            'خريبكة': [32.8833, -6.9000],
+            'بركان': [34.9167, -2.2500],
+            'تازة': [34.2167, -4.0167],
+            'الجديدة': [33.2333, -8.5000],
+            'سيدي قاسم': [34.2167, -5.7000],
+            'العرائش': [35.1833, -6.1500],
+            'الحسيمة': [35.2333, -3.9333]
+        };
+
+        // قائمة افتراضية من المستخدمين (ذكور وإناث)
+        const defaultUsersList = [
+            { name: "أحمد العلمي", email: "ahmed.alami@example.com", password: "ahmed123", city: "الدار البيضاء", gender: "ذكر", marital: "متزوج", phone: "0612345601", age: 35, isDefault: true },
+            { name: "فاطمة الزهراء", email: "fatima.zahra@example.com", password: "fatima123", city: "الرباط", gender: "أنثى", marital: "أعزب", phone: "0612345602", age: 28, isDefault: true },
+            { name: "محمد بنعلي", email: "mohamed.benali@example.com", password: "mohamed123", city: "فاس", gender: "ذكر", marital: "متزوج", phone: "0612345603", age: 42, isDefault: true },
+            { name: "سعاد العمراني", email: "saad.omrani@example.com", password: "saad123", city: "مراكش", gender: "أنثى", marital: "مطلق", phone: "0612345604", age: 33, isDefault: true },
+            { name: "يوسف الراضي", email: "youssef.radi@example.com", password: "youssef123", city: "طنجة", gender: "ذكر", marital: "أعزب", phone: "0612345605", age: 25, isDefault: true },
+            { name: "نادية الشرقاوي", email: "nadia.chargui@example.com", password: "nadia123", city: "أكادير", gender: "أنثى", marital: "مرتبط", phone: "0612345606", age: 29, isDefault: true },
+            { name: "عبد الله السوسي", email: "abdallah.soussi@example.com", password: "abdallah123", city: "مكناس", gender: "ذكر", marital: "متزوج", phone: "0612345607", age: 45, isDefault: true },
+            { name: "حنان الفاسي", email: "hanan.fassi@example.com", password: "hanan123", city: "وجدة", gender: "أنثى", marital: "أعزب", phone: "0612345608", age: 26, isDefault: true },
+            { name: "كريم العروسي", email: "karim.aroussi@example.com", password: "karim123", city: "تطوان", gender: "ذكر", marital: "أعزب", phone: "0612345609", age: 31, isDefault: true },
+            { name: "ليلى بناني", email: "leila.benani@example.com", password: "leila123", city: "القنيطرة", gender: "أنثى", marital: "متزوج", phone: "0612345610", age: 38, isDefault: true },
+            { name: "رشيد الغازي", email: "rachid.ghazi@example.com", password: "rachid123", city: "آسفي", gender: "ذكر", marital: "مطلق", phone: "0612345611", age: 44, isDefault: true },
+            { name: "منال الصباحي", email: "manal.sabahi@example.com", password: "manal123", city: "الناظور", gender: "أنثى", marital: "أعزب", phone: "0612345612", age: 24, isDefault: true },
+            { name: "طارق الناصري", email: "tariq.nasri@example.com", password: "tariq123", city: "خريبكة", gender: "ذكر", marital: "متزوج", phone: "0612345613", age: 39, isDefault: true },
+            { name: "سميرة العابد", email: "samira.abid@example.com", password: "samira123", city: "بركان", gender: "أنثى", marital: "مرتبط", phone: "0612345614", age: 27, isDefault: true },
+            { name: "عمر الشامي", email: "omar.chami@example.com", password: "omar123", city: "تازة", gender: "ذكر", marital: "أعزب", phone: "0612345615", age: 32, isDefault: true },
+            { name: "زينب الوردي", email: "zeinab.wardi@example.com", password: "zeinab123", city: "الجديدة", gender: "أنثى", marital: "متزوج", phone: "0612345616", age: 36, isDefault: true },
+            { name: "حسن البقالي", email: "hassan.bakkali@example.com", password: "hassan123", city: "سيدي قاسم", gender: "ذكر", marital: "مطلق", phone: "0612345617", age: 47, isDefault: true },
+            { name: "نوال السعدي", email: "nawal.saadi@example.com", password: "nawal123", city: "العرائش", gender: "أنثى", marital: "أعزب", phone: "0612345618", age: 23, isDefault: true },
+            { name: "إدريس الريفي", email: "idriss.rifi@example.com", password: "idriss123", city: "الحسيمة", gender: "ذكر", marital: "مرتبط", phone: "0612345619", age: 30, isDefault: true },
+            { name: "غزلان المهدي", email: "ghizlane.mahdi@example.com", password: "ghizlane123", city: "الدار البيضاء", gender: "أنثى", marital: "أعزب", phone: "0612345620", age: 26, isDefault: true }
         ];
 
-        // المسار المتقدم (يحتوي على كل الأساسيات + إضافات متقدمة)
-        const advancedUnits = [
-            // الوحدات الأساسية نفسها (مع إضافة وسوم متقدم)
-            { num: 1, title: "مقدمة في Unity Pro (أساسي)", duration: "4 س", points: basicUnits[0].points },
-            { num: 2, title: "لغة Ladder (أساسي)", duration: "5 س", points: basicUnits[1].points },
-            { num: 3, title: "لغة ST (أساسي)", duration: "5 س", points: basicUnits[2].points },
-            { num: 4, title: "إدارة الذاكرة (أساسي)", duration: "4 س", points: basicUnits[3].points },
-            {
-                num: 5,
-                title: "برامج تطبيقية متقدمة",
-                duration: "4 س",
-                points: [
-                    { q: "برنامج تحكم بمحرك مع حماية كاملة", a: "يتم استخدام Latching مع إضافة حساس حرارة ومراقبة التيار.", example: "MotorRun := (Start OR MotorRun) AND NOT Stop AND NOT Thermal;" },
-                    { q: "نظام خلاط أوتوماتيكي مع حساسات مستوى", a: "يتم تعبئة الخزان حتى حساس المستوى، ثم تشغيل الخلاط لمدة زمنية.", example: "Valve := NOT LevelHigh; Timer(IN:=LevelHigh, PT:=T#30S); Mixer := Timer.Q;" },
-                    { q: "عداد فرز المنتجات (متقدم)", a: "يتم عد المنتجات وتصنيفها (جيد/تالف) باستخدام CTU ومقارنات.", example: "GoodCount := CTU(CU:=GoodSensor, R:=Reset);" },
-                    { q: "نظام إضاءة ذكي موفر للطاقة", a: "إضاءة الممرات تعمل بالحركة مع مراعاة ضوء النهار.", example: "Lights := (Motion OR TimerOff.Q) AND NOT Daylight;" }
-                ]
-            },
-            {
-                num: 6,
-                title: "الاتصالات الصناعية Modbus",
-                duration: "4 س",
-                points: [
-                    { q: "بروتوكول Modbus (شرح متقدم)", a: "Modbus RTU (RS485) و Modbus TCP (Ethernet). هيكل الإطار، عناوين التسجيلات.", example: "قراءة 10 Holding Registers من عنوان 40001." },
-                    { q: "تطبيق عملي: قراءة بيانات من جهاز خارجي", a: "استخدام بلوكات Modbus في Unity Pro: Modbus_Read, Modbus_Write.", example: "Modbus_Read(Addr:=40001, Quantity:=5, Data:=ReceiveArray);" },
-                    { q: "ربط PLC مع HMI أو SCADA", a: "تكوين OPC server، ربط عبر Modbus TCP، إعدادات IP.", example: "استخدام Vijeo Designer مع Modbus TCP." },
-                    { q: "تشخيص أعطال الشبكة (متقدم)", a: "استخدام Wireshark، Network Scanner، Animation Tables لمراقبة البيانات.", example: "تحليل حزم Modbus لاكتشاف الأخطاء." }
-                ]
-            },
-            {
-                num: 7,
-                title: "مشروع شامل: نظام تعبئة أوتوماتيكي",
-                duration: "4 س",
-                points: [
-                    { q: "تحليل ودراسة المشروع", a: "تحديد المداخل (حساس قارورة، حساس مستوى، أزرار) والمخارج (سير، صمام، لمبات). رسم مخطط الحالات.", example: "Inputs: BottleSensor, LevelSensor, Start, Stop. Outputs: Conveyor, Valve, Light." },
-                    { q: "برمجة المشروع (هيكل كامل)", a: "كتابة البرنامج باستخدام ST و Ladder. إدارة الحالات: انتظار، تعبئة، تأخير، عد.", example: "FillingMachine Program كامل مع مؤقتات." },
-                    { q: "اختبار ومحاكاة المشروع", a: "استخدام Simulation و Animation Tables لمراقبة المتغيرات. استخدام Breakpoints.", example: "محاكاة وصول القوارير وامتلائها." },
-                    { q: "توثيق المشروع احترافياً", a: "إضافة Comments، توثيق المتغيرات، رسم Block Diagram.", example: "شرح كل Network في Ladder." }
-                ]
-            }
-        ];
+        const FIREBASE_CONFIG = { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" };
+        
+        let currentUser = null;
+        let appMap = null;
+        let markers = [];
+        let currentView = 'list';
+        let allUsers = [];
+        let filterCity = 'all';
+        let filterGender = 'all';
+        let filterMarital = 'all';
+        let sortBy = 'online';
+        let availableCities = [];
+        let availableGenders = [];
+        let availableMaritals = [];
+        let notifications = [];
+        let selectedEditOption = 'update';
+        let isUpdatingView = false;
 
-        // Show units
-        window.showUnits = function(pkg) {
-            const wrapper = document.getElementById('unitsWrapper');
-            const container = document.getElementById('unitsContainer');
-            const basketSpan = document.getElementById('basketName');
+        firebase.initializeApp(FIREBASE_CONFIG);
+        const db = firebase.database();
+
+        const maritalMap = { 'متزوج': 'متزوج', 'أعزب': 'أعزب', 'مطلق': 'مطلق', 'طالب': 'طالب', 'مرتبط': 'مرتبط', 'حر': 'حر' };
+        const genderMap = { 'ذكر': 'ذكر', 'أنثى': 'أنثى' };
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function updateCityCoordinates() {
+            const citySelect = document.getElementById('editCity');
+            const selectedCity = citySelect.value;
+            const coords = cityCoords[selectedCity];
+            if (coords) {
+                document.getElementById('editLat').value = coords[0];
+                document.getElementById('editLng').value = coords[1];
+                showToast(`تم تحديث الإحداثيات لمدينة ${selectedCity}`);
+            }
+        }
+        
+        function openWhatsApp(phoneNumber, name) {
+            if (!currentUser) {
+                showToast('الرجاء تسجيل الدخول أولاً', true);
+                return;
+            }
             
-            let units = pkg === 'basic' ? basicUnits : advancedUnits;
-            basketSpan.textContent = pkg === 'basic' ? 'المسار الأساسي (250 درهم)' : 'المسار المتقدم (500 درهم)';
+            let cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
             
-            container.innerHTML = '';
-            units.forEach(unit => {
-                const card = document.createElement('div');
-                card.className = 'unit-card';
-                const headerClass = pkg === 'basic' ? 'basic-header' : 'advanced-header';
-                
-                let pointsHtml = '';
-                unit.points.forEach(point => {
-                    pointsHtml += `
-                        <div class="unit-topic">
-                            <div class="topic-question"><i class="fas fa-question-circle"></i> ${point.q}</div>
-                            <div class="topic-answer">${point.a}</div>
-                            <div class="topic-example"><i class="fas fa-lightbulb"></i> مثال: ${point.example}</div>
-                        </div>
-                    `;
+            if (cleanNumber.startsWith('0')) {
+                cleanNumber = '212' + cleanNumber.substring(1);
+            } else if (!cleanNumber.startsWith('212') && cleanNumber.length === 10) {
+                cleanNumber = '212' + cleanNumber;
+            }
+            
+            const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent('مرحباً ' + name + '، أرغب في التواصل معك')}`;
+            window.open(whatsappUrl, '_blank');
+            showToast(`جاري فتح واتساب للتواصل مع ${name}`);
+        }
+
+        function openDirections(destLat, destLng, destName) {
+            if (currentUser && currentUser.lat && currentUser.lng) {
+                const url = `https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${destLat},${destLng}`;
+                window.open(url, '_blank');
+                showToast(`جاري فتح المسار من موقع حسابك إلى ${destName}`);
+            } else {
+                const url = `https://www.google.com/maps/dir/Current+Location/${destLat},${destLng}`;
+                window.open(url, '_blank');
+                showToast(`جاري فتح المسار إلى ${destName} (باستخدام موقعك الحالي)`);
+            }
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            if (isError) {
+                toast.classList.add('error');
+            } else {
+                toast.classList.add('success');
+            }
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2800);
+        }
+
+        function addNotification(title, message, type = 'info') {
+            const notification = {
+                id: Date.now(),
+                title,
+                message,
+                type,
+                time: new Date().toLocaleTimeString('ar-EG'),
+                date: new Date().toLocaleDateString('ar-EG'),
+                read: false
+            };
+            notifications.unshift(notification);
+            if (notifications.length > 50) notifications.pop();
+            updateNotificationsList();
+            showToast(message);
+        }
+
+        function updateNotificationsList() {
+            const container = document.getElementById('notificationsList');
+            if (!container) return;
+            if (notifications.length === 0) {
+                container.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">لا توجد إشعارات</div>';
+                return;
+            }
+            container.innerHTML = notifications.map(n => `
+                <div class="notification-item">
+                    <div class="notification-icon"><i class="fas ${n.type === 'online' ? 'fa-circle' : 'fa-bell'}"></i></div>
+                    <div class="notification-text">
+                        <div><strong>${n.title}</strong></div>
+                        <div>${n.message}</div>
+                        <div class="notification-time">${n.date} - ${n.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closeNotificationsPanel() {
+            document.getElementById('notificationsPanel').style.display = 'none';
+        }
+
+        function initMap(containerId, lat, lng) {
+            const map = L.map(containerId).setView([lat, lng], 8);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+            return map;
+        }
+
+        async function updateFiltersOptions() {
+            const snapshot = await db.ref('users').once('value');
+            const cities = new Set();
+            const genders = new Set();
+            const maritals = new Set();
+            
+            snapshot.forEach(child => {
+                const user = child.val();
+                if (user.city) cities.add(user.city);
+                if (user.gender) genders.add(user.gender);
+                if (user.marital) maritals.add(user.marital);
+            });
+            
+            availableCities = Array.from(cities).sort();
+            availableGenders = Array.from(genders).sort();
+            availableMaritals = Array.from(maritals).sort();
+            
+            const citySelect = document.getElementById('filterCityModal');
+            if (citySelect) {
+                const current = filterCity;
+                citySelect.innerHTML = '<option value="all">جميع المدن</option>';
+                availableCities.forEach(city => {
+                    const opt = document.createElement('option');
+                    opt.value = city;
+                    opt.textContent = city;
+                    citySelect.appendChild(opt);
                 });
-
-                card.innerHTML = `
-                    <div class="unit-header ${headerClass}">
-                        <span class="unit-number">الوحدة ${unit.num}</span>
-                        <div class="unit-title">${unit.title}</div>
-                        <span class="unit-duration"><i class="far fa-clock"></i> ${unit.duration}</span>
-                    </div>
-                    <div class="unit-body">
-                        ${pointsHtml}
-                        <a href="https://wa.me/212671243653?text=استفسار%20عن%20الوحدة%20${unit.num}%20من%20${pkg === 'basic' ? 'المسار%20الأساسي' : 'المسار%20المتقدم'}" class="book-unit-btn" target="_blank">احجز هذه الوحدة</a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            wrapper.classList.add('visible');
-            setTimeout(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-        };
-
-        window.hideUnits = function() {
-            document.getElementById('unitsWrapper').classList.remove('visible');
-        };
-
-        // Modal functions
-        window.showModal = function(type) {
-            const modal = document.getElementById('modal');
-            const title = document.getElementById('modalTitle');
-            const body = document.getElementById('modalBody');
-            if (type === 'prerequisites') {
-                title.textContent = 'الجمهور المستهدف';
-                body.innerHTML = '<p>✓ مهندسو كهرباء وتحكم<br>✓ فنيو صيانة وأتمتة<br>✓ طلاب الهندسة والمعاهد<br>✓ مبتدئون يريدون الاحتراف</p>';
-            } else if (type === 'requirements') {
-                title.textContent = 'المتطلبات';
-                body.innerHTML = '<p>✓ Windows 10/11 (64-bit)<br>✓ برنامج Unity Pro XL (سيتم توفيره)<br>✓ 8GB RAM أو أكثر<br>✓ لا حاجة لـ PLC فعلي (محاكاة)</p>';
-            } else if (type === 'objectives') {
-                title.textContent = 'مخرجات التعلم';
-                body.innerHTML = '<p>✓ إتقان Unity Pro من الصفر<br>✓ برمجة Ladder و ST باحترافية<br>✓ تنفيذ مشاريع تحكم صناعية<br>✓ ربط PLC مع الأنظمة الخارجية<br>✓ تشخيص وحل الأعطال<br>✓ بناء نظام متكامل (للمتقدمين)</p>';
+                if (current !== 'all' && availableCities.includes(current)) citySelect.value = current;
+                else citySelect.value = 'all';
             }
-            modal.classList.add('active');
-        };
-        window.closeModal = () => document.getElementById('modal').classList.remove('active');
-        window.scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            const genderSelect = document.getElementById('filterGenderModal');
+            if (genderSelect) {
+                const current = filterGender;
+                genderSelect.innerHTML = '<option value="all">جميع الأجناس</option>';
+                availableGenders.forEach(gender => {
+                    const opt = document.createElement('option');
+                    opt.value = gender;
+                    opt.textContent = genderMap[gender] || gender;
+                    genderSelect.appendChild(opt);
+                });
+                if (current !== 'all' && availableGenders.includes(current)) genderSelect.value = current;
+                else genderSelect.value = 'all';
+            }
+            
+            const maritalSelect = document.getElementById('filterMaritalModal');
+            if (maritalSelect) {
+                const current = filterMarital;
+                maritalSelect.innerHTML = '<option value="all">جميع الحالات</option>';
+                availableMaritals.forEach(marital => {
+                    const opt = document.createElement('option');
+                    opt.value = marital;
+                    opt.textContent = maritalMap[marital] || marital;
+                    maritalSelect.appendChild(opt);
+                });
+                if (current !== 'all' && availableMaritals.includes(current)) maritalSelect.value = current;
+                else maritalSelect.value = 'all';
+            }
+        }
 
-        // Mobile bottom nav
-        document.querySelectorAll('.bottom-nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
+        async function createDefaultUsers() {
+            const usersRef = db.ref('users');
+            for (const user of defaultUsersList) {
+                const exists = await usersRef.orderByChild('email').equalTo(user.email).once('value');
+                if (!exists.exists()) {
+                    const coords = cityCoords[user.city];
+                    const userId = db.ref('users').push().key;
+                    await usersRef.child(user.name).set({
+                        userId: userId,
+                        name: user.name,
+                        age: user.age,
+                        marital: user.marital,
+                        gender: user.gender,
+                        city: user.city,
+                        lat: coords ? coords[0] : 33.5731,
+                        lng: coords ? coords[1] : -7.5898,
+                        phone: user.phone,
+                        email: user.email,
+                        password: user.password,
+                        createdAt: Date.now(),
+                        lastActive: Date.now(),
+                        status: 'online',
+                        isDefault: true
+                    });
+                }
+            }
+            await updateFiltersOptions();
+        }
+
+        async function loadAllUsers() {
+            const snapshot = await db.ref('users').once('value');
+            allUsers = [];
+            snapshot.forEach(child => {
+                const user = child.val();
+                allUsers.push({ 
+                    email: user.email, 
+                    password: user.password, 
+                    name: user.name,
+                    status: user.status,
+                    lastActive: user.lastActive,
+                    isDefault: user.isDefault || false,
+                    userId: user.userId,
+                    phone: user.phone,
+                    lat: user.lat,
+                    lng: user.lng
+                });
             });
+            allUsers.sort((a, b) => a.name.localeCompare(b.name));
+            await updateFiltersOptions();
+        }
+
+        function showEmailSuggestions() {
+            const div = document.getElementById('emailSuggestions');
+            if (allUsers.length === 0) { 
+                div.innerHTML = '<div class="email-item">لا يوجد مستخدمين</div>'; 
+                div.style.display = 'block'; 
+                return; 
+            }
+            div.innerHTML = '';
+            allUsers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'email-item';
+                const isOnline = user.status === 'online';
+                const icon = isOnline ? '🟢' : '🔴';
+                item.innerHTML = `
+                    <div>
+                        <div style="font-weight:600;">📧 ${user.email}</div>
+                        <div style="font-size:0.75rem;">👤 ${user.name} ${icon}</div>
+                    </div>
+                    <i class="fas fa-chevron-left" style="color:#999;"></i>
+                `;
+                item.onclick = () => {
+                    document.getElementById('loginEmail').value = user.email;
+                    if (user.password) {
+                        document.getElementById('loginPassword').value = user.password;
+                    }
+                    div.style.display = 'none';
+                    showToast(`تم اختيار: ${user.name}`);
+                };
+                div.appendChild(item);
+            });
+            div.style.display = 'block';
+        }
+
+        // دالة تحديث حالة المستخدم عبر السويتش
+        function updateUserStatus(userName, userId, newStatus) {
+            if (!currentUser) return;
+            
+            db.ref(`users/${userName}/status`).set(newStatus).then(() => {
+                if (currentUser.name === userName) {
+                    currentUser.status = newStatus;
+                }
+                const statusLabel = document.getElementById(`statusLabel_${userId}`);
+                if (statusLabel) {
+                    statusLabel.innerHTML = newStatus === 'online' ? '🟢 متصل' : '🔴 غير متصل';
+                }
+                if (currentView === 'list') updateList();
+                else updateMap();
+            });
+        }
+
+        function setupPresence() {
+            if (!currentUser) return;
+            
+            const userName = currentUser.name;
+            const statusRef = db.ref(`users/${userName}/status`);
+            const lastActiveRef = db.ref(`users/${userName}/lastActive`);
+            const connectedRef = db.ref('.info/connected');
+            
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    statusRef.onDisconnect().set(currentUser.status === 'online' ? 'online' : 'offline');
+                    lastActiveRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
+                }
+            });
+        }
+
+        function isOnline(status, lastActive) {
+            return status === 'online';
+        }
+
+        async function getContacts(showOnlyOnline = false, includeCurrentUser = true) {
+            if (!currentUser) return [];
+            const snapshot = await db.ref('users').once('value');
+            const users = [];
+            snapshot.forEach(child => {
+                const user = child.val();
+                if (user.lat && user.lng) {
+                    const online = isOnline(user.status, user.lastActive);
+                    if (showOnlyOnline && !online) return;
+                    
+                    let distance = 0;
+                    if (user.name !== currentUser.name && currentUser.lat && currentUser.lng) {
+                        distance = haversine(currentUser.lat, currentUser.lng, user.lat, user.lng);
+                    }
+                    
+                    users.push({ 
+                        ...user, 
+                        distance, 
+                        online, 
+                        isCurrentUser: user.name === currentUser.name 
+                    });
+                }
+            });
+            
+            let filtered = users;
+            if (filterCity !== 'all') filtered = filtered.filter(u => u.city === filterCity);
+            if (filterGender !== 'all') filtered = filtered.filter(u => u.gender === filterGender);
+            if (filterMarital !== 'all') filtered = filtered.filter(u => u.marital === filterMarital);
+            
+            filtered.sort((a, b) => {
+                if (a.isCurrentUser) return -1;
+                if (b.isCurrentUser) return 1;
+                if (sortBy === 'online') return (b.online ? 1 : 0) - (a.online ? 1 : 0);
+                if (sortBy === 'distance') return a.distance - b.distance;
+                if (sortBy === 'age') return a.age - b.age;
+                if (sortBy === 'name') return a.name.localeCompare(b.name);
+                return (b.online ? 1 : 0) - (a.online ? 1 : 0);
+            });
+            return filtered;
+        }
+
+        function haversine(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        async function updateList() {
+            if (isUpdatingView) return;
+            isUpdatingView = true;
+            
+            const contacts = await getContacts(false, true);
+            const container = document.getElementById('listView');
+            const grid = container.querySelector('.users-grid') || (() => {
+                const g = document.createElement('div');
+                g.className = 'users-grid';
+                container.innerHTML = '';
+                container.appendChild(g);
+                return g;
+            })();
+            
+            if (contacts.length === 0) {
+                grid.innerHTML = '<div style="text-align:center;padding:3rem;color:#999;grid-column:1/-1;"><i class="fas fa-users fa-3x mb-3"></i><p>لا يوجد مستخدمين</p></div>';
+                isUpdatingView = false;
+                return;
+            }
+            
+            grid.innerHTML = contacts.map(u => {
+                const distanceDisplay = !u.isCurrentUser ? `<div class="distance-tag"><i class="fas fa-location-dot"></i> ${u.distance.toFixed(1)} كم</div>` : '';
+                
+                return `
+                <div class="user-card ${u.online ? 'online' : ''} ${u.isCurrentUser ? 'current-user' : ''}">
+                    <div class="user-header">
+                        <div class="user-name">
+                            <i class="fas fa-user-circle"></i> ${escapeHtml(u.name)}
+                            <span class="age-badge">${u.age} سنة</span>
+                            ${u.isCurrentUser ? '<span class="current-badge"><i class="fas fa-star"></i> أنت</span>' : ''}
+                        </div>
+                        <div class="user-status">
+                            <span class="status-dot ${u.online ? 'online' : 'offline'}"></span>
+                            <span>${u.online ? 'متصل' : 'غير متصل'}</span>
+                            ${!u.isCurrentUser && u.online ? `
+                                <button class="whatsapp-icon" onclick="event.stopPropagation(); openWhatsApp('${u.phone}', '${u.name.replace(/'/g, "\\'")}')">
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                            ` : !u.isCurrentUser && !u.online ? `
+                                <button class="whatsapp-icon disabled" disabled>
+                                    <i class="fab fa-whatsapp"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <span class="detail-tag"><i class="fas fa-heart"></i> ${maritalMap[u.marital] || u.marital}</span>
+                        <span class="detail-tag"><i class="fas fa-venus-mars"></i> ${genderMap[u.gender] || u.gender}</span>
+                        <span class="detail-tag"><i class="fas fa-city"></i> ${u.city}</span>
+                    </div>
+                    ${distanceDisplay}
+                    <div class="status-switch">
+                        <span id="statusLabel_${u.userId}">${u.online ? '🟢 متصل' : '🔴 غير متصل'}</span>
+                        <label class="switch">
+                            <input type="checkbox" id="switch_${u.userId}" ${u.online ? 'checked' : ''} onchange="updateUserStatus('${u.name}', '${u.userId}', this.checked ? 'online' : 'offline')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            `}).join('');
+            
+            isUpdatingView = false;
+        }
+
+        function showUserPopup(user) {
+            return `
+                <div class="custom-popup">
+                    <div class="popup-header">
+                        <div><i class="fas fa-user-circle"></i> ${escapeHtml(user.name)} <span style="background:#f59e0b; padding:2px 6px; border-radius:20px; font-size:0.7rem;">${user.age} سنة</span></div>
+                        <div><span class="status-dot ${user.online ? 'online' : 'offline'}" style="width:8px;height:8px;"></span> ${user.online ? 'متصل' : 'غير متصل'}</div>
+                    </div>
+                    <div class="popup-info"><i class="fas fa-heart"></i> ${maritalMap[user.marital] || user.marital}</div>
+                    <div class="popup-info"><i class="fas fa-venus-mars"></i> ${genderMap[user.gender] || user.gender}</div>
+                    <div class="popup-info"><i class="fas fa-city"></i> ${user.city}</div>
+                    <div class="popup-distance">${!user.isCurrentUser ? `<i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم من موقعك` : '<i class="fas fa-home"></i> هذا موقعك الحالي'}</div>
+                    ${!user.isCurrentUser && user.online ? `
+                        <div class="popup-actions">
+                            <button class="popup-btn direction" onclick="openDirections(${user.lat}, ${user.lng}, '${user.name.replace(/'/g, "\\'")}')"><i class="fas fa-directions"></i> عرض المسار</button>
+                            <button class="popup-btn" style="background:#25d366;" onclick="openWhatsApp('${user.phone}', '${user.name.replace(/'/g, "\\'")}')"><i class="fab fa-whatsapp"></i> واتساب</button>
+                        </div>
+                    ` : !user.isCurrentUser && !user.online ? `
+                        <div class="popup-actions">
+                            <button class="popup-btn direction" onclick="openDirections(${user.lat}, ${user.lng}, '${user.name.replace(/'/g, "\\'")}')"><i class="fas fa-directions"></i> عرض المسار</button>
+                            <button class="popup-btn disabled" style="background:#9e9e9e;" disabled><i class="fab fa-whatsapp"></i> غير متصل</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        async function updateMap() {
+            if (isUpdatingView) return;
+            isUpdatingView = true;
+            
+            const contacts = await getContacts(false, true);
+            
+            if (!appMap) {
+                const center = [33.5731, -7.5898];
+                appMap = initMap('map', center[0], center[1]);
+            }
+            
+            markers.forEach(m => appMap.removeLayer(m));
+            markers = [];
+            
+            contacts.forEach(u => {
+                let markerColor = '#075e54';
+                let markerSize = 12;
+                
+                if (u.isCurrentUser) {
+                    markerColor = '#075e54';
+                    markerSize = 18;
+                } else if (u.online) {
+                    markerColor = '#25d366';
+                    markerSize = 14;
+                } else {
+                    markerColor = '#9e9e9e';
+                    markerSize = 12;
+                }
+                
+                const markerIcon = L.divIcon({
+                    html: `<div style="background:${markerColor};width:${markerSize}px;height:${markerSize}px;border-radius:50%;border:3px solid white;box-shadow:0 0 8px ${markerColor};${u.isCurrentUser ? 'animation: pulse 1.5s infinite;' : ''}"></div>`,
+                    iconSize: [markerSize, markerSize],
+                    className: ''
+                });
+                const m = L.marker([u.lat, u.lng], { icon: markerIcon }).addTo(appMap);
+                
+                m.bindPopup(showUserPopup(u), {
+                    maxWidth: 320,
+                    minWidth: 280
+                });
+                
+                markers.push(m);
+            });
+            
+            if (contacts.length > 0) {
+                const bounds = L.latLngBounds(contacts.map(c => [c.lat, c.lng]));
+                appMap.fitBounds(bounds, { padding: [30, 30] });
+            }
+            
+            isUpdatingView = false;
+        }
+
+        function openFilterModal() {
+            document.getElementById('filterModal').style.display = 'flex';
+        }
+
+        function closeFilterModal() {
+            document.getElementById('filterModal').style.display = 'none';
+        }
+
+        function applyFilters() {
+            filterCity = document.getElementById('filterCityModal').value;
+            filterGender = document.getElementById('filterGenderModal').value;
+            filterMarital = document.getElementById('filterMaritalModal').value;
+            sortBy = document.getElementById('sortByModal').value;
+            if (currentView === 'list') updateList();
+            else updateMap();
+            closeFilterModal();
+            showToast('تم تطبيق الفلاتر');
+        }
+
+        function resetFilters() {
+            document.getElementById('filterCityModal').value = 'all';
+            document.getElementById('filterGenderModal').value = 'all';
+            document.getElementById('filterMaritalModal').value = 'all';
+            document.getElementById('sortByModal').value = 'online';
+            filterCity = 'all';
+            filterGender = 'all';
+            filterMarital = 'all';
+            sortBy = 'online';
+            if (currentView === 'list') updateList();
+            else updateMap();
+            closeFilterModal();
+            showToast('تم إعادة ضبط الفلاتر');
+        }
+
+        function switchView(view) {
+            currentView = view;
+            const listView = document.getElementById('listView');
+            const mapView = document.getElementById('mapView');
+            const listBtn = document.getElementById('listViewBtn');
+            const mapBtn = document.getElementById('mapViewBtn');
+            
+            if (view === 'list') {
+                listView.style.display = 'block';
+                mapView.style.display = 'none';
+                listBtn.classList.add('active');
+                mapBtn.classList.remove('active');
+                updateList();
+            } else {
+                listView.style.display = 'none';
+                mapView.style.display = 'block';
+                listBtn.classList.remove('active');
+                mapBtn.classList.add('active');
+                setTimeout(() => updateMap(), 100);
+            }
+        }
+
+        async function register(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const age = parseInt(document.getElementById('regAge').value);
+            const marital = document.getElementById('regMarital').value;
+            const gender = document.getElementById('regGender').value;
+            const city = document.getElementById('regCity').value;
+            const phone = document.getElementById('regPhone').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirmPassword').value;
+            
+            if (!name || !age || !marital || !gender || !city || !phone || !email || !password) {
+                showToast('الرجاء تعبئة جميع الحقول', true);
+                return;
+            }
+            if (password !== confirm) {
+                showToast('كلمة المرور غير متطابقة', true);
+                return;
+            }
+            if (password.length < 6) {
+                showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', true);
+                return;
+            }
+            if (!phone.match(/^[0-9]{10}$/)) {
+                showToast('رقم الهاتف يجب أن يكون 10 أرقام', true);
+                return;
+            }
+            
+            const coords = cityCoords[city];
+            
+            const emailExists = await db.ref('users').orderByChild('email').equalTo(email).once('value');
+            if (emailExists.exists()) {
+                showToast('البريد الإلكتروني مسجل مسبقاً', true);
+                return;
+            }
+            
+            const userId = db.ref('users').push().key;
+            await db.ref(`users/${name}`).set({
+                userId, name, age, marital, gender, city,
+                lat: coords ? coords[0] : 33.5731, 
+                lng: coords ? coords[1] : -7.5898,
+                phone, email, password,
+                createdAt: Date.now(),
+                lastActive: Date.now(),
+                status: 'online',
+                isDefault: false
+            });
+            
+            showToast('تم التسجيل بنجاح!');
+            await loadAllUsers();
+            await updateFiltersOptions();
+            showLogin();
+        }
+
+        async function login(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            let userData = null;
+            const snapshot = await db.ref('users').once('value');
+            snapshot.forEach(child => {
+                const user = child.val();
+                if (user.email === email) userData = user;
+            });
+            
+            if (!userData) {
+                showToast('البريد غير مسجل', true);
+                return;
+            }
+            if (userData.password !== password) {
+                showToast('كلمة المرور غير صحيحة', true);
+                return;
+            }
+            
+            currentUser = userData;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
+            setupPresence();
+            addNotification('مرحباً', `أهلاً بك ${currentUser.name} في المنصة`, 'welcome');
+            showMain();
+        }
+
+        function showMain() {
+            document.getElementById('registerCard').style.display = 'none';
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            updateList();
+            
+            if (window.listInterval) clearInterval(window.listInterval);
+            if (window.mapInterval) clearInterval(window.mapInterval);
+            window.listInterval = setInterval(() => { if (currentUser && currentView === 'list' && !isUpdatingView) updateList(); }, 10000);
+            window.mapInterval = setInterval(() => { if (currentUser && currentView === 'map' && !isUpdatingView) updateMap(); }, 10000);
+        }
+
+        function openProfile() {
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileAge').textContent = currentUser.age;
+            document.getElementById('profileMarital').textContent = maritalMap[currentUser.marital] || currentUser.marital;
+            document.getElementById('profileGender').textContent = genderMap[currentUser.gender] || currentUser.gender;
+            document.getElementById('profileCity').textContent = currentUser.city;
+            document.getElementById('profilePhone').textContent = currentUser.phone;
+            document.getElementById('profileEmail').textContent = currentUser.email;
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+        
+        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
+        
+        function openEdit() {
+            closeProfileModal();
+            // استرجاع بيانات الحساب الحالي في الحقول
+            document.getElementById('editName').value = currentUser.name;
+            document.getElementById('editAge').value = currentUser.age;
+            document.getElementById('editMarital').value = currentUser.marital;
+            document.getElementById('editGender').value = currentUser.gender;
+            document.getElementById('editCity').value = currentUser.city;
+            document.getElementById('editPhone').value = currentUser.phone;
+            document.getElementById('editLat').value = currentUser.lat;
+            document.getElementById('editLng').value = currentUser.lng;
+            
+            document.getElementById('editEmail').value = currentUser.email;
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editConfirmPassword').value = '';
+            
+            document.getElementById('verificationSection').style.display = 'none';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('confirmCurrentPassword').value = '';
+            document.getElementById('currentPassword').removeAttribute('required');
+            document.getElementById('confirmCurrentPassword').removeAttribute('required');
+            
+            selectedEditOption = 'update';
+            document.getElementById('optionUpdateCurrent').classList.add('active');
+            document.getElementById('optionCreateNew').classList.remove('active');
+            document.getElementById('optionUpdateCurrent').style.background = '#075e54';
+            document.getElementById('optionUpdateCurrent').style.color = 'white';
+            document.getElementById('optionCreateNew').style.background = 'white';
+            document.getElementById('optionCreateNew').style.color = '#1f2937';
+            document.getElementById('optionCreateNew').style.borderColor = '#e5e7eb';
+            
+            const emailInput = document.getElementById('editEmail');
+            const passwordInput = document.getElementById('editPassword');
+            
+            const checkForChanges = () => {
+                const emailChanged = emailInput.value !== currentUser.email;
+                const passwordChanged = passwordInput.value.length > 0;
+                
+                if (emailChanged || passwordChanged) {
+                    document.getElementById('verificationSection').style.display = 'block';
+                    document.getElementById('currentPassword').setAttribute('required', 'required');
+                    document.getElementById('confirmCurrentPassword').setAttribute('required', 'required');
+                } else {
+                    document.getElementById('verificationSection').style.display = 'none';
+                    document.getElementById('currentPassword').removeAttribute('required');
+                    document.getElementById('confirmCurrentPassword').removeAttribute('required');
+                }
+            };
+            
+            emailInput.oninput = checkForChanges;
+            passwordInput.oninput = checkForChanges;
+            
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+        
+        function closeEditModal() { 
+            document.getElementById('editProfileModal').style.display = 'none'; 
+            const emailInput = document.getElementById('editEmail');
+            const passwordInput = document.getElementById('editPassword');
+            emailInput.oninput = null;
+            passwordInput.oninput = null;
+        }
+        
+        function setEditOption(option) {
+            selectedEditOption = option;
+            if (option === 'update') {
+                document.getElementById('optionUpdateCurrent').classList.add('active');
+                document.getElementById('optionCreateNew').classList.remove('active');
+                document.getElementById('optionUpdateCurrent').style.background = '#075e54';
+                document.getElementById('optionUpdateCurrent').style.color = 'white';
+                document.getElementById('optionCreateNew').style.background = 'white';
+                document.getElementById('optionCreateNew').style.color = '#1f2937';
+                document.getElementById('optionCreateNew').style.borderColor = '#e5e7eb';
+                
+                // استرجاع بيانات الحساب الحالي
+                document.getElementById('editName').value = currentUser.name;
+                document.getElementById('editAge').value = currentUser.age;
+                document.getElementById('editMarital').value = currentUser.marital;
+                document.getElementById('editGender').value = currentUser.gender;
+                document.getElementById('editCity').value = currentUser.city;
+                document.getElementById('editPhone').value = currentUser.phone;
+                document.getElementById('editLat').value = currentUser.lat;
+                document.getElementById('editLng').value = currentUser.lng;
+                document.getElementById('editEmail').value = currentUser.email;
+                document.getElementById('editPassword').value = '';
+                document.getElementById('editConfirmPassword').value = '';
+                
+                document.getElementById('verificationSection').style.display = 'none';
+                document.getElementById('currentPassword').removeAttribute('required');
+                document.getElementById('confirmCurrentPassword').removeAttribute('required');
+                
+                const emailInput = document.getElementById('editEmail');
+                const passwordInput = document.getElementById('editPassword');
+                
+                const checkForChanges = () => {
+                    const emailChanged = emailInput.value !== currentUser.email;
+                    const passwordChanged = passwordInput.value.length > 0;
+                    
+                    if (emailChanged || passwordChanged) {
+                        document.getElementById('verificationSection').style.display = 'block';
+                        document.getElementById('currentPassword').setAttribute('required', 'required');
+                        document.getElementById('confirmCurrentPassword').setAttribute('required', 'required');
+                    } else {
+                        document.getElementById('verificationSection').style.display = 'none';
+                        document.getElementById('currentPassword').removeAttribute('required');
+                        document.getElementById('confirmCurrentPassword').removeAttribute('required');
+                    }
+                };
+                
+                emailInput.oninput = checkForChanges;
+                passwordInput.oninput = checkForChanges;
+            } else {
+                document.getElementById('optionUpdateCurrent').classList.remove('active');
+                document.getElementById('optionCreateNew').classList.add('active');
+                document.getElementById('optionCreateNew').style.background = '#075e54';
+                document.getElementById('optionCreateNew').style.color = 'white';
+                document.getElementById('optionUpdateCurrent').style.background = 'white';
+                document.getElementById('optionUpdateCurrent').style.color = '#1f2937';
+                document.getElementById('optionUpdateCurrent').style.borderColor = '#e5e7eb';
+                
+                // تنظيف الحقول لإنشاء حساب جديد
+                document.getElementById('editName').value = '';
+                document.getElementById('editAge').value = '';
+                document.getElementById('editMarital').value = 'أعزب';
+                document.getElementById('editGender').value = 'ذكر';
+                document.getElementById('editCity').value = 'الدار البيضاء';
+                document.getElementById('editPhone').value = '';
+                document.getElementById('editLat').value = '';
+                document.getElementById('editLng').value = '';
+                document.getElementById('editEmail').value = '';
+                document.getElementById('editPassword').value = '';
+                document.getElementById('editConfirmPassword').value = '';
+                
+                document.getElementById('verificationSection').style.display = 'none';
+                document.getElementById('currentPassword').removeAttribute('required');
+                document.getElementById('confirmCurrentPassword').removeAttribute('required');
+                
+                const emailInput = document.getElementById('editEmail');
+                const passwordInput = document.getElementById('editPassword');
+                emailInput.oninput = null;
+                passwordInput.oninput = null;
+            }
+        }
+        
+        async function updateProfile(e) {
+            e.preventDefault();
+            
+            const newName = document.getElementById('editName').value.trim();
+            const newAge = parseInt(document.getElementById('editAge').value);
+            const newMarital = document.getElementById('editMarital').value;
+            const newGender = document.getElementById('editGender').value;
+            const newCity = document.getElementById('editCity').value;
+            const newPhone = document.getElementById('editPhone').value.trim();
+            const newLat = parseFloat(document.getElementById('editLat').value);
+            const newLng = parseFloat(document.getElementById('editLng').value);
+            const newEmail = document.getElementById('editEmail').value.trim();
+            const newPassword = document.getElementById('editPassword').value;
+            const confirmPassword = document.getElementById('editConfirmPassword').value;
+            
+            if (!newName || !newAge || !newMarital || !newGender || !newCity || !newPhone) {
+                showToast('الرجاء تعبئة جميع الحقول الأساسية', true);
+                return;
+            }
+            
+            if (!newEmail) {
+                showToast('الرجاء إدخال البريد الإلكتروني', true);
+                return;
+            }
+            
+            if (!newEmail.includes('@')) {
+                showToast('البريد الإلكتروني غير صالح', true);
+                return;
+            }
+            
+            if (!newPhone.match(/^[0-9]{10}$/)) {
+                showToast('رقم الهاتف يجب أن يكون 10 أرقام', true);
+                return;
+            }
+            
+            if (newPassword && newPassword !== confirmPassword) {
+                showToast('كلمة المرور الجديدة غير متطابقة مع تأكيدها', true);
+                return;
+            }
+            if (newPassword && newPassword.length < 6) {
+                showToast('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', true);
+                return;
+            }
+            
+            const coords = cityCoords[newCity];
+            const finalLat = isNaN(newLat) ? (coords ? coords[0] : 33.5731) : newLat;
+            const finalLng = isNaN(newLng) ? (coords ? coords[1] : -7.5898) : newLng;
+            
+            if (selectedEditOption === 'update') {
+                const emailChanged = newEmail !== currentUser.email;
+                const passwordChanged = newPassword.length > 0;
+                
+                if (emailChanged || passwordChanged) {
+                    const currentPassword = document.getElementById('currentPassword').value;
+                    const confirmCurrentPassword = document.getElementById('confirmCurrentPassword').value;
+                    
+                    if (!currentPassword || !confirmCurrentPassword) {
+                        showToast('الرجاء إدخال كلمة المرور الحالية وتأكيدها للتحقق من الهوية', true);
+                        return;
+                    }
+                    
+                    if (currentPassword !== confirmCurrentPassword) {
+                        showToast('كلمة المرور الحالية غير متطابقة مع تأكيدها', true);
+                        return;
+                    }
+                    
+                    if (currentPassword !== currentUser.password) {
+                        showToast('كلمة المرور الحالية غير صحيحة', true);
+                        return;
+                    }
+                }
+                
+                if (newEmail !== currentUser.email) {
+                    const emailExists = await db.ref('users').orderByChild('email').equalTo(newEmail).once('value');
+                    if (emailExists.exists()) {
+                        showToast('البريد الإلكتروني مسجل مسبقاً', true);
+                        return;
+                    }
+                }
+                
+                const updatedData = {
+                    name: newName,
+                    age: newAge,
+                    marital: newMarital,
+                    gender: newGender,
+                    city: newCity,
+                    lat: finalLat,
+                    lng: finalLng,
+                    phone: newPhone,
+                    email: newEmail,
+                    createdAt: currentUser.createdAt,
+                    lastActive: firebase.database.ServerValue.TIMESTAMP,
+                    status: currentUser.status,
+                    isDefault: false
+                };
+                
+                if (newPassword) {
+                    updatedData.password = newPassword;
+                } else {
+                    updatedData.password = currentUser.password;
+                }
+                
+                if (newName !== currentUser.name) {
+                    await db.ref(`users/${currentUser.name}`).remove();
+                    await db.ref(`users/${newName}`).set(updatedData);
+                } else {
+                    await db.ref(`users/${currentUser.name}`).update(updatedData);
+                }
+                
+                currentUser = { ...currentUser, ...updatedData, name: newName };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
+                
+                if (currentView === 'map') updateMap();
+                
+                closeEditModal();
+                closeProfileModal();
+                showToast('تم تحديث المعلومات بنجاح');
+                await loadAllUsers();
+                await updateFiltersOptions();
+                if (currentView === 'list') updateList();
+                addNotification('تحديث الملف', 'تم تحديث معلومات ملفك الشخصي بنجاح', 'success');
+            } else {
+                if (!newPassword) {
+                    showToast('الرجاء إدخال كلمة المرور للحساب الجديد', true);
+                    return;
+                }
+                
+                const emailExists = await db.ref('users').orderByChild('email').equalTo(newEmail).once('value');
+                if (emailExists.exists()) {
+                    showToast('البريد الإلكتروني مسجل مسبقاً', true);
+                    return;
+                }
+                
+                const userId = db.ref('users').push().key;
+                const newUserData = {
+                    userId,
+                    name: newName,
+                    age: newAge,
+                    marital: newMarital,
+                    gender: newGender,
+                    city: newCity,
+                    lat: finalLat,
+                    lng: finalLng,
+                    phone: newPhone,
+                    email: newEmail,
+                    password: newPassword,
+                    createdAt: Date.now(),
+                    lastActive: Date.now(),
+                    status: 'online',
+                    isDefault: false
+                };
+                
+                await db.ref(`users/${newName}`).set(newUserData);
+                
+                if (currentUser) {
+                    db.ref(`users/${currentUser.name}/status`).set('offline');
+                    db.ref(`users/${currentUser.name}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+                }
+                
+                currentUser = newUserData;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
+                
+                closeEditModal();
+                closeProfileModal();
+                setupPresence();
+                
+                await loadAllUsers();
+                await updateFiltersOptions();
+                if (currentView === 'list') updateList();
+                else updateMap();
+                
+                addNotification('حساب جديد', `تم إنشاء حساب جديد باسم ${newName} بنجاح`, 'success');
+                showToast('تم إنشاء الحساب الجديد وتسجيل الدخول بنجاح');
+            }
+        }
+        
+        async function deleteAccount() {
+            if (confirm('هل أنت متأكد من حذف حسابك؟')) {
+                await db.ref(`users/${currentUser.name}`).remove();
+                addNotification('حذف الحساب', 'تم حذف حسابك بنجاح', 'warning');
+                showToast('تم حذف الحساب');
+                await loadAllUsers();
+                await updateFiltersOptions();
+                logout();
+            }
+        }
+        
+        function logout() {
+            if (window.listInterval) clearInterval(window.listInterval);
+            if (window.mapInterval) clearInterval(window.mapInterval);
+            if (window.keepAlive) clearInterval(window.keepAlive);
+            
+            if (currentUser) {
+                db.ref(`users/${currentUser.name}/status`).set('offline');
+                db.ref(`users/${currentUser.name}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+            }
+            
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            closeProfileModal(); closeEditModal();
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('loginCard').style.display = 'block';
+            showToast('تم تسجيل الخروج');
+        }
+        
+        function showRegister() { 
+            document.getElementById('registerCard').style.display = 'block'; 
+            document.getElementById('loginCard').style.display = 'none'; 
+        }
+        
+        function showLogin() { 
+            document.getElementById('registerCard').style.display = 'none'; 
+            document.getElementById('loginCard').style.display = 'block'; 
+        }
+        
+        function checkSaved() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
+                setupPresence();
+                showMain();
+            }
+        }
+
+        function realtimeUpdates() {
+            const usersRef = db.ref('users');
+            usersRef.on('child_changed', (snapshot) => {
+                const user = snapshot.val();
+                if (user && currentUser && user.name !== currentUser.name) {
+                    if (currentView === 'list' && !isUpdatingView) updateList();
+                    else if (currentView === 'map' && !isUpdatingView) updateMap();
+                } else if (user && user.name === currentUser?.name) {
+                    if (currentView === 'map' && currentUser && (user.lat !== currentUser.lat || user.lng !== currentUser.lng)) {
+                        updateMap();
+                    }
+                    if (user.status !== currentUser.status) {
+                        currentUser.status = user.status;
+                        if (currentView === 'list' && !isUpdatingView) updateList();
+                    }
+                }
+                updateFiltersOptions();
+            });
+            
+            usersRef.on('child_added', () => updateFiltersOptions());
+            usersRef.on('child_removed', () => updateFiltersOptions());
+        }
+
+        function checkConnection() {
+            const connectedRef = db.ref('.info/connected');
+            connectedRef.on('value', (snap) => {
+                if (snap.val() === true) {
+                    const loader = document.getElementById('loadingOverlay');
+                    if (loader) loader.style.display = 'none';
+                    document.getElementById('loginCard').style.display = 'block';
+                    showToast('تم الاتصال بقاعدة البيانات');
+                }
+            });
+        }
+
+        function getCurrentLocationForRegister() {
+            if (!navigator.geolocation) {
+                showToast('المتصفح لا يدعم تحديد الموقع', true);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    document.getElementById('regLat').value = pos.coords.latitude;
+                    document.getElementById('regLng').value = pos.coords.longitude;
+                    showToast('تم تحديد موقعك بنجاح');
+                },
+                () => showToast('فشل تحديد الموقع', true)
+            );
+        }
+
+        function getCurrentLocationForEdit() {
+            if (!navigator.geolocation) {
+                showToast('المتصفح لا يدعم تحديد الموقع', true);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    document.getElementById('editLat').value = pos.coords.latitude;
+                    document.getElementById('editLng').value = pos.coords.longitude;
+                    showToast('تم تحديد موقعك بنجاح');
+                },
+                () => showToast('فشل تحديد الموقع', true)
+            );
+        }
+
+        function initSidebar() {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('open');
+            });
+            
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('open');
+            });
+            
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const section = item.dataset.section;
+                    if (section === 'home') {
+                        if (currentView === 'list') updateList();
+                        else updateMap();
+                    } else if (section === 'map') {
+                        if (currentView !== 'map') switchView('map');
+                    } else if (section === 'notifications') {
+                        document.getElementById('notificationsPanel').style.display = 'flex';
+                    } else if (section === 'profile') {
+                        openProfile();
+                    }
+                    sidebar.classList.remove('open');
+                    sidebarOverlay.classList.remove('open');
+                });
+            });
+        }
+
+        window.onclick = function(e) {
+            const profile = document.getElementById('profileModal');
+            const edit = document.getElementById('editProfileModal');
+            const filter = document.getElementById('filterModal');
+            const notifications = document.getElementById('notificationsPanel');
+            const suggestions = document.getElementById('emailSuggestions');
+            const emailInput = document.getElementById('loginEmail');
+            
+            if (e.target === profile) closeProfileModal();
+            if (e.target === edit) closeEditModal();
+            if (e.target === filter) closeFilterModal();
+            if (e.target === notifications) closeNotificationsPanel();
+            if (e.target !== emailInput && suggestions && !suggestions.contains(e.target)) suggestions.style.display = 'none';
+        }
+
+        window.addEventListener('load', async () => {
+            await createDefaultUsers();
+            await loadAllUsers();
+            checkConnection();
+            checkSaved();
+            realtimeUpdates();
+            initSidebar();
+            
+            const emailInput = document.getElementById('loginEmail');
+            emailInput.addEventListener('focus', showEmailSuggestions);
+            emailInput.addEventListener('click', showEmailSuggestions);
+            
+            document.getElementById('openFiltersBtn').addEventListener('click', openFilterModal);
+            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
+            document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+            document.getElementById('regGetLocationBtn').addEventListener('click', getCurrentLocationForRegister);
+            document.getElementById('editGetLocationBtn').addEventListener('click', getCurrentLocationForEdit);
+            document.getElementById('profileBtn').addEventListener('click', openProfile);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('editProfileBtn').addEventListener('click', openEdit);
+            document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
+            document.getElementById('optionUpdateCurrent').addEventListener('click', () => setEditOption('update'));
+            document.getElementById('optionCreateNew').addEventListener('click', () => setEditOption('create'));
         });
 
-        window.addEventListener('click', e => { if(e.target.classList.contains('modal')) closeModal(); });
-        document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
-
-        document.addEventListener('DOMContentLoaded', () => document.getElementById('unitsWrapper').classList.remove('visible'));
+        document.getElementById('registerForm').addEventListener('submit', register);
+        document.getElementById('loginForm').addEventListener('submit', login);
+        document.getElementById('editProfileForm').addEventListener('submit', updateProfile);
+        document.getElementById('listViewBtn').addEventListener('click', () => switchView('list'));
+        document.getElementById('mapViewBtn').addEventListener('click', () => switchView('map'));
+        
+        window.showRegister = showRegister;
+        window.showLogin = showLogin;
+        window.closeProfileModal = closeProfileModal;
+        window.closeEditModal = closeEditModal;
+        window.closeFilterModal = closeFilterModal;
+        window.closeNotificationsPanel = closeNotificationsPanel;
+        window.openDirections = openDirections;
+        window.openWhatsApp = openWhatsApp;
+        window.updateCityCoordinates = updateCityCoordinates;
+        window.updateUserStatus = updateUserStatus;
     </script>
 </body>
 </html>
