@@ -15,7 +15,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* جميع الأنماط السابقة مع تعديلات السويتش */
         * {
             margin: 0;
             padding: 0;
@@ -45,7 +44,6 @@
             min-height: 100vh;
         }
 
-        /* أنماط السويتش (Toggle Switch) */
         .switch {
             position: relative;
             display: inline-block;
@@ -91,13 +89,20 @@
             transform: translateX(20px);
         }
 
-        .status-switch {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
-            justify-content: flex-end;
+        .global-switch {
+            width: 50px;
+            height: 24px;
+        }
+        
+        .global-switch .slider:before {
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+        }
+        
+        .global-switch input:checked + .slider:before {
+            transform: translateX(26px);
         }
 
         .toast-notification {
@@ -121,33 +126,16 @@
             font-weight: 500;
         }
         
-        .toast-notification.error {
-            background: rgba(239, 68, 68, 0.95);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        .toast-notification.success {
-            background: rgba(37, 211, 102, 0.95);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
+        .toast-notification.error { background: rgba(239, 68, 68, 0.95); }
+        .toast-notification.success { background: rgba(37, 211, 102, 0.95); }
         
         @keyframes fadeInCenter {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
         
         @keyframes fadeOutCenter {
-            to {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.9);
-                visibility: hidden;
-            }
+            to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); visibility: hidden; }
         }
 
         .loading-overlay {
@@ -178,9 +166,7 @@
             margin: 0 auto 1rem;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .sidebar {
             position: fixed;
@@ -197,9 +183,7 @@
             overflow-y: auto;
         }
 
-        .sidebar.open {
-            right: 0;
-        }
+        .sidebar.open { right: 0; }
 
         .sidebar-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
@@ -208,10 +192,7 @@
             text-align: center;
         }
 
-        .sidebar-menu {
-            flex: 1;
-            padding: 1rem;
-        }
+        .sidebar-menu { flex: 1; padding: 1rem; }
 
         .sidebar-item {
             display: flex;
@@ -229,9 +210,7 @@
             color: var(--primary);
         }
 
-        .sidebar-item i {
-            width: 24px;
-        }
+        .sidebar-item i { width: 24px; }
 
         .sidebar-overlay {
             position: fixed;
@@ -244,9 +223,7 @@
             display: none;
         }
 
-        .sidebar-overlay.open {
-            display: block;
-        }
+        .sidebar-overlay.open { display: block; }
 
         .menu-toggle {
             position: fixed;
@@ -266,12 +243,10 @@
             transition: all 0.2s;
         }
 
-        .menu-toggle:hover {
-            transform: scale(1.1);
-        }
+        .menu-toggle:hover { transform: scale(1.1); }
 
         .auth-card {
-            max-width: 500px;
+            max-width: 550px;
             margin: 2rem auto;
             background: var(--white);
             border-radius: var(--radius-lg);
@@ -287,19 +262,10 @@
             text-align: center;
         }
 
-        .auth-header h2 {
-            font-size: 1.5rem;
-            margin-top: 0.5rem;
-        }
+        .auth-header h2 { font-size: 1.5rem; margin-top: 0.5rem; }
+        .auth-body { padding: 1.75rem; }
 
-        .auth-body {
-            padding: 1.75rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.25rem;
-        }
-
+        .input-group { margin-bottom: 1.25rem; }
         .input-group label {
             display: block;
             margin-bottom: 0.5rem;
@@ -307,7 +273,6 @@
             color: var(--dark);
             font-size: 0.85rem;
         }
-
         .input-group input, .input-group select {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -317,16 +282,60 @@
             font-family: 'Cairo', sans-serif;
             background: white;
         }
-
         .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: var(--primary);
         }
 
-        .email-dropdown {
-            position: relative;
+        .location-map {
+            height: 280px;
+            border-radius: var(--radius);
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 2px solid #e5e7eb;
+            z-index: 1;
+        }
+        
+        .location-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .location-btn {
+            flex: 1;
+            background: var(--primary);
+            color: white;
+            padding: 0.6rem;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        
+        .location-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        .location-btn.gps { background: #25d366; }
+        .location-btn.gps:hover { background: #128c7e; }
+        .location-btn.delete { background: #ef4444; }
+        .location-btn.delete:hover { background: #dc2626; }
+
+        .coord-display {
+            background: var(--light);
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 0.5rem;
+            direction: ltr;
+            font-family: monospace;
         }
 
+        .email-dropdown { position: relative; }
         .email-suggestions {
             position: absolute;
             top: 100%;
@@ -335,15 +344,15 @@
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: var(--radius);
-            max-height: 250px;
+            max-height: 400px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .email-item {
-            padding: 0.7rem 1rem;
+            padding: 1rem;
             cursor: pointer;
             transition: all 0.2s;
             border-bottom: 1px solid #e5e7eb;
@@ -351,10 +360,32 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        .email-item:hover {
-            background: var(--light);
+        .email-item:hover { background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%); }
+        .email-item .email-info { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+        .email-item .user-fullname {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
+        .email-item .email-address {
+            font-size: 0.8rem;
+            color: var(--gray);
+            direction: ltr;
+            text-align: left;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .status-badge.online { background: #25d36620; color: #25d366; border: 1px solid #25d36640; }
+        .status-badge.offline { background: #ef444420; color: #ef4444; border: 1px solid #ef444440; }
 
         .btn {
             width: 100%;
@@ -367,16 +398,11 @@
             font-family: 'Cairo', sans-serif;
             transition: all 0.2s;
         }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .btn-secondary { background: #f3f4f6; color: var(--dark); }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
 
         .switch-link {
             text-align: center;
@@ -410,21 +436,10 @@
             gap: 0.75rem;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
+        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; }
+        
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        
         .action-btn {
             background: rgba(255, 255, 255, 0.15);
             color: white;
@@ -438,24 +453,37 @@
             gap: 0.5rem;
             transition: all 0.2s;
         }
-
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .action-btn:hover { background: rgba(255, 255, 255, 0.25); }
+        .logout-btn { background: rgba(239, 68, 68, 0.8); }
+        
+        .global-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.4rem 1rem;
+            border-radius: var(--radius);
         }
-
-        .logout-btn {
-            background: rgba(239, 68, 68, 0.8);
+        .global-control .online-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
         }
+        .global-control .online-stats i { color: #25d366; font-size: 0.7rem; }
 
         .control-bar {
             background: var(--white);
             padding: 0.75rem 1.5rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
             flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .view-toggle {
@@ -465,7 +493,6 @@
             padding: 0.25rem;
             border-radius: var(--radius);
         }
-
         .view-btn {
             padding: 0.5rem 1.25rem;
             border: none;
@@ -477,18 +504,9 @@
             color: var(--gray);
             transition: all 0.2s;
         }
+        .view-btn.active { background: var(--primary); color: white; }
 
-        .view-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .users-list {
-            padding: 1rem;
-            overflow-y: auto;
-            flex: 1;
-        }
-
+        .users-list { padding: 1rem; overflow-y: auto; flex: 1; }
         .users-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -501,25 +519,19 @@
             border-radius: var(--radius);
             padding: 1rem;
             transition: all 0.3s;
-            cursor: pointer;
             position: relative;
             animation: fadeInUp 0.3s ease;
         }
-
-        .user-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-        }
-
+        .user-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
         .user-card.current-user {
-            background: #e8f5e9;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             border: 2px solid var(--primary);
-            order: -1 !important;
         }
-
         .user-card.online {
             border-right: 4px solid var(--secondary);
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
         }
+        .user-card.offline { opacity: 0.85; background: #fafafa; }
 
         .user-header {
             display: flex;
@@ -527,7 +539,6 @@
             align-items: center;
             margin-bottom: 0.75rem;
         }
-
         .user-name {
             font-weight: 700;
             font-size: 1rem;
@@ -537,7 +548,6 @@
             gap: 0.5rem;
             flex-wrap: wrap;
         }
-
         .current-badge {
             background: var(--primary);
             color: white;
@@ -546,7 +556,6 @@
             font-size: 0.6rem;
             font-weight: 600;
         }
-
         .user-status {
             display: flex;
             align-items: center;
@@ -554,21 +563,18 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
-
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
+        .status-dot.online { background: var(--secondary); animation: pulse 1.5s infinite; }
+        .status-dot.offline { background: var(--danger); }
 
-        .status-dot.online {
-            background: var(--secondary);
-            animation: pulse 1.5s infinite;
-        }
-
-        .status-dot.offline {
-            background: var(--danger);
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
         }
 
         .whatsapp-icon {
@@ -585,26 +591,8 @@
             font-size: 0.7rem;
             transition: all 0.2s;
         }
-
-        .whatsapp-icon:hover {
-            background: #128c7e;
-            transform: scale(1.1);
-        }
-
-        .whatsapp-icon.disabled {
-            background: #9e9e9e;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        .whatsapp-icon.disabled:hover {
-            transform: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-        }
+        .whatsapp-icon:hover { background: #128c7e; transform: scale(1.1); }
+        .whatsapp-icon.disabled { background: #9e9e9e; cursor: not-allowed; opacity: 0.6; }
 
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -617,7 +605,6 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
-
         .detail-tag {
             background: var(--light);
             padding: 0.25rem 0.6rem;
@@ -628,7 +615,6 @@
             align-items: center;
             gap: 0.3rem;
         }
-
         .distance-tag {
             display: inline-block;
             background: var(--primary);
@@ -638,7 +624,6 @@
             font-size: 0.7rem;
             margin-top: 0.5rem;
         }
-
         .age-badge {
             display: inline-block;
             background: var(--warning);
@@ -648,17 +633,8 @@
             font-size: 0.6rem;
         }
 
-        .map-area {
-            flex: 1;
-            position: relative;
-            min-height: 400px;
-        }
-
-        #map {
-            width: 100%;
-            height: 100%;
-            min-height: 500px;
-        }
+        .map-area { flex: 1; position: relative; min-height: 400px; }
+        #map { width: 100%; height: 100%; min-height: 500px; }
 
         .filter-modal, .modal {
             display: none;
@@ -673,16 +649,15 @@
             align-items: center;
             justify-content: center;
         }
-
         .filter-panel, .modal-card {
             background: var(--white);
             border-radius: var(--radius-lg);
-            max-width: 550px;
+            max-width: 650px;
             width: 90%;
-            overflow: hidden;
+            max-height: 90vh;
+            overflow-y: auto;
             animation: fadeIn 0.3s ease;
         }
-
         .filter-header, .modal-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
@@ -690,16 +665,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-
-        .filter-body, .modal-body {
-            padding: 1.5rem;
-        }
-
-        .filter-group {
-            margin-bottom: 1rem;
-        }
-
+        .filter-body, .modal-body { padding: 1.5rem; }
+        .filter-group { margin-bottom: 1rem; }
         .filter-group label {
             display: block;
             margin-bottom: 0.5rem;
@@ -707,7 +678,6 @@
             color: var(--dark);
             font-size: 0.85rem;
         }
-
         .filter-group select {
             width: 100%;
             padding: 0.7rem;
@@ -717,12 +687,7 @@
             font-family: 'Cairo', sans-serif;
             background: white;
         }
-
-        .filter-actions, .modal-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
+        .filter-actions, .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
 
         .close-btn {
             background: none;
@@ -738,115 +703,9 @@
             border-radius: 50%;
             transition: all 0.2s;
         }
+        .close-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .profile-info {
-            background: var(--light);
-            border-radius: var(--radius);
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 0.85rem;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .location-btn {
-            background: var(--primary);
-            color: white;
-            padding: 0.6rem;
-            border-radius: var(--radius);
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-
-        .notifications-panel {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .notifications-content {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            max-width: 400px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .notifications-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-        }
-
-        .notification-item {
-            padding: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .notification-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--light);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-        }
-
-        .notification-text {
-            flex: 1;
-            font-size: 0.85rem;
-        }
-
-        .notification-time {
-            font-size: 0.7rem;
-            color: var(--gray);
-        }
-
-        .custom-popup {
-            text-align: right;
-            min-width: 250px;
-            max-width: 300px;
-        }
-
+        .custom-popup { text-align: right; min-width: 250px; max-width: 300px; }
         .popup-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
@@ -857,7 +716,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
         .popup-info {
             padding: 5px 0;
             display: flex;
@@ -867,13 +725,13 @@
             color: var(--gray);
             border-bottom: 1px solid #e5e7eb;
         }
-
-        .popup-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 10px;
+        .popup-distance {
+            padding: 5px 0;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: bold;
         }
-
+        .popup-actions { display: flex; gap: 0.5rem; margin-top: 10px; }
         .popup-btn {
             flex: 1;
             background: #25d366;
@@ -888,22 +746,19 @@
             justify-content: center;
             gap: 0.3rem;
         }
+        .popup-btn.direction { background: var(--primary); }
+        .popup-btn.disabled { background: #9e9e9e; cursor: not-allowed; opacity: 0.6; }
 
-        .popup-btn.disabled {
-            background: #9e9e9e;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
+        .empty-state { text-align: center; padding: 3rem; color: #999; grid-column: 1 / -1; }
 
         .verification-section {
             background: #fff3e0;
             border: 1px solid #ffd966;
             border-radius: var(--radius);
-            padding: 0.75rem;
-            margin-bottom: 1rem;
+            padding: 1rem;
+            margin: 1rem 0;
             display: none;
         }
-        
         .verification-title {
             color: #e67e22;
             font-weight: bold;
@@ -913,12 +768,31 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
         .warning-text {
             font-size: 0.7rem;
             color: #e67e22;
             margin-top: 0.5rem;
             text-align: center;
+        }
+
+        .refresh-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .refresh-btn:hover { background: var(--primary-dark); transform: scale(1.02); }
+
+        hr {
+            margin: 1rem 0;
+            border-color: #e5e7eb;
         }
 
         @keyframes fadeIn {
@@ -927,52 +801,20 @@
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 0.5rem;
-            }
-            .app-container {
-                height: calc(100vh - 1rem);
-            }
-            .users-grid {
-                grid-template-columns: 1fr;
-            }
-            .app-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .header-actions {
-                justify-content: center;
-            }
-            .control-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .view-toggle {
-                align-self: center;
-            }
-            .menu-toggle {
-                bottom: 1rem;
-                right: 1rem;
-            }
-            .sidebar {
-                width: 85%;
-            }
-            .toast-notification {
-                width: 90%;
-                font-size: 0.9rem;
-                padding: 0.75rem 1rem;
-            }
-            .switch {
-                width: 35px;
-                height: 18px;
-            }
-            .slider:before {
-                height: 12px;
-                width: 12px;
-            }
-            input:checked + .slider:before {
-                transform: translateX(17px);
-            }
+            body { padding: 0.5rem; }
+            .app-container { height: calc(100vh - 1rem); }
+            .users-grid { grid-template-columns: 1fr; }
+            .app-header { flex-direction: column; align-items: stretch; }
+            .header-actions { justify-content: space-between; flex-wrap: wrap; }
+            .control-bar { flex-direction: column; align-items: stretch; }
+            .view-toggle { align-self: center; }
+            .menu-toggle { bottom: 1rem; right: 1rem; }
+            .sidebar { width: 85%; }
+            .toast-notification { width: 90%; font-size: 0.9rem; padding: 0.75rem 1rem; }
+            .email-suggestions { max-height: 250px; }
+            .email-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            .location-map { height: 200px; }
+            .modal-card { width: 95%; }
         }
     </style>
 </head>
@@ -996,13 +838,9 @@
                 <i class="fas fa-map"></i>
                 <span>الخريطة</span>
             </div>
-            <div class="sidebar-item" data-section="notifications">
-                <i class="fas fa-bell"></i>
-                <span>الإشعارات</span>
-            </div>
             <div class="sidebar-item" data-section="profile">
-                <i class="fas fa-user-circle"></i>
-                <span>ملفي الشخصي</span>
+                <i class="fas fa-user-edit"></i>
+                <span>تعديل ملفي</span>
             </div>
         </div>
     </div>
@@ -1024,8 +862,13 @@
             <form id="loginForm">
                 <div class="input-group">
                     <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <div class="email-dropdown">
-                        <input type="email" id="loginEmail" autocomplete="off" required placeholder="انقر لاختيار بريد إلكتروني">
+                    <div class="email-dropdown" style="position: relative;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="email" id="loginEmail" autocomplete="off" required placeholder="انقر لاختيار بريد إلكتروني" style="flex: 1;">
+                            <button type="button" id="refreshUsersBtn" class="refresh-btn" style="width: auto; padding: 0.75rem 1rem; margin: 0;">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
                         <div id="emailSuggestions" class="email-suggestions"></div>
                     </div>
                 </div>
@@ -1035,7 +878,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">دخول</button>
             </form>
-            <div class="switch-link" onclick="showRegister()">
+            <div class="switch-link" id="showRegisterBtn">
                 <i class="fas fa-user-plus"></i> ليس لديك حساب؟ إنشاء حساب جديد
             </div>
         </div>
@@ -1045,95 +888,84 @@
         <div class="auth-header">
             <i class="fas fa-user-plus fa-2x"></i>
             <h2>إنشاء حساب جديد</h2>
-            <p>أنشئ حسابك للتواصل مع الآخرين عبر واتساب</p>
+            <p>حدد موقعك على الخريطة أو استخدم GPS</p>
         </div>
         <div class="auth-body">
             <form id="registerForm">
-                <div class="profile-info" style="background: var(--white); padding: 0;">
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">الاسم الكامل</span>
-                        <input type="text" id="regName" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">العمر</span>
-                        <input type="number" id="regAge" min="18" max="80" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">الحالة العائلية</span>
-                        <select id="regMarital" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                            <option value="متزوج">متزوج</option>
-                            <option value="أعزب">أعزب</option>
-                            <option value="مطلق">مطلق</option>
-                            <option value="طالب">طالب</option>
-                            <option value="مرتبط">مرتبط</option>
-                            <option value="حر">حر</option>
-                        </select>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">الجنس</span>
-                        <select id="regGender" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                            <option value="ذكر">ذكر</option>
-                            <option value="أنثى">أنثى</option>
-                        </select>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">المدينة</span>
-                        <select id="regCity" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                            <option value="الدار البيضاء">الدار البيضاء</option>
-                            <option value="الرباط">الرباط</option>
-                            <option value="فاس">فاس</option>
-                            <option value="مراكش">مراكش</option>
-                            <option value="طنجة">طنجة</option>
-                            <option value="أكادير">أكادير</option>
-                            <option value="مكناس">مكناس</option>
-                            <option value="وجدة">وجدة</option>
-                            <option value="تطوان">تطوان</option>
-                            <option value="القنيطرة">القنيطرة</option>
-                            <option value="آسفي">آسفي</option>
-                            <option value="الناظور">الناظور</option>
-                            <option value="خريبكة">خريبكة</option>
-                            <option value="بركان">بركان</option>
-                            <option value="تازة">تازة</option>
-                            <option value="الجديدة">الجديدة</option>
-                            <option value="سيدي قاسم">سيدي قاسم</option>
-                            <option value="العرائش">العرائش</option>
-                            <option value="الحسيمة">الحسيمة</option>
-                        </select>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">الموقع الجغرافي</span>
-                        <button type="button" id="regGetLocationBtn" class="location-btn" style="width: 60%; background: var(--primary); color: white; padding: 0.4rem; border-radius: 0.75rem; border: none; cursor: pointer;">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                    <input type="text" id="regUsername" required placeholder="اسم المستخدم (سيتم استخدامه كمعرف فريد)">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-user-circle"></i> الاسم الكامل</label>
+                    <input type="text" id="regName" required placeholder="الاسم الكامل للعرض">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-calendar"></i> العمر</label>
+                    <input type="number" id="regAge" min="18" max="80" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-heart"></i> الحالة العائلية</label>
+                    <select id="regMarital" required>
+                        <option value="متزوج">متزوج</option>
+                        <option value="أعزب">أعزب</option>
+                        <option value="مطلق">مطلق</option>
+                        <option value="طالب">طالب</option>
+                        <option value="مرتبط">مرتبط</option>
+                        <option value="حر">حر</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-venus-mars"></i> الجنس</label>
+                    <select id="regGender" required>
+                        <option value="ذكر">ذكر</option>
+                        <option value="أنثى">أنثى</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label><i class="fab fa-whatsapp"></i> رقم الهاتف (واتساب)</label>
+                    <input type="tel" id="regPhone" required placeholder="06xxxxxxxx">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <input type="email" id="regEmail" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-check-circle"></i> تأكيد كلمة المرور</label>
+                    <input type="password" id="regConfirmPassword" required>
+                </div>
+                
+                <div class="input-group">
+                    <label><i class="fas fa-map-marker-alt"></i> الموقع الجغرافي</label>
+                    <div id="regLocationMap" class="location-map"></div>
+                    <div class="location-buttons">
+                        <button type="button" id="regUseGpsBtn" class="location-btn gps">
                             <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
                         </button>
-                        <input type="hidden" id="regLat">
-                        <input type="hidden" id="regLng">
+                        <button type="button" id="regConfirmLocationBtn" class="location-btn">
+                            <i class="fas fa-check"></i> تأكيد الموقع
+                        </button>
                     </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">رقم الهاتف (واتساب)</span>
-                        <input type="tel" id="regPhone" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required placeholder="06xxxxxxxx">
+                    <div id="regCoordDisplay" class="coord-display">
+                        <i class="fas fa-map-pin"></i> اضغط على الخريطة لتحديد الموقع
                     </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">البريد الإلكتروني</span>
-                        <input type="email" id="regEmail" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">كلمة المرور</span>
-                        <input type="password" id="regPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                    </div>
-                    <div class="info-row" style="padding: 0.75rem 0;">
-                        <span style="font-weight: 600;">تأكيد كلمة المرور</span>
-                        <input type="password" id="regConfirmPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required>
-                    </div>
+                    <input type="hidden" id="regLat" value="">
+                    <input type="hidden" id="regLng" value="">
                 </div>
-                <div class="modal-actions" style="margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary">إنشاء حساب</button>
-                </div>
+                
+                <button type="submit" class="btn btn-primary">إنشاء حساب</button>
             </form>
-            <div class="switch-link" onclick="showLogin()">لديك حساب بالفعل؟ سجل الدخول هنا</div>
+            <div class="switch-link" id="showLoginBtn">
+                لديك حساب بالفعل؟ سجل الدخول هنا
+            </div>
         </div>
     </div>
 
-    <div id="appContainer" class="app-container" style="display: none;">
+    <div id="appContainer" class="app-container">
         <div class="app-header">
             <div class="logo">
                 <i class="fab fa-whatsapp"></i>
@@ -1141,7 +973,18 @@
             </div>
             <div class="header-actions">
                 <button id="openFiltersBtn" class="action-btn"><i class="fas fa-sliders-h"></i> فلترة</button>
-                <button id="profileBtn" class="action-btn"><i class="fas fa-user-circle"></i> <span id="profileBtnName">ملفي</span></button>
+                <button id="editProfileDirectBtn" class="action-btn"><i class="fas fa-user-edit"></i> تعديل ملفي</button>
+                <div class="global-control">
+                    <div class="online-stats">
+                        <i class="fas fa-circle"></i>
+                        <span id="onlineCount">0</span>
+                        <span>متصل</span>
+                    </div>
+                    <label class="switch global-switch">
+                        <input type="checkbox" id="globalStatusSwitch" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
                 <button id="logoutBtn" class="action-btn logout-btn"><i class="fas fa-sign-out-alt"></i> خروج</button>
             </div>
         </div>
@@ -1153,7 +996,7 @@
             </div>
         </div>
         
-        <div id="listView" class="users-list" style="display: block;">
+        <div id="listView" class="users-list">
             <div class="users-grid"></div>
         </div>
         <div id="mapView" class="map-area" style="display: none;"><div id="map"></div></div>
@@ -1163,30 +1006,32 @@
         <div class="filter-panel">
             <div class="filter-header">
                 <h3><i class="fas fa-sliders-h"></i> فرز وتصفية</h3>
-                <button class="close-btn" onclick="closeFilterModal()">&times;</button>
+                <button class="close-btn" id="closeFilterBtn">&times;</button>
             </div>
             <div class="filter-body">
                 <div class="filter-group">
-                    <label><i class="fas fa-city"></i> المدينة</label>
-                    <select id="filterCityModal">
-                        <option value="all">جميع المدن</option>
-                    </select>
-                </div>
-                <div class="filter-group">
                     <label><i class="fas fa-venus-mars"></i> الجنس</label>
-                    <select id="filterGenderModal">
+                    <select id="filterGender">
                         <option value="all">جميع الأجناس</option>
+                        <option value="ذكر">ذكر</option>
+                        <option value="أنثى">أنثى</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label><i class="fas fa-heart"></i> الحالة العائلية</label>
-                    <select id="filterMaritalModal">
+                    <select id="filterMarital">
                         <option value="all">جميع الحالات</option>
+                        <option value="متزوج">متزوج</option>
+                        <option value="أعزب">أعزب</option>
+                        <option value="مطلق">مطلق</option>
+                        <option value="طالب">طالب</option>
+                        <option value="مرتبط">مرتبط</option>
+                        <option value="حر">حر</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label><i class="fas fa-chart-line"></i> ترتيب حسب</label>
-                    <select id="sortByModal">
+                    <select id="sortBy">
                         <option value="online">المتصلين أولاً</option>
                         <option value="distance">المسافة</option>
                         <option value="age">العمر</option>
@@ -1195,28 +1040,7 @@
                 </div>
                 <div class="filter-actions">
                     <button id="applyFiltersBtn" class="btn btn-primary">تطبيق</button>
-                    <button id="resetFiltersBtn" class="btn" style="background: #f3f4f6; color: #1f2937;">إعادة ضبط</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="profileModal" class="modal">
-        <div class="modal-card">
-            <div class="modal-header"><h3><i class="fas fa-id-card"></i> ملفي الشخصي</h3><button class="close-btn" onclick="closeProfileModal()">&times;</button></div>
-            <div class="modal-body">
-                <div class="profile-info">
-                    <div class="info-row"><span>الاسم:</span><span id="profileName"></span></div>
-                    <div class="info-row"><span>العمر:</span><span id="profileAge"></span></div>
-                    <div class="info-row"><span>الحالة:</span><span id="profileMarital"></span></div>
-                    <div class="info-row"><span>الجنس:</span><span id="profileGender"></span></div>
-                    <div class="info-row"><span>المدينة:</span><span id="profileCity"></span></div>
-                    <div class="info-row"><span>رقم الهاتف:</span><span id="profilePhone"></span></div>
-                    <div class="info-row"><span>البريد:</span><span id="profileEmail"></span></div>
-                </div>
-                <div class="modal-actions">
-                    <button id="editProfileBtn" class="btn btn-primary">تعديل الملف</button>
-                    <button id="deleteAccountBtn" class="btn" style="background: #ef4444; color: white;">حذف الحساب</button>
+                    <button id="resetFiltersBtn" class="btn btn-secondary">إعادة ضبط</button>
                 </div>
             </div>
         </div>
@@ -1225,1340 +1049,1019 @@
     <div id="editProfileModal" class="modal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3><i class="fas fa-edit"></i> تعديل الملف الشخصي</h3>
-                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+                <h3><i class="fas fa-user-edit"></i> تعديل الملف الشخصي</h3>
+                <button class="close-btn" id="closeEditBtn">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editProfileForm">
-                    <div class="edit-options" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
-                        <button type="button" id="optionUpdateCurrent" class="edit-option-btn active" style="flex:1; padding:0.6rem; border:2px solid var(--primary); border-radius: var(--radius); background: var(--primary); color: white; cursor: pointer; font-weight:600;">تحديث الحساب الحالي</button>
-                        <button type="button" id="optionCreateNew" class="edit-option-btn" style="flex:1; padding:0.6rem; border:2px solid #e5e7eb; border-radius: var(--radius); background: var(--white); cursor: pointer; font-weight:600;">إنشاء حساب جديد</button>
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> اسم المستخدم</label>
+                        <input type="text" id="editUsername" required readonly style="background:#f3f4f6;">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-user-circle"></i> الاسم الكامل</label>
+                        <input type="text" id="editName" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-calendar"></i> العمر</label>
+                        <input type="number" id="editAge" min="18" max="80" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-heart"></i> الحالة العائلية</label>
+                        <select id="editMarital">
+                            <option value="متزوج">متزوج</option>
+                            <option value="أعزب">أعزب</option>
+                            <option value="مطلق">مطلق</option>
+                            <option value="طالب">طالب</option>
+                            <option value="مرتبط">مرتبط</option>
+                            <option value="حر">حر</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-venus-mars"></i> الجنس</label>
+                        <select id="editGender">
+                            <option value="ذكر">ذكر</option>
+                            <option value="أنثى">أنثى</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fab fa-whatsapp"></i> رقم الهاتف</label>
+                        <input type="tel" id="editPhone" required placeholder="06xxxxxxxx">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                        <input type="email" id="editEmail" required>
                     </div>
                     
-                    <div class="profile-info" style="background: var(--white); padding: 0;">
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الاسم الكامل</span><input type="text" id="editName" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required></div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">العمر</span><input type="number" id="editAge" min="18" max="80" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required></div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الحالة العائلية</span><select id="editMarital" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;"><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="طالب">طالب</option><option value="مرتبط">مرتبط</option><option value="حر">حر</option></select></div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الجنس</span><select id="editGender" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">المدينة</span>
-                            <select id="editCity" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" onchange="updateCityCoordinates()">
-                                <option value="الدار البيضاء">الدار البيضاء</option>
-                                <option value="الرباط">الرباط</option>
-                                <option value="فاس">فاس</option>
-                                <option value="مراكش">مراكش</option>
-                                <option value="طنجة">طنجة</option>
-                                <option value="أكادير">أكادير</option>
-                                <option value="مكناس">مكناس</option>
-                                <option value="وجدة">وجدة</option>
-                                <option value="تطوان">تطوان</option>
-                                <option value="القنيطرة">القنيطرة</option>
-                                <option value="آسفي">آسفي</option>
-                                <option value="الناظور">الناظور</option>
-                                <option value="خريبكة">خريبكة</option>
-                                <option value="بركان">بركان</option>
-                                <option value="تازة">تازة</option>
-                                <option value="الجديدة">الجديدة</option>
-                                <option value="سيدي قاسم">سيدي قاسم</option>
-                                <option value="العرائش">العرائش</option>
-                                <option value="الحسيمة">الحسيمة</option>
-                            </select>
+                    <div class="input-group">
+                        <label><i class="fas fa-map-marker-alt"></i> الموقع الجغرافي</label>
+                        <div id="editLocationMap" class="location-map"></div>
+                        <div class="location-buttons">
+                            <button type="button" id="editUseGpsBtn" class="location-btn gps">
+                                <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
+                            </button>
+                            <button type="button" id="editConfirmLocationBtn" class="location-btn">
+                                <i class="fas fa-check"></i> تأكيد الموقع
+                            </button>
                         </div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">الموقع الجغرافي</span><button type="button" id="editGetLocationBtn" class="location-btn" style="width: 60%; background: var(--primary); color: white; padding: 0.4rem; border-radius: 0.75rem; border: none; cursor: pointer;"><i class="fas fa-location-dot"></i> تحديد موقعي الحالي</button><input type="hidden" id="editLat"><input type="hidden" id="editLng"></div>
-                        <div class="info-row" style="padding: 0.75rem 0;"><span style="font-weight: 600;">رقم الهاتف (واتساب)</span><input type="tel" id="editPhone" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" required placeholder="06xxxxxxxx"></div>
+                        <div id="editCoordDisplay" class="coord-display">
+                            <i class="fas fa-map-pin"></i> اضغط على الخريطة لتحديد الموقع
+                        </div>
+                        <input type="hidden" id="editLat" value="">
+                        <input type="hidden" id="editLng" value="">
                     </div>
                     
                     <div id="verificationSection" class="verification-section">
                         <div class="verification-title">
                             <i class="fas fa-shield-alt"></i> 🔐 تأكيد الهوية مطلوب
                         </div>
-                        <div class="info-row" style="padding: 0.75rem 0;">
-                            <span style="font-weight: 600;">كلمة المرور الحالية <span style="color: red;">*</span></span>
-                            <input type="password" id="currentPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أدخل كلمة المرور الحالية">
-                        </div>
-                        <div class="info-row" style="padding: 0.75rem 0;">
-                            <span style="font-weight: 600;">تأكيد كلمة المرور الحالية <span style="color: red;">*</span></span>
-                            <input type="password" id="confirmCurrentPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أعد إدخال كلمة المرور الحالية">
+                        <div class="input-group" style="margin-bottom: 0.75rem;">
+                            <label><i class="fas fa-lock"></i> كلمة المرور الحالية <span style="color: red;">*</span></label>
+                            <input type="password" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
                         </div>
                         <div class="warning-text">
-                            <i class="fas fa-info-circle"></i> ⚠️ مطلوب فقط عند تغيير البريد الإلكتروني أو كلمة المرور
+                            <i class="fas fa-info-circle"></i> مطلوب عند تغيير البريد الإلكتروني أو كلمة المرور
                         </div>
                     </div>
                     
-                    <div id="authFieldsSection" class="auth-fields-section">
-                        <div class="auth-fields-title"><i class="fas fa-key"></i> معلومات تسجيل الدخول</div>
-                        <div class="info-row" style="padding: 0.75rem 0;">
-                            <span style="font-weight: 600;">البريد الإلكتروني</span>
-                            <input type="email" id="editEmail" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="البريد الإلكتروني (اتركه كما هو لعدم التغيير)">
-                        </div>
-                        <div class="info-row" style="padding: 0.75rem 0;">
-                            <span style="font-weight: 600;">كلمة المرور الجديدة</span>
-                            <input type="password" id="editPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="اتركه فارغاً لعدم التغيير">
-                        </div>
-                        <div class="info-row" style="padding: 0.75rem 0;">
-                            <span style="font-weight: 600;">تأكيد كلمة المرور الجديدة</span>
-                            <input type="password" id="editConfirmPassword" style="width: 60%; padding: 0.4rem 0.6rem; border: 2px solid #e5e7eb; border-radius: 0.75rem;" placeholder="أعد إدخال كلمة المرور الجديدة">
-                        </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-lock"></i> كلمة المرور الجديدة</label>
+                        <input type="password" id="editPassword" placeholder="اتركه فارغاً لعدم التغيير">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-check-circle"></i> تأكيد كلمة المرور الجديدة</label>
+                        <input type="password" id="editConfirmPassword" placeholder="أعد إدخال كلمة المرور الجديدة">
                     </div>
                     
-                    <div class="modal-actions" style="margin-top: 1rem;">
+                    <hr>
+                    
+                    <div class="modal-actions">
                         <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                        <button type="button" id="deleteAccountBtn" class="btn btn-danger">حذف الحساب</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div id="notificationsPanel" class="notifications-panel">
-        <div class="notifications-content">
-            <div class="notifications-header">
-                <h3><i class="fas fa-bell"></i> الإشعارات</h3>
-                <button class="close-btn" onclick="closeNotificationsPanel()">&times;</button>
-            </div>
-            <div id="notificationsList" class="notifications-list"></div>
-        </div>
-    </div>
-
     <script>
-        // إحداثيات المدن المغربية
-        const cityCoords = {
-            'الدار البيضاء': [33.5731, -7.5898],
-            'الرباط': [34.0209, -6.8416],
-            'فاس': [34.0333, -5.0000],
-            'مراكش': [31.6295, -7.9811],
-            'طنجة': [35.7595, -5.8340],
-            'أكادير': [30.4278, -9.5981],
-            'مكناس': [33.8950, -5.5547],
-            'وجدة': [34.6869, -1.9114],
-            'تطوان': [35.5733, -5.3745],
-            'القنيطرة': [34.2610, -6.5801],
-            'آسفي': [32.2994, -9.2372],
-            'الناظور': [35.1697, -2.9336],
-            'خريبكة': [32.8833, -6.9000],
-            'بركان': [34.9167, -2.2500],
-            'تازة': [34.2167, -4.0167],
-            'الجديدة': [33.2333, -8.5000],
-            'سيدي قاسم': [34.2167, -5.7000],
-            'العرائش': [35.1833, -6.1500],
-            'الحسيمة': [35.2333, -3.9333]
+        // ============================================
+        // 1. الإعدادات والثوابت
+        // ============================================
+        const CONFIG = {
+            FIREBASE: { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" },
+            MESSAGES: {
+                SUCCESS: {
+                    LOGIN: (name) => `مرحباً بك ${name}`,
+                    REGISTER: "تم إنشاء الحساب بنجاح",
+                    UPDATE: "تم تحديث المعلومات بنجاح",
+                    LOGOUT: "تم تسجيل الخروج",
+                    FILTER_APPLIED: "تم تطبيق الفلاتر",
+                    FILTER_RESET: "تم إعادة ضبط الفلاتر"
+                },
+                ERROR: {
+                    LOGIN: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+                    EMAIL_EXISTS: "البريد الإلكتروني مسجل مسبقاً",
+                    USERNAME_EXISTS: "اسم المستخدم مسجل مسبقاً",
+                    PASSWORD_MISMATCH: "كلمة المرور غير متطابقة",
+                    PASSWORD_SHORT: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+                    INVALID_PHONE: "رقم الهاتف يجب أن يكون 10 أرقام",
+                    REQUIRED_FIELDS: "الرجاء تعبئة جميع الحقول",
+                    WRONG_CURRENT_PASSWORD: "كلمة المرور الحالية غير صحيحة",
+                    CURRENT_PASSWORD_REQUIRED: "الرجاء إدخال كلمة المرور الحالية للتحقق من الهوية",
+                    LOCATION_REQUIRED: "الرجاء تحديد الموقع الجغرافي"
+                },
+                INFO: {
+                    WELCOME: (name) => `أهلاً بك ${name} في المنصة`,
+                    WHATSAPP_OPEN: (name) => `جاري فتح واتساب للتواصل مع ${name}`,
+                    DIRECTIONS_OPEN: (name) => `جاري فتح المسار إلى ${name}`,
+                    USER_SELECTED: (name) => `تم اختيار: ${name}`,
+                    LOCATION_SELECTED: "تم تحديد الموقع بنجاح",
+                    GPS_LOCATION: "تم تحديد موقعك الحالي"
+                }
+            },
+            STORAGE_KEYS: { CURRENT_USER: "currentUser", USER_FILTERS: "userFilters" }
         };
 
-        // قائمة افتراضية من المستخدمين (ذكور وإناث)
-        const defaultUsersList = [
-            { name: "أحمد العلمي", email: "ahmed.alami@example.com", password: "ahmed123", city: "الدار البيضاء", gender: "ذكر", marital: "متزوج", phone: "0612345601", age: 35, isDefault: true },
-            { name: "فاطمة الزهراء", email: "fatima.zahra@example.com", password: "fatima123", city: "الرباط", gender: "أنثى", marital: "أعزب", phone: "0612345602", age: 28, isDefault: true },
-            { name: "محمد بنعلي", email: "mohamed.benali@example.com", password: "mohamed123", city: "فاس", gender: "ذكر", marital: "متزوج", phone: "0612345603", age: 42, isDefault: true },
-            { name: "سعاد العمراني", email: "saad.omrani@example.com", password: "saad123", city: "مراكش", gender: "أنثى", marital: "مطلق", phone: "0612345604", age: 33, isDefault: true },
-            { name: "يوسف الراضي", email: "youssef.radi@example.com", password: "youssef123", city: "طنجة", gender: "ذكر", marital: "أعزب", phone: "0612345605", age: 25, isDefault: true },
-            { name: "نادية الشرقاوي", email: "nadia.chargui@example.com", password: "nadia123", city: "أكادير", gender: "أنثى", marital: "مرتبط", phone: "0612345606", age: 29, isDefault: true },
-            { name: "عبد الله السوسي", email: "abdallah.soussi@example.com", password: "abdallah123", city: "مكناس", gender: "ذكر", marital: "متزوج", phone: "0612345607", age: 45, isDefault: true },
-            { name: "حنان الفاسي", email: "hanan.fassi@example.com", password: "hanan123", city: "وجدة", gender: "أنثى", marital: "أعزب", phone: "0612345608", age: 26, isDefault: true },
-            { name: "كريم العروسي", email: "karim.aroussi@example.com", password: "karim123", city: "تطوان", gender: "ذكر", marital: "أعزب", phone: "0612345609", age: 31, isDefault: true },
-            { name: "ليلى بناني", email: "leila.benani@example.com", password: "leila123", city: "القنيطرة", gender: "أنثى", marital: "متزوج", phone: "0612345610", age: 38, isDefault: true },
-            { name: "رشيد الغازي", email: "rachid.ghazi@example.com", password: "rachid123", city: "آسفي", gender: "ذكر", marital: "مطلق", phone: "0612345611", age: 44, isDefault: true },
-            { name: "منال الصباحي", email: "manal.sabahi@example.com", password: "manal123", city: "الناظور", gender: "أنثى", marital: "أعزب", phone: "0612345612", age: 24, isDefault: true },
-            { name: "طارق الناصري", email: "tariq.nasri@example.com", password: "tariq123", city: "خريبكة", gender: "ذكر", marital: "متزوج", phone: "0612345613", age: 39, isDefault: true },
-            { name: "سميرة العابد", email: "samira.abid@example.com", password: "samira123", city: "بركان", gender: "أنثى", marital: "مرتبط", phone: "0612345614", age: 27, isDefault: true },
-            { name: "عمر الشامي", email: "omar.chami@example.com", password: "omar123", city: "تازة", gender: "ذكر", marital: "أعزب", phone: "0612345615", age: 32, isDefault: true },
-            { name: "زينب الوردي", email: "zeinab.wardi@example.com", password: "zeinab123", city: "الجديدة", gender: "أنثى", marital: "متزوج", phone: "0612345616", age: 36, isDefault: true },
-            { name: "حسن البقالي", email: "hassan.bakkali@example.com", password: "hassan123", city: "سيدي قاسم", gender: "ذكر", marital: "مطلق", phone: "0612345617", age: 47, isDefault: true },
-            { name: "نوال السعدي", email: "nawal.saadi@example.com", password: "nawal123", city: "العرائش", gender: "أنثى", marital: "أعزب", phone: "0612345618", age: 23, isDefault: true },
-            { name: "إدريس الريفي", email: "idriss.rifi@example.com", password: "idriss123", city: "الحسيمة", gender: "ذكر", marital: "مرتبط", phone: "0612345619", age: 30, isDefault: true },
-            { name: "غزلان المهدي", email: "ghizlane.mahdi@example.com", password: "ghizlane123", city: "الدار البيضاء", gender: "أنثى", marital: "أعزب", phone: "0612345620", age: 26, isDefault: true }
+        // المستخدمين الافتراضيين
+        const DEFAULT_USERS = [
+            { username: "ahmed", name: "أحمد العلمي", email: "ahmed@example.com", password: "123456", gender: "ذكر", marital: "متزوج", phone: "0612345601", age: 35, lat: 33.5731, lng: -7.5898 },
+            { username: "fatima", name: "فاطمة الزهراء", email: "fatima@example.com", password: "123456", gender: "أنثى", marital: "أعزب", phone: "0612345602", age: 28, lat: 34.0209, lng: -6.8416 },
+            { username: "mohamed", name: "محمد بنعلي", email: "mohamed@example.com", password: "123456", gender: "ذكر", marital: "متزوج", phone: "0612345603", age: 42, lat: 34.0333, lng: -5.0000 },
+            { username: "saad", name: "سعاد العمراني", email: "saad@example.com", password: "123456", gender: "أنثى", marital: "مطلق", phone: "0612345604", age: 33, lat: 31.6295, lng: -7.9811 },
+            { username: "youssef", name: "يوسف الراضي", email: "youssef@example.com", password: "123456", gender: "ذكر", marital: "أعزب", phone: "0612345605", age: 25, lat: 35.7595, lng: -5.8340 },
+            { username: "nadia", name: "نادية الشرقاوي", email: "nadia@example.com", password: "123456", gender: "أنثى", marital: "مرتبط", phone: "0612345606", age: 29, lat: 30.4278, lng: -9.5981 },
+            { username: "karim", name: "كريم العروسي", email: "karim@example.com", password: "123456", gender: "ذكر", marital: "أعزب", phone: "0612345607", age: 31, lat: 35.5733, lng: -5.3745 },
+            { username: "leila", name: "ليلى بناني", email: "leila@example.com", password: "123456", gender: "أنثى", marital: "متزوج", phone: "0612345608", age: 38, lat: 34.2610, lng: -6.5801 },
+            { username: "rachid", name: "رشيد الغازي", email: "rachid@example.com", password: "123456", gender: "ذكر", marital: "مطلق", phone: "0612345609", age: 44, lat: 33.8950, lng: -5.5547 },
+            { username: "manal", name: "منال الصباحي", email: "manal@example.com", password: "123456", gender: "أنثى", marital: "أعزب", phone: "0612345610", age: 24, lat: 34.6869, lng: -1.9114 }
         ];
 
-        const FIREBASE_CONFIG = { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" };
-        
-        let currentUser = null;
-        let appMap = null;
-        let markers = [];
-        let currentView = 'list';
-        let allUsers = [];
-        let filterCity = 'all';
-        let filterGender = 'all';
-        let filterMarital = 'all';
-        let sortBy = 'online';
-        let availableCities = [];
-        let availableGenders = [];
-        let availableMaritals = [];
-        let notifications = [];
-        let selectedEditOption = 'update';
-        let isUpdatingView = false;
-
-        firebase.initializeApp(FIREBASE_CONFIG);
-        const db = firebase.database();
-
-        const maritalMap = { 'متزوج': 'متزوج', 'أعزب': 'أعزب', 'مطلق': 'مطلق', 'طالب': 'طالب', 'مرتبط': 'مرتبط', 'حر': 'حر' };
-        const genderMap = { 'ذكر': 'ذكر', 'أنثى': 'أنثى' };
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function updateCityCoordinates() {
-            const citySelect = document.getElementById('editCity');
-            const selectedCity = citySelect.value;
-            const coords = cityCoords[selectedCity];
-            if (coords) {
-                document.getElementById('editLat').value = coords[0];
-                document.getElementById('editLng').value = coords[1];
-                showToast(`تم تحديث الإحداثيات لمدينة ${selectedCity}`);
+        // ============================================
+        // 2. Toast Manager
+        // ============================================
+        class ToastManager {
+            show(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2800);
             }
+            success(message) { this.show(message, 'success'); }
+            error(message) { this.show(message, 'error'); }
+            info(message) { this.show(message, 'info'); }
         }
-        
-        function openWhatsApp(phoneNumber, name) {
-            if (!currentUser) {
-                showToast('الرجاء تسجيل الدخول أولاً', true);
-                return;
-            }
-            
-            let cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
-            
-            if (cleanNumber.startsWith('0')) {
-                cleanNumber = '212' + cleanNumber.substring(1);
-            } else if (!cleanNumber.startsWith('212') && cleanNumber.length === 10) {
-                cleanNumber = '212' + cleanNumber;
-            }
-            
-            const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent('مرحباً ' + name + '، أرغب في التواصل معك')}`;
-            window.open(whatsappUrl, '_blank');
-            showToast(`جاري فتح واتساب للتواصل مع ${name}`);
-        }
+        const toast = new ToastManager();
 
-        function openDirections(destLat, destLng, destName) {
-            if (currentUser && currentUser.lat && currentUser.lng) {
-                const url = `https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${destLat},${destLng}`;
-                window.open(url, '_blank');
-                showToast(`جاري فتح المسار من موقع حسابك إلى ${destName}`);
-            } else {
-                const url = `https://www.google.com/maps/dir/Current+Location/${destLat},${destLng}`;
-                window.open(url, '_blank');
-                showToast(`جاري فتح المسار إلى ${destName} (باستخدام موقعك الحالي)`);
+        // ============================================
+        // 3. Loader Manager
+        // ============================================
+        class LoaderManager {
+            constructor() {
+                this.overlay = document.getElementById('loadingOverlay');
+                this.counter = 0;
             }
-        }
-
-        function showToast(msg, isError = false) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-notification';
-            if (isError) {
-                toast.classList.add('error');
-            } else {
-                toast.classList.add('success');
-            }
-            toast.textContent = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2800);
-        }
-
-        function addNotification(title, message, type = 'info') {
-            const notification = {
-                id: Date.now(),
-                title,
-                message,
-                type,
-                time: new Date().toLocaleTimeString('ar-EG'),
-                date: new Date().toLocaleDateString('ar-EG'),
-                read: false
-            };
-            notifications.unshift(notification);
-            if (notifications.length > 50) notifications.pop();
-            updateNotificationsList();
-            showToast(message);
-        }
-
-        function updateNotificationsList() {
-            const container = document.getElementById('notificationsList');
-            if (!container) return;
-            if (notifications.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:2rem;color:#999;">لا توجد إشعارات</div>';
-                return;
-            }
-            container.innerHTML = notifications.map(n => `
-                <div class="notification-item">
-                    <div class="notification-icon"><i class="fas ${n.type === 'online' ? 'fa-circle' : 'fa-bell'}"></i></div>
-                    <div class="notification-text">
-                        <div><strong>${n.title}</strong></div>
-                        <div>${n.message}</div>
-                        <div class="notification-time">${n.date} - ${n.time}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function closeNotificationsPanel() {
-            document.getElementById('notificationsPanel').style.display = 'none';
-        }
-
-        function initMap(containerId, lat, lng) {
-            const map = L.map(containerId).setView([lat, lng], 8);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-            return map;
-        }
-
-        async function updateFiltersOptions() {
-            const snapshot = await db.ref('users').once('value');
-            const cities = new Set();
-            const genders = new Set();
-            const maritals = new Set();
-            
-            snapshot.forEach(child => {
-                const user = child.val();
-                if (user.city) cities.add(user.city);
-                if (user.gender) genders.add(user.gender);
-                if (user.marital) maritals.add(user.marital);
-            });
-            
-            availableCities = Array.from(cities).sort();
-            availableGenders = Array.from(genders).sort();
-            availableMaritals = Array.from(maritals).sort();
-            
-            const citySelect = document.getElementById('filterCityModal');
-            if (citySelect) {
-                const current = filterCity;
-                citySelect.innerHTML = '<option value="all">جميع المدن</option>';
-                availableCities.forEach(city => {
-                    const opt = document.createElement('option');
-                    opt.value = city;
-                    opt.textContent = city;
-                    citySelect.appendChild(opt);
-                });
-                if (current !== 'all' && availableCities.includes(current)) citySelect.value = current;
-                else citySelect.value = 'all';
-            }
-            
-            const genderSelect = document.getElementById('filterGenderModal');
-            if (genderSelect) {
-                const current = filterGender;
-                genderSelect.innerHTML = '<option value="all">جميع الأجناس</option>';
-                availableGenders.forEach(gender => {
-                    const opt = document.createElement('option');
-                    opt.value = gender;
-                    opt.textContent = genderMap[gender] || gender;
-                    genderSelect.appendChild(opt);
-                });
-                if (current !== 'all' && availableGenders.includes(current)) genderSelect.value = current;
-                else genderSelect.value = 'all';
-            }
-            
-            const maritalSelect = document.getElementById('filterMaritalModal');
-            if (maritalSelect) {
-                const current = filterMarital;
-                maritalSelect.innerHTML = '<option value="all">جميع الحالات</option>';
-                availableMaritals.forEach(marital => {
-                    const opt = document.createElement('option');
-                    opt.value = marital;
-                    opt.textContent = maritalMap[marital] || marital;
-                    maritalSelect.appendChild(opt);
-                });
-                if (current !== 'all' && availableMaritals.includes(current)) maritalSelect.value = current;
-                else maritalSelect.value = 'all';
-            }
-        }
-
-        async function createDefaultUsers() {
-            const usersRef = db.ref('users');
-            for (const user of defaultUsersList) {
-                const exists = await usersRef.orderByChild('email').equalTo(user.email).once('value');
-                if (!exists.exists()) {
-                    const coords = cityCoords[user.city];
-                    const userId = db.ref('users').push().key;
-                    await usersRef.child(user.name).set({
-                        userId: userId,
-                        name: user.name,
-                        age: user.age,
-                        marital: user.marital,
-                        gender: user.gender,
-                        city: user.city,
-                        lat: coords ? coords[0] : 33.5731,
-                        lng: coords ? coords[1] : -7.5898,
-                        phone: user.phone,
-                        email: user.email,
-                        password: user.password,
-                        createdAt: Date.now(),
-                        lastActive: Date.now(),
-                        status: 'online',
-                        isDefault: true
-                    });
+            show(message = 'جاري التحميل...') {
+                this.counter++;
+                if (this.overlay) {
+                    const textElement = this.overlay.querySelector('.loader-text');
+                    if (textElement) textElement.textContent = message;
+                    this.overlay.style.display = 'flex';
                 }
             }
-            await updateFiltersOptions();
-        }
-
-        async function loadAllUsers() {
-            const snapshot = await db.ref('users').once('value');
-            allUsers = [];
-            snapshot.forEach(child => {
-                const user = child.val();
-                allUsers.push({ 
-                    email: user.email, 
-                    password: user.password, 
-                    name: user.name,
-                    status: user.status,
-                    lastActive: user.lastActive,
-                    isDefault: user.isDefault || false,
-                    userId: user.userId,
-                    phone: user.phone,
-                    lat: user.lat,
-                    lng: user.lng
-                });
-            });
-            allUsers.sort((a, b) => a.name.localeCompare(b.name));
-            await updateFiltersOptions();
-        }
-
-        function showEmailSuggestions() {
-            const div = document.getElementById('emailSuggestions');
-            if (allUsers.length === 0) { 
-                div.innerHTML = '<div class="email-item">لا يوجد مستخدمين</div>'; 
-                div.style.display = 'block'; 
-                return; 
+            hide() {
+                this.counter--;
+                if (this.counter <= 0 && this.overlay) {
+                    this.overlay.style.display = 'none';
+                    this.counter = 0;
+                }
             }
-            div.innerHTML = '';
-            allUsers.forEach(user => {
-                const item = document.createElement('div');
-                item.className = 'email-item';
-                const isOnline = user.status === 'online';
-                const icon = isOnline ? '🟢' : '🔴';
-                item.innerHTML = `
-                    <div>
-                        <div style="font-weight:600;">📧 ${user.email}</div>
-                        <div style="font-size:0.75rem;">👤 ${user.name} ${icon}</div>
-                    </div>
-                    <i class="fas fa-chevron-left" style="color:#999;"></i>
-                `;
-                item.onclick = () => {
-                    document.getElementById('loginEmail').value = user.email;
-                    if (user.password) {
-                        document.getElementById('loginPassword').value = user.password;
+            async withLoading(operation, message = 'جاري التحميل...') {
+                this.show(message);
+                try {
+                    return await operation();
+                } finally {
+                    this.hide();
+                }
+            }
+        }
+        const loader = new LoaderManager();
+
+        // ============================================
+        // 4. Settings Service
+        // ============================================
+        class SettingsService {
+            constructor() {
+                this.filters = { gender: 'all', marital: 'all', sortBy: 'online' };
+                this.currentUser = null;
+                this.loadSavedSettings();
+            }
+            loadSavedSettings() {
+                const savedFilters = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_FILTERS);
+                if (savedFilters) this.filters = { ...this.filters, ...JSON.parse(savedFilters) };
+                const savedUser = localStorage.getItem(CONFIG.STORAGE_KEYS.CURRENT_USER);
+                if (savedUser) this.currentUser = JSON.parse(savedUser);
+            }
+            saveFilters() { localStorage.setItem(CONFIG.STORAGE_KEYS.USER_FILTERS, JSON.stringify(this.filters)); }
+            saveCurrentUser(user) { this.currentUser = user; localStorage.setItem(CONFIG.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user)); }
+            clearCurrentUser() { this.currentUser = null; localStorage.removeItem(CONFIG.STORAGE_KEYS.CURRENT_USER); }
+            getFilters() { return { ...this.filters }; }
+            updateFilters(newFilters) { this.filters = { ...this.filters, ...newFilters }; this.saveFilters(); return this.filters; }
+            resetFilters() { this.filters = { gender: 'all', marital: 'all', sortBy: 'online' }; this.saveFilters(); return this.filters; }
+            getCurrentUser() { return this.currentUser; }
+        }
+        const settingsService = new SettingsService();
+
+        // ============================================
+        // 5. Firebase Service
+        // ============================================
+        class FirebaseService {
+            constructor() { this.db = null; this.initialized = false; }
+            async init() {
+                if (this.initialized) return;
+                firebase.initializeApp(CONFIG.FIREBASE);
+                this.db = firebase.database();
+                this.initialized = true;
+            }
+            getDatabase() { return this.db; }
+            onConnectionChange(callback) {
+                const connectedRef = this.db.ref('.info/connected');
+                connectedRef.on('value', (snap) => callback(snap.val()));
+            }
+        }
+        const firebaseService = new FirebaseService();
+
+        // ============================================
+        // 6. Users Service
+        // ============================================
+        class UsersService {
+            constructor() { this.db = null; this.cache = new Map(); }
+            
+            async init() {
+                await firebaseService.init();
+                this.db = firebaseService.getDatabase();
+                await this.createDefaultUsers();
+                await this.getAllUsers();
+            }
+            
+            async createDefaultUsers() {
+                for (const user of DEFAULT_USERS) {
+                    const snapshot = await this.db.ref(`users/${user.username}`).once('value');
+                    if (!snapshot.exists()) {
+                        await this.db.ref(`users/${user.username}`).set({
+                            username: user.username, name: user.name, age: user.age,
+                            marital: user.marital, gender: user.gender,
+                            lat: user.lat, lng: user.lng,
+                            phone: user.phone, email: user.email, password: user.password,
+                            createdAt: Date.now(), lastActive: Date.now(), status: 'online', isDefault: true
+                        });
                     }
-                    div.style.display = 'none';
-                    showToast(`تم اختيار: ${user.name}`);
+                }
+            }
+            
+            async getAllUsers() {
+                const snapshot = await this.db.ref('users').once('value');
+                const users = [];
+                if (!snapshot.exists()) return [];
+                snapshot.forEach(child => {
+                    const user = child.val();
+                    if (user) {
+                        users.push({
+                            username: child.key, name: user.name || child.key, age: user.age || 25,
+                            marital: user.marital || 'أعزب', gender: user.gender || 'ذكر',
+                            lat: user.lat || 33.5731, lng: user.lng || -7.5898,
+                            phone: user.phone || '0612345678', email: user.email || `${child.key}@example.com`,
+                            password: user.password || '123456', status: user.status || 'offline',
+                            lastActive: user.lastActive || Date.now(), createdAt: user.createdAt || Date.now(),
+                            isDefault: user.isDefault || false
+                        });
+                        this.cache.set(child.key, users[users.length - 1]);
+                    }
+                });
+                return users;
+            }
+            
+            async getUserByEmail(email) {
+                const users = await this.getAllUsers();
+                return users.find(user => user.email === email);
+            }
+            
+            async getUserByUsername(username) {
+                if (this.cache.has(username)) return this.cache.get(username);
+                const snapshot = await this.db.ref(`users/${username}`).once('value');
+                const user = snapshot.val();
+                if (user) { user.username = username; this.cache.set(username, user); }
+                return user;
+            }
+            
+            async createUser(userData) {
+                const username = userData.username.trim().toLowerCase();
+                const newUser = {
+                    username, name: userData.name, age: userData.age, marital: userData.marital,
+                    gender: userData.gender, lat: userData.lat, lng: userData.lng,
+                    phone: userData.phone, email: userData.email, password: userData.password,
+                    createdAt: Date.now(), lastActive: Date.now(), status: 'online', isDefault: false
                 };
-                div.appendChild(item);
-            });
-            div.style.display = 'block';
-        }
-
-        // دالة تحديث حالة المستخدم عبر السويتش
-        function updateUserStatus(userName, userId, newStatus) {
-            if (!currentUser) return;
+                await this.db.ref(`users/${username}`).set(newUser);
+                this.cache.set(username, newUser);
+                return newUser;
+            }
             
-            db.ref(`users/${userName}/status`).set(newStatus).then(() => {
-                if (currentUser.name === userName) {
-                    currentUser.status = newStatus;
-                }
-                const statusLabel = document.getElementById(`statusLabel_${userId}`);
-                if (statusLabel) {
-                    statusLabel.innerHTML = newStatus === 'online' ? '🟢 متصل' : '🔴 غير متصل';
-                }
-                if (currentView === 'list') updateList();
-                else updateMap();
-            });
-        }
-
-        function setupPresence() {
-            if (!currentUser) return;
+            async updateUser(username, updates, currentPassword = null) {
+                const user = await this.getUserByUsername(username);
+                if (!user) throw new Error("User not found");
+                const emailChanged = updates.email && updates.email !== user.email;
+                const passwordChanged = updates.password && updates.password !== user.password;
+                if ((emailChanged || passwordChanged) && !currentPassword) throw new Error(CONFIG.MESSAGES.ERROR.CURRENT_PASSWORD_REQUIRED);
+                if ((emailChanged || passwordChanged) && currentPassword !== user.password) throw new Error(CONFIG.MESSAGES.ERROR.WRONG_CURRENT_PASSWORD);
+                await this.db.ref(`users/${username}`).update(updates);
+                return this.getUserByUsername(username);
+            }
             
-            const userName = currentUser.name;
-            const statusRef = db.ref(`users/${userName}/status`);
-            const lastActiveRef = db.ref(`users/${userName}/lastActive`);
-            const connectedRef = db.ref('.info/connected');
+            async updateUserStatus(username, status) {
+                await this.db.ref(`users/${username}/status`).set(status);
+                await this.db.ref(`users/${username}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+                if (this.cache.has(username)) { this.cache.get(username).status = status; }
+            }
             
-            connectedRef.on('value', (snap) => {
-                if (snap.val() === true) {
-                    statusRef.onDisconnect().set(currentUser.status === 'online' ? 'online' : 'offline');
-                    lastActiveRef.onDisconnect().set(firebase.database.ServerValue.TIMESTAMP);
-                }
-            });
+            async deleteUser(username) { await this.db.ref(`users/${username}`).remove(); this.cache.delete(username); }
+            async checkEmailExists(email) { const users = await this.getAllUsers(); return users.some(u => u.email === email); }
+            async checkUsernameExists(username) { return !!(await this.getUserByUsername(username.toLowerCase())); }
+            
+            subscribeToChanges(callback) {
+                this.db.ref('users').on('child_changed', (snapshot) => {
+                    const user = snapshot.val();
+                    if (user) { user.username = snapshot.key; this.cache.set(snapshot.key, user); callback('changed', user); }
+                });
+                this.db.ref('users').on('child_added', (snapshot) => {
+                    const user = snapshot.val();
+                    if (user) { user.username = snapshot.key; this.cache.set(snapshot.key, user); callback('added', user); }
+                });
+                this.db.ref('users').on('child_removed', (snapshot) => { this.cache.delete(snapshot.key); callback('removed', null); });
+            }
         }
+        const usersService = new UsersService();
 
-        function isOnline(status, lastActive) {
-            return status === 'online';
-        }
-
-        async function getContacts(showOnlyOnline = false, includeCurrentUser = true) {
-            if (!currentUser) return [];
-            const snapshot = await db.ref('users').once('value');
-            const users = [];
-            snapshot.forEach(child => {
-                const user = child.val();
-                if (user.lat && user.lng) {
-                    const online = isOnline(user.status, user.lastActive);
-                    if (showOnlyOnline && !online) return;
-                    
-                    let distance = 0;
-                    if (user.name !== currentUser.name && currentUser.lat && currentUser.lng) {
-                        distance = haversine(currentUser.lat, currentUser.lng, user.lat, user.lng);
+        // ============================================
+        // 7. Filter Manager
+        // ============================================
+        class FilterManager {
+            constructor() { this.filters = settingsService.getFilters(); this.listeners = []; }
+            getFilters() { return { ...this.filters }; }
+            calculateDistance(lat1, lng1, lat2, lng2) {
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLng = (lng2 - lng1) * Math.PI / 180;
+                const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            }
+            applyFilters(users, currentUsername, currentUserCoords) {
+                let filtered = [...users];
+                if (this.filters.gender !== 'all') filtered = filtered.filter(u => u.gender === this.filters.gender);
+                if (this.filters.marital !== 'all') filtered = filtered.filter(u => u.marital === this.filters.marital);
+                filtered = filtered.map(user => {
+                    if (user.username !== currentUsername && currentUserCoords && user.lat && user.lng) {
+                        user.distance = this.calculateDistance(currentUserCoords.lat, currentUserCoords.lng, user.lat, user.lng);
                     }
-                    
-                    users.push({ 
-                        ...user, 
-                        distance, 
-                        online, 
-                        isCurrentUser: user.name === currentUser.name 
-                    });
-                }
-            });
-            
-            let filtered = users;
-            if (filterCity !== 'all') filtered = filtered.filter(u => u.city === filterCity);
-            if (filterGender !== 'all') filtered = filtered.filter(u => u.gender === filterGender);
-            if (filterMarital !== 'all') filtered = filtered.filter(u => u.marital === filterMarital);
-            
-            filtered.sort((a, b) => {
-                if (a.isCurrentUser) return -1;
-                if (b.isCurrentUser) return 1;
-                if (sortBy === 'online') return (b.online ? 1 : 0) - (a.online ? 1 : 0);
-                if (sortBy === 'distance') return a.distance - b.distance;
-                if (sortBy === 'age') return a.age - b.age;
-                if (sortBy === 'name') return a.name.localeCompare(b.name);
-                return (b.online ? 1 : 0) - (a.online ? 1 : 0);
-            });
-            return filtered;
+                    return user;
+                });
+                const sortMethods = {
+                    online: (a, b) => {
+                        if (a.username === currentUsername) return -1;
+                        if (b.username === currentUsername) return 1;
+                        return (b.status === 'online' ? 1 : 0) - (a.status === 'online' ? 1 : 0);
+                    },
+                    distance: (a, b) => (a.distance || 0) - (b.distance || 0),
+                    age: (a, b) => a.age - b.age,
+                    name: (a, b) => a.name.localeCompare(b.name)
+                };
+                return filtered.sort(sortMethods[this.filters.sortBy] || sortMethods.online);
+            }
+            updateFilters(newFilters) { this.filters = settingsService.updateFilters(newFilters); this.notifyListeners(); }
+            resetFilters() { this.filters = settingsService.resetFilters(); this.notifyListeners(); }
+            addListener(callback) { this.listeners.push(callback); }
+            notifyListeners() { this.listeners.forEach(cb => cb(this.filters)); }
         }
+        const filterManager = new FilterManager();
 
-        function haversine(lat1, lng1, lat2, lng2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLng = (lng2 - lng1) * Math.PI / 180;
-            const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        async function updateList() {
-            if (isUpdatingView) return;
-            isUpdatingView = true;
-            
-            const contacts = await getContacts(false, true);
-            const container = document.getElementById('listView');
-            const grid = container.querySelector('.users-grid') || (() => {
-                const g = document.createElement('div');
-                g.className = 'users-grid';
-                container.innerHTML = '';
-                container.appendChild(g);
-                return g;
-            })();
-            
-            if (contacts.length === 0) {
-                grid.innerHTML = '<div style="text-align:center;padding:3rem;color:#999;grid-column:1/-1;"><i class="fas fa-users fa-3x mb-3"></i><p>لا يوجد مستخدمين</p></div>';
-                isUpdatingView = false;
-                return;
+        // ============================================
+        // 8. Location Picker - تحديد الموقع بالخريطة
+        // ============================================
+        class LocationPicker {
+            constructor(mapElementId, latInputId, lngInputId, coordDisplayId) {
+                this.mapElementId = mapElementId;
+                this.latInput = document.getElementById(latInputId);
+                this.lngInput = document.getElementById(lngInputId);
+                this.coordDisplay = document.getElementById(coordDisplayId);
+                this.map = null;
+                this.marker = null;
+                this.defaultLat = 33.5731;
+                this.defaultLng = -7.5898;
             }
             
-            grid.innerHTML = contacts.map(u => {
-                const distanceDisplay = !u.isCurrentUser ? `<div class="distance-tag"><i class="fas fa-location-dot"></i> ${u.distance.toFixed(1)} كم</div>` : '';
+            init(initialLat = null, initialLng = null) {
+                const lat = initialLat || this.defaultLat;
+                const lng = initialLng || this.defaultLng;
                 
-                return `
-                <div class="user-card ${u.online ? 'online' : ''} ${u.isCurrentUser ? 'current-user' : ''}">
-                    <div class="user-header">
-                        <div class="user-name">
-                            <i class="fas fa-user-circle"></i> ${escapeHtml(u.name)}
-                            <span class="age-badge">${u.age} سنة</span>
-                            ${u.isCurrentUser ? '<span class="current-badge"><i class="fas fa-star"></i> أنت</span>' : ''}
-                        </div>
-                        <div class="user-status">
-                            <span class="status-dot ${u.online ? 'online' : 'offline'}"></span>
-                            <span>${u.online ? 'متصل' : 'غير متصل'}</span>
-                            ${!u.isCurrentUser && u.online ? `
-                                <button class="whatsapp-icon" onclick="event.stopPropagation(); openWhatsApp('${u.phone}', '${u.name.replace(/'/g, "\\'")}')">
-                                    <i class="fab fa-whatsapp"></i>
-                                </button>
-                            ` : !u.isCurrentUser && !u.online ? `
-                                <button class="whatsapp-icon disabled" disabled>
-                                    <i class="fab fa-whatsapp"></i>
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <div class="user-details">
-                        <span class="detail-tag"><i class="fas fa-heart"></i> ${maritalMap[u.marital] || u.marital}</span>
-                        <span class="detail-tag"><i class="fas fa-venus-mars"></i> ${genderMap[u.gender] || u.gender}</span>
-                        <span class="detail-tag"><i class="fas fa-city"></i> ${u.city}</span>
-                    </div>
-                    ${distanceDisplay}
-                    <div class="status-switch">
-                        <span id="statusLabel_${u.userId}">${u.online ? '🟢 متصل' : '🔴 غير متصل'}</span>
-                        <label class="switch">
-                            <input type="checkbox" id="switch_${u.userId}" ${u.online ? 'checked' : ''} onchange="updateUserStatus('${u.name}', '${u.userId}', this.checked ? 'online' : 'offline')">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            `}).join('');
-            
-            isUpdatingView = false;
-        }
-
-        function showUserPopup(user) {
-            return `
-                <div class="custom-popup">
-                    <div class="popup-header">
-                        <div><i class="fas fa-user-circle"></i> ${escapeHtml(user.name)} <span style="background:#f59e0b; padding:2px 6px; border-radius:20px; font-size:0.7rem;">${user.age} سنة</span></div>
-                        <div><span class="status-dot ${user.online ? 'online' : 'offline'}" style="width:8px;height:8px;"></span> ${user.online ? 'متصل' : 'غير متصل'}</div>
-                    </div>
-                    <div class="popup-info"><i class="fas fa-heart"></i> ${maritalMap[user.marital] || user.marital}</div>
-                    <div class="popup-info"><i class="fas fa-venus-mars"></i> ${genderMap[user.gender] || user.gender}</div>
-                    <div class="popup-info"><i class="fas fa-city"></i> ${user.city}</div>
-                    <div class="popup-distance">${!user.isCurrentUser ? `<i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم من موقعك` : '<i class="fas fa-home"></i> هذا موقعك الحالي'}</div>
-                    ${!user.isCurrentUser && user.online ? `
-                        <div class="popup-actions">
-                            <button class="popup-btn direction" onclick="openDirections(${user.lat}, ${user.lng}, '${user.name.replace(/'/g, "\\'")}')"><i class="fas fa-directions"></i> عرض المسار</button>
-                            <button class="popup-btn" style="background:#25d366;" onclick="openWhatsApp('${user.phone}', '${user.name.replace(/'/g, "\\'")}')"><i class="fab fa-whatsapp"></i> واتساب</button>
-                        </div>
-                    ` : !user.isCurrentUser && !user.online ? `
-                        <div class="popup-actions">
-                            <button class="popup-btn direction" onclick="openDirections(${user.lat}, ${user.lng}, '${user.name.replace(/'/g, "\\'")}')"><i class="fas fa-directions"></i> عرض المسار</button>
-                            <button class="popup-btn disabled" style="background:#9e9e9e;" disabled><i class="fab fa-whatsapp"></i> غير متصل</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        async function updateMap() {
-            if (isUpdatingView) return;
-            isUpdatingView = true;
-            
-            const contacts = await getContacts(false, true);
-            
-            if (!appMap) {
-                const center = [33.5731, -7.5898];
-                appMap = initMap('map', center[0], center[1]);
-            }
-            
-            markers.forEach(m => appMap.removeLayer(m));
-            markers = [];
-            
-            contacts.forEach(u => {
-                let markerColor = '#075e54';
-                let markerSize = 12;
+                const mapElement = document.getElementById(this.mapElementId);
+                if (!mapElement) return;
                 
-                if (u.isCurrentUser) {
-                    markerColor = '#075e54';
-                    markerSize = 18;
-                } else if (u.online) {
-                    markerColor = '#25d366';
-                    markerSize = 14;
-                } else {
-                    markerColor = '#9e9e9e';
-                    markerSize = 12;
+                if (this.map) {
+                    this.map.remove();
+                    this.map = null;
                 }
+                
+                this.map = L.map(this.mapElementId).setView([lat, lng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(this.map);
                 
                 const markerIcon = L.divIcon({
-                    html: `<div style="background:${markerColor};width:${markerSize}px;height:${markerSize}px;border-radius:50%;border:3px solid white;box-shadow:0 0 8px ${markerColor};${u.isCurrentUser ? 'animation: pulse 1.5s infinite;' : ''}"></div>`,
-                    iconSize: [markerSize, markerSize],
+                    html: '<div style="background:#075e54;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 8px #075e54;"></div>',
+                    iconSize: [20, 20],
                     className: ''
                 });
-                const m = L.marker([u.lat, u.lng], { icon: markerIcon }).addTo(appMap);
                 
-                m.bindPopup(showUserPopup(u), {
-                    maxWidth: 320,
-                    minWidth: 280
+                this.marker = L.marker([lat, lng], { draggable: true, icon: markerIcon }).addTo(this.map);
+                this.updateCoordinates(lat, lng);
+                
+                this.marker.on('dragend', (e) => {
+                    const pos = e.target.getLatLng();
+                    this.updateCoordinates(pos.lat, pos.lng);
+                    toast.info(`الموقع: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`);
                 });
                 
-                markers.push(m);
-            });
-            
-            if (contacts.length > 0) {
-                const bounds = L.latLngBounds(contacts.map(c => [c.lat, c.lng]));
-                appMap.fitBounds(bounds, { padding: [30, 30] });
+                this.map.on('click', (e) => {
+                    this.marker.setLatLng(e.latlng);
+                    this.updateCoordinates(e.latlng.lat, e.latlng.lng);
+                    toast.info(`الموقع: ${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`);
+                });
             }
             
-            isUpdatingView = false;
-        }
-
-        function openFilterModal() {
-            document.getElementById('filterModal').style.display = 'flex';
-        }
-
-        function closeFilterModal() {
-            document.getElementById('filterModal').style.display = 'none';
-        }
-
-        function applyFilters() {
-            filterCity = document.getElementById('filterCityModal').value;
-            filterGender = document.getElementById('filterGenderModal').value;
-            filterMarital = document.getElementById('filterMaritalModal').value;
-            sortBy = document.getElementById('sortByModal').value;
-            if (currentView === 'list') updateList();
-            else updateMap();
-            closeFilterModal();
-            showToast('تم تطبيق الفلاتر');
-        }
-
-        function resetFilters() {
-            document.getElementById('filterCityModal').value = 'all';
-            document.getElementById('filterGenderModal').value = 'all';
-            document.getElementById('filterMaritalModal').value = 'all';
-            document.getElementById('sortByModal').value = 'online';
-            filterCity = 'all';
-            filterGender = 'all';
-            filterMarital = 'all';
-            sortBy = 'online';
-            if (currentView === 'list') updateList();
-            else updateMap();
-            closeFilterModal();
-            showToast('تم إعادة ضبط الفلاتر');
-        }
-
-        function switchView(view) {
-            currentView = view;
-            const listView = document.getElementById('listView');
-            const mapView = document.getElementById('mapView');
-            const listBtn = document.getElementById('listViewBtn');
-            const mapBtn = document.getElementById('mapViewBtn');
-            
-            if (view === 'list') {
-                listView.style.display = 'block';
-                mapView.style.display = 'none';
-                listBtn.classList.add('active');
-                mapBtn.classList.remove('active');
-                updateList();
-            } else {
-                listView.style.display = 'none';
-                mapView.style.display = 'block';
-                listBtn.classList.remove('active');
-                mapBtn.classList.add('active');
-                setTimeout(() => updateMap(), 100);
-            }
-        }
-
-        async function register(e) {
-            e.preventDefault();
-            const name = document.getElementById('regName').value.trim();
-            const age = parseInt(document.getElementById('regAge').value);
-            const marital = document.getElementById('regMarital').value;
-            const gender = document.getElementById('regGender').value;
-            const city = document.getElementById('regCity').value;
-            const phone = document.getElementById('regPhone').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirm = document.getElementById('regConfirmPassword').value;
-            
-            if (!name || !age || !marital || !gender || !city || !phone || !email || !password) {
-                showToast('الرجاء تعبئة جميع الحقول', true);
-                return;
-            }
-            if (password !== confirm) {
-                showToast('كلمة المرور غير متطابقة', true);
-                return;
-            }
-            if (password.length < 6) {
-                showToast('كلمة المرور يجب أن تكون 6 أحرف على الأقل', true);
-                return;
-            }
-            if (!phone.match(/^[0-9]{10}$/)) {
-                showToast('رقم الهاتف يجب أن يكون 10 أرقام', true);
-                return;
-            }
-            
-            const coords = cityCoords[city];
-            
-            const emailExists = await db.ref('users').orderByChild('email').equalTo(email).once('value');
-            if (emailExists.exists()) {
-                showToast('البريد الإلكتروني مسجل مسبقاً', true);
-                return;
-            }
-            
-            const userId = db.ref('users').push().key;
-            await db.ref(`users/${name}`).set({
-                userId, name, age, marital, gender, city,
-                lat: coords ? coords[0] : 33.5731, 
-                lng: coords ? coords[1] : -7.5898,
-                phone, email, password,
-                createdAt: Date.now(),
-                lastActive: Date.now(),
-                status: 'online',
-                isDefault: false
-            });
-            
-            showToast('تم التسجيل بنجاح!');
-            await loadAllUsers();
-            await updateFiltersOptions();
-            showLogin();
-        }
-
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            
-            let userData = null;
-            const snapshot = await db.ref('users').once('value');
-            snapshot.forEach(child => {
-                const user = child.val();
-                if (user.email === email) userData = user;
-            });
-            
-            if (!userData) {
-                showToast('البريد غير مسجل', true);
-                return;
-            }
-            if (userData.password !== password) {
-                showToast('كلمة المرور غير صحيحة', true);
-                return;
-            }
-            
-            currentUser = userData;
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
-            setupPresence();
-            addNotification('مرحباً', `أهلاً بك ${currentUser.name} في المنصة`, 'welcome');
-            showMain();
-        }
-
-        function showMain() {
-            document.getElementById('registerCard').style.display = 'none';
-            document.getElementById('loginCard').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'flex';
-            updateList();
-            
-            if (window.listInterval) clearInterval(window.listInterval);
-            if (window.mapInterval) clearInterval(window.mapInterval);
-            window.listInterval = setInterval(() => { if (currentUser && currentView === 'list' && !isUpdatingView) updateList(); }, 10000);
-            window.mapInterval = setInterval(() => { if (currentUser && currentView === 'map' && !isUpdatingView) updateMap(); }, 10000);
-        }
-
-        function openProfile() {
-            document.getElementById('profileName').textContent = currentUser.name;
-            document.getElementById('profileAge').textContent = currentUser.age;
-            document.getElementById('profileMarital').textContent = maritalMap[currentUser.marital] || currentUser.marital;
-            document.getElementById('profileGender').textContent = genderMap[currentUser.gender] || currentUser.gender;
-            document.getElementById('profileCity').textContent = currentUser.city;
-            document.getElementById('profilePhone').textContent = currentUser.phone;
-            document.getElementById('profileEmail').textContent = currentUser.email;
-            document.getElementById('profileModal').style.display = 'flex';
-        }
-        
-        function closeProfileModal() { document.getElementById('profileModal').style.display = 'none'; }
-        
-        function openEdit() {
-            closeProfileModal();
-            // استرجاع بيانات الحساب الحالي في الحقول
-            document.getElementById('editName').value = currentUser.name;
-            document.getElementById('editAge').value = currentUser.age;
-            document.getElementById('editMarital').value = currentUser.marital;
-            document.getElementById('editGender').value = currentUser.gender;
-            document.getElementById('editCity').value = currentUser.city;
-            document.getElementById('editPhone').value = currentUser.phone;
-            document.getElementById('editLat').value = currentUser.lat;
-            document.getElementById('editLng').value = currentUser.lng;
-            
-            document.getElementById('editEmail').value = currentUser.email;
-            document.getElementById('editPassword').value = '';
-            document.getElementById('editConfirmPassword').value = '';
-            
-            document.getElementById('verificationSection').style.display = 'none';
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('confirmCurrentPassword').value = '';
-            document.getElementById('currentPassword').removeAttribute('required');
-            document.getElementById('confirmCurrentPassword').removeAttribute('required');
-            
-            selectedEditOption = 'update';
-            document.getElementById('optionUpdateCurrent').classList.add('active');
-            document.getElementById('optionCreateNew').classList.remove('active');
-            document.getElementById('optionUpdateCurrent').style.background = '#075e54';
-            document.getElementById('optionUpdateCurrent').style.color = 'white';
-            document.getElementById('optionCreateNew').style.background = 'white';
-            document.getElementById('optionCreateNew').style.color = '#1f2937';
-            document.getElementById('optionCreateNew').style.borderColor = '#e5e7eb';
-            
-            const emailInput = document.getElementById('editEmail');
-            const passwordInput = document.getElementById('editPassword');
-            
-            const checkForChanges = () => {
-                const emailChanged = emailInput.value !== currentUser.email;
-                const passwordChanged = passwordInput.value.length > 0;
-                
-                if (emailChanged || passwordChanged) {
-                    document.getElementById('verificationSection').style.display = 'block';
-                    document.getElementById('currentPassword').setAttribute('required', 'required');
-                    document.getElementById('confirmCurrentPassword').setAttribute('required', 'required');
-                } else {
-                    document.getElementById('verificationSection').style.display = 'none';
-                    document.getElementById('currentPassword').removeAttribute('required');
-                    document.getElementById('confirmCurrentPassword').removeAttribute('required');
+            updateCoordinates(lat, lng) {
+                this.latInput.value = lat;
+                this.lngInput.value = lng;
+                if (this.coordDisplay) {
+                    this.coordDisplay.innerHTML = `<i class="fas fa-map-pin"></i> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                 }
-            };
+            }
             
-            emailInput.oninput = checkForChanges;
-            passwordInput.oninput = checkForChanges;
+            setLocation(lat, lng) {
+                if (this.map && this.marker) {
+                    this.map.setView([lat, lng], 14);
+                    this.marker.setLatLng([lat, lng]);
+                    this.updateCoordinates(lat, lng);
+                }
+            }
             
-            document.getElementById('editProfileModal').style.display = 'flex';
+            async getCurrentLocation() {
+                return new Promise((resolve, reject) => {
+                    if (!navigator.geolocation) {
+                        reject("المتصفح لا يدعم تحديد الموقع");
+                        return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            const lat = pos.coords.latitude;
+                            const lng = pos.coords.longitude;
+                            this.setLocation(lat, lng);
+                            resolve({ lat, lng });
+                        },
+                        () => reject("فشل تحديد الموقع")
+                    );
+                });
+            }
         }
-        
-        function closeEditModal() { 
-            document.getElementById('editProfileModal').style.display = 'none'; 
-            const emailInput = document.getElementById('editEmail');
-            const passwordInput = document.getElementById('editPassword');
-            emailInput.oninput = null;
-            passwordInput.oninput = null;
+
+        // ============================================
+        // 9. Email Suggestions
+        // ============================================
+        class EmailSuggestions {
+            constructor() {
+                this.input = document.getElementById('loginEmail');
+                this.container = document.getElementById('emailSuggestions');
+                this.users = [];
+                this.setupListeners();
+            }
+            async loadUsers() { this.users = await usersService.getAllUsers(); this.showSuggestions(); }
+            showSuggestions() {
+                if (!this.container) return;
+                if (!this.users || this.users.length === 0) {
+                    this.container.innerHTML = `<div class="email-item"><div class="email-info"><div class="user-fullname">لا يوجد مستخدمين</div></div></div>`;
+                    this.container.style.display = 'block';
+                    return;
+                }
+                this.container.innerHTML = this.users.map(user => `
+                    <div class="email-item" data-email="${user.email}" data-password="${user.password}" data-name="${user.name}">
+                        <div class="email-info">
+                            <div class="user-fullname"><i class="fas fa-user-circle"></i> <strong>${user.name}</strong><span class="age-badge">${user.age} سنة</span></div>
+                            <div class="email-address"><i class="fas fa-envelope"></i> ${user.email}</div>
+                        </div>
+                        <div class="status-badge ${user.status === 'online' ? 'online' : 'offline'}">${user.status === 'online' ? '🟢 متصل' : '🔴 غير متصل'}</div>
+                    </div>
+                `).join('');
+                this.container.querySelectorAll('.email-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        document.getElementById('loginEmail').value = item.dataset.email;
+                        document.getElementById('loginPassword').value = item.dataset.password;
+                        this.hideSuggestions();
+                        toast.info(`✅ تم اختيار: ${item.dataset.name}`);
+                    });
+                });
+                this.container.style.display = 'block';
+            }
+            hideSuggestions() { if (this.container) this.container.style.display = 'none'; }
+            setupListeners() {
+                if (!this.input) return;
+                this.input.addEventListener('focus', () => this.loadUsers());
+                this.input.addEventListener('click', () => this.loadUsers());
+                document.addEventListener('click', (e) => {
+                    if (!this.input?.contains(e.target) && !this.container?.contains(e.target)) this.hideSuggestions();
+                });
+            }
+            async refresh() { await this.loadUsers(); }
         }
-        
-        function setEditOption(option) {
-            selectedEditOption = option;
-            if (option === 'update') {
-                document.getElementById('optionUpdateCurrent').classList.add('active');
-                document.getElementById('optionCreateNew').classList.remove('active');
-                document.getElementById('optionUpdateCurrent').style.background = '#075e54';
-                document.getElementById('optionUpdateCurrent').style.color = 'white';
-                document.getElementById('optionCreateNew').style.background = 'white';
-                document.getElementById('optionCreateNew').style.color = '#1f2937';
-                document.getElementById('optionCreateNew').style.borderColor = '#e5e7eb';
+
+        // ============================================
+        // 10. View Manager
+        // ============================================
+        class ViewManager {
+            constructor() {
+                this.currentView = 'list';
+                this.map = null;
+                this.markers = [];
+                this.allUsers = [];
+                this.filteredUsers = [];
+                this.currentUser = null;
+                this.isUpdating = false;
+            }
+            
+            async init() {
+                await usersService.init();
+                this.currentUser = settingsService.getCurrentUser();
+                filterManager.addListener(() => this.refresh());
+                usersService.subscribeToChanges(() => this.refresh());
+            }
+            
+            setCurrentUser(user) { this.currentUser = user; this.refresh(); }
+            
+            async refresh() {
+                if (this.isUpdating) return;
+                this.isUpdating = true;
+                try {
+                    this.allUsers = await usersService.getAllUsers();
+                    const currentCoords = this.currentUser ? { lat: this.currentUser.lat, lng: this.currentUser.lng } : null;
+                    this.filteredUsers = filterManager.applyFilters(this.allUsers, this.currentUser?.username, currentCoords);
+                    this.updateOnlineCount();
+                    if (this.currentView === 'list') this.renderList();
+                    else await this.renderMap();
+                } catch (error) { console.error("Refresh failed:", error);
+                } finally { this.isUpdating = false; }
+            }
+            
+            updateOnlineCount() {
+                const onlineCount = this.allUsers.filter(u => u.status === 'online' && u.username !== this.currentUser?.username).length;
+                const onlineSpan = document.getElementById('onlineCount');
+                if (onlineSpan) onlineSpan.textContent = onlineCount;
+            }
+            
+            renderList() {
+                const grid = document.querySelector('.users-grid');
+                if (this.filteredUsers.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">لا يوجد مستخدمين</div>';
+                    return;
+                }
+                grid.innerHTML = this.filteredUsers.map(user => {
+                    const isCurrentUser = user.username === this.currentUser?.username;
+                    const isOnline = user.status === 'online';
+                    return `
+                        <div class="user-card ${isOnline ? 'online' : 'offline'} ${isCurrentUser ? 'current-user' : ''}">
+                            <div class="user-header">
+                                <div class="user-name">
+                                    <i class="fas fa-user-circle"></i> ${this.escapeHtml(user.name)}
+                                    <span class="age-badge">${user.age} سنة</span>
+                                    ${isCurrentUser ? '<span class="current-badge"><i class="fas fa-star"></i> أنت</span>' : ''}
+                                </div>
+                                <div class="user-status">
+                                    <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
+                                    <span>${isOnline ? '🟢 متصل' : '🔴 غير متصل'}</span>
+                                    ${!isCurrentUser && isOnline ? 
+                                        `<button class="whatsapp-icon" onclick="app.openWhatsApp('${user.phone}', '${user.name}')"><i class="fab fa-whatsapp"></i></button>` : 
+                                        (!isCurrentUser && !isOnline ? `<button class="whatsapp-icon disabled" disabled><i class="fab fa-whatsapp"></i></button>` : '')}
+                                </div>
+                            </div>
+                            <div class="user-details">
+                                <span class="detail-tag"><i class="fas fa-heart"></i> ${user.marital}</span>
+                                <span class="detail-tag"><i class="fas fa-venus-mars"></i> ${user.gender}</span>
+                                <span class="detail-tag"><i class="fas fa-at"></i> @${user.username}</span>
+                            </div>
+                            ${!isCurrentUser && user.distance ? `<div class="distance-tag"><i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            async renderMap() {
+                if (!this.map) {
+                    this.map = L.map('map').setView([33.5731, -7.5898], 6);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(this.map);
+                }
+                this.markers.forEach(m => this.map.removeLayer(m));
+                this.markers = [];
+                this.filteredUsers.forEach(user => {
+                    if (!user.lat || !user.lng) return;
+                    const isCurrentUser = user.username === this.currentUser?.username;
+                    const isOnline = user.status === 'online';
+                    let markerColor = '#075e54', markerSize = 14, glow = '';
+                    if (isCurrentUser) { markerColor = '#075e54'; markerSize = 20; glow = 'box-shadow: 0 0 15px #075e54; animation: pulse 1.5s infinite;'; }
+                    else if (isOnline) { markerColor = '#25d366'; markerSize = 14; glow = 'box-shadow: 0 0 8px #25d366;'; }
+                    else { markerColor = '#9e9e9e'; markerSize = 12; glow = 'opacity: 0.7;'; }
+                    const icon = L.divIcon({ html: `<div style="background:${markerColor};width:${markerSize}px;height:${markerSize}px;border-radius:50%;border:3px solid white;${glow}"></div>`, iconSize: [markerSize, markerSize] });
+                    const marker = L.marker([user.lat, user.lng], { icon });
+                    marker.bindPopup(`
+                        <div class="custom-popup">
+                            <div class="popup-header"><div><i class="fas fa-user-circle"></i> <strong>${this.escapeHtml(user.name)}</strong></div><div>${user.age} سنة</div></div>
+                            <div class="popup-info"><i class="fas fa-at"></i> @${user.username}</div>
+                            <div class="popup-info"><i class="fas fa-heart"></i> ${user.marital}</div>
+                            <div class="popup-info"><i class="fas fa-venus-mars"></i> ${user.gender}</div>
+                            ${!isCurrentUser && user.distance ? `<div class="popup-distance"><i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم</div>` : ''}
+                            ${!isCurrentUser ? `
+                                <div class="popup-actions">
+                                    <button class="popup-btn direction" onclick="app.openDirections(${user.lat}, ${user.lng}, '${user.name}')"><i class="fas fa-directions"></i> عرض المسار</button>
+                                    ${isOnline ? `<button class="popup-btn" onclick="app.openWhatsApp('${user.phone}', '${user.name}')"><i class="fab fa-whatsapp"></i> واتساب</button>` : `<button class="popup-btn disabled" disabled><i class="fab fa-whatsapp"></i> غير متصل</button>`}
+                                </div>
+                            ` : '<div class="popup-info"><i class="fas fa-home"></i> موقعك الحالي</div>'}
+                        </div>
+                    `);
+                    marker.addTo(this.map);
+                    this.markers.push(marker);
+                });
+                if (this.markers.length > 0) this.map.fitBounds(L.latLngBounds(this.markers.map(m => m.getLatLng())), { padding: [50, 50] });
+            }
+            
+            switchView(view) {
+                this.currentView = view;
+                const listView = document.getElementById('listView');
+                const mapView = document.getElementById('mapView');
+                const listBtn = document.getElementById('listViewBtn');
+                const mapBtn = document.getElementById('mapViewBtn');
+                if (view === 'list') {
+                    listView.style.display = 'block'; mapView.style.display = 'none';
+                    listBtn.classList.add('active'); mapBtn.classList.remove('active');
+                    this.renderList();
+                } else {
+                    listView.style.display = 'none'; mapView.style.display = 'block';
+                    listBtn.classList.remove('active'); mapBtn.classList.add('active');
+                    setTimeout(() => this.renderMap(), 100);
+                }
+            }
+            
+            escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+        }
+        const viewManager = new ViewManager();
+
+        // ============================================
+        // 11. Main Application Class
+        // ============================================
+        class App {
+            constructor() { this.currentUser = null; this.regLocationPicker = null; this.editLocationPicker = null; }
+            
+            async init() {
+                await loader.withLoading(async () => {
+                    await firebaseService.init();
+                    await usersService.init();
+                    await viewManager.init();
+                }, 'جاري الاتصال بقاعدة البيانات...');
                 
-                // استرجاع بيانات الحساب الحالي
-                document.getElementById('editName').value = currentUser.name;
-                document.getElementById('editAge').value = currentUser.age;
-                document.getElementById('editMarital').value = currentUser.marital;
-                document.getElementById('editGender').value = currentUser.gender;
-                document.getElementById('editCity').value = currentUser.city;
-                document.getElementById('editPhone').value = currentUser.phone;
-                document.getElementById('editLat').value = currentUser.lat;
-                document.getElementById('editLng').value = currentUser.lng;
-                document.getElementById('editEmail').value = currentUser.email;
+                firebaseService.onConnectionChange((connected) => {
+                    if (connected) { toast.success('تم الاتصال بقاعدة البيانات'); this.checkSavedUser(); }
+                });
+                
+                this.emailSuggestions = new EmailSuggestions();
+                this.setupLocationPickers();
+                this.setupEventListeners();
+            }
+            
+            setupLocationPickers() {
+                this.regLocationPicker = new LocationPicker('regLocationMap', 'regLat', 'regLng', 'regCoordDisplay');
+                this.editLocationPicker = new LocationPicker('editLocationMap', 'editLat', 'editLng', 'editCoordDisplay');
+            }
+            
+            async setGlobalUserStatus(status) {
+                if (!this.currentUser) return;
+                const allUsers = await usersService.getAllUsers();
+                const otherUsers = allUsers.filter(u => u.username !== this.currentUser.username);
+                let success = 0, fail = 0;
+                for (const user of otherUsers) {
+                    try { await usersService.updateUserStatus(user.username, status); success++; } 
+                    catch (e) { fail++; }
+                }
+                if (success > 0) toast.success(`✅ تم تحديث ${success} مستخدم إلى ${status === 'online' ? 'متصل' : 'غير متصل'}`);
+                if (fail > 0) toast.error(`⚠️ فشل تحديث ${fail} مستخدم`);
+                viewManager.refresh();
+            }
+            
+            checkSavedUser() {
+                const savedUser = settingsService.getCurrentUser();
+                if (savedUser) {
+                    this.currentUser = savedUser;
+                    viewManager.setCurrentUser(savedUser);
+                    this.showMainApp();
+                    toast.success(CONFIG.MESSAGES.INFO.WELCOME(savedUser.name));
+                } else this.showLogin();
+            }
+            
+            async login(email, password) {
+                return loader.withLoading(async () => {
+                    const user = await usersService.getUserByEmail(email);
+                    if (!user || user.password !== password) { toast.error(CONFIG.MESSAGES.ERROR.LOGIN); return false; }
+                    this.currentUser = user;
+                    settingsService.saveCurrentUser(user);
+                    viewManager.setCurrentUser(user);
+                    await usersService.updateUserStatus(user.username, 'online');
+                    toast.success(CONFIG.MESSAGES.SUCCESS.LOGIN(user.name));
+                    this.showMainApp();
+                    return true;
+                }, 'جاري تسجيل الدخول...');
+            }
+            
+            async register(userData) {
+                return loader.withLoading(async () => {
+                    if (!userData.username || !userData.name || !userData.age || !userData.email || !userData.password) {
+                        toast.error(CONFIG.MESSAGES.ERROR.REQUIRED_FIELDS); return false;
+                    }
+                    if (!userData.lat || !userData.lng) {
+                        toast.error(CONFIG.MESSAGES.ERROR.LOCATION_REQUIRED); return false;
+                    }
+                    if (userData.password !== userData.confirmPassword) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_MISMATCH); return false; }
+                    if (userData.password.length < 6) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_SHORT); return false; }
+                    if (!/^[0-9]{10}$/.test(userData.phone)) { toast.error(CONFIG.MESSAGES.ERROR.INVALID_PHONE); return false; }
+                    if (await usersService.checkEmailExists(userData.email)) { toast.error(CONFIG.MESSAGES.ERROR.EMAIL_EXISTS); return false; }
+                    if (await usersService.checkUsernameExists(userData.username)) { toast.error(CONFIG.MESSAGES.ERROR.USERNAME_EXISTS); return false; }
+                    const newUser = await usersService.createUser(userData);
+                    this.currentUser = newUser;
+                    settingsService.saveCurrentUser(newUser);
+                    viewManager.setCurrentUser(newUser);
+                    toast.success(CONFIG.MESSAGES.SUCCESS.REGISTER);
+                    this.showMainApp();
+                    return true;
+                }, 'جاري إنشاء الحساب...');
+            }
+            
+            async logout() {
+                if (this.currentUser) await usersService.updateUserStatus(this.currentUser.username, 'offline');
+                this.currentUser = null;
+                settingsService.clearCurrentUser();
+                viewManager.setCurrentUser(null);
+                toast.success(CONFIG.MESSAGES.SUCCESS.LOGOUT);
+                this.showLogin();
+            }
+            
+            async updateProfile(username, updates, currentPassword = null) {
+                return loader.withLoading(async () => {
+                    const updated = await usersService.updateUser(username, updates, currentPassword);
+                    if (username === this.currentUser?.username) {
+                        this.currentUser = updated;
+                        settingsService.saveCurrentUser(updated);
+                        viewManager.setCurrentUser(updated);
+                    }
+                    toast.success(CONFIG.MESSAGES.SUCCESS.UPDATE);
+                    this.closeEditModal();
+                    viewManager.refresh();
+                    return updated;
+                }, 'جاري تحديث المعلومات...');
+            }
+            
+            async deleteAccount() {
+                if (confirm('⚠️ هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.')) {
+                    await loader.withLoading(async () => {
+                        await usersService.deleteUser(this.currentUser.username);
+                        await this.logout();
+                    }, 'جاري حذف الحساب...');
+                }
+            }
+            
+            async updateUserStatus(username, status) {
+                await usersService.updateUserStatus(username, status);
+                if (this.currentUser?.username === username) {
+                    this.currentUser.status = status;
+                    settingsService.saveCurrentUser(this.currentUser);
+                }
+                viewManager.refresh();
+            }
+            
+            openWhatsApp(phone, name) {
+                let clean = phone.replace(/[^0-9]/g, '');
+                if (clean.startsWith('0')) clean = '212' + clean.substring(1);
+                window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً ' + name)}`, '_blank');
+                toast.info(CONFIG.MESSAGES.INFO.WHATSAPP_OPEN(name));
+            }
+            
+            openDirections(lat, lng, name) {
+                const url = this.currentUser?.lat ? `https://www.google.com/maps/dir/${this.currentUser.lat},${this.currentUser.lng}/${lat},${lng}` : `https://www.google.com/maps/dir/Current+Location/${lat},${lng}`;
+                window.open(url, '_blank');
+                toast.info(CONFIG.MESSAGES.INFO.DIRECTIONS_OPEN(name));
+            }
+            
+            showLogin() { document.getElementById('registerCard').style.display = 'none'; document.getElementById('loginCard').style.display = 'block'; document.getElementById('appContainer').style.display = 'none'; }
+            showRegister() { document.getElementById('loginCard').style.display = 'none'; document.getElementById('registerCard').style.display = 'block'; document.getElementById('appContainer').style.display = 'none'; }
+            
+            showMainApp() {
+                document.getElementById('loginCard').style.display = 'none';
+                document.getElementById('registerCard').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'flex';
+                if (this.currentUser) {
+                    const nameSpan = document.getElementById('profileBtnName');
+                    if (nameSpan) nameSpan.textContent = `مرحباً ${this.currentUser.name.split(' ')[0]}`;
+                }
+                viewManager.refresh();
+            }
+            
+            openFilterModal() {
+                const f = filterManager.getFilters();
+                document.getElementById('filterGender').value = f.gender;
+                document.getElementById('filterMarital').value = f.marital;
+                document.getElementById('sortBy').value = f.sortBy;
+                document.getElementById('filterModal').style.display = 'flex';
+            }
+            closeFilterModal() { document.getElementById('filterModal').style.display = 'none'; }
+            
+            applyFilters() {
+                filterManager.updateFilters({
+                    gender: document.getElementById('filterGender').value,
+                    marital: document.getElementById('filterMarital').value,
+                    sortBy: document.getElementById('sortBy').value
+                });
+                this.closeFilterModal();
+                toast.success(CONFIG.MESSAGES.SUCCESS.FILTER_APPLIED);
+            }
+            
+            resetFilters() { filterManager.resetFilters(); this.closeFilterModal(); toast.success(CONFIG.MESSAGES.SUCCESS.FILTER_RESET); }
+            
+            openEditModal() {
+                if (!this.currentUser) return;
+                document.getElementById('editUsername').value = this.currentUser.username;
+                document.getElementById('editName').value = this.currentUser.name;
+                document.getElementById('editAge').value = this.currentUser.age;
+                document.getElementById('editMarital').value = this.currentUser.marital;
+                document.getElementById('editGender').value = this.currentUser.gender;
+                document.getElementById('editPhone').value = this.currentUser.phone;
+                document.getElementById('editEmail').value = this.currentUser.email;
                 document.getElementById('editPassword').value = '';
                 document.getElementById('editConfirmPassword').value = '';
+                document.getElementById('currentPassword').value = '';
                 
-                document.getElementById('verificationSection').style.display = 'none';
-                document.getElementById('currentPassword').removeAttribute('required');
-                document.getElementById('confirmCurrentPassword').removeAttribute('required');
+                // تهيئة خريطة التعديل
+                setTimeout(() => {
+                    if (this.editLocationPicker) {
+                        this.editLocationPicker.init(this.currentUser.lat, this.currentUser.lng);
+                    }
+                }, 100);
                 
+                const vs = document.getElementById('verificationSection');
                 const emailInput = document.getElementById('editEmail');
-                const passwordInput = document.getElementById('editPassword');
-                
-                const checkForChanges = () => {
-                    const emailChanged = emailInput.value !== currentUser.email;
-                    const passwordChanged = passwordInput.value.length > 0;
-                    
-                    if (emailChanged || passwordChanged) {
-                        document.getElementById('verificationSection').style.display = 'block';
+                const passInput = document.getElementById('editPassword');
+                const check = () => {
+                    if (emailInput.value !== this.currentUser.email || passInput.value.length > 0) {
+                        vs.style.display = 'block';
                         document.getElementById('currentPassword').setAttribute('required', 'required');
-                        document.getElementById('confirmCurrentPassword').setAttribute('required', 'required');
-                    } else {
-                        document.getElementById('verificationSection').style.display = 'none';
-                        document.getElementById('currentPassword').removeAttribute('required');
-                        document.getElementById('confirmCurrentPassword').removeAttribute('required');
-                    }
+                    } else { vs.style.display = 'none'; document.getElementById('currentPassword').removeAttribute('required'); }
                 };
-                
-                emailInput.oninput = checkForChanges;
-                passwordInput.oninput = checkForChanges;
-            } else {
-                document.getElementById('optionUpdateCurrent').classList.remove('active');
-                document.getElementById('optionCreateNew').classList.add('active');
-                document.getElementById('optionCreateNew').style.background = '#075e54';
-                document.getElementById('optionCreateNew').style.color = 'white';
-                document.getElementById('optionUpdateCurrent').style.background = 'white';
-                document.getElementById('optionUpdateCurrent').style.color = '#1f2937';
-                document.getElementById('optionUpdateCurrent').style.borderColor = '#e5e7eb';
-                
-                // تنظيف الحقول لإنشاء حساب جديد
-                document.getElementById('editName').value = '';
-                document.getElementById('editAge').value = '';
-                document.getElementById('editMarital').value = 'أعزب';
-                document.getElementById('editGender').value = 'ذكر';
-                document.getElementById('editCity').value = 'الدار البيضاء';
-                document.getElementById('editPhone').value = '';
-                document.getElementById('editLat').value = '';
-                document.getElementById('editLng').value = '';
-                document.getElementById('editEmail').value = '';
-                document.getElementById('editPassword').value = '';
-                document.getElementById('editConfirmPassword').value = '';
-                
-                document.getElementById('verificationSection').style.display = 'none';
-                document.getElementById('currentPassword').removeAttribute('required');
-                document.getElementById('confirmCurrentPassword').removeAttribute('required');
-                
-                const emailInput = document.getElementById('editEmail');
-                const passwordInput = document.getElementById('editPassword');
-                emailInput.oninput = null;
-                passwordInput.oninput = null;
+                emailInput.oninput = check; passInput.oninput = check; check();
+                document.getElementById('editProfileModal').style.display = 'flex';
             }
-        }
-        
-        async function updateProfile(e) {
-            e.preventDefault();
+            closeEditModal() { document.getElementById('editProfileModal').style.display = 'none'; }
             
-            const newName = document.getElementById('editName').value.trim();
-            const newAge = parseInt(document.getElementById('editAge').value);
-            const newMarital = document.getElementById('editMarital').value;
-            const newGender = document.getElementById('editGender').value;
-            const newCity = document.getElementById('editCity').value;
-            const newPhone = document.getElementById('editPhone').value.trim();
-            const newLat = parseFloat(document.getElementById('editLat').value);
-            const newLng = parseFloat(document.getElementById('editLng').value);
-            const newEmail = document.getElementById('editEmail').value.trim();
-            const newPassword = document.getElementById('editPassword').value;
-            const confirmPassword = document.getElementById('editConfirmPassword').value;
-            
-            if (!newName || !newAge || !newMarital || !newGender || !newCity || !newPhone) {
-                showToast('الرجاء تعبئة جميع الحقول الأساسية', true);
-                return;
-            }
-            
-            if (!newEmail) {
-                showToast('الرجاء إدخال البريد الإلكتروني', true);
-                return;
-            }
-            
-            if (!newEmail.includes('@')) {
-                showToast('البريد الإلكتروني غير صالح', true);
-                return;
-            }
-            
-            if (!newPhone.match(/^[0-9]{10}$/)) {
-                showToast('رقم الهاتف يجب أن يكون 10 أرقام', true);
-                return;
-            }
-            
-            if (newPassword && newPassword !== confirmPassword) {
-                showToast('كلمة المرور الجديدة غير متطابقة مع تأكيدها', true);
-                return;
-            }
-            if (newPassword && newPassword.length < 6) {
-                showToast('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل', true);
-                return;
-            }
-            
-            const coords = cityCoords[newCity];
-            const finalLat = isNaN(newLat) ? (coords ? coords[0] : 33.5731) : newLat;
-            const finalLng = isNaN(newLng) ? (coords ? coords[1] : -7.5898) : newLng;
-            
-            if (selectedEditOption === 'update') {
-                const emailChanged = newEmail !== currentUser.email;
-                const passwordChanged = newPassword.length > 0;
-                
-                if (emailChanged || passwordChanged) {
-                    const currentPassword = document.getElementById('currentPassword').value;
-                    const confirmCurrentPassword = document.getElementById('confirmCurrentPassword').value;
-                    
-                    if (!currentPassword || !confirmCurrentPassword) {
-                        showToast('الرجاء إدخال كلمة المرور الحالية وتأكيدها للتحقق من الهوية', true);
-                        return;
-                    }
-                    
-                    if (currentPassword !== confirmCurrentPassword) {
-                        showToast('كلمة المرور الحالية غير متطابقة مع تأكيدها', true);
-                        return;
-                    }
-                    
-                    if (currentPassword !== currentUser.password) {
-                        showToast('كلمة المرور الحالية غير صحيحة', true);
-                        return;
-                    }
-                }
-                
-                if (newEmail !== currentUser.email) {
-                    const emailExists = await db.ref('users').orderByChild('email').equalTo(newEmail).once('value');
-                    if (emailExists.exists()) {
-                        showToast('البريد الإلكتروني مسجل مسبقاً', true);
-                        return;
-                    }
-                }
-                
-                const updatedData = {
-                    name: newName,
-                    age: newAge,
-                    marital: newMarital,
-                    gender: newGender,
-                    city: newCity,
-                    lat: finalLat,
-                    lng: finalLng,
-                    phone: newPhone,
-                    email: newEmail,
-                    createdAt: currentUser.createdAt,
-                    lastActive: firebase.database.ServerValue.TIMESTAMP,
-                    status: currentUser.status,
-                    isDefault: false
+            async handleEditSubmit(e) {
+                e.preventDefault();
+                const username = document.getElementById('editUsername').value;
+                const updates = {
+                    name: document.getElementById('editName').value,
+                    age: parseInt(document.getElementById('editAge').value),
+                    marital: document.getElementById('editMarital').value,
+                    gender: document.getElementById('editGender').value,
+                    phone: document.getElementById('editPhone').value,
+                    email: document.getElementById('editEmail').value,
+                    lat: parseFloat(document.getElementById('editLat').value),
+                    lng: parseFloat(document.getElementById('editLng').value)
                 };
-                
-                if (newPassword) {
-                    updatedData.password = newPassword;
-                } else {
-                    updatedData.password = currentUser.password;
+                const newPass = document.getElementById('editPassword').value;
+                const confirmPass = document.getElementById('editConfirmPassword').value;
+                if (newPass) {
+                    if (newPass !== confirmPass) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_MISMATCH); return; }
+                    if (newPass.length < 6) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_SHORT); return; }
+                    updates.password = newPass;
                 }
-                
-                if (newName !== currentUser.name) {
-                    await db.ref(`users/${currentUser.name}`).remove();
-                    await db.ref(`users/${newName}`).set(updatedData);
-                } else {
-                    await db.ref(`users/${currentUser.name}`).update(updatedData);
-                }
-                
-                currentUser = { ...currentUser, ...updatedData, name: newName };
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
-                
-                if (currentView === 'map') updateMap();
-                
-                closeEditModal();
-                closeProfileModal();
-                showToast('تم تحديث المعلومات بنجاح');
-                await loadAllUsers();
-                await updateFiltersOptions();
-                if (currentView === 'list') updateList();
-                addNotification('تحديث الملف', 'تم تحديث معلومات ملفك الشخصي بنجاح', 'success');
-            } else {
-                if (!newPassword) {
-                    showToast('الرجاء إدخال كلمة المرور للحساب الجديد', true);
-                    return;
-                }
-                
-                const emailExists = await db.ref('users').orderByChild('email').equalTo(newEmail).once('value');
-                if (emailExists.exists()) {
-                    showToast('البريد الإلكتروني مسجل مسبقاً', true);
-                    return;
-                }
-                
-                const userId = db.ref('users').push().key;
-                const newUserData = {
-                    userId,
-                    name: newName,
-                    age: newAge,
-                    marital: newMarital,
-                    gender: newGender,
-                    city: newCity,
-                    lat: finalLat,
-                    lng: finalLng,
-                    phone: newPhone,
-                    email: newEmail,
-                    password: newPassword,
-                    createdAt: Date.now(),
-                    lastActive: Date.now(),
-                    status: 'online',
-                    isDefault: false
-                };
-                
-                await db.ref(`users/${newName}`).set(newUserData);
-                
-                if (currentUser) {
-                    db.ref(`users/${currentUser.name}/status`).set('offline');
-                    db.ref(`users/${currentUser.name}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
-                }
-                
-                currentUser = newUserData;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
-                
-                closeEditModal();
-                closeProfileModal();
-                setupPresence();
-                
-                await loadAllUsers();
-                await updateFiltersOptions();
-                if (currentView === 'list') updateList();
-                else updateMap();
-                
-                addNotification('حساب جديد', `تم إنشاء حساب جديد باسم ${newName} بنجاح`, 'success');
-                showToast('تم إنشاء الحساب الجديد وتسجيل الدخول بنجاح');
-            }
-        }
-        
-        async function deleteAccount() {
-            if (confirm('هل أنت متأكد من حذف حسابك؟')) {
-                await db.ref(`users/${currentUser.name}`).remove();
-                addNotification('حذف الحساب', 'تم حذف حسابك بنجاح', 'warning');
-                showToast('تم حذف الحساب');
-                await loadAllUsers();
-                await updateFiltersOptions();
-                logout();
-            }
-        }
-        
-        function logout() {
-            if (window.listInterval) clearInterval(window.listInterval);
-            if (window.mapInterval) clearInterval(window.mapInterval);
-            if (window.keepAlive) clearInterval(window.keepAlive);
-            
-            if (currentUser) {
-                db.ref(`users/${currentUser.name}/status`).set('offline');
-                db.ref(`users/${currentUser.name}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
+                const emailChanged = updates.email !== this.currentUser.email;
+                const passChanged = newPass.length > 0;
+                if (emailChanged || passChanged) {
+                    const currentPass = document.getElementById('currentPassword').value;
+                    if (!currentPass) { toast.error(CONFIG.MESSAGES.ERROR.CURRENT_PASSWORD_REQUIRED); return; }
+                    await this.updateProfile(username, updates, currentPass);
+                } else await this.updateProfile(username, updates);
             }
             
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            closeProfileModal(); closeEditModal();
-            document.getElementById('appContainer').style.display = 'none';
-            document.getElementById('loginCard').style.display = 'block';
-            showToast('تم تسجيل الخروج');
-        }
-        
-        function showRegister() { 
-            document.getElementById('registerCard').style.display = 'block'; 
-            document.getElementById('loginCard').style.display = 'none'; 
-        }
-        
-        function showLogin() { 
-            document.getElementById('registerCard').style.display = 'none'; 
-            document.getElementById('loginCard').style.display = 'block'; 
-        }
-        
-        function checkSaved() {
-            const saved = localStorage.getItem('currentUser');
-            if (saved) {
-                currentUser = JSON.parse(saved);
-                document.getElementById('profileBtnName').textContent = `ملفي (${currentUser.name.split(' ')[0]})`;
-                setupPresence();
-                showMain();
-            }
-        }
-
-        function realtimeUpdates() {
-            const usersRef = db.ref('users');
-            usersRef.on('child_changed', (snapshot) => {
-                const user = snapshot.val();
-                if (user && currentUser && user.name !== currentUser.name) {
-                    if (currentView === 'list' && !isUpdatingView) updateList();
-                    else if (currentView === 'map' && !isUpdatingView) updateMap();
-                } else if (user && user.name === currentUser?.name) {
-                    if (currentView === 'map' && currentUser && (user.lat !== currentUser.lat || user.lng !== currentUser.lng)) {
-                        updateMap();
-                    }
-                    if (user.status !== currentUser.status) {
-                        currentUser.status = user.status;
-                        if (currentView === 'list' && !isUpdatingView) updateList();
-                    }
-                }
-                updateFiltersOptions();
-            });
-            
-            usersRef.on('child_added', () => updateFiltersOptions());
-            usersRef.on('child_removed', () => updateFiltersOptions());
-        }
-
-        function checkConnection() {
-            const connectedRef = db.ref('.info/connected');
-            connectedRef.on('value', (snap) => {
-                if (snap.val() === true) {
-                    const loader = document.getElementById('loadingOverlay');
-                    if (loader) loader.style.display = 'none';
-                    document.getElementById('loginCard').style.display = 'block';
-                    showToast('تم الاتصال بقاعدة البيانات');
-                }
-            });
-        }
-
-        function getCurrentLocationForRegister() {
-            if (!navigator.geolocation) {
-                showToast('المتصفح لا يدعم تحديد الموقع', true);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    document.getElementById('regLat').value = pos.coords.latitude;
-                    document.getElementById('regLng').value = pos.coords.longitude;
-                    showToast('تم تحديد موقعك بنجاح');
-                },
-                () => showToast('فشل تحديد الموقع', true)
-            );
-        }
-
-        function getCurrentLocationForEdit() {
-            if (!navigator.geolocation) {
-                showToast('المتصفح لا يدعم تحديد الموقع', true);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    document.getElementById('editLat').value = pos.coords.latitude;
-                    document.getElementById('editLng').value = pos.coords.longitude;
-                    showToast('تم تحديد موقعك بنجاح');
-                },
-                () => showToast('فشل تحديد الموقع', true)
-            );
-        }
-
-        function initSidebar() {
-            const menuToggle = document.getElementById('menuToggle');
-            const sidebar = document.getElementById('sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('open');
-                sidebarOverlay.classList.toggle('open');
-            });
-            
-            sidebarOverlay.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                sidebarOverlay.classList.remove('open');
-            });
-            
-            document.querySelectorAll('.sidebar-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const section = item.dataset.section;
-                    if (section === 'home') {
-                        if (currentView === 'list') updateList();
-                        else updateMap();
-                    } else if (section === 'map') {
-                        if (currentView !== 'map') switchView('map');
-                    } else if (section === 'notifications') {
-                        document.getElementById('notificationsPanel').style.display = 'flex';
-                    } else if (section === 'profile') {
-                        openProfile();
-                    }
-                    sidebar.classList.remove('open');
-                    sidebarOverlay.classList.remove('open');
+            setupEventListeners() {
+                document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
                 });
-            });
+                document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.register({
+                        username: document.getElementById('regUsername').value,
+                        name: document.getElementById('regName').value,
+                        age: parseInt(document.getElementById('regAge').value),
+                        marital: document.getElementById('regMarital').value,
+                        gender: document.getElementById('regGender').value,
+                        phone: document.getElementById('regPhone').value,
+                        email: document.getElementById('regEmail').value,
+                        password: document.getElementById('regPassword').value,
+                        confirmPassword: document.getElementById('regConfirmPassword').value,
+                        lat: parseFloat(document.getElementById('regLat').value),
+                        lng: parseFloat(document.getElementById('regLng').value)
+                    });
+                });
+                document.getElementById('editProfileForm')?.addEventListener('submit', (e) => this.handleEditSubmit(e));
+                document.getElementById('listViewBtn')?.addEventListener('click', () => viewManager.switchView('list'));
+                document.getElementById('mapViewBtn')?.addEventListener('click', () => viewManager.switchView('map'));
+                document.getElementById('openFiltersBtn')?.addEventListener('click', () => this.openFilterModal());
+                document.getElementById('applyFiltersBtn')?.addEventListener('click', () => this.applyFilters());
+                document.getElementById('resetFiltersBtn')?.addEventListener('click', () => this.resetFilters());
+                document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
+                document.getElementById('editProfileDirectBtn')?.addEventListener('click', () => this.openEditModal());
+                document.getElementById('deleteAccountBtn')?.addEventListener('click', () => this.deleteAccount());
+                document.getElementById('showRegisterBtn')?.addEventListener('click', () => this.showRegister());
+                document.getElementById('showLoginBtn')?.addEventListener('click', () => this.showLogin());
+                document.getElementById('closeFilterBtn')?.addEventListener('click', () => this.closeFilterModal());
+                document.getElementById('closeEditBtn')?.addEventListener('click', () => this.closeEditModal());
+                document.getElementById('refreshUsersBtn')?.addEventListener('click', async () => {
+                    await loader.withLoading(async () => {
+                        if (this.emailSuggestions) await this.emailSuggestions.refresh();
+                        const users = await usersService.getAllUsers();
+                        toast.success(`تم تحديث قائمة المستخدمين (${users.length} مستخدم)`);
+                    }, 'جاري تحديث المستخدمين...');
+                });
+                
+                // أزرار تحديد الموقع
+                document.getElementById('regUseGpsBtn')?.addEventListener('click', async () => {
+                    try { await this.regLocationPicker.getCurrentLocation(); toast.success(CONFIG.MESSAGES.INFO.GPS_LOCATION); }
+                    catch (e) { toast.error('فشل تحديد الموقع'); }
+                });
+                document.getElementById('regConfirmLocationBtn')?.addEventListener('click', () => {
+                    if (document.getElementById('regLat').value && document.getElementById('regLng').value) {
+                        toast.success(CONFIG.MESSAGES.INFO.LOCATION_SELECTED);
+                    } else { toast.error('الرجاء تحديد موقع أولاً'); }
+                });
+                document.getElementById('editUseGpsBtn')?.addEventListener('click', async () => {
+                    try { await this.editLocationPicker.getCurrentLocation(); toast.success(CONFIG.MESSAGES.INFO.GPS_LOCATION); }
+                    catch (e) { toast.error('فشل تحديد الموقع'); }
+                });
+                document.getElementById('editConfirmLocationBtn')?.addEventListener('click', () => {
+                    if (document.getElementById('editLat').value && document.getElementById('editLng').value) {
+                        toast.success(CONFIG.MESSAGES.INFO.LOCATION_SELECTED);
+                    } else { toast.error('الرجاء تحديد موقع أولاً'); }
+                });
+                
+                const globalSwitch = document.getElementById('globalStatusSwitch');
+                if (globalSwitch) {
+                    globalSwitch.addEventListener('change', async (e) => {
+                        const isOnline = e.target.checked;
+                        const msg = isOnline ? '✅ تغيير حالة جميع المستخدمين إلى "متصل"؟' : '⚠️ تغيير حالة جميع المستخدمين إلى "غير متصل"؟';
+                        if (confirm(msg)) {
+                            await loader.withLoading(async () => {
+                                await this.setGlobalUserStatus(isOnline ? 'online' : 'offline');
+                            }, `جاري تحديث حالة المستخدمين...`);
+                        } else e.target.checked = !isOnline;
+                    });
+                }
+                
+                const menuToggle = document.getElementById('menuToggle');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+                overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const section = item.dataset.section;
+                        if (section === 'home') viewManager.refresh();
+                        else if (section === 'map') viewManager.switchView('map');
+                        else if (section === 'profile') this.openEditModal();
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('open');
+                    });
+                });
+                window.onclick = (e) => {
+                    if (e.target === document.getElementById('filterModal')) this.closeFilterModal();
+                    if (e.target === document.getElementById('editProfileModal')) this.closeEditModal();
+                };
+            }
         }
-
-        window.onclick = function(e) {
-            const profile = document.getElementById('profileModal');
-            const edit = document.getElementById('editProfileModal');
-            const filter = document.getElementById('filterModal');
-            const notifications = document.getElementById('notificationsPanel');
-            const suggestions = document.getElementById('emailSuggestions');
-            const emailInput = document.getElementById('loginEmail');
-            
-            if (e.target === profile) closeProfileModal();
-            if (e.target === edit) closeEditModal();
-            if (e.target === filter) closeFilterModal();
-            if (e.target === notifications) closeNotificationsPanel();
-            if (e.target !== emailInput && suggestions && !suggestions.contains(e.target)) suggestions.style.display = 'none';
-        }
-
-        window.addEventListener('load', async () => {
-            await createDefaultUsers();
-            await loadAllUsers();
-            checkConnection();
-            checkSaved();
-            realtimeUpdates();
-            initSidebar();
-            
-            const emailInput = document.getElementById('loginEmail');
-            emailInput.addEventListener('focus', showEmailSuggestions);
-            emailInput.addEventListener('click', showEmailSuggestions);
-            
-            document.getElementById('openFiltersBtn').addEventListener('click', openFilterModal);
-            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
-            document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
-            document.getElementById('regGetLocationBtn').addEventListener('click', getCurrentLocationForRegister);
-            document.getElementById('editGetLocationBtn').addEventListener('click', getCurrentLocationForEdit);
-            document.getElementById('profileBtn').addEventListener('click', openProfile);
-            document.getElementById('logoutBtn').addEventListener('click', logout);
-            document.getElementById('editProfileBtn').addEventListener('click', openEdit);
-            document.getElementById('deleteAccountBtn').addEventListener('click', deleteAccount);
-            document.getElementById('optionUpdateCurrent').addEventListener('click', () => setEditOption('update'));
-            document.getElementById('optionCreateNew').addEventListener('click', () => setEditOption('create'));
-        });
-
-        document.getElementById('registerForm').addEventListener('submit', register);
-        document.getElementById('loginForm').addEventListener('submit', login);
-        document.getElementById('editProfileForm').addEventListener('submit', updateProfile);
-        document.getElementById('listViewBtn').addEventListener('click', () => switchView('list'));
-        document.getElementById('mapViewBtn').addEventListener('click', () => switchView('map'));
         
-        window.showRegister = showRegister;
-        window.showLogin = showLogin;
-        window.closeProfileModal = closeProfileModal;
-        window.closeEditModal = closeEditModal;
-        window.closeFilterModal = closeFilterModal;
-        window.closeNotificationsPanel = closeNotificationsPanel;
-        window.openDirections = openDirections;
-        window.openWhatsApp = openWhatsApp;
-        window.updateCityCoordinates = updateCityCoordinates;
-        window.updateUserStatus = updateUserStatus;
+        const app = new App();
+        app.init();
+        window.app = app;
     </script>
 </body>
 </html>
