@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>منصة التواصل المتكاملة - دردشة واتساب</title>
-    <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
+    <title>تواصل - منصة اجتماعية</title>
+    <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,2056 +12,386 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #075e54;
-            --primary-dark: #054a42;
-            --primary-light: #128c7e;
-            --secondary: #25d366;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --dark: #1f2937;
-            --gray: #6b7280;
-            --light: #f9fafb;
-            --white: #ffffff;
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-            --radius: 1rem;
-            --radius-lg: 1.5rem;
-            --sidebar-width: 280px;
+            --bg-primary: #18191a;
+            --bg-secondary: #242526;
+            --text-primary: #e4e6eb;
+            --text-secondary: #b0b3b8;
+            --border-color: #3e4042;
+            --card-bg: #242526;
+            --header-bg: #242526;
+            --input-bg: #3a3b3c;
+            --hover-bg: #3a3b3c;
+            --facebook-blue: #1877f2;
+            --facebook-green: #42b72a;
+            --shadow: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.3);
         }
-
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
-            min-height: 100vh;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 14px;
-            width: 14px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #25d366;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .global-switch {
-            width: 50px;
-            height: 24px;
-        }
-        
-        .global-switch .slider:before {
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-        }
-        
-        .global-switch input:checked + .slider:before {
-            transform: translateX(26px);
-        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 10px; }
 
         .toast-notification {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: 1rem;
-            font-size: 1rem;
-            z-index: 10001;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--card-bg); color: var(--text-primary); padding: 1rem 2rem;
+            border-radius: 2rem; font-size: 0.9rem; z-index: 10001;
             animation: fadeInCenter 0.3s ease, fadeOutCenter 2.5s ease 2s forwards;
-            text-align: center;
-            min-width: 250px;
-            max-width: 400px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            font-weight: 500;
+            text-align: center; min-width: 280px; backdrop-filter: blur(12px);
+            font-weight: 500; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg);
         }
-        
-        .toast-notification.error { background: rgba(239, 68, 68, 0.95); }
-        .toast-notification.success { background: rgba(37, 211, 102, 0.95); }
-        
+        .toast-notification.error { background: #e41e3f; color: white; }
+        .toast-notification.success { background: var(--facebook-green); color: white; }
         @keyframes fadeInCenter {
             from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
             to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
-        
         @keyframes fadeOutCenter {
             to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); visibility: hidden; }
         }
 
         .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-primary); display: flex; align-items: center; justify-content: center; z-index: 10000;
         }
-
-        .loader {
-            text-align: center;
-            color: white;
-        }
-
         .loader-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            width: 48px; height: 48px; border: 3px solid var(--border-color);
+            border-top-color: var(--facebook-blue); border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .sidebar {
-            position: fixed;
-            right: -100%;
-            top: 0;
-            width: var(--sidebar-width);
-            height: 100vh;
-            background: var(--white);
-            box-shadow: var(--shadow);
-            transition: right 0.3s ease;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .sidebar.open { right: 0; }
-
-        .sidebar-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
-        .sidebar-menu { flex: 1; padding: 1rem; }
-
-        .sidebar-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--gray);
-        }
-
-        .sidebar-item:hover, .sidebar-item.active {
-            background: var(--light);
-            color: var(--primary);
-        }
-
-        .sidebar-item i { width: 24px; }
-
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            display: none;
-        }
-
-        .sidebar-overlay.open { display: block; }
-
-        .menu-toggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            z-index: 998;
-            transition: all 0.2s;
-        }
-
-        .menu-toggle:hover { transform: scale(1.1); }
-
         .auth-card {
-            max-width: 550px;
-            margin: 2rem auto;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            animation: fadeIn 0.3s ease;
+            max-width: 550px; width: 90%; margin: 2rem auto; background: var(--card-bg);
+            border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden;
         }
-
-        .auth-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .auth-header h2 { font-size: 1.5rem; margin-top: 0.5rem; }
-        .auth-body { padding: 1.75rem; }
-
-        .input-group { margin-bottom: 1.25rem; }
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.85rem;
-        }
+        .auth-header { padding: 2rem 2rem 1rem; text-align: center; }
+        .auth-header h2 { font-size: 1.8rem; font-weight: 700; color: var(--facebook-blue); margin-top: 0.5rem; }
+        .auth-body { padding: 1.5rem 2rem 2rem; }
+        
+        .input-group { margin-bottom: 1rem; position: relative; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
         .input-group input, .input-group select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: var(--radius);
-            font-size: 0.9rem;
-            font-family: 'Cairo', sans-serif;
-            background: white;
+            width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 0.95rem; font-family: 'Cairo', sans-serif;
+            background: var(--input-bg); color: var(--text-primary); transition: all 0.2s;
         }
         .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: var(--primary);
+            outline: none; border-color: var(--facebook-blue); box-shadow: 0 0 0 2px rgba(24,119,242,0.2);
         }
-
-        .location-map {
-            height: 280px;
-            border-radius: var(--radius);
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-            border: 2px solid #e5e7eb;
-            z-index: 1;
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-left: 2.5rem; }
+        .toggle-password {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: var(--text-secondary); background: none; border: none; font-size: 1rem;
         }
-        
-        .location-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .location-btn {
-            flex: 1;
-            background: var(--primary);
-            color: white;
-            padding: 0.6rem;
-            border-radius: var(--radius);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+        .btn {
+            width: 100%; padding: 0.75rem; border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600; cursor: pointer; font-family: 'Cairo', sans-serif;
             transition: all 0.2s;
-            font-size: 0.85rem;
         }
-        
-        .location-btn:hover { background: var(--primary-dark); transform: translateY(-2px); }
-        .location-btn.gps { background: #25d366; }
-        .location-btn.gps:hover { background: #128c7e; }
-        .location-btn.delete { background: #ef4444; }
-        .location-btn.delete:hover { background: #dc2626; }
-
-        .coord-display {
-            background: var(--light);
-            padding: 0.5rem;
-            border-radius: var(--radius);
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 0.5rem;
-            direction: ltr;
-            font-family: monospace;
-        }
-
+        .btn-primary { background: var(--facebook-blue); color: white; }
+        .btn-primary:hover { background: #166fe5; transform: translateY(-1px); }
+        .switch-link { text-align: center; margin-top: 1.25rem; color: var(--facebook-blue); cursor: pointer; font-weight: 600; }
         .email-dropdown { position: relative; }
         .email-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: var(--radius);
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 8px; max-height: 300px;
+            overflow-y: auto; z-index: 1000; display: none; box-shadow: var(--shadow-md);
         }
-
-        .email-item {
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .email-item:hover { background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%); }
-        .email-item .email-info { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
-        .email-item .user-fullname {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .email-item .email-address {
-            font-size: 0.8rem;
-            color: var(--gray);
-            direction: ltr;
-            text-align: left;
-        }
-
-        .status-badge {
-            font-size: 0.7rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            white-space: nowrap;
-            font-weight: 600;
-        }
-        .status-badge.online { background: #25d36620; color: #25d366; border: 1px solid #25d36640; }
-        .status-badge.offline { background: #ef444420; color: #ef4444; border: 1px solid #ef444440; }
-
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.2s;
-        }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-        .btn-secondary { background: #f3f4f6; color: var(--dark); }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
-
-        .switch-link {
-            text-align: center;
-            margin-top: 1rem;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: none;
-            flex-direction: column;
-            height: calc(100vh - 2rem);
-        }
-
-        .app-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-weight: 600; }
-        
-        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-        
-        .action-btn {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            border: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-        .action-btn:hover { background: rgba(255, 255, 255, 0.25); }
-        .logout-btn { background: rgba(239, 68, 68, 0.8); }
-        
-        .global-control {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 0.4rem 1rem;
-            border-radius: var(--radius);
-        }
-        .global-control .online-stats {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-        }
-        .global-control .online-stats i { color: #25d366; font-size: 0.7rem; }
-
-        .control-bar {
-            background: var(--white);
-            padding: 0.75rem 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .view-toggle {
-            display: flex;
-            gap: 0.5rem;
-            background: var(--light);
-            padding: 0.25rem;
-            border-radius: var(--radius);
-        }
-        .view-btn {
-            padding: 0.5rem 1.25rem;
-            border: none;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            background: transparent;
-            color: var(--gray);
-            transition: all 0.2s;
-        }
-        .view-btn.active { background: var(--primary); color: white; }
-
-        .users-list { padding: 1rem; overflow-y: auto; flex: 1; }
+        .email-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .email-item:hover { background: var(--hover-bg); }
+        .app-container { min-height: 100vh; background: var(--bg-primary); display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+        .fb-header { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 0.5rem 1rem; flex-shrink: 0; }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .logo { font-size: 1.8rem; font-weight: 700; color: var(--facebook-blue); cursor: pointer; }
+        .user-info-header { display: flex; align-items: center; gap: 1rem; background: var(--hover-bg); padding: 0.3rem 1rem; border-radius: 2rem; }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .fb-icon-btn { background: var(--hover-bg); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-primary); }
+        .fb-icon-btn:hover { background: var(--border-color); }
+        .online-stats { background: var(--hover-bg); padding: 0.5rem 1rem; border-radius: 2rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); }
+        .fb-nav { background: var(--header-bg); border-bottom: 1px solid var(--border-color); padding: 0 1rem; flex-shrink: 0; }
+        .nav-content { max-width: 1400px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .nav-buttons { display: flex; gap: 0.5rem; }
+        .nav-btn { padding: 0.75rem 1.5rem; border: none; background: transparent; font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-btn.active { color: var(--facebook-blue); border-bottom: 3px solid var(--facebook-blue); border-radius: 0; }
+        .nav-btn:hover:not(.active) { background: var(--hover-bg); }
+        .filter-nav-btn { background: var(--hover-bg); border: none; padding: 0.75rem 1.2rem; border-radius: 2rem; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; }
+        .filter-nav-btn:hover { background: var(--border-color); }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 1rem; }
         .users-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 1rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem; overflow-y: auto; padding: 0.5rem; height: 100%; align-content: flex-start;
         }
-
         .user-card {
-            background: var(--white);
-            border: 1px solid #e5e7eb;
-            border-radius: var(--radius);
-            padding: 1rem;
-            transition: all 0.3s;
-            position: relative;
-            animation: fadeInUp 0.3s ease;
+            background: var(--card-bg); border-radius: 12px; padding: 1rem;
+            transition: all 0.2s; cursor: pointer; border: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 1rem;
         }
-        .user-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-        .user-card.current-user {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border: 2px solid var(--primary);
-        }
-        .user-card.online {
-            border-right: 4px solid var(--secondary);
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-        }
-        .user-card.offline { opacity: 0.85; background: #fafafa; }
-
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-        .user-name {
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .current-badge {
-            background: var(--primary);
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 600;
-        }
-        .user-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .status-dot.online { background: var(--secondary); animation: pulse 1.5s infinite; }
-        .status-dot.offline { background: var(--danger); }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-        }
-
-        .whatsapp-icon {
-            background: #25d366;
-            color: white;
-            border: none;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            transition: all 0.2s;
-        }
-        .whatsapp-icon:hover { background: #128c7e; transform: scale(1.1); }
-        .whatsapp-icon.disabled { background: #9e9e9e; cursor: not-allowed; opacity: 0.6; }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .user-details {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .detail-tag {
-            background: var(--light);
-            padding: 0.25rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            color: var(--gray);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .distance-tag {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
-        }
-        .age-badge {
-            display: inline-block;
-            background: var(--warning);
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.6rem;
-        }
-
-        .map-area { flex: 1; position: relative; min-height: 400px; }
-        #map { width: 100%; height: 100%; min-height: 500px; }
-
-        .filter-modal, .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-        .filter-panel, .modal-card {
-            background: var(--white);
-            border-radius: var(--radius-lg);
-            max-width: 650px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: fadeIn 0.3s ease;
-        }
-        .filter-header, .modal-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .filter-body, .modal-body { padding: 1.5rem; }
-        .filter-group { margin-bottom: 1rem; }
-        .filter-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: var(--dark);
-            font-size: 0.85rem;
-        }
-        .filter-group select {
-            width: 100%;
-            padding: 0.7rem;
-            border: 2px solid #e5e7eb;
-            border-radius: var(--radius);
-            font-size: 0.9rem;
-            font-family: 'Cairo', sans-serif;
-            background: white;
-        }
-        .filter-actions, .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-
-        .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s;
-        }
-        .close-btn:hover { background: rgba(255, 255, 255, 0.2); }
-
-        .custom-popup { text-align: right; min-width: 250px; max-width: 300px; }
-        .popup-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 8px 12px;
-            margin: -8px -8px 8px -8px;
-            border-radius: 12px 12px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .popup-info {
-            padding: 5px 0;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            color: var(--gray);
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .popup-distance {
-            padding: 5px 0;
-            font-size: 0.8rem;
-            color: var(--primary);
-            font-weight: bold;
-        }
-        .popup-actions { display: flex; gap: 0.5rem; margin-top: 10px; }
-        .popup-btn {
-            flex: 1;
-            background: #25d366;
-            color: white;
-            border: none;
-            padding: 8px;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.3rem;
-        }
-        .popup-btn.direction { background: var(--primary); }
-        .popup-btn.disabled { background: #9e9e9e; cursor: not-allowed; opacity: 0.6; }
-
-        .empty-state { text-align: center; padding: 3rem; color: #999; grid-column: 1 / -1; }
-
-        .verification-section {
-            background: #fff3e0;
-            border: 1px solid #ffd966;
-            border-radius: var(--radius);
-            padding: 1rem;
-            margin: 1rem 0;
-            display: none;
-        }
-        .verification-title {
-            color: #e67e22;
-            font-weight: bold;
-            margin-bottom: 0.75rem;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .warning-text {
-            font-size: 0.7rem;
-            color: #e67e22;
-            margin-top: 0.5rem;
-            text-align: center;
-        }
-
-        .refresh-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: var(--radius);
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            transition: all 0.2s;
-        }
-        .refresh-btn:hover { background: var(--primary-dark); transform: scale(1.02); }
-
-        hr {
-            margin: 1rem 0;
-            border-color: #e5e7eb;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
+        .user-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); background: var(--hover-bg); }
+        .user-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--facebook-blue), var(--facebook-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; flex-shrink: 0; }
+        .user-info-compact { flex: 1; }
+        .user-name-compact { font-weight: 700; font-size: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .user-details-compact { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .user-status-badge { display: flex; align-items: center; gap: 0.3rem; font-size: 0.65rem; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: var(--facebook-green); animation: pulse 1.5s infinite; }
+        .status-dot.offline { background: var(--text-secondary); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .distance-badge { background: var(--facebook-blue); padding: 0.2rem 0.5rem; border-radius: 1rem; font-size: 0.65rem; color: white; }
+        .action-buttons { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .small-btn { background: var(--hover-bg); border: none; padding: 0.3rem 0.6rem; border-radius: 1rem; cursor: pointer; font-size: 0.7rem; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.3rem; transition: all 0.2s; }
+        .small-btn:hover { background: var(--border-color); }
+        .small-btn.whatsapp { background: #25d36620; color: #25d366; }
+        .small-btn.direction { background: var(--facebook-blue); color: white; }
+        .map-area { width: 100%; height: 100%; background: var(--bg-primary); border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); }
+        #map { width: 100%; height: 100%; background: var(--bg-primary); }
+        .custom-map-popup .leaflet-popup-content-wrapper { background: var(--card-bg); color: var(--text-primary); border-radius: 12px; padding: 0; border: 1px solid var(--border-color); }
+        .custom-map-popup .leaflet-popup-tip { background: var(--card-bg); }
+        .custom-map-popup .leaflet-popup-content { margin: 0; min-width: 260px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-card { background: var(--card-bg); border-radius: 12px; max-width: 550px; width: 90%; max-height: 90vh; overflow-y: auto; padding: 1.5rem; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem; }
+        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary); }
+        .location-map { height: 280px; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--border-color); }
+        .location-btn { width: 100%; background: var(--facebook-blue); color: white; padding: 0.6rem; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; margin-top: 0.5rem; }
+        .location-btn.gps { background: var(--facebook-green); }
+        .city-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
+        .city-suggestion-item { padding: 0.5rem 1rem; cursor: pointer; border-bottom: 1px solid var(--border-color); }
+        .city-suggestion-item:hover { background: var(--hover-bg); }
+        .security-verification { background: rgba(228, 30, 63, 0.1); border: 1px solid #e41e3f; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: none; }
+        .filter-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 2000; align-items: center; justify-content: center; }
+        .filter-card-modal { background: var(--card-bg); border-radius: 12px; max-width: 450px; width: 90%; padding: 1.5rem; }
+        .filter-select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; background: var(--input-bg); color: var(--text-primary); }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-secondary); grid-column: 1 / -1; }
+        .marker-cluster { background-color: rgba(24, 119, 242, 0.6); }
+        .marker-cluster div { background-color: rgba(24, 119, 242, 0.8); color: white; font-weight: bold; }
         @media (max-width: 768px) {
-            body { padding: 0.5rem; }
-            .app-container { height: calc(100vh - 1rem); }
             .users-grid { grid-template-columns: 1fr; }
-            .app-header { flex-direction: column; align-items: stretch; }
-            .header-actions { justify-content: space-between; flex-wrap: wrap; }
-            .control-bar { flex-direction: column; align-items: stretch; }
-            .view-toggle { align-self: center; }
-            .menu-toggle { bottom: 1rem; right: 1rem; }
-            .sidebar { width: 85%; }
-            .toast-notification { width: 90%; font-size: 0.9rem; padding: 0.75rem 1rem; }
-            .email-suggestions { max-height: 250px; }
-            .email-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-            .location-map { height: 200px; }
-            .modal-card { width: 95%; }
+            .nav-btn span { display: none; }
+            .nav-btn { padding: 0.75rem; }
         }
     </style>
 </head>
 <body>
-    <div class="menu-toggle" id="menuToggle">
-        <i class="fas fa-bars"></i>
-    </div>
+    <div id="loadingOverlay" class="loading-overlay"><div style="text-align:center;"><div class="loader-spinner"></div><div>جاري التحميل...</div></div></div>
 
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <i class="fab fa-whatsapp fa-2x"></i>
-            <h3 style="margin-top: 0.5rem;">القائمة الرئيسية</h3>
-        </div>
-        <div class="sidebar-menu">
-            <div class="sidebar-item active" data-section="home">
-                <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-            </div>
-            <div class="sidebar-item" data-section="map">
-                <i class="fas fa-map"></i>
-                <span>الخريطة</span>
-            </div>
-            <div class="sidebar-item" data-section="profile">
-                <i class="fas fa-user-edit"></i>
-                <span>تعديل ملفي</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="loader">
-            <div class="loader-spinner"></div>
-            <div class="loader-text">جاري الاتصال بقاعدة البيانات...</div>
-        </div>
-    </div>
-
-    <div id="loginCard" class="auth-card" style="display: none;">
-        <div class="auth-header">
-            <i class="fab fa-whatsapp fa-2x"></i>
-            <h2>مرحباً بعودتك</h2>
-            <p>سجل الدخول للتواصل مع الأصدقاء عبر واتساب</p>
-        </div>
+    <div id="loginCard" class="auth-card">
+        <div class="auth-header"><i class="fab fa-facebook fa-3x" style="color:var(--facebook-blue);"></i><h2>تواصل</h2><p style="color:var(--text-secondary);">سجل الدخول للتواصل مع الأصدقاء</p></div>
         <div class="auth-body">
             <form id="loginForm">
                 <div class="input-group">
                     <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <div class="email-dropdown" style="position: relative;">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input type="email" id="loginEmail" autocomplete="off" required placeholder="انقر لاختيار بريد إلكتروني" style="flex: 1;">
-                            <button type="button" id="refreshUsersBtn" class="refresh-btn" style="width: auto; padding: 0.75rem 1rem; margin: 0;">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
+                    <div class="email-dropdown">
+                        <input type="email" id="loginEmail" autocomplete="off" required placeholder="example@email.com">
                         <div id="emailSuggestions" class="email-suggestions"></div>
                     </div>
                 </div>
                 <div class="input-group">
                     <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" required placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword', this)"><i class="fas fa-eye"></i></button>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">دخول</button>
+                <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
             </form>
-            <div class="switch-link" id="showRegisterBtn">
-                <i class="fas fa-user-plus"></i> ليس لديك حساب؟ إنشاء حساب جديد
-            </div>
+            <div class="switch-link" id="showRegisterBtn"><i class="fas fa-user-plus"></i> إنشاء حساب جديد</div>
         </div>
     </div>
 
-    <div id="registerCard" class="auth-card" style="display: none;">
-        <div class="auth-header">
-            <i class="fas fa-user-plus fa-2x"></i>
-            <h2>إنشاء حساب جديد</h2>
-            <p>حدد موقعك على الخريطة أو استخدم GPS</p>
-        </div>
-        <div class="auth-body">
-            <form id="registerForm">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> اسم المستخدم</label>
-                    <input type="text" id="regUsername" required placeholder="اسم المستخدم (سيتم استخدامه كمعرف فريد)">
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-user-circle"></i> الاسم الكامل</label>
-                    <input type="text" id="regName" required placeholder="الاسم الكامل للعرض">
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-calendar"></i> العمر</label>
-                    <input type="number" id="regAge" min="18" max="80" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-heart"></i> الحالة العائلية</label>
-                    <select id="regMarital" required>
-                        <option value="متزوج">متزوج</option>
-                        <option value="أعزب">أعزب</option>
-                        <option value="مطلق">مطلق</option>
-                        <option value="طالب">طالب</option>
-                        <option value="مرتبط">مرتبط</option>
-                        <option value="حر">حر</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-venus-mars"></i> الجنس</label>
-                    <select id="regGender" required>
-                        <option value="ذكر">ذكر</option>
-                        <option value="أنثى">أنثى</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label><i class="fab fa-whatsapp"></i> رقم الهاتف (واتساب)</label>
-                    <input type="tel" id="regPhone" required placeholder="06xxxxxxxx">
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                    <input type="email" id="regEmail" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
-                    <input type="password" id="regPassword" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-check-circle"></i> تأكيد كلمة المرور</label>
-                    <input type="password" id="regConfirmPassword" required>
-                </div>
-                
-                <div class="input-group">
-                    <label><i class="fas fa-map-marker-alt"></i> الموقع الجغرافي</label>
-                    <div id="regLocationMap" class="location-map"></div>
-                    <div class="location-buttons">
-                        <button type="button" id="regUseGpsBtn" class="location-btn gps">
-                            <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
-                        </button>
-                        <button type="button" id="regConfirmLocationBtn" class="location-btn">
-                            <i class="fas fa-check"></i> تأكيد الموقع
-                        </button>
-                    </div>
-                    <div id="regCoordDisplay" class="coord-display">
-                        <i class="fas fa-map-pin"></i> اضغط على الخريطة لتحديد الموقع
-                    </div>
-                    <input type="hidden" id="regLat" value="">
-                    <input type="hidden" id="regLng" value="">
-                </div>
-                
-                <button type="submit" class="btn btn-primary">إنشاء حساب</button>
-            </form>
-            <div class="switch-link" id="showLoginBtn">
-                لديك حساب بالفعل؟ سجل الدخول هنا
-            </div>
-        </div>
-    </div>
-
-    <div id="appContainer" class="app-container">
-        <div class="app-header">
-            <div class="logo">
-                <i class="fab fa-whatsapp"></i>
-                <span>تواصل واتساب</span>
-            </div>
-            <div class="header-actions">
-                <button id="openFiltersBtn" class="action-btn"><i class="fas fa-sliders-h"></i> فلترة</button>
-                <button id="editProfileDirectBtn" class="action-btn"><i class="fas fa-user-edit"></i> تعديل ملفي</button>
-                <div class="global-control">
-                    <div class="online-stats">
-                        <i class="fas fa-circle"></i>
-                        <span id="onlineCount">0</span>
-                        <span>متصل</span>
-                    </div>
-                    <label class="switch global-switch">
-                        <input type="checkbox" id="globalStatusSwitch" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <button id="logoutBtn" class="action-btn logout-btn"><i class="fas fa-sign-out-alt"></i> خروج</button>
-            </div>
-        </div>
-        
-        <div class="control-bar">
-            <div class="view-toggle">
-                <button id="listViewBtn" class="view-btn active"><i class="fas fa-list"></i> قائمة</button>
-                <button id="mapViewBtn" class="view-btn"><i class="fas fa-map"></i> خريطة</button>
-            </div>
-        </div>
-        
-        <div id="listView" class="users-list">
-            <div class="users-grid"></div>
-        </div>
-        <div id="mapView" class="map-area" style="display: none;"><div id="map"></div></div>
-    </div>
-
-    <div id="filterModal" class="filter-modal">
-        <div class="filter-panel">
-            <div class="filter-header">
-                <h3><i class="fas fa-sliders-h"></i> فرز وتصفية</h3>
-                <button class="close-btn" id="closeFilterBtn">&times;</button>
-            </div>
-            <div class="filter-body">
-                <div class="filter-group">
-                    <label><i class="fas fa-venus-mars"></i> الجنس</label>
-                    <select id="filterGender">
-                        <option value="all">جميع الأجناس</option>
-                        <option value="ذكر">ذكر</option>
-                        <option value="أنثى">أنثى</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label><i class="fas fa-heart"></i> الحالة العائلية</label>
-                    <select id="filterMarital">
-                        <option value="all">جميع الحالات</option>
-                        <option value="متزوج">متزوج</option>
-                        <option value="أعزب">أعزب</option>
-                        <option value="مطلق">مطلق</option>
-                        <option value="طالب">طالب</option>
-                        <option value="مرتبط">مرتبط</option>
-                        <option value="حر">حر</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label><i class="fas fa-chart-line"></i> ترتيب حسب</label>
-                    <select id="sortBy">
-                        <option value="online">المتصلين أولاً</option>
-                        <option value="distance">المسافة</option>
-                        <option value="age">العمر</option>
-                        <option value="name">الاسم</option>
-                    </select>
-                </div>
-                <div class="filter-actions">
-                    <button id="applyFiltersBtn" class="btn btn-primary">تطبيق</button>
-                    <button id="resetFiltersBtn" class="btn btn-secondary">إعادة ضبط</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="editProfileModal" class="modal">
+    <!-- Unified Modal for Register & Edit Profile -->
+    <div id="unifiedModal" class="modal">
         <div class="modal-card">
             <div class="modal-header">
-                <h3><i class="fas fa-user-edit"></i> تعديل الملف الشخصي</h3>
-                <button class="close-btn" id="closeEditBtn">&times;</button>
+                <h3 id="modalTitle">إنشاء حساب جديد</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="editProfileForm">
-                    <div class="input-group">
-                        <label><i class="fas fa-user"></i> اسم المستخدم</label>
-                        <input type="text" id="editUsername" required readonly style="background:#f3f4f6;">
+                <form id="unifiedForm">
+                    <div id="securityVerification" class="security-verification">
+                        <label><i class="fas fa-shield-alt"></i> تأكيد الهوية</label>
+                        <input type="password" id="currentPasswordVerify" placeholder="كلمة المرور الحالية" style="margin-top:8px; width:100%; padding:0.5rem; border-radius:8px; background:var(--input-bg); color:var(--text-primary); border:1px solid var(--border-color);">
                     </div>
+                    <div class="input-group"><label>الاسم الكامل</label><input type="text" id="fullName" required></div>
+                    <div class="input-group"><label>العمر</label><input type="number" id="age" min="18" max="80" required></div>
+                    <div class="input-group"><label>الحالة العائلية</label><select id="maritalStatus"><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="مرتبط">مرتبط</option><option value="طالب">طالب</option></select></div>
+                    <div class="input-group"><label>الجنس</label><select id="gender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+                    <div class="input-group"><label>رقم واتساب</label><input type="tel" id="phone" required placeholder="0612345678"></div>
+                    <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="email" required></div>
                     <div class="input-group">
-                        <label><i class="fas fa-user-circle"></i> الاسم الكامل</label>
-                        <input type="text" id="editName" required>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-calendar"></i> العمر</label>
-                        <input type="number" id="editAge" min="18" max="80" required>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-heart"></i> الحالة العائلية</label>
-                        <select id="editMarital">
-                            <option value="متزوج">متزوج</option>
-                            <option value="أعزب">أعزب</option>
-                            <option value="مطلق">مطلق</option>
-                            <option value="طالب">طالب</option>
-                            <option value="مرتبط">مرتبط</option>
-                            <option value="حر">حر</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-venus-mars"></i> الجنس</label>
-                        <select id="editGender">
-                            <option value="ذكر">ذكر</option>
-                            <option value="أنثى">أنثى</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fab fa-whatsapp"></i> رقم الهاتف</label>
-                        <input type="tel" id="editPhone" required placeholder="06xxxxxxxx">
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
-                        <input type="email" id="editEmail" required>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label><i class="fas fa-map-marker-alt"></i> الموقع الجغرافي</label>
-                        <div id="editLocationMap" class="location-map"></div>
-                        <div class="location-buttons">
-                            <button type="button" id="editUseGpsBtn" class="location-btn gps">
-                                <i class="fas fa-location-dot"></i> تحديد موقعي الحالي
-                            </button>
-                            <button type="button" id="editConfirmLocationBtn" class="location-btn">
-                                <i class="fas fa-check"></i> تأكيد الموقع
-                            </button>
-                        </div>
-                        <div id="editCoordDisplay" class="coord-display">
-                            <i class="fas fa-map-pin"></i> اضغط على الخريطة لتحديد الموقع
-                        </div>
-                        <input type="hidden" id="editLat" value="">
-                        <input type="hidden" id="editLng" value="">
-                    </div>
-                    
-                    <div id="verificationSection" class="verification-section">
-                        <div class="verification-title">
-                            <i class="fas fa-shield-alt"></i> 🔐 تأكيد الهوية مطلوب
-                        </div>
-                        <div class="input-group" style="margin-bottom: 0.75rem;">
-                            <label><i class="fas fa-lock"></i> كلمة المرور الحالية <span style="color: red;">*</span></label>
-                            <input type="password" id="currentPassword" placeholder="أدخل كلمة المرور الحالية">
-                        </div>
-                        <div class="warning-text">
-                            <i class="fas fa-info-circle"></i> مطلوب عند تغيير البريد الإلكتروني أو كلمة المرور
+                        <label>المدينة</label>
+                        <div style="position:relative;">
+                            <input type="text" id="city" placeholder="ابحث عن مدينة أو اختر من المقترحات">
+                            <div id="citySuggestions" class="city-suggestions"></div>
                         </div>
                     </div>
-                    
                     <div class="input-group">
-                        <label><i class="fas fa-lock"></i> كلمة المرور الجديدة</label>
-                        <input type="password" id="editPassword" placeholder="اتركه فارغاً لعدم التغيير">
+                        <label>الموقع الجغرافي</label>
+                        <div id="locationMap" class="location-map"></div>
+                        <button type="button" id="useGpsBtn" class="location-btn gps"><i class="fas fa-location-dot"></i> تحديد موقعي الحالي</button>
+                        <input type="hidden" id="lat" value=""><input type="hidden" id="lng" value="">
                     </div>
                     <div class="input-group">
-                        <label><i class="fas fa-check-circle"></i> تأكيد كلمة المرور الجديدة</label>
-                        <input type="password" id="editConfirmPassword" placeholder="أعد إدخال كلمة المرور الجديدة">
+                        <label>كلمة المرور</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('password', this)"><i class="fas fa-eye"></i></button>
+                        </div>
                     </div>
-                    
-                    <hr>
-                    
-                    <div class="modal-actions">
-                        <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-                        <button type="button" id="deleteAccountBtn" class="btn btn-danger">حذف الحساب</button>
+                    <div class="input-group">
+                        <label>تأكيد كلمة المرور</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirmPassword" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="modal-actions" style="display:flex; gap:0.75rem; margin-top:1rem;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">إنشاء حساب</button>
+                        <button type="button" id="deleteAccountBtnModal" class="btn btn-secondary" style="background:#e41e3f; display:none;">حذف الحساب</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <div id="appContainer" class="app-container">
+        <div class="fb-header">
+            <div class="header-content">
+                <div class="logo">تواصل</div>
+                <div class="header-actions">
+                    <div class="user-info-header"><i class="fas fa-user-circle"></i><span id="headerUserName"></span></div>
+                    <div class="online-stats"><i class="fas fa-circle"></i><span id="onlineCount">0</span><span> متصل</span></div>
+                    <button id="editProfileBtn" class="fb-icon-btn"><i class="fas fa-user-edit"></i></button>
+                    <button id="logoutBtn" class="fb-icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="fb-nav">
+            <div class="nav-content">
+                <div class="nav-buttons">
+                    <button id="listViewBtn" class="nav-btn active"><i class="fas fa-th-large"></i><span> الشبكة</span></button>
+                    <button id="mapViewBtn" class="nav-btn"><i class="fas fa-map-marked-alt"></i><span> الخريطة</span></button>
+                </div>
+                <button id="openFilterBtn" class="filter-nav-btn"><i class="fas fa-sliders-h"></i><span> فلترة</span></button>
+            </div>
+        </div>
+        <div class="main-content">
+            <div id="listView" style="height:100%;"><div class="users-grid"></div></div>
+            <div id="mapView" class="map-area" style="display:none;"><div id="map"></div></div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="filter-modal">
+        <div class="filter-card-modal">
+            <h3><i class="fas fa-sliders-h"></i> فلترة وترتيب</h3>
+            <select id="filterGenderModal" class="filter-select"><option value="all">جميع الأجناس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+            <select id="filterMaritalModal" class="filter-select"><option value="all">جميع الحالات</option><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="مرتبط">مرتبط</option></select>
+            <select id="sortByModal" class="filter-select"><option value="online">المتصلين أولاً</option><option value="distance">المسافة</option><option value="age">العمر</option><option value="name">الاسم</option></select>
+            <div class="modal-buttons"><button id="applyFiltersBtn" class="btn btn-primary">تطبيق</button><button id="resetFiltersBtn" class="btn btn-secondary" style="background:var(--text-secondary);">إعادة ضبط</button></div>
+        </div>
+    </div>
+
     <script>
-        // ============================================
-        // 1. الإعدادات والثوابت
-        // ============================================
-        const CONFIG = {
-            FIREBASE: { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" },
-            MESSAGES: {
-                SUCCESS: {
-                    LOGIN: (name) => `مرحباً بك ${name}`,
-                    REGISTER: "تم إنشاء الحساب بنجاح",
-                    UPDATE: "تم تحديث المعلومات بنجاح",
-                    LOGOUT: "تم تسجيل الخروج",
-                    FILTER_APPLIED: "تم تطبيق الفلاتر",
-                    FILTER_RESET: "تم إعادة ضبط الفلاتر"
-                },
-                ERROR: {
-                    LOGIN: "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-                    EMAIL_EXISTS: "البريد الإلكتروني مسجل مسبقاً",
-                    USERNAME_EXISTS: "اسم المستخدم مسجل مسبقاً",
-                    PASSWORD_MISMATCH: "كلمة المرور غير متطابقة",
-                    PASSWORD_SHORT: "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-                    INVALID_PHONE: "رقم الهاتف يجب أن يكون 10 أرقام",
-                    REQUIRED_FIELDS: "الرجاء تعبئة جميع الحقول",
-                    WRONG_CURRENT_PASSWORD: "كلمة المرور الحالية غير صحيحة",
-                    CURRENT_PASSWORD_REQUIRED: "الرجاء إدخال كلمة المرور الحالية للتحقق من الهوية",
-                    LOCATION_REQUIRED: "الرجاء تحديد الموقع الجغرافي"
-                },
-                INFO: {
-                    WELCOME: (name) => `أهلاً بك ${name} في المنصة`,
-                    WHATSAPP_OPEN: (name) => `جاري فتح واتساب للتواصل مع ${name}`,
-                    DIRECTIONS_OPEN: (name) => `جاري فتح المسار إلى ${name}`,
-                    USER_SELECTED: (name) => `تم اختيار: ${name}`,
-                    LOCATION_SELECTED: "تم تحديد الموقع بنجاح",
-                    GPS_LOCATION: "تم تحديد موقعك الحالي"
-                }
-            },
-            STORAGE_KEYS: { CURRENT_USER: "currentUser", USER_FILTERS: "userFilters" }
+        const firebaseConfig = { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" };
+        let db, currentUser = null, allUsers = [], map, markerCluster, currentView = 'list', locationPicker;
+        let filters = { gender: 'all', marital: 'all', sortBy: 'online' };
+        let citySuggestionsList = [], isEditMode = false;
+        
+        const generateDefaultUsers = () => {
+            const names = ['أحمد', 'محمد', 'عبدالله', 'فاطمة', 'نور', 'سارة', 'ريم', 'عمر', 'خالد', 'سعيد', 'منى', 'ليلى', 'هند', 'مريم', 'أسماء', 'إيمان', 'يوسف', 'علي', 'حسن', 'حسين', 'محمود', 'طارق', 'سامر', 'رامي', 'دينا', 'شيماء', 'هالة', 'رانيا', 'نادية', 'غادة', 'أميرة', 'سعاد', 'كريمة', 'صفاء', 'نجوى', 'أمل', 'رجاء', 'وفاء', 'نوال', 'ابتسام'];
+            const cities = [{ name: 'الدار البيضاء', lat: 33.5731, lng: -7.5898 },{ name: 'الرباط', lat: 34.0209, lng: -6.8416 },{ name: 'فاس', lat: 34.0333, lng: -5.0000 },{ name: 'مراكش', lat: 31.6295, lng: -7.9811 },{ name: 'طنجة', lat: 35.7595, lng: -5.8340 },{ name: 'أكادير', lat: 30.4278, lng: -9.5981 }];
+            const users = [];
+            for (let i = 0; i < 45; i++) {
+                const city = cities[i % cities.length];
+                users.push({
+                    userId: `user_${i + 1}`, name: `${names[i % names.length]} ${Math.floor(i / names.length) + 1}`,
+                    email: `user${i + 1}@example.com`, password: '00000000',
+                    gender: i % 2 === 0 ? 'ذكر' : 'أنثى', marital: ['متزوج', 'أعزب', 'مطلق', 'مرتبط'][i % 4],
+                    phone: `06123456${String(i + 1).padStart(2, '0')}`, age: 20 + (i % 40),
+                    lat: city.lat + (Math.random() - 0.5) * 0.05, lng: city.lng + (Math.random() - 0.5) * 0.05,
+                    city: city.name, status: i % 3 === 0 ? 'offline' : 'online', lastActive: Date.now()
+                });
+            }
+            return users;
         };
-
-        // المستخدمين الافتراضيين
-        const DEFAULT_USERS = [
-            { username: "ahmed", name: "أحمد العلمي", email: "ahmed@example.com", password: "123456", gender: "ذكر", marital: "متزوج", phone: "0612345601", age: 35, lat: 33.5731, lng: -7.5898 },
-            { username: "fatima", name: "فاطمة الزهراء", email: "fatima@example.com", password: "123456", gender: "أنثى", marital: "أعزب", phone: "0612345602", age: 28, lat: 34.0209, lng: -6.8416 },
-            { username: "mohamed", name: "محمد بنعلي", email: "mohamed@example.com", password: "123456", gender: "ذكر", marital: "متزوج", phone: "0612345603", age: 42, lat: 34.0333, lng: -5.0000 },
-            { username: "saad", name: "سعاد العمراني", email: "saad@example.com", password: "123456", gender: "أنثى", marital: "مطلق", phone: "0612345604", age: 33, lat: 31.6295, lng: -7.9811 },
-            { username: "youssef", name: "يوسف الراضي", email: "youssef@example.com", password: "123456", gender: "ذكر", marital: "أعزب", phone: "0612345605", age: 25, lat: 35.7595, lng: -5.8340 },
-            { username: "nadia", name: "نادية الشرقاوي", email: "nadia@example.com", password: "123456", gender: "أنثى", marital: "مرتبط", phone: "0612345606", age: 29, lat: 30.4278, lng: -9.5981 },
-            { username: "karim", name: "كريم العروسي", email: "karim@example.com", password: "123456", gender: "ذكر", marital: "أعزب", phone: "0612345607", age: 31, lat: 35.5733, lng: -5.3745 },
-            { username: "leila", name: "ليلى بناني", email: "leila@example.com", password: "123456", gender: "أنثى", marital: "متزوج", phone: "0612345608", age: 38, lat: 34.2610, lng: -6.5801 },
-            { username: "rachid", name: "رشيد الغازي", email: "rachid@example.com", password: "123456", gender: "ذكر", marital: "مطلق", phone: "0612345609", age: 44, lat: 33.8950, lng: -5.5547 },
-            { username: "manal", name: "منال الصباحي", email: "manal@example.com", password: "123456", gender: "أنثى", marital: "أعزب", phone: "0612345610", age: 24, lat: 34.6869, lng: -1.9114 }
-        ];
-
-        // ============================================
-        // 2. Toast Manager
-        // ============================================
-        class ToastManager {
-            show(message, type = 'info') {
-                const toast = document.createElement('div');
-                toast.className = `toast-notification ${type}`;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2800);
-            }
-            success(message) { this.show(message, 'success'); }
-            error(message) { this.show(message, 'error'); }
-            info(message) { this.show(message, 'info'); }
-        }
-        const toast = new ToastManager();
-
-        // ============================================
-        // 3. Loader Manager
-        // ============================================
-        class LoaderManager {
-            constructor() {
-                this.overlay = document.getElementById('loadingOverlay');
-                this.counter = 0;
-            }
-            show(message = 'جاري التحميل...') {
-                this.counter++;
-                if (this.overlay) {
-                    const textElement = this.overlay.querySelector('.loader-text');
-                    if (textElement) textElement.textContent = message;
-                    this.overlay.style.display = 'flex';
-                }
-            }
-            hide() {
-                this.counter--;
-                if (this.counter <= 0 && this.overlay) {
-                    this.overlay.style.display = 'none';
-                    this.counter = 0;
-                }
-            }
-            async withLoading(operation, message = 'جاري التحميل...') {
-                this.show(message);
-                try {
-                    return await operation();
-                } finally {
-                    this.hide();
-                }
-            }
-        }
-        const loader = new LoaderManager();
-
-        // ============================================
-        // 4. Settings Service
-        // ============================================
-        class SettingsService {
-            constructor() {
-                this.filters = { gender: 'all', marital: 'all', sortBy: 'online' };
-                this.currentUser = null;
-                this.loadSavedSettings();
-            }
-            loadSavedSettings() {
-                const savedFilters = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_FILTERS);
-                if (savedFilters) this.filters = { ...this.filters, ...JSON.parse(savedFilters) };
-                const savedUser = localStorage.getItem(CONFIG.STORAGE_KEYS.CURRENT_USER);
-                if (savedUser) this.currentUser = JSON.parse(savedUser);
-            }
-            saveFilters() { localStorage.setItem(CONFIG.STORAGE_KEYS.USER_FILTERS, JSON.stringify(this.filters)); }
-            saveCurrentUser(user) { this.currentUser = user; localStorage.setItem(CONFIG.STORAGE_KEYS.CURRENT_USER, JSON.stringify(user)); }
-            clearCurrentUser() { this.currentUser = null; localStorage.removeItem(CONFIG.STORAGE_KEYS.CURRENT_USER); }
-            getFilters() { return { ...this.filters }; }
-            updateFilters(newFilters) { this.filters = { ...this.filters, ...newFilters }; this.saveFilters(); return this.filters; }
-            resetFilters() { this.filters = { gender: 'all', marital: 'all', sortBy: 'online' }; this.saveFilters(); return this.filters; }
-            getCurrentUser() { return this.currentUser; }
-        }
-        const settingsService = new SettingsService();
-
-        // ============================================
-        // 5. Firebase Service
-        // ============================================
-        class FirebaseService {
-            constructor() { this.db = null; this.initialized = false; }
-            async init() {
-                if (this.initialized) return;
-                firebase.initializeApp(CONFIG.FIREBASE);
-                this.db = firebase.database();
-                this.initialized = true;
-            }
-            getDatabase() { return this.db; }
-            onConnectionChange(callback) {
-                const connectedRef = this.db.ref('.info/connected');
-                connectedRef.on('value', (snap) => callback(snap.val()));
-            }
-        }
-        const firebaseService = new FirebaseService();
-
-        // ============================================
-        // 6. Users Service
-        // ============================================
-        class UsersService {
-            constructor() { this.db = null; this.cache = new Map(); }
-            
-            async init() {
-                await firebaseService.init();
-                this.db = firebaseService.getDatabase();
-                await this.createDefaultUsers();
-                await this.getAllUsers();
-            }
-            
-            async createDefaultUsers() {
-                for (const user of DEFAULT_USERS) {
-                    const snapshot = await this.db.ref(`users/${user.username}`).once('value');
-                    if (!snapshot.exists()) {
-                        await this.db.ref(`users/${user.username}`).set({
-                            username: user.username, name: user.name, age: user.age,
-                            marital: user.marital, gender: user.gender,
-                            lat: user.lat, lng: user.lng,
-                            phone: user.phone, email: user.email, password: user.password,
-                            createdAt: Date.now(), lastActive: Date.now(), status: 'online', isDefault: true
-                        });
-                    }
-                }
-            }
-            
-            async getAllUsers() {
-                const snapshot = await this.db.ref('users').once('value');
-                const users = [];
-                if (!snapshot.exists()) return [];
-                snapshot.forEach(child => {
-                    const user = child.val();
-                    if (user) {
-                        users.push({
-                            username: child.key, name: user.name || child.key, age: user.age || 25,
-                            marital: user.marital || 'أعزب', gender: user.gender || 'ذكر',
-                            lat: user.lat || 33.5731, lng: user.lng || -7.5898,
-                            phone: user.phone || '0612345678', email: user.email || `${child.key}@example.com`,
-                            password: user.password || '123456', status: user.status || 'offline',
-                            lastActive: user.lastActive || Date.now(), createdAt: user.createdAt || Date.now(),
-                            isDefault: user.isDefault || false
-                        });
-                        this.cache.set(child.key, users[users.length - 1]);
-                    }
-                });
-                return users;
-            }
-            
-            async getUserByEmail(email) {
-                const users = await this.getAllUsers();
-                return users.find(user => user.email === email);
-            }
-            
-            async getUserByUsername(username) {
-                if (this.cache.has(username)) return this.cache.get(username);
-                const snapshot = await this.db.ref(`users/${username}`).once('value');
-                const user = snapshot.val();
-                if (user) { user.username = username; this.cache.set(username, user); }
-                return user;
-            }
-            
-            async createUser(userData) {
-                const username = userData.username.trim().toLowerCase();
-                const newUser = {
-                    username, name: userData.name, age: userData.age, marital: userData.marital,
-                    gender: userData.gender, lat: userData.lat, lng: userData.lng,
-                    phone: userData.phone, email: userData.email, password: userData.password,
-                    createdAt: Date.now(), lastActive: Date.now(), status: 'online', isDefault: false
-                };
-                await this.db.ref(`users/${username}`).set(newUser);
-                this.cache.set(username, newUser);
-                return newUser;
-            }
-            
-            async updateUser(username, updates, currentPassword = null) {
-                const user = await this.getUserByUsername(username);
-                if (!user) throw new Error("User not found");
-                const emailChanged = updates.email && updates.email !== user.email;
-                const passwordChanged = updates.password && updates.password !== user.password;
-                if ((emailChanged || passwordChanged) && !currentPassword) throw new Error(CONFIG.MESSAGES.ERROR.CURRENT_PASSWORD_REQUIRED);
-                if ((emailChanged || passwordChanged) && currentPassword !== user.password) throw new Error(CONFIG.MESSAGES.ERROR.WRONG_CURRENT_PASSWORD);
-                await this.db.ref(`users/${username}`).update(updates);
-                return this.getUserByUsername(username);
-            }
-            
-            async updateUserStatus(username, status) {
-                await this.db.ref(`users/${username}/status`).set(status);
-                await this.db.ref(`users/${username}/lastActive`).set(firebase.database.ServerValue.TIMESTAMP);
-                if (this.cache.has(username)) { this.cache.get(username).status = status; }
-            }
-            
-            async deleteUser(username) { await this.db.ref(`users/${username}`).remove(); this.cache.delete(username); }
-            async checkEmailExists(email) { const users = await this.getAllUsers(); return users.some(u => u.email === email); }
-            async checkUsernameExists(username) { return !!(await this.getUserByUsername(username.toLowerCase())); }
-            
-            subscribeToChanges(callback) {
-                this.db.ref('users').on('child_changed', (snapshot) => {
-                    const user = snapshot.val();
-                    if (user) { user.username = snapshot.key; this.cache.set(snapshot.key, user); callback('changed', user); }
-                });
-                this.db.ref('users').on('child_added', (snapshot) => {
-                    const user = snapshot.val();
-                    if (user) { user.username = snapshot.key; this.cache.set(snapshot.key, user); callback('added', user); }
-                });
-                this.db.ref('users').on('child_removed', (snapshot) => { this.cache.delete(snapshot.key); callback('removed', null); });
-            }
-        }
-        const usersService = new UsersService();
-
-        // ============================================
-        // 7. Filter Manager
-        // ============================================
-        class FilterManager {
-            constructor() { this.filters = settingsService.getFilters(); this.listeners = []; }
-            getFilters() { return { ...this.filters }; }
-            calculateDistance(lat1, lng1, lat2, lng2) {
-                const R = 6371;
-                const dLat = (lat2 - lat1) * Math.PI / 180;
-                const dLng = (lng2 - lng1) * Math.PI / 180;
-                const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLng/2)**2;
-                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            }
-            applyFilters(users, currentUsername, currentUserCoords) {
-                let filtered = [...users];
-                if (this.filters.gender !== 'all') filtered = filtered.filter(u => u.gender === this.filters.gender);
-                if (this.filters.marital !== 'all') filtered = filtered.filter(u => u.marital === this.filters.marital);
-                filtered = filtered.map(user => {
-                    if (user.username !== currentUsername && currentUserCoords && user.lat && user.lng) {
-                        user.distance = this.calculateDistance(currentUserCoords.lat, currentUserCoords.lng, user.lat, user.lng);
-                    }
-                    return user;
-                });
-                const sortMethods = {
-                    online: (a, b) => {
-                        if (a.username === currentUsername) return -1;
-                        if (b.username === currentUsername) return 1;
-                        return (b.status === 'online' ? 1 : 0) - (a.status === 'online' ? 1 : 0);
-                    },
-                    distance: (a, b) => (a.distance || 0) - (b.distance || 0),
-                    age: (a, b) => a.age - b.age,
-                    name: (a, b) => a.name.localeCompare(b.name)
-                };
-                return filtered.sort(sortMethods[this.filters.sortBy] || sortMethods.online);
-            }
-            updateFilters(newFilters) { this.filters = settingsService.updateFilters(newFilters); this.notifyListeners(); }
-            resetFilters() { this.filters = settingsService.resetFilters(); this.notifyListeners(); }
-            addListener(callback) { this.listeners.push(callback); }
-            notifyListeners() { this.listeners.forEach(cb => cb(this.filters)); }
-        }
-        const filterManager = new FilterManager();
-
-        // ============================================
-        // 8. Location Picker - تحديد الموقع بالخريطة
-        // ============================================
-        class LocationPicker {
-            constructor(mapElementId, latInputId, lngInputId, coordDisplayId) {
-                this.mapElementId = mapElementId;
-                this.latInput = document.getElementById(latInputId);
-                this.lngInput = document.getElementById(lngInputId);
-                this.coordDisplay = document.getElementById(coordDisplayId);
-                this.map = null;
-                this.marker = null;
-                this.defaultLat = 33.5731;
-                this.defaultLng = -7.5898;
-            }
-            
-            init(initialLat = null, initialLng = null) {
-                const lat = initialLat || this.defaultLat;
-                const lng = initialLng || this.defaultLng;
-                
-                const mapElement = document.getElementById(this.mapElementId);
-                if (!mapElement) return;
-                
-                if (this.map) {
-                    this.map.remove();
-                    this.map = null;
-                }
-                
-                this.map = L.map(this.mapElementId).setView([lat, lng], 12);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap'
-                }).addTo(this.map);
-                
-                const markerIcon = L.divIcon({
-                    html: '<div style="background:#075e54;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 8px #075e54;"></div>',
-                    iconSize: [20, 20],
-                    className: ''
-                });
-                
-                this.marker = L.marker([lat, lng], { draggable: true, icon: markerIcon }).addTo(this.map);
-                this.updateCoordinates(lat, lng);
-                
-                this.marker.on('dragend', (e) => {
-                    const pos = e.target.getLatLng();
-                    this.updateCoordinates(pos.lat, pos.lng);
-                    toast.info(`الموقع: ${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`);
-                });
-                
-                this.map.on('click', (e) => {
-                    this.marker.setLatLng(e.latlng);
-                    this.updateCoordinates(e.latlng.lat, e.latlng.lng);
-                    toast.info(`الموقع: ${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`);
-                });
-            }
-            
-            updateCoordinates(lat, lng) {
-                this.latInput.value = lat;
-                this.lngInput.value = lng;
-                if (this.coordDisplay) {
-                    this.coordDisplay.innerHTML = `<i class="fas fa-map-pin"></i> ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-                }
-            }
-            
-            setLocation(lat, lng) {
-                if (this.map && this.marker) {
-                    this.map.setView([lat, lng], 14);
-                    this.marker.setLatLng([lat, lng]);
-                    this.updateCoordinates(lat, lng);
-                }
-            }
-            
-            async getCurrentLocation() {
-                return new Promise((resolve, reject) => {
-                    if (!navigator.geolocation) {
-                        reject("المتصفح لا يدعم تحديد الموقع");
-                        return;
-                    }
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            const lat = pos.coords.latitude;
-                            const lng = pos.coords.longitude;
-                            this.setLocation(lat, lng);
-                            resolve({ lat, lng });
-                        },
-                        () => reject("فشل تحديد الموقع")
-                    );
-                });
-            }
-        }
-
-        // ============================================
-        // 9. Email Suggestions
-        // ============================================
-        class EmailSuggestions {
-            constructor() {
-                this.input = document.getElementById('loginEmail');
-                this.container = document.getElementById('emailSuggestions');
-                this.users = [];
-                this.setupListeners();
-            }
-            async loadUsers() { this.users = await usersService.getAllUsers(); this.showSuggestions(); }
-            showSuggestions() {
-                if (!this.container) return;
-                if (!this.users || this.users.length === 0) {
-                    this.container.innerHTML = `<div class="email-item"><div class="email-info"><div class="user-fullname">لا يوجد مستخدمين</div></div></div>`;
-                    this.container.style.display = 'block';
-                    return;
-                }
-                this.container.innerHTML = this.users.map(user => `
-                    <div class="email-item" data-email="${user.email}" data-password="${user.password}" data-name="${user.name}">
-                        <div class="email-info">
-                            <div class="user-fullname"><i class="fas fa-user-circle"></i> <strong>${user.name}</strong><span class="age-badge">${user.age} سنة</span></div>
-                            <div class="email-address"><i class="fas fa-envelope"></i> ${user.email}</div>
-                        </div>
-                        <div class="status-badge ${user.status === 'online' ? 'online' : 'offline'}">${user.status === 'online' ? '🟢 متصل' : '🔴 غير متصل'}</div>
-                    </div>
-                `).join('');
-                this.container.querySelectorAll('.email-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        document.getElementById('loginEmail').value = item.dataset.email;
-                        document.getElementById('loginPassword').value = item.dataset.password;
-                        this.hideSuggestions();
-                        toast.info(`✅ تم اختيار: ${item.dataset.name}`);
-                    });
-                });
-                this.container.style.display = 'block';
-            }
-            hideSuggestions() { if (this.container) this.container.style.display = 'none'; }
-            setupListeners() {
-                if (!this.input) return;
-                this.input.addEventListener('focus', () => this.loadUsers());
-                this.input.addEventListener('click', () => this.loadUsers());
-                document.addEventListener('click', (e) => {
-                    if (!this.input?.contains(e.target) && !this.container?.contains(e.target)) this.hideSuggestions();
-                });
-            }
-            async refresh() { await this.loadUsers(); }
-        }
-
-        // ============================================
-        // 10. View Manager
-        // ============================================
-        class ViewManager {
-            constructor() {
-                this.currentView = 'list';
-                this.map = null;
-                this.markers = [];
-                this.allUsers = [];
-                this.filteredUsers = [];
-                this.currentUser = null;
-                this.isUpdating = false;
-            }
-            
-            async init() {
-                await usersService.init();
-                this.currentUser = settingsService.getCurrentUser();
-                filterManager.addListener(() => this.refresh());
-                usersService.subscribeToChanges(() => this.refresh());
-            }
-            
-            setCurrentUser(user) { this.currentUser = user; this.refresh(); }
-            
-            async refresh() {
-                if (this.isUpdating) return;
-                this.isUpdating = true;
-                try {
-                    this.allUsers = await usersService.getAllUsers();
-                    const currentCoords = this.currentUser ? { lat: this.currentUser.lat, lng: this.currentUser.lng } : null;
-                    this.filteredUsers = filterManager.applyFilters(this.allUsers, this.currentUser?.username, currentCoords);
-                    this.updateOnlineCount();
-                    if (this.currentView === 'list') this.renderList();
-                    else await this.renderMap();
-                } catch (error) { console.error("Refresh failed:", error);
-                } finally { this.isUpdating = false; }
-            }
-            
-            updateOnlineCount() {
-                const onlineCount = this.allUsers.filter(u => u.status === 'online' && u.username !== this.currentUser?.username).length;
-                const onlineSpan = document.getElementById('onlineCount');
-                if (onlineSpan) onlineSpan.textContent = onlineCount;
-            }
-            
-            renderList() {
-                const grid = document.querySelector('.users-grid');
-                if (this.filteredUsers.length === 0) {
-                    grid.innerHTML = '<div class="empty-state">لا يوجد مستخدمين</div>';
-                    return;
-                }
-                grid.innerHTML = this.filteredUsers.map(user => {
-                    const isCurrentUser = user.username === this.currentUser?.username;
-                    const isOnline = user.status === 'online';
-                    return `
-                        <div class="user-card ${isOnline ? 'online' : 'offline'} ${isCurrentUser ? 'current-user' : ''}">
-                            <div class="user-header">
-                                <div class="user-name">
-                                    <i class="fas fa-user-circle"></i> ${this.escapeHtml(user.name)}
-                                    <span class="age-badge">${user.age} سنة</span>
-                                    ${isCurrentUser ? '<span class="current-badge"><i class="fas fa-star"></i> أنت</span>' : ''}
-                                </div>
-                                <div class="user-status">
-                                    <span class="status-dot ${isOnline ? 'online' : 'offline'}"></span>
-                                    <span>${isOnline ? '🟢 متصل' : '🔴 غير متصل'}</span>
-                                    ${!isCurrentUser && isOnline ? 
-                                        `<button class="whatsapp-icon" onclick="app.openWhatsApp('${user.phone}', '${user.name}')"><i class="fab fa-whatsapp"></i></button>` : 
-                                        (!isCurrentUser && !isOnline ? `<button class="whatsapp-icon disabled" disabled><i class="fab fa-whatsapp"></i></button>` : '')}
-                                </div>
-                            </div>
-                            <div class="user-details">
-                                <span class="detail-tag"><i class="fas fa-heart"></i> ${user.marital}</span>
-                                <span class="detail-tag"><i class="fas fa-venus-mars"></i> ${user.gender}</span>
-                                <span class="detail-tag"><i class="fas fa-at"></i> @${user.username}</span>
-                            </div>
-                            ${!isCurrentUser && user.distance ? `<div class="distance-tag"><i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم</div>` : ''}
-                        </div>
-                    `;
-                }).join('');
-            }
-            
-            async renderMap() {
-                if (!this.map) {
-                    this.map = L.map('map').setView([33.5731, -7.5898], 6);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(this.map);
-                }
-                this.markers.forEach(m => this.map.removeLayer(m));
-                this.markers = [];
-                this.filteredUsers.forEach(user => {
-                    if (!user.lat || !user.lng) return;
-                    const isCurrentUser = user.username === this.currentUser?.username;
-                    const isOnline = user.status === 'online';
-                    let markerColor = '#075e54', markerSize = 14, glow = '';
-                    if (isCurrentUser) { markerColor = '#075e54'; markerSize = 20; glow = 'box-shadow: 0 0 15px #075e54; animation: pulse 1.5s infinite;'; }
-                    else if (isOnline) { markerColor = '#25d366'; markerSize = 14; glow = 'box-shadow: 0 0 8px #25d366;'; }
-                    else { markerColor = '#9e9e9e'; markerSize = 12; glow = 'opacity: 0.7;'; }
-                    const icon = L.divIcon({ html: `<div style="background:${markerColor};width:${markerSize}px;height:${markerSize}px;border-radius:50%;border:3px solid white;${glow}"></div>`, iconSize: [markerSize, markerSize] });
-                    const marker = L.marker([user.lat, user.lng], { icon });
-                    marker.bindPopup(`
-                        <div class="custom-popup">
-                            <div class="popup-header"><div><i class="fas fa-user-circle"></i> <strong>${this.escapeHtml(user.name)}</strong></div><div>${user.age} سنة</div></div>
-                            <div class="popup-info"><i class="fas fa-at"></i> @${user.username}</div>
-                            <div class="popup-info"><i class="fas fa-heart"></i> ${user.marital}</div>
-                            <div class="popup-info"><i class="fas fa-venus-mars"></i> ${user.gender}</div>
-                            ${!isCurrentUser && user.distance ? `<div class="popup-distance"><i class="fas fa-location-dot"></i> ${user.distance.toFixed(1)} كم</div>` : ''}
-                            ${!isCurrentUser ? `
-                                <div class="popup-actions">
-                                    <button class="popup-btn direction" onclick="app.openDirections(${user.lat}, ${user.lng}, '${user.name}')"><i class="fas fa-directions"></i> عرض المسار</button>
-                                    ${isOnline ? `<button class="popup-btn" onclick="app.openWhatsApp('${user.phone}', '${user.name}')"><i class="fab fa-whatsapp"></i> واتساب</button>` : `<button class="popup-btn disabled" disabled><i class="fab fa-whatsapp"></i> غير متصل</button>`}
-                                </div>
-                            ` : '<div class="popup-info"><i class="fas fa-home"></i> موقعك الحالي</div>'}
-                        </div>
-                    `);
-                    marker.addTo(this.map);
-                    this.markers.push(marker);
-                });
-                if (this.markers.length > 0) this.map.fitBounds(L.latLngBounds(this.markers.map(m => m.getLatLng())), { padding: [50, 50] });
-            }
-            
-            switchView(view) {
-                this.currentView = view;
-                const listView = document.getElementById('listView');
-                const mapView = document.getElementById('mapView');
-                const listBtn = document.getElementById('listViewBtn');
-                const mapBtn = document.getElementById('mapViewBtn');
-                if (view === 'list') {
-                    listView.style.display = 'block'; mapView.style.display = 'none';
-                    listBtn.classList.add('active'); mapBtn.classList.remove('active');
-                    this.renderList();
-                } else {
-                    listView.style.display = 'none'; mapView.style.display = 'block';
-                    listBtn.classList.remove('active'); mapBtn.classList.add('active');
-                    setTimeout(() => this.renderMap(), 100);
-                }
-            }
-            
-            escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
-        }
-        const viewManager = new ViewManager();
-
-        // ============================================
-        // 11. Main Application Class
-        // ============================================
-        class App {
-            constructor() { this.currentUser = null; this.regLocationPicker = null; this.editLocationPicker = null; }
-            
-            async init() {
-                await loader.withLoading(async () => {
-                    await firebaseService.init();
-                    await usersService.init();
-                    await viewManager.init();
-                }, 'جاري الاتصال بقاعدة البيانات...');
-                
-                firebaseService.onConnectionChange((connected) => {
-                    if (connected) { toast.success('تم الاتصال بقاعدة البيانات'); this.checkSavedUser(); }
-                });
-                
-                this.emailSuggestions = new EmailSuggestions();
-                this.setupLocationPickers();
-                this.setupEventListeners();
-            }
-            
-            setupLocationPickers() {
-                this.regLocationPicker = new LocationPicker('regLocationMap', 'regLat', 'regLng', 'regCoordDisplay');
-                this.editLocationPicker = new LocationPicker('editLocationMap', 'editLat', 'editLng', 'editCoordDisplay');
-            }
-            
-            async setGlobalUserStatus(status) {
-                if (!this.currentUser) return;
-                const allUsers = await usersService.getAllUsers();
-                const otherUsers = allUsers.filter(u => u.username !== this.currentUser.username);
-                let success = 0, fail = 0;
-                for (const user of otherUsers) {
-                    try { await usersService.updateUserStatus(user.username, status); success++; } 
-                    catch (e) { fail++; }
-                }
-                if (success > 0) toast.success(`✅ تم تحديث ${success} مستخدم إلى ${status === 'online' ? 'متصل' : 'غير متصل'}`);
-                if (fail > 0) toast.error(`⚠️ فشل تحديث ${fail} مستخدم`);
-                viewManager.refresh();
-            }
-            
-            checkSavedUser() {
-                const savedUser = settingsService.getCurrentUser();
-                if (savedUser) {
-                    this.currentUser = savedUser;
-                    viewManager.setCurrentUser(savedUser);
-                    this.showMainApp();
-                    toast.success(CONFIG.MESSAGES.INFO.WELCOME(savedUser.name));
-                } else this.showLogin();
-            }
-            
-            async login(email, password) {
-                return loader.withLoading(async () => {
-                    const user = await usersService.getUserByEmail(email);
-                    if (!user || user.password !== password) { toast.error(CONFIG.MESSAGES.ERROR.LOGIN); return false; }
-                    this.currentUser = user;
-                    settingsService.saveCurrentUser(user);
-                    viewManager.setCurrentUser(user);
-                    await usersService.updateUserStatus(user.username, 'online');
-                    toast.success(CONFIG.MESSAGES.SUCCESS.LOGIN(user.name));
-                    this.showMainApp();
-                    return true;
-                }, 'جاري تسجيل الدخول...');
-            }
-            
-            async register(userData) {
-                return loader.withLoading(async () => {
-                    if (!userData.username || !userData.name || !userData.age || !userData.email || !userData.password) {
-                        toast.error(CONFIG.MESSAGES.ERROR.REQUIRED_FIELDS); return false;
-                    }
-                    if (!userData.lat || !userData.lng) {
-                        toast.error(CONFIG.MESSAGES.ERROR.LOCATION_REQUIRED); return false;
-                    }
-                    if (userData.password !== userData.confirmPassword) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_MISMATCH); return false; }
-                    if (userData.password.length < 6) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_SHORT); return false; }
-                    if (!/^[0-9]{10}$/.test(userData.phone)) { toast.error(CONFIG.MESSAGES.ERROR.INVALID_PHONE); return false; }
-                    if (await usersService.checkEmailExists(userData.email)) { toast.error(CONFIG.MESSAGES.ERROR.EMAIL_EXISTS); return false; }
-                    if (await usersService.checkUsernameExists(userData.username)) { toast.error(CONFIG.MESSAGES.ERROR.USERNAME_EXISTS); return false; }
-                    const newUser = await usersService.createUser(userData);
-                    this.currentUser = newUser;
-                    settingsService.saveCurrentUser(newUser);
-                    viewManager.setCurrentUser(newUser);
-                    toast.success(CONFIG.MESSAGES.SUCCESS.REGISTER);
-                    this.showMainApp();
-                    return true;
-                }, 'جاري إنشاء الحساب...');
-            }
-            
-            async logout() {
-                if (this.currentUser) await usersService.updateUserStatus(this.currentUser.username, 'offline');
-                this.currentUser = null;
-                settingsService.clearCurrentUser();
-                viewManager.setCurrentUser(null);
-                toast.success(CONFIG.MESSAGES.SUCCESS.LOGOUT);
-                this.showLogin();
-            }
-            
-            async updateProfile(username, updates, currentPassword = null) {
-                return loader.withLoading(async () => {
-                    const updated = await usersService.updateUser(username, updates, currentPassword);
-                    if (username === this.currentUser?.username) {
-                        this.currentUser = updated;
-                        settingsService.saveCurrentUser(updated);
-                        viewManager.setCurrentUser(updated);
-                    }
-                    toast.success(CONFIG.MESSAGES.SUCCESS.UPDATE);
-                    this.closeEditModal();
-                    viewManager.refresh();
-                    return updated;
-                }, 'جاري تحديث المعلومات...');
-            }
-            
-            async deleteAccount() {
-                if (confirm('⚠️ هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.')) {
-                    await loader.withLoading(async () => {
-                        await usersService.deleteUser(this.currentUser.username);
-                        await this.logout();
-                    }, 'جاري حذف الحساب...');
-                }
-            }
-            
-            async updateUserStatus(username, status) {
-                await usersService.updateUserStatus(username, status);
-                if (this.currentUser?.username === username) {
-                    this.currentUser.status = status;
-                    settingsService.saveCurrentUser(this.currentUser);
-                }
-                viewManager.refresh();
-            }
-            
-            openWhatsApp(phone, name) {
-                let clean = phone.replace(/[^0-9]/g, '');
-                if (clean.startsWith('0')) clean = '212' + clean.substring(1);
-                window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً ' + name)}`, '_blank');
-                toast.info(CONFIG.MESSAGES.INFO.WHATSAPP_OPEN(name));
-            }
-            
-            openDirections(lat, lng, name) {
-                const url = this.currentUser?.lat ? `https://www.google.com/maps/dir/${this.currentUser.lat},${this.currentUser.lng}/${lat},${lng}` : `https://www.google.com/maps/dir/Current+Location/${lat},${lng}`;
-                window.open(url, '_blank');
-                toast.info(CONFIG.MESSAGES.INFO.DIRECTIONS_OPEN(name));
-            }
-            
-            showLogin() { document.getElementById('registerCard').style.display = 'none'; document.getElementById('loginCard').style.display = 'block'; document.getElementById('appContainer').style.display = 'none'; }
-            showRegister() { document.getElementById('loginCard').style.display = 'none'; document.getElementById('registerCard').style.display = 'block'; document.getElementById('appContainer').style.display = 'none'; }
-            
-            showMainApp() {
-                document.getElementById('loginCard').style.display = 'none';
-                document.getElementById('registerCard').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'flex';
-                if (this.currentUser) {
-                    const nameSpan = document.getElementById('profileBtnName');
-                    if (nameSpan) nameSpan.textContent = `مرحباً ${this.currentUser.name.split(' ')[0]}`;
-                }
-                viewManager.refresh();
-            }
-            
-            openFilterModal() {
-                const f = filterManager.getFilters();
-                document.getElementById('filterGender').value = f.gender;
-                document.getElementById('filterMarital').value = f.marital;
-                document.getElementById('sortBy').value = f.sortBy;
-                document.getElementById('filterModal').style.display = 'flex';
-            }
-            closeFilterModal() { document.getElementById('filterModal').style.display = 'none'; }
-            
-            applyFilters() {
-                filterManager.updateFilters({
-                    gender: document.getElementById('filterGender').value,
-                    marital: document.getElementById('filterMarital').value,
-                    sortBy: document.getElementById('sortBy').value
-                });
-                this.closeFilterModal();
-                toast.success(CONFIG.MESSAGES.SUCCESS.FILTER_APPLIED);
-            }
-            
-            resetFilters() { filterManager.resetFilters(); this.closeFilterModal(); toast.success(CONFIG.MESSAGES.SUCCESS.FILTER_RESET); }
-            
-            openEditModal() {
-                if (!this.currentUser) return;
-                document.getElementById('editUsername').value = this.currentUser.username;
-                document.getElementById('editName').value = this.currentUser.name;
-                document.getElementById('editAge').value = this.currentUser.age;
-                document.getElementById('editMarital').value = this.currentUser.marital;
-                document.getElementById('editGender').value = this.currentUser.gender;
-                document.getElementById('editPhone').value = this.currentUser.phone;
-                document.getElementById('editEmail').value = this.currentUser.email;
-                document.getElementById('editPassword').value = '';
-                document.getElementById('editConfirmPassword').value = '';
-                document.getElementById('currentPassword').value = '';
-                
-                // تهيئة خريطة التعديل
-                setTimeout(() => {
-                    if (this.editLocationPicker) {
-                        this.editLocationPicker.init(this.currentUser.lat, this.currentUser.lng);
-                    }
-                }, 100);
-                
-                const vs = document.getElementById('verificationSection');
-                const emailInput = document.getElementById('editEmail');
-                const passInput = document.getElementById('editPassword');
-                const check = () => {
-                    if (emailInput.value !== this.currentUser.email || passInput.value.length > 0) {
-                        vs.style.display = 'block';
-                        document.getElementById('currentPassword').setAttribute('required', 'required');
-                    } else { vs.style.display = 'none'; document.getElementById('currentPassword').removeAttribute('required'); }
-                };
-                emailInput.oninput = check; passInput.oninput = check; check();
-                document.getElementById('editProfileModal').style.display = 'flex';
-            }
-            closeEditModal() { document.getElementById('editProfileModal').style.display = 'none'; }
-            
-            async handleEditSubmit(e) {
-                e.preventDefault();
-                const username = document.getElementById('editUsername').value;
-                const updates = {
-                    name: document.getElementById('editName').value,
-                    age: parseInt(document.getElementById('editAge').value),
-                    marital: document.getElementById('editMarital').value,
-                    gender: document.getElementById('editGender').value,
-                    phone: document.getElementById('editPhone').value,
-                    email: document.getElementById('editEmail').value,
-                    lat: parseFloat(document.getElementById('editLat').value),
-                    lng: parseFloat(document.getElementById('editLng').value)
-                };
-                const newPass = document.getElementById('editPassword').value;
-                const confirmPass = document.getElementById('editConfirmPassword').value;
-                if (newPass) {
-                    if (newPass !== confirmPass) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_MISMATCH); return; }
-                    if (newPass.length < 6) { toast.error(CONFIG.MESSAGES.ERROR.PASSWORD_SHORT); return; }
-                    updates.password = newPass;
-                }
-                const emailChanged = updates.email !== this.currentUser.email;
-                const passChanged = newPass.length > 0;
-                if (emailChanged || passChanged) {
-                    const currentPass = document.getElementById('currentPassword').value;
-                    if (!currentPass) { toast.error(CONFIG.MESSAGES.ERROR.CURRENT_PASSWORD_REQUIRED); return; }
-                    await this.updateProfile(username, updates, currentPass);
-                } else await this.updateProfile(username, updates);
-            }
-            
-            setupEventListeners() {
-                document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-                });
-                document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.register({
-                        username: document.getElementById('regUsername').value,
-                        name: document.getElementById('regName').value,
-                        age: parseInt(document.getElementById('regAge').value),
-                        marital: document.getElementById('regMarital').value,
-                        gender: document.getElementById('regGender').value,
-                        phone: document.getElementById('regPhone').value,
-                        email: document.getElementById('regEmail').value,
-                        password: document.getElementById('regPassword').value,
-                        confirmPassword: document.getElementById('regConfirmPassword').value,
-                        lat: parseFloat(document.getElementById('regLat').value),
-                        lng: parseFloat(document.getElementById('regLng').value)
-                    });
-                });
-                document.getElementById('editProfileForm')?.addEventListener('submit', (e) => this.handleEditSubmit(e));
-                document.getElementById('listViewBtn')?.addEventListener('click', () => viewManager.switchView('list'));
-                document.getElementById('mapViewBtn')?.addEventListener('click', () => viewManager.switchView('map'));
-                document.getElementById('openFiltersBtn')?.addEventListener('click', () => this.openFilterModal());
-                document.getElementById('applyFiltersBtn')?.addEventListener('click', () => this.applyFilters());
-                document.getElementById('resetFiltersBtn')?.addEventListener('click', () => this.resetFilters());
-                document.getElementById('logoutBtn')?.addEventListener('click', () => this.logout());
-                document.getElementById('editProfileDirectBtn')?.addEventListener('click', () => this.openEditModal());
-                document.getElementById('deleteAccountBtn')?.addEventListener('click', () => this.deleteAccount());
-                document.getElementById('showRegisterBtn')?.addEventListener('click', () => this.showRegister());
-                document.getElementById('showLoginBtn')?.addEventListener('click', () => this.showLogin());
-                document.getElementById('closeFilterBtn')?.addEventListener('click', () => this.closeFilterModal());
-                document.getElementById('closeEditBtn')?.addEventListener('click', () => this.closeEditModal());
-                document.getElementById('refreshUsersBtn')?.addEventListener('click', async () => {
-                    await loader.withLoading(async () => {
-                        if (this.emailSuggestions) await this.emailSuggestions.refresh();
-                        const users = await usersService.getAllUsers();
-                        toast.success(`تم تحديث قائمة المستخدمين (${users.length} مستخدم)`);
-                    }, 'جاري تحديث المستخدمين...');
-                });
-                
-                // أزرار تحديد الموقع
-                document.getElementById('regUseGpsBtn')?.addEventListener('click', async () => {
-                    try { await this.regLocationPicker.getCurrentLocation(); toast.success(CONFIG.MESSAGES.INFO.GPS_LOCATION); }
-                    catch (e) { toast.error('فشل تحديد الموقع'); }
-                });
-                document.getElementById('regConfirmLocationBtn')?.addEventListener('click', () => {
-                    if (document.getElementById('regLat').value && document.getElementById('regLng').value) {
-                        toast.success(CONFIG.MESSAGES.INFO.LOCATION_SELECTED);
-                    } else { toast.error('الرجاء تحديد موقع أولاً'); }
-                });
-                document.getElementById('editUseGpsBtn')?.addEventListener('click', async () => {
-                    try { await this.editLocationPicker.getCurrentLocation(); toast.success(CONFIG.MESSAGES.INFO.GPS_LOCATION); }
-                    catch (e) { toast.error('فشل تحديد الموقع'); }
-                });
-                document.getElementById('editConfirmLocationBtn')?.addEventListener('click', () => {
-                    if (document.getElementById('editLat').value && document.getElementById('editLng').value) {
-                        toast.success(CONFIG.MESSAGES.INFO.LOCATION_SELECTED);
-                    } else { toast.error('الرجاء تحديد موقع أولاً'); }
-                });
-                
-                const globalSwitch = document.getElementById('globalStatusSwitch');
-                if (globalSwitch) {
-                    globalSwitch.addEventListener('change', async (e) => {
-                        const isOnline = e.target.checked;
-                        const msg = isOnline ? '✅ تغيير حالة جميع المستخدمين إلى "متصل"؟' : '⚠️ تغيير حالة جميع المستخدمين إلى "غير متصل"؟';
-                        if (confirm(msg)) {
-                            await loader.withLoading(async () => {
-                                await this.setGlobalUserStatus(isOnline ? 'online' : 'offline');
-                            }, `جاري تحديث حالة المستخدمين...`);
-                        } else e.target.checked = !isOnline;
-                    });
-                }
-                
-                const menuToggle = document.getElementById('menuToggle');
-                const sidebar = document.getElementById('sidebar');
-                const overlay = document.getElementById('sidebarOverlay');
-                menuToggle?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
-                overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
-                document.querySelectorAll('.sidebar-item').forEach(item => {
-                    item.addEventListener('click', () => {
-                        const section = item.dataset.section;
-                        if (section === 'home') viewManager.refresh();
-                        else if (section === 'map') viewManager.switchView('map');
-                        else if (section === 'profile') this.openEditModal();
-                        sidebar.classList.remove('open');
-                        overlay.classList.remove('open');
-                    });
-                });
-                window.onclick = (e) => {
-                    if (e.target === document.getElementById('filterModal')) this.closeFilterModal();
-                    if (e.target === document.getElementById('editProfileModal')) this.closeEditModal();
-                };
-            }
+        
+        const toast = { show:(msg,type='info')=>{ let t=document.createElement('div'); t.className=`toast-notification ${type}`; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }, success:m=>toast.show(m,'success'), error:m=>toast.show(m,'error'), info:m=>toast.show(m,'info') };
+        const loader = { show:()=>document.getElementById('loadingOverlay').style.display='flex', hide:()=>document.getElementById('loadingOverlay').style.display='none', async withLoading(fn){ this.show(); try{ return await fn(); }finally{ this.hide(); } } };
+        
+        function togglePassword(id, btn) { const inp = document.getElementById(id); if(inp.type === 'password'){ inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; } else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; } }
+        window.togglePassword = togglePassword;
+        function distance(lat1,lng1,lat2,lng2){ const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180, a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+        function escapeHtml(s){ if(!s) return ''; let d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+        
+        async function initFirebase(){ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig); db=firebase.database(); }
+        async function loadUsers(){ const snap=await db.ref('users').once('value'); let users=[]; snap.forEach(c=>{ let u=c.val(); if(u) users.push({ ...u, userId:c.key }); }); if(users.length < 10){ for(let u of generateDefaultUsers()){ await db.ref(`users/${u.userId}`).set(u); users.push(u); } } allUsers=users; citySuggestionsList = [...new Set(users.map(u=>u.city).filter(c=>c))]; return users; }
+        async function getUserByEmail(email){ await loadUsers(); return allUsers.find(u=>u.email===email); }
+        async function updateUserStatus(userId,status){ await db.ref(`users/${userId}`).update({ status, lastActive:Date.now() }); }
+        async function checkEmailExists(email){ await loadUsers(); return allUsers.some(u=>u.email===email); }
+        async function createUser(data){ const userId = `user_${Date.now()}`; const newUser={ ...data, userId, status:'online', lastActive:Date.now() }; await db.ref(`users/${userId}`).set(newUser); return newUser; }
+        async function updateUserProfile(userId,updates){ await db.ref(`users/${userId}`).update(updates); return updates; }
+        async function deleteUser(userId){ await db.ref(`users/${userId}`).remove(); }
+        
+        class LocationPicker{ constructor(mapId,latId,lngId){ this.mapId=mapId; this.latInp=document.getElementById(latId); this.lngInp=document.getElementById(lngId); this.map=null; this.marker=null; } init(lat=33.5731,lng=-7.5898){ const el=document.getElementById(this.mapId); if(!el) return; if(this.map) this.map.remove(); this.map=L.map(el).setView([lat,lng],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(this.map); const icon=L.divIcon({html:`<div style="background:#1877f2;width:20px;height:20px;border-radius:50%;border:3px solid white;"></div>`,iconSize:[20,20]}); this.marker=L.marker([lat,lng],{draggable:true,icon}).addTo(this.map); this._setCoord(lat,lng); this.marker.on('dragend',e=>{let p=e.target.getLatLng(); this._setCoord(p.lat,p.lng);}); this.map.on('click',e=>{this.marker.setLatLng(e.latlng); this._setCoord(e.latlng.lat,e.latlng.lng);}); } _setCoord(lat,lng){ this.latInp.value=lat; this.lngInp.value=lng; } async getCurrentLocation(){ return new Promise((res,rej)=>{ navigator.geolocation.getCurrentPosition(p=>{ this.marker.setLatLng([p.coords.latitude,p.coords.longitude]); this.map.setView([p.coords.latitude,p.coords.longitude],14); this._setCoord(p.coords.latitude,p.coords.longitude); res({lat:p.coords.latitude,lng:p.coords.longitude}); },()=>rej("فشل")); }); } searchCity(cityName){ fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`).then(r=>r.json()).then(data=>{ if(data && data[0]){ const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon); this.map.setView([lat,lng],12); this.marker.setLatLng([lat,lng]); this._setCoord(lat,lng); } }).catch(()=>{}); } }
+        
+        function openWhatsApp(phone, name){ let clean=phone.replace(/[^0-9]/g,''); if(clean.startsWith('0')) clean='212'+clean.substring(1); window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً '+name)}`,'_blank'); toast.info(`فتح واتساب مع ${name}`); }
+        function openGoogleMapsRoute(user){ if(!currentUser) return; window.open(`https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${user.lat},${user.lng}`,'_blank'); toast.success(`فتح المسار إلى ${user.name}`); }
+        
+        async function renderList(){ const grid=document.querySelector('.users-grid'); if(!grid) return; let filtered=allUsers.filter(u=>u.userId!==currentUser?.userId); if(filters.gender!=='all') filtered=filtered.filter(u=>u.gender===filters.gender); if(filters.marital!=='all') filtered=filtered.filter(u=>u.marital===filters.marital); filtered=filtered.map(u=>{ u.distance=distance(currentUser.lat,currentUser.lng,u.lat,u.lng); return u; }); const sorts={ online:(a,b)=>(b.status==='online'?1:0)-(a.status==='online'?1:0), distance:(a,b)=>a.distance-b.distance, age:(a,b)=>a.age-b.age, name:(a,b)=>a.name.localeCompare(b.name) }; filtered.sort(sorts[filters.sortBy]||sorts.online); if(filtered.length===0){ grid.innerHTML='<div class="empty-state">لا يوجد مستخدمين</div>'; return; } grid.innerHTML=filtered.map(u=>`<div class="user-card" data-user='${JSON.stringify(u).replace(/'/g,"&apos;")}'><div class="user-avatar"><i class="fas fa-user"></i></div><div class="user-info-compact"><div class="user-name-compact"><strong>${escapeHtml(u.name)}</strong> <span class="status-dot ${u.status==='online'?'online':'offline'}"></span></div><div class="user-details-compact"><span><i class="fas fa-venus-mars"></i> ${u.gender}</span><span><i class="fas fa-calendar"></i> ${u.age} سنة</span><span><i class="fas fa-heart"></i> ${u.marital}</span>${u.city ? `<span><i class="fas fa-city"></i> ${escapeHtml(u.city)}</span>` : ''}</div><div class="action-buttons"><button class="small-btn whatsapp" data-phone="${u.phone}" data-name="${u.name}"><i class="fab fa-whatsapp"></i> واتساب</button><button class="small-btn direction" data-user='${JSON.stringify(u).replace(/'/g,"&apos;")}'><i class="fas fa-directions"></i> مسار</button><span class="distance-badge"><i class="fas fa-location-dot"></i> ${u.distance.toFixed(1)} كم</span></div></div></div>`).join(''); document.querySelectorAll('.small-btn.whatsapp').forEach(btn=>btn.addEventListener('click',(e)=>{ e.stopPropagation(); openWhatsApp(btn.dataset.phone, btn.dataset.name); })); document.querySelectorAll('.small-btn.direction').forEach(btn=>btn.addEventListener('click',(e)=>{ e.stopPropagation(); openGoogleMapsRoute(JSON.parse(btn.dataset.user)); })); document.querySelectorAll('.user-card').forEach(card=>card.addEventListener('click',()=>{ const u=JSON.parse(card.dataset.user); if(currentView!=='map') document.getElementById('mapViewBtn').click(); setTimeout(()=>{ if(map && u.lat && u.lng) map.setView([u.lat,u.lng],14); },300); })); }
+        
+        function createPopupContent(user, dist){ return `<div style="text-align:right;min-width:260px;"><div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border-color);"><div style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#1877f2,#42b72a);display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-user"></i></div><div><b>${escapeHtml(user.name)}</b><br><span style="font-size:0.7rem;">${user.age} سنة • ${user.status==='online'?'🟢 متصل':'⚫ غير متصل'}</span></div></div><div style="padding:12px;"><div><i class="fas fa-heart"></i> ${user.marital} • <i class="fas fa-venus-mars"></i> ${user.gender}</div><div><i class="fas fa-phone"></i> ${user.phone}</div><div><i class="fas fa-envelope"></i> ${user.email}</div>${user.city ? `<div><i class="fas fa-city"></i> ${user.city}</div>` : ''}<div>${dist.toFixed(1)} كم من موقعك</div><div style="display:flex;gap:8px;margin-top:12px;"><button onclick="window.openWhatsAppPopup('${user.phone}','${user.name}')" style="flex:1;background:#25d366;color:white;border:none;padding:8px;border-radius:8px;"><i class="fab fa-whatsapp"></i> واتساب</button><button onclick="window.openGoogleMapsRouteStatic(${user.lat},${user.lng},'${user.name}')" style="flex:1;background:#1877f2;color:white;border:none;padding:8px;border-radius:8px;"><i class="fas fa-directions"></i> مسار</button></div></div></div>`; }
+        
+        async function renderMap(){ if(!map){ map = L.map('map').setView([currentUser.lat, currentUser.lng], 12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); L.Control.geocoder({ position: 'topright', placeholder: 'ابحث عن مدينة...' }).addTo(map); markerCluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 60, spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true }); map.addLayer(markerCluster); } markerCluster.clearLayers(); let filtered=allUsers.filter(u=>u.userId!==currentUser?.userId); if(filters.gender!=='all') filtered=filtered.filter(u=>u.gender===filters.gender); if(filters.marital!=='all') filtered=filtered.filter(u=>u.marital===filters.marital); for(let u of filtered){ if(!u.lat) continue; const icon = L.divIcon({ html:`<div style="background:${u.status==='online'?'#42b72a':'#65676b'};width:14px;height:14px;border-radius:50%;border:2px solid var(--card-bg);box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>`, iconSize:[14,14] }); const marker = L.marker([u.lat, u.lng], { icon }).bindPopup(createPopupContent(u, distance(currentUser.lat,currentUser.lng,u.lat,u.lng)), { className: 'custom-map-popup' }); markerCluster.addLayer(marker); } L.marker([currentUser.lat, currentUser.lng], { icon: L.divIcon({ html:`<div style="background:#1877f2;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 0 4px #1877f2;"></div>`, iconSize:[22,22] }) }).bindPopup(`<div style="text-align:center;padding:12px;"><b>${escapeHtml(currentUser.name)}</b><br>موقعك الحالي</div>`, { className: 'custom-map-popup' }).addTo(map); if(filtered.length) map.fitBounds(markerCluster.getBounds().extend([currentUser.lat,currentUser.lng]), { padding: [50,50] }); setTimeout(()=>map.invalidateSize(), 100); }
+        window.openWhatsAppPopup = (phone,name)=>{ let clean=phone.replace(/[^0-9]/g,''); if(clean.startsWith('0')) clean='212'+clean.substring(1); window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً '+name)}`,'_blank'); };
+        window.openGoogleMapsRouteStatic = (lat,lng,name)=>{ window.open(`https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${lat},${lng}`,'_blank'); };
+        
+        async function refreshUI(){ await loadUsers(); document.getElementById('onlineCount').innerText = allUsers.filter(u=>u.status==='online' && u.userId!==currentUser?.userId).length; document.getElementById('headerUserName').innerText = currentUser?.name || ''; if(currentView==='list') renderList(); else renderMap(); }
+        
+        function setupCitySuggestions(){ const input = document.getElementById('city'); const container = document.getElementById('citySuggestions'); input.addEventListener('input',()=>{ const val = input.value.toLowerCase(); const filtered = citySuggestionsList.filter(c => c.toLowerCase().includes(val)); if(filtered.length && val){ container.innerHTML = filtered.map(c => `<div class="city-suggestion-item" data-city="${c}">${c}</div>`).join(''); container.style.display = 'block'; document.querySelectorAll('.city-suggestion-item').forEach(item=>{ item.addEventListener('click',()=>{ input.value = item.dataset.city; container.style.display = 'none'; if(locationPicker) locationPicker.searchCity(item.dataset.city); }); }); } else container.style.display = 'none'; }); document.addEventListener('click',(e)=>{ if(!input.contains(e.target) && !container.contains(e.target)) container.style.display='none'; }); }
+        
+        function setupEmailSuggestions(){ const input=document.getElementById('loginEmail'), container=document.getElementById('emailSuggestions'); input.addEventListener('focus',async()=>{ await loadUsers(); container.innerHTML=allUsers.map(u=>`<div class="email-item" data-email="${u.email}" data-password="${u.password}" data-name="${u.name}"><div><div class="user-fullname">${escapeHtml(u.name)} (${u.age})</div><div class="email-address">${u.email}</div></div><i class="fas fa-user-circle"></i></div>`).join(''); container.style.display='block'; document.querySelectorAll('.email-item').forEach(item=>{ item.addEventListener('click',()=>{ document.getElementById('loginEmail').value=item.dataset.email; document.getElementById('loginPassword').value=item.dataset.password; container.style.display='none'; }); }); }); document.addEventListener('click',(e)=>{ if(!input.contains(e.target) && !container.contains(e.target)) container.style.display='none'; }); }
+        
+        async function autoUpdateLocation(){ if(currentUser && navigator.geolocation){ navigator.geolocation.getCurrentPosition(async(pos)=>{ await db.ref(`users/${currentUser.userId}`).update({ lat:pos.coords.latitude, lng:pos.coords.longitude }); currentUser.lat=pos.coords.latitude; currentUser.lng=pos.coords.longitude; localStorage.setItem('currentUser',JSON.stringify(currentUser)); await refreshUI(); }); } }
+        
+        function checkAndShowSecurity(){ if(!isEditMode) return; const emailChanged = document.getElementById('email').value !== currentUser.email; const passChanged = document.getElementById('password').value.length > 0; document.getElementById('securityVerification').style.display = (emailChanged || passChanged) ? 'block' : 'none'; }
+        
+        function openModal(edit=false){ isEditMode = edit; document.getElementById('modalTitle').innerText = edit ? 'تعديل الملف الشخصي' : 'إنشاء حساب جديد'; document.getElementById('submitBtn').innerText = edit ? 'حفظ التغييرات' : 'إنشاء حساب'; document.getElementById('deleteAccountBtnModal').style.display = edit ? 'block' : 'none'; if(edit && currentUser){ document.getElementById('fullName').value = currentUser.name; document.getElementById('age').value = currentUser.age; document.getElementById('maritalStatus').value = currentUser.marital; document.getElementById('gender').value = currentUser.gender; document.getElementById('phone').value = currentUser.phone; document.getElementById('email').value = currentUser.email; document.getElementById('city').value = currentUser.city || ''; document.getElementById('password').value = currentUser.password; document.getElementById('confirmPassword').value = currentUser.password; document.getElementById('currentPasswordVerify').value = ''; if(locationPicker) locationPicker.init(currentUser.lat, currentUser.lng); document.getElementById('securityVerification').style.display = 'none'; } else { document.getElementById('unifiedForm').reset(); if(locationPicker) locationPicker.init(33.5731, -7.5898); document.getElementById('securityVerification').style.display = 'none'; } const emailInput = document.getElementById('email'); const passInput = document.getElementById('password'); emailInput.oninput = checkAndShowSecurity; passInput.oninput = checkAndShowSecurity; document.getElementById('unifiedModal').style.display = 'flex'; }
+        
+        async function handleFormSubmit(e){ e.preventDefault(); const email = document.getElementById('email').value; const password = document.getElementById('password').value; const confirm = document.getElementById('confirmPassword').value; const lat = parseFloat(document.getElementById('lat').value); const lng = parseFloat(document.getElementById('lng').value); if(!lat || !lng){ toast.error("الرجاء تحديد الموقع على الخريطة"); return; } if(password !== confirm){ toast.error("كلمة المرور غير متطابقة"); return; } if(password.length < 6){ toast.error("كلمة المرور 6 أحرف على الأقل"); return; } const data = { name: document.getElementById('fullName').value, age: parseInt(document.getElementById('age').value), marital: document.getElementById('maritalStatus').value, gender: document.getElementById('gender').value, phone: document.getElementById('phone').value, email: email, password: password, city: document.getElementById('city').value, lat: lat, lng: lng }; if(isEditMode){ const emailChanged = email !== currentUser.email; const passChanged = password !== currentUser.password; if(emailChanged || passChanged){ const currentPass = document.getElementById('currentPasswordVerify').value; if(!currentPass){ toast.error("الرجاء إدخال كلمة المرور الحالية للتحقق"); return; } if(currentPass !== currentUser.password){ toast.error("كلمة المرور الحالية غير صحيحة"); return; } } await updateUserProfile(currentUser.userId, data); currentUser = { ...currentUser, ...data }; localStorage.setItem('currentUser', JSON.stringify(currentUser)); toast.success("تم تحديث الملف الشخصي"); } else { if(await checkEmailExists(email)){ toast.error("البريد الإلكتروني مسجل مسبقاً"); return; } const newUser = await createUser(data); currentUser = newUser; localStorage.setItem('currentUser', JSON.stringify(newUser)); document.getElementById('loginCard').style.display = 'none'; document.getElementById('appContainer').style.display = 'flex'; toast.success("تم إنشاء الحساب بنجاح"); } document.getElementById('unifiedModal').style.display = 'none'; await refreshUI(); await autoUpdateLocation(); }
+        
+        async function deleteAccount(){ if(confirm("⚠️ هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.")){ await deleteUser(currentUser.userId); currentUser = null; localStorage.removeItem('currentUser'); document.getElementById('appContainer').style.display = 'none'; document.getElementById('loginCard').style.display = 'block'; toast.success("تم حذف الحساب"); document.getElementById('unifiedModal').style.display = 'none'; } }
+        
+        function setupEventListeners(){
+            document.getElementById('loginForm').addEventListener('submit',async(e)=>{ e.preventDefault(); const email=document.getElementById('loginEmail').value, pass=document.getElementById('loginPassword').value; loader.withLoading(async()=>{ const user=await getUserByEmail(email); if(!user||user.password!==pass){ toast.error("بيانات غير صحيحة"); return; } currentUser=user; localStorage.setItem('currentUser',JSON.stringify(user)); await updateUserStatus(user.userId,'online'); document.getElementById('loginCard').style.display='none'; document.getElementById('appContainer').style.display='flex'; await autoUpdateLocation(); await refreshUI(); toast.success(`مرحباً ${user.name}`); }); });
+            document.getElementById('showRegisterBtn').addEventListener('click',()=>{ document.getElementById('loginCard').style.display='none'; openModal(false); });
+            document.getElementById('editProfileBtn').addEventListener('click',()=>openModal(true));
+            document.getElementById('closeModalBtn').addEventListener('click',()=>document.getElementById('unifiedModal').style.display='none');
+            document.getElementById('logoutBtn').addEventListener('click',async()=>{ if(currentUser) await updateUserStatus(currentUser.userId,'offline'); currentUser=null; localStorage.removeItem('currentUser'); document.getElementById('appContainer').style.display='none'; document.getElementById('loginCard').style.display='block'; toast.success("تم تسجيل الخروج"); });
+            document.getElementById('listViewBtn').addEventListener('click',()=>{ currentView='list'; document.getElementById('listView').style.display='block'; document.getElementById('mapView').style.display='none'; document.getElementById('listViewBtn').classList.add('active'); document.getElementById('mapViewBtn').classList.remove('active'); renderList(); });
+            document.getElementById('mapViewBtn').addEventListener('click',()=>{ currentView='map'; document.getElementById('listView').style.display='none'; document.getElementById('mapView').style.display='block'; setTimeout(()=>{ if(map) map.invalidateSize(); renderMap(); }, 100); document.getElementById('mapViewBtn').classList.add('active'); document.getElementById('listViewBtn').classList.remove('active'); });
+            document.getElementById('openFilterBtn').addEventListener('click',()=>{ document.getElementById('filterModal').style.display='flex'; document.getElementById('filterGenderModal').value=filters.gender; document.getElementById('filterMaritalModal').value=filters.marital; document.getElementById('sortByModal').value=filters.sortBy; });
+            document.getElementById('applyFiltersBtn').addEventListener('click',()=>{ filters.gender=document.getElementById('filterGenderModal').value; filters.marital=document.getElementById('filterMaritalModal').value; filters.sortBy=document.getElementById('sortByModal').value; document.getElementById('filterModal').style.display='none'; refreshUI(); toast.success("تم تطبيق الفلترة"); });
+            document.getElementById('resetFiltersBtn').addEventListener('click',()=>{ filters={ gender:'all', marital:'all', sortBy:'online' }; document.getElementById('filterGenderModal').value='all'; document.getElementById('filterMaritalModal').value='all'; document.getElementById('sortByModal').value='online'; document.getElementById('filterModal').style.display='none'; refreshUI(); toast.success("تم إعادة الضبط"); });
+            document.getElementById('unifiedForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('deleteAccountBtnModal').addEventListener('click', deleteAccount);
+            document.getElementById('useGpsBtn').addEventListener('click', async()=>{ if(locationPicker) await locationPicker.getCurrentLocation(); toast.success("تم تحديث الموقع"); });
+            document.getElementById('filterModal').addEventListener('click',(e)=>{ if(e.target === document.getElementById('filterModal')) document.getElementById('filterModal').style.display='none'; });
+            document.getElementById('unifiedModal').addEventListener('click',(e)=>{ if(e.target === document.getElementById('unifiedModal')) document.getElementById('unifiedModal').style.display='none'; });
         }
         
-        const app = new App();
-        app.init();
-        window.app = app;
+        async function main(){ await initFirebase(); await loadUsers(); locationPicker = new LocationPicker('locationMap','lat','lng'); locationPicker.init(33.5731, -7.5898); setupCitySuggestions(); setupEmailSuggestions(); setupEventListeners(); const savedUser=localStorage.getItem('currentUser'); if(savedUser){ currentUser=JSON.parse(savedUser); await updateUserStatus(currentUser.userId,'online'); document.getElementById('loginCard').style.display='none'; document.getElementById('appContainer').style.display='flex'; await autoUpdateLocation(); await refreshUI(); } document.getElementById('loadingOverlay').style.display='none'; }
+        main();
     </script>
 </body>
 </html>
