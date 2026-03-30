@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>تواصل - منصة اجتماعية</title>
+    <link rel="icon" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* WhatsApp Dark Theme */
+        :root {
+            --whatsapp-dark-bg: #111b12;
+            --whatsapp-header: #075e54;
+            --whatsapp-primary: #25d366;
+            --whatsapp-secondary: #128c7e;
+            --whatsapp-chat-bg: #0c1a12;
+            --whatsapp-message-in: #202c33;
+            --whatsapp-message-out: #005c4b;
+            --whatsapp-text: #e9edef;
+            --whatsapp-text-light: #8696a0;
+            --whatsapp-border: #2a3942;
+            --whatsapp-hover: #202c33;
+            --whatsapp-input-bg: #2a3942;
+            --shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 2px 5px rgba(0,0,0,0.3);
+            --shadow-lg: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--whatsapp-dark-bg);
+            color: var(--whatsapp-text);
+            min-height: 100vh;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--whatsapp-message-in); }
+        ::-webkit-scrollbar-thumb { background: var(--whatsapp-primary); border-radius: 10px; }
+        
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--whatsapp-message-in);
+            color: var(--whatsapp-text);
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            z-index: 10001;
+            animation: fadeInCenter 0.3s ease, fadeOutCenter 2.5s ease 2s forwards;
+            text-align: center;
+            min-width: 280px;
+            backdrop-filter: blur(12px);
+            font-weight: 500;
+            border: 1px solid var(--whatsapp-border);
+            box-shadow: var(--shadow-lg);
+        }
+        .toast-notification.error { background: #e41e3f; color: white; }
+        .toast-notification.success { background: var(--whatsapp-primary); color: white; }
+        @keyframes fadeInCenter {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes fadeOutCenter {
+            to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); visibility: hidden; }
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--whatsapp-dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--whatsapp-border);
+            border-top-color: var(--whatsapp-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* WhatsApp Auth Card */
+        .auth-card {
+            max-width: 450px;
+            width: 90%;
+            margin: 2rem auto;
+            background: var(--whatsapp-message-in);
+            border-radius: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+        .auth-header {
+            background: var(--whatsapp-header);
+            padding: 2rem;
+            text-align: center;
+        }
+        .auth-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-top: 0.5rem;
+        }
+        .auth-body { padding: 2rem; }
+        
+        .input-group { margin-bottom: 1rem; position: relative; }
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--whatsapp-text-light);
+            font-size: 0.85rem;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--whatsapp-border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: 'Cairo', sans-serif;
+            background: var(--whatsapp-input-bg);
+            color: var(--whatsapp-text);
+            transition: all 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--whatsapp-primary);
+            box-shadow: 0 0 0 2px rgba(37, 211, 102, 0.2);
+        }
+        .password-wrapper { position: relative; }
+        .password-wrapper input { padding-left: 2.5rem; }
+        .toggle-password {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--whatsapp-text-light);
+            background: none;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--whatsapp-primary); color: #111b12; }
+        .btn-primary:hover { background: #20b859; transform: translateY(-1px); }
+        .switch-link {
+            text-align: center;
+            margin-top: 1.25rem;
+            color: var(--whatsapp-primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .email-dropdown { position: relative; }
+        .email-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--whatsapp-message-in);
+            border: 1px solid var(--whatsapp-border);
+            border-radius: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+        .email-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid var(--whatsapp-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .email-item:hover { background: var(--whatsapp-hover); }
+        .email-item .user-fullname { font-weight: 700; color: var(--whatsapp-text); }
+        .email-item .email-address { font-size: 0.75rem; color: var(--whatsapp-text-light); direction: ltr; }
+        
+        /* WhatsApp App Container */
+        .app-container {
+            min-height: 100vh;
+            background: var(--whatsapp-dark-bg);
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* WhatsApp Header */
+        .wa-header {
+            background: var(--whatsapp-header);
+            padding: 0.75rem 1rem;
+            flex-shrink: 0;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo i { font-size: 1.6rem; }
+        .user-info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255,255,255,0.15);
+            padding: 0.3rem 1rem;
+            border-radius: 2rem;
+        }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
+        .wa-icon-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        .wa-icon-btn:hover { background: rgba(255,255,255,0.25); }
+        .online-stats {
+            background: rgba(255,255,255,0.15);
+            padding: 0.4rem 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+        }
+        
+        /* WhatsApp Tabs */
+        .wa-tabs {
+            background: var(--whatsapp-header);
+            padding: 0 1rem;
+            display: flex;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+        .wa-tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 2px solid transparent;
+        }
+        .wa-tab.active {
+            color: white;
+            border-bottom-color: var(--whatsapp-primary);
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: auto;
+        }
+        .filter-btn:hover { background: rgba(255,255,255,0.25); }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0.5rem;
+        }
+        
+        /* WhatsApp Contacts/Chats List */
+        .users-list {
+            overflow-y: auto;
+            height: 100%;
+            padding: 0.5rem;
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+        .user-item:hover { background: var(--whatsapp-hover); }
+        .user-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--whatsapp-primary), var(--whatsapp-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .user-info-wa {
+            flex: 1;
+            min-width: 0;
+        }
+        .user-name-wa {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--whatsapp-text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .user-details-wa {
+            font-size: 0.7rem;
+            color: var(--whatsapp-text-light);
+            margin-top: 0.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.65rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.online { background: var(--whatsapp-primary); animation: pulse 1.5s infinite; }
+        .status-dot.offline { background: var(--whatsapp-text-light); }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .distance-badge-wa {
+            background: var(--whatsapp-secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            color: white;
+        }
+        .action-buttons-wa {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .wa-small-btn {
+            background: var(--whatsapp-input-bg);
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 1.5rem;
+            cursor: pointer;
+            font-size: 0.7rem;
+            color: var(--whatsapp-text);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.2s;
+        }
+        .wa-small-btn:hover { background: var(--whatsapp-hover); }
+        .wa-small-btn.whatsapp { background: #25d36620; color: #25d366; }
+        .wa-small-btn.whatsapp:hover { background: #25d36630; }
+        .wa-small-btn.direction { background: var(--whatsapp-secondary); color: white; }
+        
+        /* Map Area */
+        .map-area {
+            width: 100%;
+            height: 100%;
+            background: var(--whatsapp-dark-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--whatsapp-border);
+        }
+        #map { width: 100%; height: 100%; background: var(--whatsapp-dark-bg); }
+        
+        /* Custom Popup */
+        .custom-map-popup .leaflet-popup-content-wrapper {
+            background: var(--whatsapp-message-in);
+            color: var(--whatsapp-text);
+            border-radius: 16px;
+            padding: 0;
+            border: 1px solid var(--whatsapp-border);
+        }
+        .custom-map-popup .leaflet-popup-tip { background: var(--whatsapp-message-in); }
+        .custom-map-popup .leaflet-popup-content { margin: 0; min-width: 260px; }
+        
+        /* Modal WhatsApp Style */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-card {
+            background: var(--whatsapp-message-in);
+            border-radius: 24px;
+            max-width: 550px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--whatsapp-border);
+            margin-bottom: 1rem;
+        }
+        .modal-header h3 { color: var(--whatsapp-text); font-weight: 600; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--whatsapp-text-light);
+        }
+        .location-map {
+            height: 280px;
+            border-radius: 16px;
+            margin-top: 0.5rem;
+            border: 1px solid var(--whatsapp-border);
+        }
+        .location-btn {
+            width: 100%;
+            background: var(--whatsapp-secondary);
+            color: white;
+            padding: 0.6rem;
+            border-radius: 24px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        .location-btn.gps { background: var(--whatsapp-primary); color: #111b12; }
+        .city-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--whatsapp-message-in);
+            border: 1px solid var(--whatsapp-border);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .city-suggestion-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--whatsapp-border);
+        }
+        .city-suggestion-item:hover { background: var(--whatsapp-hover); }
+        .security-verification {
+            background: rgba(228, 30, 63, 0.15);
+            border: 1px solid #e41e3f;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        /* Filter Modal */
+        .filter-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .filter-card-modal {
+            background: var(--whatsapp-message-in);
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            padding: 1.5rem;
+        }
+        .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--whatsapp-border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            background: var(--whatsapp-input-bg);
+            color: var(--whatsapp-text);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--whatsapp-text-light);
+        }
+        
+        .marker-cluster { background-color: rgba(37, 211, 102, 0.6); }
+        .marker-cluster div { background-color: rgba(37, 211, 102, 0.8); color: #111b12; font-weight: bold; }
+        
+        @media (max-width: 768px) {
+            .user-item { padding: 0.5rem; }
+            .user-avatar { width: 48px; height: 48px; font-size: 1.1rem; }
+            .user-details-wa { font-size: 0.65rem; gap: 0.5rem; }
+            .wa-tab span { display: none; }
+            .wa-tab { padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay"><div style="text-align:center;"><div class="loader-spinner"></div><div>جاري التحميل...</div></div></div>
+
+    <div id="loginCard" class="auth-card">
+        <div class="auth-header"><i class="fab fa-whatsapp fa-3x"></i><h2>تواصل</h2><p style="color:rgba(255,255,255,0.8);">سجل الدخول للتواصل مع الأصدقاء</p></div>
+        <div class="auth-body">
+            <form id="loginForm">
+                <div class="input-group">
+                    <label><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                    <div class="email-dropdown">
+                        <input type="email" id="loginEmail" autocomplete="off" required placeholder="example@email.com">
+                        <div id="emailSuggestions" class="email-suggestions"></div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> كلمة المرور</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" required placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="togglePassword('loginPassword', this)"><i class="fas fa-eye"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">تسجيل الدخول</button>
+            </form>
+            <div class="switch-link" id="showRegisterBtn"><i class="fas fa-user-plus"></i> إنشاء حساب جديد</div>
+        </div>
+    </div>
+
+    <!-- Unified Modal -->
+    <div id="unifiedModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">إنشاء حساب جديد</h3>
+                <button class="close-btn" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="unifiedForm">
+                    <div id="securityVerification" class="security-verification">
+                        <label><i class="fas fa-shield-alt"></i> تأكيد الهوية</label>
+                        <input type="password" id="currentPasswordVerify" placeholder="كلمة المرور الحالية" style="margin-top:8px; width:100%; padding:0.5rem; border-radius:12px; background:var(--whatsapp-input-bg); color:var(--whatsapp-text); border:1px solid var(--whatsapp-border);">
+                    </div>
+                    <div class="input-group"><label>الاسم الكامل</label><input type="text" id="fullName" required></div>
+                    <div class="input-group"><label>العمر</label><input type="number" id="age" min="18" max="80" required></div>
+                    <div class="input-group"><label>الحالة العائلية</label><select id="maritalStatus"><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="مرتبط">مرتبط</option><option value="طالب">طالب</option></select></div>
+                    <div class="input-group"><label>الجنس</label><select id="gender"><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select></div>
+                    <div class="input-group"><label>رقم واتساب</label><input type="tel" id="phone" required placeholder="0612345678"></div>
+                    <div class="input-group"><label>البريد الإلكتروني</label><input type="email" id="email" required></div>
+                    <div class="input-group">
+                        <label>المدينة</label>
+                        <div style="position:relative;">
+                            <input type="text" id="city" placeholder="ابحث عن مدينة...">
+                            <div id="citySuggestions" class="city-suggestions"></div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>الموقع الجغرافي</label>
+                        <div id="locationMap" class="location-map"></div>
+                        <button type="button" id="useGpsBtn" class="location-btn gps"><i class="fas fa-location-dot"></i> تحديد موقعي الحالي</button>
+                        <input type="hidden" id="lat" value=""><input type="hidden" id="lng" value="">
+                    </div>
+                    <div class="input-group">
+                        <label>كلمة المرور</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('password', this)"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>تأكيد كلمة المرور</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="confirmPassword" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', this)"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+                        <button type="submit" class="btn btn-primary" id="submitBtn" style="flex:1;">إنشاء حساب</button>
+                        <button type="button" id="deleteAccountBtnModal" class="btn btn-primary" style="background:#e41e3f; color:white; flex:1; display:none;">حذف الحساب</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="appContainer" class="app-container">
+        <div class="wa-header">
+            <div class="header-content">
+                <div class="logo"><i class="fab fa-whatsapp"></i> <span>تواصل</span></div>
+                <div class="header-actions">
+                    <div class="user-info-header"><i class="fas fa-user-circle"></i><span id="headerUserName"></span></div>
+                    <div class="online-stats"><i class="fas fa-circle" style="color:#25d366;"></i><span id="onlineCount">0</span><span> متصل</span></div>
+                    <button id="editProfileBtn" class="wa-icon-btn"><i class="fas fa-user-edit"></i></button>
+                    <button id="logoutBtn" class="wa-icon-btn"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="wa-tabs">
+            <button id="listViewBtn" class="wa-tab active"><i class="fas fa-users"></i><span> جهات الاتصال</span></button>
+            <button id="mapViewBtn" class="wa-tab"><i class="fas fa-map-marked-alt"></i><span> الخريطة</span></button>
+            <button id="openFilterBtn" class="filter-btn"><i class="fas fa-sliders-h"></i><span> فلترة</span></button>
+        </div>
+        <div class="main-content">
+            <div id="listView" class="users-list" style="display:block;"></div>
+            <div id="mapView" class="map-area" style="display:none;"><div id="map"></div></div>
+        </div>
+    </div>
+
+    <div id="filterModal" class="filter-modal">
+        <div class="filter-card-modal">
+            <h3 style="margin-bottom:1rem;"><i class="fas fa-sliders-h"></i> فلترة وترتيب</h3>
+            <select id="filterGenderModal" class="filter-select"><option value="all">جميع الأجناس</option><option value="ذكر">ذكر</option><option value="أنثى">أنثى</option></select>
+            <select id="filterMaritalModal" class="filter-select"><option value="all">جميع الحالات</option><option value="متزوج">متزوج</option><option value="أعزب">أعزب</option><option value="مطلق">مطلق</option><option value="مرتبط">مرتبط</option></select>
+            <select id="sortByModal" class="filter-select"><option value="online">المتصلين أولاً</option><option value="distance">المسافة</option><option value="age">العمر</option><option value="name">الاسم</option></select>
+            <div style="display:flex; gap:0.75rem;"><button id="applyFiltersBtn" class="btn btn-primary" style="flex:1;">تطبيق</button><button id="resetFiltersBtn" class="btn btn-primary" style="background:var(--whatsapp-text-light); flex:1;">إعادة ضبط</button></div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/" };
+        let db, currentUser = null, allUsers = [], map, markerCluster, currentView = 'list', locationPicker;
+        let filters = { gender: 'all', marital: 'all', sortBy: 'online' };
+        let citySuggestionsList = [], isEditMode = false;
+        
+        const generateDefaultUsers = () => {
+            const names = ['أحمد', 'محمد', 'عبدالله', 'فاطمة', 'نور', 'سارة', 'ريم', 'عمر', 'خالد', 'سعيد', 'منى', 'ليلى', 'هند', 'مريم', 'أسماء', 'إيمان', 'يوسف', 'علي', 'حسن', 'حسين', 'محمود', 'طارق', 'سامر', 'رامي', 'دينا', 'شيماء', 'هالة', 'رانيا', 'نادية', 'غادة', 'أميرة', 'سعاد', 'كريمة', 'صفاء', 'نجوى', 'أمل', 'رجاء', 'وفاء', 'نوال', 'ابتسام'];
+            const cities = [{ name: 'الدار البيضاء', lat: 33.5731, lng: -7.5898 },{ name: 'الرباط', lat: 34.0209, lng: -6.8416 },{ name: 'فاس', lat: 34.0333, lng: -5.0000 },{ name: 'مراكش', lat: 31.6295, lng: -7.9811 },{ name: 'طنجة', lat: 35.7595, lng: -5.8340 },{ name: 'أكادير', lat: 30.4278, lng: -9.5981 }];
+            const users = [];
+            for (let i = 0; i < 45; i++) {
+                const city = cities[i % cities.length];
+                users.push({
+                    userId: `user_${i + 1}`, name: `${names[i % names.length]} ${Math.floor(i / names.length) + 1}`,
+                    email: `user${i + 1}@example.com`, password: '00000000',
+                    gender: i % 2 === 0 ? 'ذكر' : 'أنثى', marital: ['متزوج', 'أعزب', 'مطلق', 'مرتبط'][i % 4],
+                    phone: `06123456${String(i + 1).padStart(2, '0')}`, age: 20 + (i % 40),
+                    lat: city.lat + (Math.random() - 0.5) * 0.05, lng: city.lng + (Math.random() - 0.5) * 0.05,
+                    city: city.name, status: i % 3 === 0 ? 'offline' : 'online', lastActive: Date.now()
+                });
+            }
+            return users;
+        };
+        
+        const toast = { show:(msg,type='info')=>{ let t=document.createElement('div'); t.className=`toast-notification ${type}`; t.textContent=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2800); }, success:m=>toast.show(m,'success'), error:m=>toast.show(m,'error'), info:m=>toast.show(m,'info') };
+        const loader = { show:()=>document.getElementById('loadingOverlay').style.display='flex', hide:()=>document.getElementById('loadingOverlay').style.display='none', async withLoading(fn){ this.show(); try{ return await fn(); }finally{ this.hide(); } } };
+        
+        function togglePassword(id, btn) { const inp = document.getElementById(id); if(inp.type === 'password'){ inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; } else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; } }
+        window.togglePassword = togglePassword;
+        function distance(lat1,lng1,lat2,lng2){ const R=6371, dLat=(lat2-lat1)*Math.PI/180, dLng=(lng2-lng1)*Math.PI/180, a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+        function escapeHtml(s){ if(!s) return ''; let d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+        
+        async function initFirebase(){ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig); db=firebase.database(); }
+        async function loadUsers(){ const snap=await db.ref('users').once('value'); let users=[]; snap.forEach(c=>{ let u=c.val(); if(u) users.push({ ...u, userId:c.key }); }); if(users.length < 10){ for(let u of generateDefaultUsers()){ await db.ref(`users/${u.userId}`).set(u); users.push(u); } } allUsers=users; citySuggestionsList = [...new Set(users.map(u=>u.city).filter(c=>c))]; return users; }
+        async function getUserByEmail(email){ await loadUsers(); return allUsers.find(u=>u.email===email); }
+        async function updateUserStatus(userId,status){ await db.ref(`users/${userId}`).update({ status, lastActive:Date.now() }); }
+        async function checkEmailExists(email){ await loadUsers(); return allUsers.some(u=>u.email===email); }
+        async function createUser(data){ const userId = `user_${Date.now()}`; const newUser={ ...data, userId, status:'online', lastActive:Date.now() }; await db.ref(`users/${userId}`).set(newUser); return newUser; }
+        async function updateUserProfile(userId,updates){ await db.ref(`users/${userId}`).update(updates); return updates; }
+        async function deleteUser(userId){ await db.ref(`users/${userId}`).remove(); }
+        
+        class LocationPicker{ constructor(mapId,latId,lngId){ this.mapId=mapId; this.latInp=document.getElementById(latId); this.lngInp=document.getElementById(lngId); this.map=null; this.marker=null; } init(lat=33.5731,lng=-7.5898){ const el=document.getElementById(this.mapId); if(!el) return; if(this.map) this.map.remove(); this.map=L.map(el).setView([lat,lng],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(this.map); const icon=L.divIcon({html:`<div style="background:#25d366;width:20px;height:20px;border-radius:50%;border:3px solid white;"></div>`,iconSize:[20,20]}); this.marker=L.marker([lat,lng],{draggable:true,icon}).addTo(this.map); this._setCoord(lat,lng); this.marker.on('dragend',e=>{let p=e.target.getLatLng(); this._setCoord(p.lat,p.lng);}); this.map.on('click',e=>{this.marker.setLatLng(e.latlng); this._setCoord(e.latlng.lat,e.latlng.lng);}); } _setCoord(lat,lng){ this.latInp.value=lat; this.lngInp.value=lng; } async getCurrentLocation(){ return new Promise((res,rej)=>{ navigator.geolocation.getCurrentPosition(p=>{ this.marker.setLatLng([p.coords.latitude,p.coords.longitude]); this.map.setView([p.coords.latitude,p.coords.longitude],14); this._setCoord(p.coords.latitude,p.coords.longitude); res({lat:p.coords.latitude,lng:p.coords.longitude}); },()=>rej("فشل")); }); } searchCity(cityName){ fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName)}&limit=1`).then(r=>r.json()).then(data=>{ if(data && data[0]){ const lat=parseFloat(data[0].lat), lng=parseFloat(data[0].lon); this.map.setView([lat,lng],12); this.marker.setLatLng([lat,lng]); this._setCoord(lat,lng); } }).catch(()=>{}); } }
+        
+        function openWhatsApp(phone, name){ let clean=phone.replace(/[^0-9]/g,''); if(clean.startsWith('0')) clean='212'+clean.substring(1); window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً '+name)}`,'_blank'); toast.info(`فتح واتساب مع ${name}`); }
+        function openGoogleMapsRoute(user){ if(!currentUser) return; window.open(`https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${user.lat},${user.lng}`,'_blank'); toast.success(`فتح المسار إلى ${user.name}`); }
+        
+        async function renderList(){ const container=document.getElementById('listView'); if(!container) return; let filtered=allUsers.filter(u=>u.userId!==currentUser?.userId); if(filters.gender!=='all') filtered=filtered.filter(u=>u.gender===filters.gender); if(filters.marital!=='all') filtered=filtered.filter(u=>u.marital===filters.marital); filtered=filtered.map(u=>{ u.distance=distance(currentUser.lat,currentUser.lng,u.lat,u.lng); return u; }); const sorts={ online:(a,b)=>(b.status==='online'?1:0)-(a.status==='online'?1:0), distance:(a,b)=>a.distance-b.distance, age:(a,b)=>a.age-b.age, name:(a,b)=>a.name.localeCompare(b.name) }; filtered.sort(sorts[filters.sortBy]||sorts.online); if(filtered.length===0){ container.innerHTML='<div class="empty-state">لا يوجد مستخدمين</div>'; return; } container.innerHTML=filtered.map(u=>`<div class="user-item" data-user='${JSON.stringify(u).replace(/'/g,"&apos;")}'><div class="user-avatar"><i class="fas fa-user"></i></div><div class="user-info-wa"><div class="user-name-wa"><strong>${escapeHtml(u.name)}</strong> <span class="status-badge"><span class="status-dot ${u.status==='online'?'online':'offline'}"></span><span>${u.status==='online'?'متصل':'غير متصل'}</span></span></div><div class="user-details-wa"><span><i class="fas fa-venus-mars"></i> ${u.gender}</span><span><i class="fas fa-calendar"></i> ${u.age} سنة</span><span><i class="fas fa-heart"></i> ${u.marital}</span>${u.city ? `<span><i class="fas fa-city"></i> ${escapeHtml(u.city)}</span>` : ''}<span class="distance-badge-wa"><i class="fas fa-location-dot"></i> ${u.distance.toFixed(1)} كم</span></div><div class="action-buttons-wa"><button class="wa-small-btn whatsapp" data-phone="${u.phone}" data-name="${u.name}"><i class="fab fa-whatsapp"></i> واتساب</button><button class="wa-small-btn direction" data-user='${JSON.stringify(u).replace(/'/g,"&apos;")}'><i class="fas fa-directions"></i> مسار</button></div></div></div>`).join(''); document.querySelectorAll('.wa-small-btn.whatsapp').forEach(btn=>btn.addEventListener('click',(e)=>{ e.stopPropagation(); openWhatsApp(btn.dataset.phone, btn.dataset.name); })); document.querySelectorAll('.wa-small-btn.direction').forEach(btn=>btn.addEventListener('click',(e)=>{ e.stopPropagation(); openGoogleMapsRoute(JSON.parse(btn.dataset.user)); })); document.querySelectorAll('.user-item').forEach(card=>card.addEventListener('click',()=>{ const u=JSON.parse(card.dataset.user); if(currentView!=='map') document.getElementById('mapViewBtn').click(); setTimeout(()=>{ if(map && u.lat && u.lng) map.setView([u.lat,u.lng],14); },300); })); }
+        
+        function createPopupContent(user, dist){ return `<div style="text-align:right;min-width:260px;"><div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--whatsapp-border);"><div style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-user"></i></div><div><b>${escapeHtml(user.name)}</b><br><span style="font-size:0.7rem;">${user.age} سنة • ${user.status==='online'?'🟢 متصل':'⚫ غير متصل'}</span></div></div><div style="padding:12px;"><div><i class="fas fa-heart"></i> ${user.marital} • <i class="fas fa-venus-mars"></i> ${user.gender}</div><div><i class="fas fa-phone"></i> ${user.phone}</div><div><i class="fas fa-envelope"></i> ${user.email}</div>${user.city ? `<div><i class="fas fa-city"></i> ${user.city}</div>` : ''}<div>${dist.toFixed(1)} كم من موقعك</div><div style="display:flex;gap:8px;margin-top:12px;"><button onclick="window.openWhatsAppPopup('${user.phone}','${user.name}')" style="flex:1;background:#25d366;color:#111b12;border:none;padding:8px;border-radius:24px;cursor:pointer;"><i class="fab fa-whatsapp"></i> واتساب</button><button onclick="window.openGoogleMapsRouteStatic(${user.lat},${user.lng},'${user.name}')" style="flex:1;background:#128c7e;color:white;border:none;padding:8px;border-radius:24px;cursor:pointer;"><i class="fas fa-directions"></i> مسار</button></div></div></div>`; }
+        
+        async function renderMap(){ if(!map){ map = L.map('map').setView([currentUser.lat, currentUser.lng], 12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); L.Control.geocoder({ position: 'topright', placeholder: 'ابحث عن مدينة...' }).addTo(map); markerCluster = L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 60, spiderfyOnMaxZoom: true }); map.addLayer(markerCluster); } markerCluster.clearLayers(); let filtered=allUsers.filter(u=>u.userId!==currentUser?.userId); if(filters.gender!=='all') filtered=filtered.filter(u=>u.gender===filters.gender); if(filters.marital!=='all') filtered=filtered.filter(u=>u.marital===filters.marital); for(let u of filtered){ if(!u.lat) continue; const icon = L.divIcon({ html:`<div style="background:${u.status==='online'?'#25d366':'#8696a0'};width:14px;height:14px;border-radius:50%;border:2px solid #111b12;"></div>`, iconSize:[14,14] }); const marker = L.marker([u.lat, u.lng], { icon }).bindPopup(createPopupContent(u, distance(currentUser.lat,currentUser.lng,u.lat,u.lng)), { className: 'custom-map-popup' }); markerCluster.addLayer(marker); } L.marker([currentUser.lat, currentUser.lng], { icon: L.divIcon({ html:`<div style="background:#25d366;width:22px;height:22px;border-radius:50%;border:3px solid white;box-shadow:0 0 4px #25d366;"></div>`, iconSize:[22,22] }) }).bindPopup(`<div style="text-align:center;padding:12px;"><b>${escapeHtml(currentUser.name)}</b><br>موقعك الحالي</div>`, { className: 'custom-map-popup' }).addTo(map); if(filtered.length) map.fitBounds(markerCluster.getBounds().extend([currentUser.lat,currentUser.lng]), { padding: [50,50] }); setTimeout(()=>map.invalidateSize(), 100); }
+        window.openWhatsAppPopup = (phone,name)=>{ let clean=phone.replace(/[^0-9]/g,''); if(clean.startsWith('0')) clean='212'+clean.substring(1); window.open(`https://wa.me/${clean}?text=${encodeURIComponent('مرحباً '+name)}`,'_blank'); };
+        window.openGoogleMapsRouteStatic = (lat,lng,name)=>{ window.open(`https://www.google.com/maps/dir/${currentUser.lat},${currentUser.lng}/${lat},${lng}`,'_blank'); };
+        
+        async function refreshUI(){ await loadUsers(); document.getElementById('onlineCount').innerText = allUsers.filter(u=>u.status==='online' && u.userId!==currentUser?.userId).length; document.getElementById('headerUserName').innerText = currentUser?.name || ''; if(currentView==='list') renderList(); else renderMap(); }
+        
+        function setupCitySuggestions(){ const input = document.getElementById('city'); const container = document.getElementById('citySuggestions'); input.addEventListener('input',()=>{ const val = input.value.toLowerCase(); const filtered = citySuggestionsList.filter(c => c.toLowerCase().includes(val)); if(filtered.length && val){ container.innerHTML = filtered.map(c => `<div class="city-suggestion-item" data-city="${c}">${c}</div>`).join(''); container.style.display = 'block'; document.querySelectorAll('.city-suggestion-item').forEach(item=>{ item.addEventListener('click',()=>{ input.value = item.dataset.city; container.style.display = 'none'; if(locationPicker) locationPicker.searchCity(item.dataset.city); }); }); } else container.style.display = 'none'; }); document.addEventListener('click',(e)=>{ if(!input.contains(e.target) && !container.contains(e.target)) container.style.display='none'; }); }
+        
+        function setupEmailSuggestions(){ const input=document.getElementById('loginEmail'), container=document.getElementById('emailSuggestions'); input.addEventListener('focus',async()=>{ await loadUsers(); container.innerHTML=allUsers.map(u=>`<div class="email-item" data-email="${u.email}" data-password="${u.password}" data-name="${u.name}"><div><div class="user-fullname">${escapeHtml(u.name)} (${u.age})</div><div class="email-address">${u.email}</div></div><i class="fas fa-user-circle"></i></div>`).join(''); container.style.display='block'; document.querySelectorAll('.email-item').forEach(item=>{ item.addEventListener('click',()=>{ document.getElementById('loginEmail').value=item.dataset.email; document.getElementById('loginPassword').value=item.dataset.password; container.style.display='none'; }); }); }); document.addEventListener('click',(e)=>{ if(!input.contains(e.target) && !container.contains(e.target)) container.style.display='none'; }); }
+        
+        async function autoUpdateLocation(){ if(currentUser && navigator.geolocation){ navigator.geolocation.getCurrentPosition(async(pos)=>{ await db.ref(`users/${currentUser.userId}`).update({ lat:pos.coords.latitude, lng:pos.coords.longitude }); currentUser.lat=pos.coords.latitude; currentUser.lng=pos.coords.longitude; localStorage.setItem('currentUser',JSON.stringify(currentUser)); await refreshUI(); }); } }
+        
+        function checkAndShowSecurity(){ if(!isEditMode) return; const emailChanged = document.getElementById('email').value !== currentUser.email; const passChanged = document.getElementById('password').value !== currentUser.password; document.getElementById('securityVerification').style.display = (emailChanged || passChanged) ? 'block' : 'none'; }
+        
+        function openModal(edit=false){ isEditMode = edit; document.getElementById('modalTitle').innerText = edit ? 'تعديل الملف الشخصي' : 'إنشاء حساب جديد'; document.getElementById('submitBtn').innerText = edit ? 'حفظ التغييرات' : 'إنشاء حساب'; document.getElementById('deleteAccountBtnModal').style.display = edit ? 'block' : 'none'; if(edit && currentUser){ document.getElementById('fullName').value = currentUser.name; document.getElementById('age').value = currentUser.age; document.getElementById('maritalStatus').value = currentUser.marital; document.getElementById('gender').value = currentUser.gender; document.getElementById('phone').value = currentUser.phone; document.getElementById('email').value = currentUser.email; document.getElementById('city').value = currentUser.city || ''; document.getElementById('password').value = currentUser.password; document.getElementById('confirmPassword').value = currentUser.password; document.getElementById('currentPasswordVerify').value = ''; if(locationPicker) locationPicker.init(currentUser.lat, currentUser.lng); document.getElementById('securityVerification').style.display = 'none'; } else { document.getElementById('unifiedForm').reset(); if(locationPicker) locationPicker.init(33.5731, -7.5898); document.getElementById('securityVerification').style.display = 'none'; } const emailInput = document.getElementById('email'); const passInput = document.getElementById('password'); emailInput.oninput = checkAndShowSecurity; passInput.oninput = checkAndShowSecurity; document.getElementById('unifiedModal').style.display = 'flex'; }
+        
+        async function handleFormSubmit(e){ e.preventDefault(); const email = document.getElementById('email').value; const password = document.getElementById('password').value; const confirm = document.getElementById('confirmPassword').value; const lat = parseFloat(document.getElementById('lat').value); const lng = parseFloat(document.getElementById('lng').value); if(!lat || !lng){ toast.error("الرجاء تحديد الموقع على الخريطة"); return; } if(password !== confirm){ toast.error("كلمة المرور غير متطابقة"); return; } if(password.length < 6){ toast.error("كلمة المرور 6 أحرف على الأقل"); return; } const data = { name: document.getElementById('fullName').value, age: parseInt(document.getElementById('age').value), marital: document.getElementById('maritalStatus').value, gender: document.getElementById('gender').value, phone: document.getElementById('phone').value, email: email, password: password, city: document.getElementById('city').value, lat: lat, lng: lng }; if(isEditMode){ const emailChanged = email !== currentUser.email; const passChanged = password !== currentUser.password; if(emailChanged || passChanged){ const currentPass = document.getElementById('currentPasswordVerify').value; if(!currentPass){ toast.error("الرجاء إدخال كلمة المرور الحالية للتحقق"); return; } if(currentPass !== currentUser.password){ toast.error("كلمة المرور الحالية غير صحيحة"); return; } } await updateUserProfile(currentUser.userId, data); currentUser = { ...currentUser, ...data }; localStorage.setItem('currentUser', JSON.stringify(currentUser)); toast.success("تم تحديث الملف الشخصي"); } else { if(await checkEmailExists(email)){ toast.error("البريد الإلكتروني مسجل مسبقاً"); return; } const newUser = await createUser(data); currentUser = newUser; localStorage.setItem('currentUser', JSON.stringify(newUser)); document.getElementById('loginCard').style.display = 'none'; document.getElementById('appContainer').style.display = 'flex'; toast.success("تم إنشاء الحساب بنجاح"); } document.getElementById('unifiedModal').style.display = 'none'; await refreshUI(); await autoUpdateLocation(); }
+        
+        async function deleteAccount(){ if(confirm("⚠️ هل أنت متأكد من حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.")){ await deleteUser(currentUser.userId); currentUser = null; localStorage.removeItem('currentUser'); document.getElementById('appContainer').style.display = 'none'; document.getElementById('loginCard').style.display = 'block'; toast.success("تم حذف الحساب"); document.getElementById('unifiedModal').style.display = 'none'; } }
+        
+        function setupEventListeners(){
+            document.getElementById('loginForm').addEventListener('submit',async(e)=>{ e.preventDefault(); const email=document.getElementById('loginEmail').value, pass=document.getElementById('loginPassword').value; loader.withLoading(async()=>{ const user=await getUserByEmail(email); if(!user||user.password!==pass){ toast.error("بيانات غير صحيحة"); return; } currentUser=user; localStorage.setItem('currentUser',JSON.stringify(user)); await updateUserStatus(user.userId,'online'); document.getElementById('loginCard').style.display='none'; document.getElementById('appContainer').style.display='flex'; await autoUpdateLocation(); await refreshUI(); toast.success(`مرحباً ${user.name}`); }); });
+            document.getElementById('showRegisterBtn').addEventListener('click',()=>{ document.getElementById('loginCard').style.display='none'; openModal(false); });
+            document.getElementById('editProfileBtn').addEventListener('click',()=>openModal(true));
+            document.getElementById('closeModalBtn').addEventListener('click',()=>document.getElementById('unifiedModal').style.display='none');
+            document.getElementById('logoutBtn').addEventListener('click',async()=>{ if(currentUser) await updateUserStatus(currentUser.userId,'offline'); currentUser=null; localStorage.removeItem('currentUser'); document.getElementById('appContainer').style.display='none'; document.getElementById('loginCard').style.display='block'; toast.success("تم تسجيل الخروج"); });
+            document.getElementById('listViewBtn').addEventListener('click',()=>{ currentView='list'; document.getElementById('listView').style.display='block'; document.getElementById('mapView').style.display='none'; document.getElementById('listViewBtn').classList.add('active'); document.getElementById('mapViewBtn').classList.remove('active'); renderList(); });
+            document.getElementById('mapViewBtn').addEventListener('click',()=>{ currentView='map'; document.getElementById('listView').style.display='none'; document.getElementById('mapView').style.display='block'; setTimeout(()=>{ if(map) map.invalidateSize(); renderMap(); }, 100); document.getElementById('mapViewBtn').classList.add('active'); document.getElementById('listViewBtn').classList.remove('active'); });
+            document.getElementById('openFilterBtn').addEventListener('click',()=>{ document.getElementById('filterModal').style.display='flex'; document.getElementById('filterGenderModal').value=filters.gender; document.getElementById('filterMaritalModal').value=filters.marital; document.getElementById('sortByModal').value=filters.sortBy; });
+            document.getElementById('applyFiltersBtn').addEventListener('click',()=>{ filters.gender=document.getElementById('filterGenderModal').value; filters.marital=document.getElementById('filterMaritalModal').value; filters.sortBy=document.getElementById('sortByModal').value; document.getElementById('filterModal').style.display='none'; refreshUI(); toast.success("تم تطبيق الفلترة"); });
+            document.getElementById('resetFiltersBtn').addEventListener('click',()=>{ filters={ gender:'all', marital:'all', sortBy:'online' }; document.getElementById('filterGenderModal').value='all'; document.getElementById('filterMaritalModal').value='all'; document.getElementById('sortByModal').value='online'; document.getElementById('filterModal').style.display='none'; refreshUI(); toast.success("تم إعادة الضبط"); });
+            document.getElementById('unifiedForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('deleteAccountBtnModal').addEventListener('click', deleteAccount);
+            document.getElementById('useGpsBtn').addEventListener('click', async()=>{ if(locationPicker) await locationPicker.getCurrentLocation(); toast.success("تم تحديث الموقع"); });
+            document.getElementById('filterModal').addEventListener('click',(e)=>{ if(e.target === document.getElementById('filterModal')) document.getElementById('filterModal').style.display='none'; });
+            document.getElementById('unifiedModal').addEventListener('click',(e)=>{ if(e.target === document.getElementById('unifiedModal')) document.getElementById('unifiedModal').style.display='none'; });
+        }
+        
+        async function main(){ await initFirebase(); await loadUsers(); locationPicker = new LocationPicker('locationMap','lat','lng'); locationPicker.init(33.5731, -7.5898); setupCitySuggestions(); setupEmailSuggestions(); setupEventListeners(); const savedUser=localStorage.getItem('currentUser'); if(savedUser){ currentUser=JSON.parse(savedUser); await updateUserStatus(currentUser.userId,'online'); document.getElementById('loginCard').style.display='none'; document.getElementById('appContainer').style.display='flex'; await autoUpdateLocation(); await refreshUI(); } document.getElementById('loadingOverlay').style.display='none'; }
+        main();
+    </script>
+</body>
+</html>
