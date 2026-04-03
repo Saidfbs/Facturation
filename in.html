@@ -2,11 +2,13 @@
 <html lang="fr" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect Industry Maroc | Plateforme Industrielle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -21,8 +23,11 @@
             --steel-light: #21262d;
             --accent-orange: #e06c00;
             --accent-yellow: #d4a017;
+            --accent-steel: #8b9eb7;
+            --accent-blue: #1f6feb;
             --text-primary: #e6edf3;
             --text-secondary: #8b949e;
+            --text-muted: #6e7681;
             --status-cancelled: #da3633;
             --status-preparing: #d4a017;
             --status-ready: #2da44e;
@@ -37,16 +42,28 @@
             --steel-light: #eaeef2;
             --text-primary: #1f2328;
             --text-secondary: #656d76;
+            --text-muted: #6e7781;
         }
 
         body {
             font-family: 'Cairo', 'Segoe UI', sans-serif;
             background: var(--steel-dark);
             color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
             transition: all 0.3s ease;
         }
 
-        /* Offcanvas Menu */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.01) 2px, rgba(255,255,255,0.01) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Offcanvas Menu Styles */
         .offcanvas {
             position: fixed;
             top: 0;
@@ -57,12 +74,17 @@
             background: var(--steel-mid);
             z-index: 2000;
             transition: right 0.3s ease;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.5);
             border-left: 2px solid var(--accent-orange);
             display: flex;
             flex-direction: column;
             padding: 1.5rem;
         }
-        .offcanvas.open { right: 0; }
+
+        .offcanvas.open {
+            right: 0;
+        }
+
         .offcanvas-overlay {
             position: fixed;
             top: 0;
@@ -73,11 +95,39 @@
             z-index: 1999;
             display: none;
         }
-        .offcanvas-overlay.show { display: block; }
-        .offcanvas-header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--steel-border); }
-        .offcanvas-header h3 { color: var(--accent-orange); }
-        .offcanvas-close { background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; }
-        .offcanvas-menu { display: flex; flex-direction: column; gap: 0.8rem; }
+
+        .offcanvas-overlay.show {
+            display: block;
+        }
+
+        .offcanvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--steel-border);
+            margin-bottom: 1.5rem;
+        }
+
+        .offcanvas-header h3 {
+            color: var(--accent-orange);
+            font-size: 1.3rem;
+        }
+
+        .offcanvas-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .offcanvas-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
         .offcanvas-btn {
             background: var(--steel-card);
             border: 1px solid var(--steel-border);
@@ -85,13 +135,28 @@
             padding: 0.8rem 1rem;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 1rem;
             text-align: center;
+            transition: all 0.2s;
             width: 100%;
         }
-        .offcanvas-btn.active { background: var(--accent-orange); border-color: var(--accent-orange); }
-        .offcanvas-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--steel-border); }
 
-        /* Loading Screen */
+        .offcanvas-btn.active {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+        }
+
+        .offcanvas-btn:hover {
+            background: var(--glow-orange);
+            border-color: var(--accent-orange);
+        }
+
+        .offcanvas-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--steel-border);
+        }
+
         .loading-screen {
             position: fixed;
             top: 0; left: 0;
@@ -101,9 +166,16 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            transition: opacity 0.5s;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .loading-screen.hide { opacity: 0; visibility: hidden; }
+
+        .loading-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader { text-align: center; }
+
         .loader-spinner {
             width: 60px; height: 60px;
             border: 3px solid rgba(224,108,0,0.2);
@@ -112,303 +184,634 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Header */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: var(--accent-orange);
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+        }
+
         header {
             background: var(--steel-mid);
             border-bottom: 2px solid var(--accent-orange);
+            color: white;
             padding: 0.8rem 5%;
             position: fixed;
             top: 0; width: 100%;
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transform: translateY(-100%);
+            animation: slideDown 0.5s ease forwards;
+            animation-delay: 0.5s;
         }
-        nav { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-        .logo { display: flex; align-items: center; gap: 0.8rem; }
+
+        @keyframes slideDown {
+            to { transform: translateY(0); }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
         .logo-icon { font-size: 1.8rem; }
-        .logo-text { font-size: 1.4rem; font-weight: 700; text-transform: uppercase; }
+        .logo-text { font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
         .logo-text span { color: var(--accent-orange); }
-        .nav-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
         .nav-btn {
             background: transparent;
             border: 1px solid var(--steel-border);
             color: var(--text-secondary);
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
+            padding: 0.5rem 1.1rem;
+            border-radius: 3px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.2s;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Cairo', sans-serif;
         }
-        .nav-btn.active { background: var(--accent-orange); border-color: var(--accent-orange); color: white; }
+
+        .nav-btn.active {
+            background: var(--accent-orange);
+            border-color: var(--accent-orange);
+            color: white;
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: var(--glow-orange);
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+
         .badge-orders {
             background: #da3633;
             color: white;
-            border-radius: 10px;
-            padding: 0 5px;
-            font-size: 0.7rem;
-            margin-left: 5px;
+            border-radius: 3px;
+            width: 18px; height: 18px;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -5px; right: -5px;
         }
+
         .menu-toggle {
             display: none;
             background: var(--accent-orange);
             border: none;
             padding: 0.5rem 1rem;
-            border-radius: 5px;
+            border-radius: 3px;
             cursor: pointer;
             color: white;
             font-size: 1.2rem;
         }
 
-        /* Hero */
         .hero {
-            background: linear-gradient(135deg, #0d1117 0%, #0a0f1a 100%);
-            padding: 6rem 1rem 3rem;
+            background: linear-gradient(135deg, #0d1117 0%, #0a0f1a 60%, #0d1117 100%);
+            padding: 7rem 2rem 4rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
             margin-top: 60px;
             border-bottom: 2px solid var(--steel-border);
         }
-        .hero h1 { font-size: clamp(1.3rem, 5vw, 2.5rem); margin-bottom: 1rem; }
+
+        body.light-mode .hero {
+            background: linear-gradient(135deg, #f6f8fa 0%, #eaeef2 60%, #f6f8fa 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: linear-gradient(var(--steel-border) 1px, transparent 1px), linear-gradient(90deg, var(--steel-border) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        #particles-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0.2;
+        }
+
+        .hero-content { position: relative; z-index: 10; }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
         .hero h1 span { color: var(--accent-orange); }
         .hero-badge {
             display: inline-block;
             background: var(--accent-orange);
             color: white;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             padding: 0.2rem 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-family: 'Share Tech Mono', monospace;
             margin-bottom: 1rem;
         }
+        .typing-text { font-size: 1.2rem; opacity: 0.75; max-width: 700px; margin: 0 auto; min-height: 60px; color: var(--accent-steel); font-family: 'Share Tech Mono', monospace; }
+        .cursor { display: inline-block; width: 2px; background-color: var(--accent-orange); animation: blink 1s infinite; }
+        @keyframes blink { 0%,50%{opacity:1;} 51%,100%{opacity:0;} }
 
-        /* Stats Grid */
         .stats-grid {
             display: flex;
             justify-content: center;
-            gap: 1rem;
-            padding: 1rem;
+            gap: 1.5rem;
+            padding: 2rem;
             flex-wrap: wrap;
-            margin-top: -1.5rem;
+            margin-top: -2.5rem;
             position: relative;
             z-index: 10;
         }
+
         .stat-card-enhanced {
             background: var(--steel-card);
-            padding: 1rem;
+            padding: 1.5rem 2rem;
             text-align: center;
-            min-width: 120px;
-            flex: 1;
-            max-width: 180px;
-            border-radius: 8px;
+            min-width: 200px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
             border: 1px solid var(--steel-border);
             border-top: 3px solid var(--accent-orange);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .stat-card-enhanced:hover { transform: translateY(-3px); }
-        .stat-number { font-size: clamp(1.3rem, 5vw, 2rem); font-weight: 700; color: var(--accent-orange); }
-        .stat-label { color: var(--text-secondary); font-size: 0.7rem; margin-top: 0.3rem; }
-
-        /* Form */
-        .form-container {
-            max-width: 800px;
-            margin: 1.5rem auto;
-            background: var(--steel-card);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid var(--steel-border);
-        }
-        @media (min-width: 768px) { .form-container { padding: 2rem; } }
-        .form-header { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--steel-border); }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.3rem; font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; }
-        input, select, textarea {
             width: 100%;
-            padding: 0.7rem 1rem;
-            border: 1px solid var(--steel-border);
-            background: var(--steel-light);
-            color: var(--text-primary);
-            border-radius: 8px;
-            font-size: 0.9rem;
         }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-orange); }
-        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media (max-width: 600px) { .row-2 { grid-template-columns: 1fr; gap: 0.8rem; } }
-        
-        .btn-submit {
-            width: 100%;
-            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
-            color: white;
-            padding: 0.9rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        .btn-submit:hover { transform: translateY(-2px); }
+        .stat-card-enhanced:nth-child(1) { animation-delay: 0.2s; }
+        .stat-card-enhanced:nth-child(2) { animation-delay: 0.4s; }
+        .stat-card-enhanced:nth-child(3) { animation-delay: 0.6s; }
 
-        /* Progress Bar */
-        .progress-bar-container {
-            width: 100%;
-            height: 3px;
-            background: var(--steel-border);
-            border-radius: 2px;
-            overflow: hidden;
-            margin: 1rem 0;
-            display: none;
-        }
-        .progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background: var(--accent-orange);
-            transition: width 0.3s;
-        }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        .stat-card-enhanced:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 20px var(--glow-orange); }
+        .stat-number { font-size: 2.5rem; font-weight: 700; color: var(--accent-orange); font-family: 'Share Tech Mono', monospace; }
+        .stat-label { color: var(--text-secondary); margin-top: 0.4rem; font-size: 0.9rem; letter-spacing: 0.5px; }
 
-        /* Toast */
+        /* Center Toast Notification */
         .toast-notification {
             position: fixed;
-            bottom: 80px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
+            transform: translate(-50%, -50%) scale(0.9);
             background: var(--steel-card);
-            padding: 0.7rem 1.2rem;
+            color: var(--text-primary);
+            padding: 1.2rem 2rem;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             z-index: 3000;
-            border-right: 3px solid var(--accent-orange);
+            border-right: 4px solid var(--accent-orange);
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s;
-            font-size: 0.85rem;
-            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 280px;
+            justify-content: center;
         }
         .toast-notification.show {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(0);
+            transform: translate(-50%, -50%) scale(1);
         }
-        @media (max-width: 480px) { .toast-notification { font-size: 0.7rem; white-space: normal; width: 90%; text-align: center; } }
 
-        /* Orders Page */
-        .orders-container { max-width: 1200px; margin: 6rem auto 2rem; padding: 0 1rem; }
-        .orders-header { text-align: center; margin-bottom: 1.5rem; }
-        .filter-bar { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
-        .filter-buttons { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
-        .filter-buttons button { padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
-        .orders-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 600px) { .orders-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); } }
-        
+        .section-title {
+            text-align: center;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        .section-title::before { content: '//'; color: var(--accent-orange); margin-left: 0.5rem; }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--accent-orange);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: var(--steel-card);
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+            animation-delay: 0.8s;
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid var(--accent-orange);
+            width: 100%;
+        }
+        .form-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--steel-border); }
+        .form-header h2 { font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group { margin-bottom: 1.5rem; opacity: 0; transform: translateX(-20px); animation: slideInL 0.5s ease forwards; width: 100%; }
+        @keyframes slideInL { to { opacity: 1; transform: translateX(0); } }
+        .form-group:nth-child(1) { animation-delay: 0.9s; }
+        .form-group:nth-child(2) { animation-delay: 1s; }
+        .form-group:nth-child(3) { animation-delay: 1.1s; }
+        .form-group:nth-child(4) { animation-delay: 1.2s; }
+        .form-group:nth-child(5) { animation-delay: 1.3s; }
+        .form-group:nth-child(6) { animation-delay: 1.4s; }
+        .form-group:nth-child(7) { animation-delay: 1.5s; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px; }
+        label .required { color: #da3633; }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--steel-border);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            background: var(--steel-light);
+            color: var(--text-primary);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 0 2px rgba(224,108,0,0.15);
+        }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #da3633 0%, #a02020 100%);
+            color: white;
+            padding: 1rem;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.35s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Cairo', sans-serif;
+            opacity: 0.7;
+        }
+        .btn-submit.form-ready {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(37,211,102,0.3);
+        }
+        .btn-submit.form-ready:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,211,102,0.5); }
+
+        /* Statistics Page Styles */
+        .stats-container {
+            max-width: 1400px;
+            margin: 6rem auto 2rem;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .stats-card {
+            background: var(--steel-card);
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid var(--accent-orange);
+            width: 100%;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .chart-card {
+            background: var(--steel-card);
+            padding: 1.5rem;
+            border: 1px solid var(--steel-border);
+            border-top: 3px solid var(--accent-orange);
+            width: 100%;
+        }
+        .chart-card h3 { text-align: center; margin-bottom: 1rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+        canvas { max-height: 300px; width: 100% !important; }
+        .about-products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+        .about-product-item {
+            background: var(--steel-light);
+            border: 1px solid var(--steel-border);
+            border-bottom: 2px solid var(--accent-orange);
+            padding: 1rem;
+            text-align: center;
+            width: 100%;
+        }
+        .about-product-item i { color: var(--accent-orange); font-size: 1.5rem; margin-bottom: 0.4rem; display: block; }
+        .about-testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .about-testimonial {
+            background: var(--steel-light);
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid var(--accent-orange);
+            padding: 1.5rem;
+            width: 100%;
+        }
+        .about-testimonial p { color: var(--text-secondary); line-height: 1.7; }
+        .about-testimonial .author { color: var(--accent-orange); font-weight: 700; margin-top: 0.8rem; text-transform: uppercase; font-size: 0.85rem; }
+        .stars { color: var(--accent-yellow); margin-top: 0.5rem; }
+
+        .orders-container { max-width: 1200px; margin: 6rem auto 2rem; padding: 0 2rem; width: 100%; }
+        .orders-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--steel-border); }
+        .filter-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+        .filter-bar input, .filter-bar select {
+            width: 100%;
+            min-width: unset;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .filter-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+        .orders-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 0.25rem;
+        }
         .order-card {
             background: var(--steel-card);
-            padding: 1rem;
-            border-radius: 10px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            transition: all 0.25s;
             border: 1px solid var(--steel-border);
             border-left: 3px solid var(--accent-orange);
+            width: 100%;
         }
-        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem; }
-        .order-date { font-size: 0.7rem; color: var(--text-secondary); }
-        .order-product { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
-        .order-details { color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.2rem; }
-        .order-actions {
+        .order-card:hover { transform: translateY(-2px); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--steel-border); }
+        .order-date { font-size: 0.78rem; color: var(--text-muted); font-family: 'Share Tech Mono', monospace; }
+        .order-product { font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .order-details { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.25rem; }
+        .order-status {
             margin-top: 0.8rem;
             padding-top: 0.8rem;
             border-top: 1px solid var(--steel-border);
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr 44px;
             gap: 0.5rem;
             align-items: stretch;
-            flex-wrap: wrap;
         }
         .status-select {
-            flex: 2;
-            padding: 0.5rem;
-            border-radius: 6px;
+            padding: 0.5rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
             background: var(--steel-light);
             color: var(--text-primary);
             border: 1px solid var(--steel-border);
-            height: 42px;
-            font-size: 0.8rem;
+            width: 100%;
+            height: 38px;
         }
         .status-badge {
-            flex: 1;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            padding: 0;
+            border-radius: 4px;
+            font-size: 0.72rem;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 42px;
+            height: 38px;
+            text-align: center;
         }
-        .status-cancelled { background: rgba(218,54,51,0.2); color: #da3633; border: 1px solid #da3633; }
-        .status-preparing { background: rgba(212,160,23,0.2); color: #d4a017; border: 1px solid #d4a017; }
-        .status-ready { background: rgba(45,164,78,0.2); color: #2da44e; border: 1px solid #2da44e; }
-        .btn-action {
-            width: 42px;
-            height: 42px;
-            border-radius: 6px;
+        .btn-delete-order {
+            background: rgba(218,54,51,0.15);
+            border: 1px solid #da3633;
+            color: #da3633;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            height: 38px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1rem;
             transition: all 0.2s;
+            padding: 0;
         }
-        .btn-delete { background: rgba(218,54,51,0.15); border: 1px solid #da3633; color: #da3633; }
-        .btn-edit { background: rgba(31,111,235,0.15); border: 1px solid #1f6feb; color: #1f6feb; }
-        .btn-print { background: rgba(212,160,23,0.15); border: 1px solid #d4a017; color: #d4a017; }
-        .empty-orders { text-align: center; padding: 2rem; background: var(--steel-card); border-radius: 10px; }
-
+        .btn-delete-order:hover { background: rgba(218,54,51,0.3); }
+        .status-cancelled { background: rgba(218, 54, 51, 0.2); color: #da3633; border: 1px solid #da3633; }
+        .status-preparing { background: rgba(212, 160, 23, 0.2); color: #d4a017; border: 1px solid #d4a017; }
+        .status-ready { background: rgba(45, 164, 78, 0.2); color: #2da44e; border: 1px solid #2da44e; }
+        .empty-orders { text-align: center; padding: 3rem; background: var(--steel-card); border: 1px solid var(--steel-border); width: 100%; }
         .page { display: none; }
         .page.active { display: block; }
-
-        /* Stats Page */
-        .stats-container { max-width: 1400px; margin: 6rem auto 2rem; padding: 0 1rem; }
-        .stats-card { background: var(--steel-card); padding: 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; }
-        .section-title { text-align: center; font-size: clamp(1.2rem, 5vw, 1.8rem); margin-bottom: 1.5rem; }
-        .charts-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
-        @media (min-width: 768px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1024px) { .charts-grid { grid-template-columns: repeat(3, 1fr); } }
-        .chart-card { background: var(--steel-light); padding: 1rem; border-radius: 10px; }
-        .chart-card h3 { text-align: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-secondary); }
-        canvas { max-height: 250px; width: 100% !important; }
+        .success-msg {
+            background: var(--steel-card);
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid #2da44e;
+            color: #3fb950;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+        }
+        .error-msg {
+            border-right-color: #da3633;
+            color: #f85149;
+        }
         
-        .client-stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
-        @media (min-width: 480px) { .client-stats-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 768px) { .client-stats-grid { grid-template-columns: repeat(6, 1fr); } }
-        .client-stat-box { background: var(--steel-light); padding: 0.8rem; text-align: center; border-radius: 8px; border-top: 3px solid var(--accent-orange); }
-        .client-stat-box .num { font-size: clamp(1.2rem, 5vw, 1.8rem); font-weight: 700; color: var(--accent-orange); }
-        .client-stat-box .lbl { font-size: 0.7rem; color: var(--text-secondary); }
-        
-        .client-orders-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .client-orders-table th { background: var(--steel-light); padding: 0.5rem; text-align: right; border-bottom: 2px solid var(--steel-border); }
-        .client-orders-table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--steel-border); }
-
-        /* About & Specialists */
-        .about-container, .specialists-container { max-width: 1200px; margin: 6rem auto 2rem; padding: 0 1rem; }
-        .company-card, .platform-card { background: var(--steel-card); padding: 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--steel-border); }
-        .domains-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin: 1rem 0; }
-        @media (min-width: 480px) { .domains-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (min-width: 768px) { .domains-grid { grid-template-columns: repeat(5, 1fr); } }
-        .domain-btn { background: var(--steel-light); padding: 0.5rem; text-align: center; border-radius: 6px; font-size: 0.75rem; border: 1px solid var(--steel-border); cursor: pointer; }
-        .links-section { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 480px) { .links-section { grid-template-columns: repeat(2, 1fr); } }
-        .link-card { background: var(--steel-light); padding: 1rem; text-align: center; border-radius: 8px; }
-        .btn-link { background: var(--accent-blue); color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; margin-top: 0.5rem; width: 100%; }
+        .about-container { max-width: 1200px; margin: 6rem auto 2rem; padding: 0 2rem; display: flex; flex-direction: column; gap: 2rem; width: 100%; }
+        .company-card {
+            background: var(--steel-card);
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid var(--accent-orange);
+            width: 100%;
+        }
+        .domains-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; margin: 1.5rem 0; width: 100%; }
+        .domain-btn {
+            background: var(--steel-light);
+            color: var(--text-secondary);
+            padding: 0.8rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid var(--steel-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: 'Cairo', sans-serif;
+            width: 100%;
+        }
+        .links-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0; width: 100%; }
+        .link-card {
+            background: var(--steel-light);
+            padding: 1.5rem;
+            border: 1px solid var(--steel-border);
+            text-align: center;
+            width: 100%;
+        }
+        .btn-link {
+            background: var(--accent-blue);
+            color: white;
+            padding: 0.6rem 1rem;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 700;
+            font-family: 'Cairo', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            margin-top: 0.8rem;
+        }
         .btn-whatsapp { background: #1a7f37; }
-        .contact-box { background: var(--steel-light); padding: 1rem; text-align: center; border-radius: 8px; }
-        .contact-number { font-size: clamp(1rem, 5vw, 1.3rem); font-weight: 700; margin: 0.5rem 0; }
-        .platform-features { display: grid; grid-template-columns: 1fr; gap: 0.6rem; margin: 1rem 0; }
-        @media (min-width: 480px) { .platform-features { grid-template-columns: repeat(2, 1fr); } }
-        .platform-feature { background: var(--steel-light); padding: 0.6rem; border-radius: 6px; font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; }
+        .contact-box {
+            background: var(--steel-light);
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid #2da44e;
+            padding: 1.8rem;
+            text-align: center;
+            width: 100%;
+        }
+        .contact-number { font-size: 1.4rem; font-weight: 700; margin: 0.8rem 0; font-family: 'Share Tech Mono', monospace; }
+        .contact-number a { color: #2da44e; text-decoration: none; }
+        
+        footer {
+            background: var(--steel-mid);
+            color: var(--text-muted);
+            text-align: center;
+            padding: 1.5rem 2rem;
+            margin-top: 3rem;
+            border-top: 2px solid var(--accent-orange);
+            width: 100%;
+        }
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--steel-border);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.8rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
 
-        /* Modals */
+        /* WhatsApp Floating Button */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 2rem;
+            right: 1.5rem;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        .whatsapp-float-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 58px;
+            height: 58px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(37,211,102,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            animation: pulse-wa 2s infinite;
+        }
+        .whatsapp-float-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(37,211,102,0.7);
+        }
+        @keyframes pulse-wa {
+            0%,100% { box-shadow: 0 4px 20px rgba(37,211,102,0.5); }
+            50% { box-shadow: 0 4px 30px rgba(37,211,102,0.9); }
+        }
+        .whatsapp-float-tooltip {
+            background: var(--steel-card);
+            color: var(--text-primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            border: 1px solid var(--steel-border);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+        .whatsapp-float:hover .whatsapp-float-tooltip { display: block; }
+
+        /* Confirmation Modal */
         .confirm-modal-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75);
             z-index: 4000;
             display: flex;
             align-items: center;
@@ -418,597 +821,897 @@
             visibility: hidden;
             transition: all 0.3s;
         }
-        .confirm-modal-overlay.show { opacity: 1; visibility: visible; }
+        .confirm-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
         .confirm-modal {
             background: var(--steel-card);
-            padding: 1.5rem;
-            border-radius: 12px;
-            max-width: 450px;
+            border: 1px solid var(--steel-border);
+            border-top: 3px solid #25D366;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 420px;
             width: 100%;
             text-align: center;
-            border-top: 3px solid var(--accent-orange);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
-        .confirm-modal h3 { margin-bottom: 1rem; }
-        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .confirm-modal-btns { display: flex; gap: 1rem; justify-content: center; }
-        .btn-confirm-send { background: #25D366; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 6px; cursor: pointer; }
-        .btn-confirm-cancel { background: rgba(218,54,51,0.15); color: #da3633; padding: 0.6rem 1.2rem; border: 1px solid #da3633; border-radius: 6px; cursor: pointer; }
-
-        .whatsapp-float { position: fixed; bottom: 1.5rem; right: 1rem; z-index: 1500; }
-        .whatsapp-float-btn {
+        .confirm-modal h3 { color: #25D366; margin-bottom: 1rem; font-size: 1.2rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6; }
+        .confirm-modal-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .btn-confirm-send {
             background: #25D366;
             color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: 'Cairo', sans-serif;
+            flex: 1;
+        }
+        .btn-confirm-cancel {
+            background: rgba(218,54,51,0.15);
+            color: #da3633;
+            border: 1px solid #da3633;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            font-family: 'Cairo', sans-serif;
+            flex: 1;
+        }
+
+        /* Stats page - client stats */
+        .client-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .client-stat-box {
+            background: var(--steel-light);
+            border: 1px solid var(--steel-border);
+            border-top: 3px solid var(--accent-orange);
+            padding: 1.2rem;
+            text-align: center;
+        }
+        .client-stat-box .num { font-size: 2rem; font-weight: 700; color: var(--accent-orange); font-family: 'Share Tech Mono', monospace; }
+        .client-stat-box .lbl { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.3rem; }
+        .client-orders-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .client-orders-table th {
+            background: var(--steel-light);
+            color: var(--accent-orange);
+            padding: 0.7rem 1rem;
+            text-align: right;
+            font-size: 0.85rem;
+            border-bottom: 2px solid var(--steel-border);
+        }
+        .client-orders-table td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--steel-border);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+        .client-orders-table tr:hover td { background: var(--steel-light); }
+
+        /* Nos spécialistes page styles */
+        .specialists-container { max-width: 1200px; margin: 6rem auto 2rem; padding: 0 2rem; display: flex; flex-direction: column; gap: 2rem; width: 100%; }
+        .platform-card {
+            background: var(--steel-card);
+            border: 1px solid var(--steel-border);
+            border-right: 3px solid var(--accent-orange);
+            padding: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .platform-logo-area {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37,211,102,0.4);
-            border: none;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        footer { background: var(--steel-mid); text-align: center; padding: 1rem; margin-top: 2rem; border-top: 2px solid var(--accent-orange); font-size: 0.8rem; }
-        .theme-toggle { background: transparent; border: 1px solid var(--steel-border); color: var(--text-secondary); padding: 0.5rem 0.8rem; border-radius: 5px; cursor: pointer; }
+        .platform-logo-icon { font-size: 3rem; }
+        .platform-logo-text h2 { font-size: 1.5rem; color: var(--accent-orange); }
+        .platform-logo-text p { color: var(--text-secondary); font-size: 0.9rem; }
+        .platform-features { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+        .platform-feature {
+            background: var(--steel-light);
+            border: 1px solid var(--steel-border);
+            padding: 0.8rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+        .platform-feature i { color: var(--accent-orange); }
 
         @media (max-width: 768px) {
             .menu-toggle { display: block; }
             .nav-controls { display: none; }
+            .hero h1 { font-size: 1.5rem; }
+            .form-container { margin: 0.5rem; padding: 1.2rem; }
+            .row-2 { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .stats-card { padding: 1rem; }
+            .stats-grid { padding: 0.8rem; gap: 0.8rem; }
+            .stat-card-enhanced { min-width: unset; width: 100%; padding: 1.2rem 1rem; }
+            .orders-container { padding: 0 0.8rem; margin-top: 5rem; }
+            .filter-bar { gap: 0.6rem; }
+            .about-container, .stats-container, .specialists-container { padding: 0 0.8rem; margin-top: 5rem; }
+            .client-stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .links-section { grid-template-columns: 1fr; }
+            .domains-grid { grid-template-columns: repeat(2,1fr); }
+            .platform-features { grid-template-columns: 1fr; }
+            .client-orders-table { font-size: 0.78rem; }
+            .client-orders-table th, .client-orders-table td { padding: 0.5rem 0.5rem; }
+            .confirm-modal { padding: 1.5rem 1rem; }
+            .stat-number { font-size: 2rem; }
+            .hero { padding: 5.5rem 1rem 2.5rem; }
+            .section-title { font-size: 1.4rem; }
+            .company-card, .platform-card { padding: 1.2rem; }
         }
+        @media (min-width: 600px) {
+            .orders-grid { grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); }
+        }
+
         @media (min-width: 769px) {
             .offcanvas, .offcanvas-overlay { display: none; }
         }
     </style>
 </head>
 <body>
+    <!-- Offcanvas Menu -->
     <div class="offcanvas-overlay" id="offcanvasOverlay"></div>
     <div class="offcanvas" id="offcanvasMenu">
-        <div class="offcanvas-header"><h3>⚙️ Menu</h3><button class="offcanvas-close" id="closeOffcanvas">✕</button></div>
-        <div class="offcanvas-menu">
-            <button class="offcanvas-btn active" data-page="home">📦 Demande de produit</button>
-            <button class="offcanvas-btn" data-page="orders">📋 Demandes <span id="offcanvasBadge" class="badge-orders" style="display:none;">0</span></button>
-            <button class="offcanvas-btn" data-page="statistics">📊 Statistiques</button>
-            <button class="offcanvas-btn" data-page="about">🏢 À propos</button>
-            <button class="offcanvas-btn" data-page="specialists">🏆 Nos spécialistes</button>
+        <div class="offcanvas-header">
+            <h3>⚙️ Menu</h3>
+            <button class="offcanvas-close" id="closeOffcanvas">✕</button>
         </div>
-        <div class="offcanvas-footer"><button class="offcanvas-btn" id="offcanvasThemeBtn">🌓 Mode nuit/jour</button></div>
+        <div class="offcanvas-menu">
+            <button class="offcanvas-btn active" onclick="showPageFromMenu('home')">📦 Demande de produit</button>
+            <button class="offcanvas-btn" onclick="showPageFromMenu('orders')">📋 Demandes <span id="offcanvasBadge" class="badge-orders" style="display: none; position: relative; top: 0; margin-right: 8px;">0</span></button>
+            <button class="offcanvas-btn" onclick="showPageFromMenu('statistics')">📊 Statistiques</button>
+            <button class="offcanvas-btn" onclick="showPageFromMenu('specialists')">🏆 Nos spécialistes</button>
+            <button class="offcanvas-btn" onclick="showPageFromMenu('about')">🏢 À propos</button>
+        </div>
+        <div class="offcanvas-footer">
+            <button class="offcanvas-btn" onclick="toggleTheme()">🌓 Mode nuit/jour</button>
+        </div>
     </div>
 
-    <div class="loading-screen" id="loadingScreen"><div class="loader"><div class="loader-spinner"></div><div class="loader-text">Connect Industry Maroc</div></div></div>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Connect Industry Maroc</div>
+        </div>
+    </div>
 
     <header>
         <nav>
-            <div class="logo"><div class="logo-icon">⚙️</div><div class="logo-text">Connect <span>Industry</span> Maroc</div></div>
+            <div class="logo">
+                <div class="logo-icon">⚙️</div>
+                <div class="logo-text">Connect <span>Industry</span> Maroc</div>
+            </div>
             <button class="menu-toggle" id="menuToggle">☰</button>
             <div class="nav-controls" id="navControls">
-                <button class="nav-btn active" data-page="home">📦 Demande</button>
-                <button class="nav-btn" data-page="orders">📋 Demandes <span id="ordersBadge" class="badge-orders" style="display:none;">0</span></button>
-                <button class="nav-btn" data-page="statistics">📊 Stats</button>
-                <button class="nav-btn" data-page="about">🏢 À propos</button>
-                <button class="nav-btn" data-page="specialists">🏆 Spécialistes</button>
-                <button class="theme-toggle" id="themeToggle">🌙</button>
+                <button class="nav-btn active" onclick="showPage('home', event)">📦 Demande de produit</button>
+                <button class="nav-btn" onclick="showPage('orders', event)">📋 Demandes <span id="ordersBadge" class="badge-orders" style="display: none;">0</span></button>
+                <button class="nav-btn" onclick="showPage('statistics', event)">📊 Statistiques</button>
+                <button class="nav-btn" onclick="showPage('specialists', event)">🏆 Nos spécialistes</button>
+                <button class="nav-btn" onclick="showPage('about', event)">🏢 À propos</button>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
             </div>
         </nav>
     </header>
 
     <main>
-        <!-- Home Page -->
+        <!-- Page d'accueil - Demande de produit -->
         <div id="home" class="page active">
             <div class="hero">
+                <canvas id="particles-canvas"></canvas>
                 <div class="hero-content">
                     <div class="hero-badge">Plateforme Industrielle — Maroc</div>
                     <h1>Demandez votre <span>produit industriel</span></h1>
+                    <div class="typing-text">
+                        <span id="typed-text"></span>
+                        <span class="cursor">|</span>
+                    </div>
                 </div>
             </div>
 
             <div class="stats-grid">
                 <div class="stat-card-enhanced" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')">
-                    <div class="stat-number" data-target="29000">0+</div>
-                    <div class="stat-label">👥 Fournisseurs Facebook</div>
+                    <div class="stat-number" data-target="29000" data-plus="true">0</div>
+                    <div class="stat-label">👥 Fournisseurs sur Facebook</div>
                 </div>
                 <div class="stat-card-enhanced" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')">
-                    <div class="stat-number" data-target="750">0+</div>
-                    <div class="stat-label">💬 Pro WhatsApp</div>
+                    <div class="stat-number" data-target="750" data-plus="true">0</div>
+                    <div class="stat-label">💬 Professionnels sur WhatsApp</div>
                 </div>
                 <div class="stat-card-enhanced" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')">
-                    <div class="stat-number" data-target="9402">0+</div>
+                    <div class="stat-number" data-target="9402" data-plus="true">0</div>
                     <div class="stat-label">📘 Abonnés page</div>
                 </div>
             </div>
 
             <div class="form-container">
-                <div class="form-header"><h2>📝 Formulaire de demande</h2><p>Remplissez le formulaire, il sera traité immédiatement</p></div>
+                <div class="form-header">
+                    <h2>📝 Formulaire de demande</h2>
+                    <p>Remplissez le formulaire, il sera traité immédiatement</p>
+                </div>
+                
                 <form id="productRequestForm">
-                    <div class="form-group"><label>Nom du produit *</label><input type="text" id="productName" required placeholder="Ex: PLC Siemens S7-1200"></div>
-                    <div class="form-group"><label>Spécifications *</label><textarea id="specifications" rows="3" required placeholder="Modèle, puissance, tension..."></textarea></div>
-                    <div class="row-2">
-                        <div class="form-group"><label>Quantité *</label><input type="number" id="quantity" required></div>
-                        <div class="form-group"><label>Budget (MAD)</label><input type="number" id="budget" placeholder="Montant proposé"></div>
+                    <div class="form-group">
+                        <label>Nom du produit <span class="required">*</span></label>
+                        <input type="text" id="productName" required placeholder="Ex: PLC Siemens S7-1200">
+                    </div>
+                    <div class="form-group">
+                        <label>Spécifications <span class="required">*</span></label>
+                        <textarea id="specifications" rows="3" required placeholder="Modèle, puissance, tension..."></textarea>
                     </div>
                     <div class="row-2">
-                        <div class="form-group"><label>Délai requis</label><select id="deliveryTime"><option value="Urgent (moins de 7 jours)">⚡ Urgent</option><option value="Normal (7-15 jours)" selected>📦 Normal</option><option value="Flexible (15-30 jours)">🕐 Flexible</option></select></div>
-                        <div class="form-group"><label>Type de demande</label><select id="requestType"><option value="Achat direct">💰 Achat direct</option><option value="Comparaison d'offres">📊 Comparaison d'offres</option><option value="Consultation technique">🔧 Consultation technique</option></select></div>
+                        <div class="form-group">
+                            <label>Quantité <span class="required">*</span></label>
+                            <input type="number" id="quantity" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Budget (MAD)</label>
+                            <input type="number" id="budget" placeholder="Montant proposé">
+                        </div>
                     </div>
-                    <div class="form-group"><label>Détails supplémentaires</label><textarea id="details" rows="2"></textarea></div>
                     <div class="row-2">
-                        <div class="form-group"><label>Nom complet *</label><input type="text" id="fullName" required></div>
-                        <div class="form-group"><label>Téléphone *</label><input type="tel" id="phone" required></div>
+                        <div class="form-group">
+                            <label>Délai requis</label>
+                            <select id="deliveryTime">
+                                <option value="Urgent (moins de 7 jours)">⚡ Urgent</option>
+                                <option value="Normal (7-15 jours)" selected="selected">📦 Normal</option>
+                                <option value="Flexible (15-30 jours)">🕐 Flexible</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Type de demande</label>
+                            <select id="requestType">
+                                <option value="Achat direct">💰 Achat direct</option>
+                                <option value="Comparaison d'offres">📊 Comparaison d'offres</option>
+                                <option value="Consultation technique">🔧 Consultation technique</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="progress-bar-container" id="progressBar"><div class="progress-bar-fill" id="progressFill"></div></div>
-                    <button type="submit" class="btn-submit" id="submitBtn"><i class="fab fa-whatsapp"></i> Envoyer la demande via WhatsApp</button>
+                    <div class="form-group">
+                        <label>Détails supplémentaires</label>
+                        <textarea id="details" rows="2"></textarea>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Nom complet <span class="required">*</span></label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Téléphone <span class="required">*</span></label>
+                            <input type="tel" id="phone" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit" id="submitBtn"><i class="fab fa-whatsapp" style="font-size:1.2rem;"></i> Envoyer la demande via WhatsApp</button>
                 </form>
             </div>
         </div>
 
-        <!-- Orders Page -->
+        <!-- Page des commandes - Demandes -->
         <div id="orders" class="page">
             <div class="orders-container">
-                <div class="orders-header"><h1>📋 Demandes envoyées</h1><p>Liste de toutes vos demandes de produits</p></div>
+                <div class="orders-header">
+                    <h1>📋 Demandes envoyées</h1>
+                    <p>Liste de toutes vos demandes de produits</p>
+                    <div class="filter-buttons">
+                        <button class="nav-btn" onclick="clearAllOrders()" style="background:#da3633; color:white;">🗑️ Supprimer tout</button>
+                    </div>
+                </div>
                 <div class="filter-bar">
-                    <input type="text" id="searchOrders" placeholder="🔍 Rechercher...">
-                    <select id="clientFilter"><option value="all">Tous les clients</option></select>
-                    <select id="statusFilter"><option value="all">Tous les statuts</option><option value="En préparation">⚙️ En préparation</option><option value="Prêt">✅ Prêt</option><option value="Annulé">❌ Annulé</option></select>
-                    <div class="filter-buttons"><button id="clearAllBtn" style="background:#da3633; color:white;">🗑️ Supprimer tout</button></div>
+                    <input type="text" id="searchOrders" placeholder="🔍 Rechercher..." onkeyup="filterOrders()">
+                    <select id="categoryFilter" onchange="filterOrders()">
+                        <option value="all">Toutes les catégories</option>
+                        <option value="PLC">PLC</option>
+                        <option value="Variateurs">Variateurs</option>
+                        <option value="Instrumentation">Instrumentation</option>
+                        <option value="Contacteurs">Contacteurs</option>
+                    </select>
+                    <select id="statusFilter" onchange="filterOrders()">
+                        <option value="all">Tous les statuts</option>
+                        <option value="En préparation">⚙️ En préparation</option>
+                        <option value="Prêt">✅ Prêt</option>
+                        <option value="Annulé">❌ Annulé</option>
+                    </select>
+                    <input type="date" id="dateFrom" onchange="filterOrders()" placeholder="Date de début">
+                    <input type="date" id="dateTo" onchange="filterOrders()" placeholder="Date de fin">
                 </div>
                 <div id="ordersList" class="orders-grid"></div>
             </div>
         </div>
 
-        <!-- Statistics Page -->
+        <!-- Page Statistics - Statistiques -->
         <div id="statistics" class="page">
             <div class="stats-container">
-                <div class="stats-card"><h2 class="section-title">Statistiques des demandes</h2>
+                <div class="stats-card" style="animation-delay: 0.05s;">
+                    <h2 style="text-align: center; margin-bottom: 1.5rem;">📊 Statistiques des demandes</h2>
+                    
+                    <!-- KPI boxes -->
                     <div class="client-stats-grid" id="statsKpiGrid"></div>
+
                     <div class="charts-grid">
-                        <div class="chart-card"><h3>Demandes par mois</h3><canvas id="monthlyChart"></canvas></div>
-                        <div class="chart-card"><h3>Répartition des statuts</h3><canvas id="statusChart"></canvas></div>
-                        <div class="chart-card"><h3>Produits les plus demandés</h3><canvas id="productsChart"></canvas></div>
-                    </div>
-                </div>
-                <div class="stats-card"><h2 class="section-title">Statistiques par client</h2><div id="clientStatsTable"></div></div>
-            </div>
-        </div>
-
-        <!-- About Page -->
-        <div id="about" class="page">
-            <div class="about-container">
-                <div class="company-card"><h2>🏭 Connect Industry Maroc</h2><p style="color: var(--text-secondary);">Plateforme numérique spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs au Maroc.</p></div>
-                <div class="company-card"><h2>⚙️ Nos domaines d'expertise</h2><div class="domains-grid"><div class="domain-btn">🔌 Électricité industrielle</div><div class="domain-btn">🤖 Automatisme</div><div class="domain-btn">🛠️ Équipements</div><div class="domain-btn">⚡ Pièces détachées</div><div class="domain-btn">📊 Appareils de mesure</div><div class="domain-btn">🔧 Maintenance</div><div class="domain-btn">📡 Instrumentation</div><div class="domain-btn">🚚 Importation</div><div class="domain-btn">💡 Énergie</div><div class="domain-btn">🏭 Lignes production</div></div></div>
-                <div class="company-card"><h2>📘 Nos réseaux sociaux</h2><div class="links-section"><div class="link-card"><h3>Tech Industrie Maroc</h3><button class="btn-link" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/')">Visiter →</button></div><div class="link-card"><h3>Les Fournisseurs Industrielle</h3><button class="btn-link btn-whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow')">Rejoindre →</button></div></div></div>
-                <div class="company-card"><h2>📞 Contactez-nous</h2><div class="contact-box"><div class="contact-number"><a href="https://wa.me/212690292010" target="_blank" style="color:var(--accent-orange);">📱 +212 690-292010</a></div><p>Service : Dimanche à Jeudi | 9h-18h</p></div></div>
-            </div>
-        </div>
-
-        <!-- Specialists Page -->
-        <div id="specialists" class="page">
-            <div class="specialists-container">
-                <div class="platform-card"><h2 style="color:var(--accent-orange);">⚙️ Connect Industry Maroc</h2><p>منصة رقمية متخصصة في ربط طالبي المنتجات الصناعية بأكبر شبكة من الموردين في المغرب.</p><div class="platform-features"><div class="platform-feature"><i class="fas fa-network-wired"></i> أكبر شبكة موردين</div><div class="platform-feature"><i class="fas fa-bolt"></i> معالجة فورية</div><div class="platform-feature"><i class="fas fa-star"></i> جودة مضمونة</div><div class="platform-feature"><i class="fas fa-headset"></i> دعم مباشر</div></div></div>
-                <div class="platform-card"><h2>🏭 Nos services</h2><div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0.8rem;"><div style="background:var(--steel-light); padding:0.8rem; border-radius:6px;"><h4 style="color:var(--accent-orange);">🔌 Électricité & Automatisme</h4><p style="font-size:0.75rem;">PLC, Variateurs, Contacteurs</p></div><div style="background:var(--steel-light); padding:0.8rem; border-radius:6px;"><h4 style="color:var(--accent-orange);">🛠️ Équipements & Machines</h4><p style="font-size:0.75rem;">Motoréducteurs, Pompes</p></div><div style="background:var(--steel-light); padding:0.8rem; border-radius:6px;"><h4 style="color:var(--accent-orange);">📊 Instrumentation</h4><p style="font-size:0.75rem;">Débitmètres, Manomètres</p></div></div></div>
-                <div class="platform-card"><h2>📈 Notre réseau</h2><div style="display:grid; grid-template-columns:repeat(2,1fr); gap:0.8rem;"><div style="text-align:center; background:var(--steel-light); padding:0.8rem; border-radius:6px;"><div style="font-size:1.5rem; font-weight:700; color:var(--accent-orange);">29,000+</div><div>Membres FB</div></div><div style="text-align:center; background:var(--steel-light); padding:0.8rem; border-radius:6px;"><div style="font-size:1.5rem; font-weight:700; color:var(--accent-orange);">750+</div><div>WhatsApp</div></div></div></div>
-            </div>
-        </div>
-    </main>
-
-    <footer><p>© 2026 Connect Industry Maroc | Tous droits réservés</p><p>📞 Traitement : <strong>+212 690-292010</strong></p></footer>
-
-    <div id="toast" class="toast-notification"></div>
-    <div class="whatsapp-float"><button class="whatsapp-float-btn" id="waFloatBtn"><i class="fab fa-whatsapp"></i></button></div>
-
-    <!-- Modals -->
-    <div class="confirm-modal-overlay" id="confirmModal"><div class="confirm-modal"><h3>📤 تأكيد الإرسال</h3><p>سيتم حفظ طلبك وإرسال رسالة تأكيد عبر واتساب</p><div class="confirm-modal-btns"><button class="btn-confirm-send" id="confirmSendBtn">✅ إرسال</button><button class="btn-confirm-cancel" id="confirmCancelBtn">❌ إلغاء</button></div></div></div>
-    <div class="confirm-modal-overlay" id="detailModal"><div class="confirm-modal" id="detailModalContent" style="max-width:500px;"></div></div>
-    <div class="confirm-modal-overlay" id="editModal"><div class="confirm-modal" id="editModalContent" style="max-width:500px;"></div></div>
-
-    <script>
-        // ==================== DATA ====================
-        let orders = JSON.parse(localStorage.getItem('industry_orders') || '[]');
-        let pendingRequest = null;
-        let monthlyChart, statusChart, productsChart;
-        const WHATSAPP_NUMBER = "212690292010";
-
-        // ==================== UTILITIES ====================
-        function formatDate(dateStr) {
-            const d = new Date(dateStr);
-            return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-        }
-
-        function sanitize(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i> ${msg}`;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function showProgress() {
-            const pb = document.getElementById('progressBar');
-            const fill = document.getElementById('progressFill');
-            pb.style.display = 'block';
-            let w = 0;
-            const int = setInterval(() => {
-                w += 20;
-                fill.style.width = w + '%';
-                if (w >= 100) clearInterval(int);
-            }, 100);
-            setTimeout(() => { pb.style.display = 'none'; fill.style.width = '0%'; }, 600);
-        }
-
-        function updateBadges() {
-            const count = orders.length;
-            ['ordersBadge', 'offcanvasBadge'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.textContent = count;
-                    el.style.display = count > 0 ? 'inline-block' : 'none';
-                }
-            });
-        }
-
-        // ==================== ORDERS CRUD ====================
-        function saveOrder(data) {
-            const newOrder = {
-                ...data,
-                id: Date.now(),
-                date: new Date().toISOString(),
-                status: 'En préparation'
-            };
-            orders.push(newOrder);
-            localStorage.setItem('industry_orders', JSON.stringify(orders));
-            updateBadges();
-            displayOrders();
-            updateCharts();
-            showToast('✅ Demande enregistrée !');
-        }
-
-        function updateOrderStatus(id, newStatus) {
-            const idx = orders.findIndex(o => o.id == id);
-            if (idx !== -1) {
-                orders[idx].status = newStatus;
-                localStorage.setItem('industry_orders', JSON.stringify(orders));
-                displayOrders();
-                updateCharts();
-                showToast(`Statut mis à jour : ${newStatus}`);
-            }
-        }
-
-        function deleteOrder(id) {
-            if (confirm('Supprimer cette demande ?')) {
-                orders = orders.filter(o => o.id != id);
-                localStorage.setItem('industry_orders', JSON.stringify(orders));
-                updateBadges();
-                displayOrders();
-                updateCharts();
-                showToast('🗑️ Demande supprimée');
-            }
-        }
-
-        function editOrder(id) {
-            const order = orders.find(o => o.id == id);
-            if (!order) return;
-            const modal = document.getElementById('editModal');
-            const content = document.getElementById('editModalContent');
-            content.innerHTML = `
-                <h3 style="color:var(--accent-orange);">✏️ Modifier</h3>
-                <div style="margin:1rem 0;"><label>Produit</label><input type="text" id="editProduct" value="${sanitize(order.productName)}" style="width:100%;"></div>
-                <div style="margin:1rem 0;"><label>Spécifications</label><textarea id="editSpecs" rows="2" style="width:100%;">${sanitize(order.specifications)}</textarea></div>
-                <div style="margin:1rem 0;"><label>Quantité</label><input type="number" id="editQty" value="${order.quantity}" style="width:100%;"></div>
-                <div style="margin:1rem 0;"><label>Nom</label><input type="text" id="editName" value="${sanitize(order.fullName)}" style="width:100%;"></div>
-                <div style="margin:1rem 0;"><label>Téléphone</label><input type="tel" id="editPhone" value="${sanitize(order.phone)}" style="width:100%;"></div>
-                <div class="confirm-modal-btns"><button class="btn-confirm-send" id="saveEditBtn">💾 Enregistrer</button><button class="btn-confirm-cancel" id="cancelEditBtn">Annuler</button></div>
-            `;
-            modal.classList.add('show');
-            document.getElementById('saveEditBtn').onclick = () => {
-                order.productName = document.getElementById('editProduct').value;
-                order.specifications = document.getElementById('editSpecs').value;
-                order.quantity = document.getElementById('editQty').value;
-                order.fullName = document.getElementById('editName').value;
-                order.phone = document.getElementById('editPhone').value;
-                localStorage.setItem('industry_orders', JSON.stringify(orders));
-                displayOrders();
-                updateCharts();
-                modal.classList.remove('show');
-                showToast('✅ Modifié');
-            };
-            document.getElementById('cancelEditBtn').onclick = () => modal.classList.remove('show');
-            modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
-        }
-
-        function showOrderDetail(id) {
-            const order = orders.find(o => o.id == id);
-            if (!order) return;
-            const modal = document.getElementById('detailModal');
-            const content = document.getElementById('detailModalContent');
-            content.innerHTML = `
-                <h3 style="color:var(--accent-orange);">📄 Détails</h3>
-                <div><strong>ID:</strong> ${order.id}</div>
-                <div><strong>Date:</strong> ${formatDate(order.date)}</div>
-                <div><strong>Produit:</strong> ${sanitize(order.productName)}</div>
-                <div><strong>Spécifications:</strong> ${sanitize(order.specifications)}</div>
-                <div><strong>Quantité:</strong> ${order.quantity}</div>
-                <div><strong>Budget:</strong> ${order.budget || '—'} MAD</div>
-                <div><strong>Demandeur:</strong> ${sanitize(order.fullName)}</div>
-                <div><strong>Téléphone:</strong> ${sanitize(order.phone)}</div>
-                <div><strong>Statut:</strong> ${order.status || 'En préparation'}</div>
-                <div class="confirm-modal-btns" style="margin-top:1rem;"><button class="btn-confirm-send" id="printDetailBtn">🖨️ Imprimer</button><button class="btn-confirm-cancel" id="closeDetailBtn">Fermer</button></div>
-            `;
-            modal.classList.add('show');
-            document.getElementById('printDetailBtn').onclick = () => {
-                const win = window.open('', '_blank');
-                win.document.write(`<html><head><title>Demande ${order.id}</title><style>body{font-family:Arial;padding:2rem;}</style></head><body><h1>Connect Industry Maroc</h1><h2>Détails de la demande</h2><p><strong>ID:</strong> ${order.id}</p><p><strong>Date:</strong> ${formatDate(order.date)}</p><p><strong>Produit:</strong> ${sanitize(order.productName)}</p><p><strong>Spécifications:</strong> ${sanitize(order.specifications)}</p><p><strong>Quantité:</strong> ${order.quantity}</p><p><strong>Budget:</strong> ${order.budget || '—'} MAD</p><p><strong>Demandeur:</strong> ${sanitize(order.fullName)}</p><p><strong>Téléphone:</strong> ${sanitize(order.phone)}</p><p><strong>Statut:</strong> ${order.status || 'En préparation'}</p><hr><p>© Connect Industry Maroc</p></body></html>`);
-                win.document.close();
-                win.print();
-            };
-            document.getElementById('closeDetailBtn').onclick = () => modal.classList.remove('show');
-            modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('show'); };
-        }
-
-        function clearAllOrders() {
-            if (confirm('⚠️ Supprimer TOUTES les demandes ? Cette action est irréversible.')) {
-                orders = [];
-                localStorage.setItem('industry_orders', JSON.stringify(orders));
-                updateBadges();
-                displayOrders();
-                updateCharts();
-                showToast('🗑️ Toutes les demandes supprimées');
-            }
-        }
-
-        // ==================== DISPLAY ORDERS ====================
-        function displayOrders(filteredOrders = null) {
-            const container = document.getElementById('ordersList');
-            if (!container) return;
-            let list = filteredOrders || orders;
-            if (list.length === 0) {
-                container.innerHTML = '<div class="empty-orders"><i class="fas fa-inbox" style="font-size:2rem;"></i><p>Aucune demande</p></div>';
-                return;
-            }
-            container.innerHTML = list.slice().reverse().map(order => {
-                const statusClass = order.status === 'Annulé' ? 'status-cancelled' : (order.status === 'Prêt' ? 'status-ready' : 'status-preparing');
-                const statusText = order.status || 'En préparation';
-                return `
-                    <div class="order-card">
-                        <div class="order-header"><span class="order-date">📅 ${formatDate(order.date)}</span><button class="btn-action btn-print" onclick="showOrderDetail(${order.id})"><i class="fas fa-eye"></i></button></div>
-                        <div class="order-product">🛠️ ${sanitize(order.productName)}</div>
-                        <div class="order-details">👤 ${sanitize(order.fullName)} | 📞 ${sanitize(order.phone)}</div>
-                        <div class="order-details">🔢 Qté: ${order.quantity} | 💰 ${order.budget ? order.budget + ' MAD' : '—'}</div>
-                        <div class="order-actions">
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                            <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)">
-                                <option value="En préparation" ${statusText === 'En préparation' ? 'selected' : ''}>⚙️ En préparation</option>
-                                <option value="Prêt" ${statusText === 'Prêt' ? 'selected' : ''}>✅ Prêt</option>
-                                <option value="Annulé" ${statusText === 'Annulé' ? 'selected' : ''}>❌ Annulé</option>
-                            </select>
-                            <button class="btn-action btn-edit" onclick="editOrder(${order.id})"><i class="fas fa-edit"></i></button>
-                            <button class="btn-action btn-delete" onclick="deleteOrder(${order.id})"><i class="fas fa-trash-alt"></i></button>
+                        <div class="chart-card">
+                            <h3>Demandes par mois</h3>
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Répartition des statuts</h3>
+                            <canvas id="statusChart"></canvas>
                         </div>
                     </div>
-                `;
-            }).join('');
-            updateClientFilter();
-        }
+                </div>
 
-        function updateClientFilter() {
-            const clients = [...new Set(orders.map(o => o.fullName).filter(Boolean))];
-            const filter = document.getElementById('clientFilter');
-            if (filter) {
-                filter.innerHTML = '<option value="all">Tous les clients</option>' + clients.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
-        }
+                <div class="stats-card" style="animation-delay: 0.1s;">
+                    <h2 style="text-align:center; margin-bottom:1.5rem;">👤 Statistiques par client</h2>
+                    <div id="clientStatsTable"></div>
+                </div>
+            </div>
+        </div>
 
-        function filterOrders() {
-            const search = document.getElementById('searchOrders')?.value.toLowerCase() || '';
-            const client = document.getElementById('clientFilter')?.value || 'all';
-            const status = document.getElementById('statusFilter')?.value || 'all';
-            let filtered = orders;
-            if (search) filtered = filtered.filter(o => o.productName.toLowerCase().includes(search) || o.fullName.toLowerCase().includes(search));
-            if (client !== 'all') filtered = filtered.filter(o => o.fullName === client);
-            if (status !== 'all') filtered = filtered.filter(o => (o.status || 'En préparation') === status);
-            displayOrders(filtered);
-        }
 
-        // ==================== CHARTS ====================
-        function updateCharts() {
-            const monthly = [0,0,0,0,0,0];
-            orders.forEach(o => { const m = new Date(o.date).getMonth(); if (m >= 0 && m < 6) monthly[m]++; });
-            if (monthlyChart) { monthlyChart.data.datasets[0].data = monthly; monthlyChart.update(); }
+
+        <!-- Page À propos -->
+        <div id="about" class="page">
+            <div class="about-container">
+                <div class="company-card" style="animation-delay: 0.2s;">
+                    <h2>🏭 Connect Industry Maroc</h2>
+                    <p style="color: var(--text-secondary);">Plateforme numérique spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs au Maroc. Nous facilitons les processus d'approvisionnement et faisons gagner du temps et des efforts aux entreprises, entrepreneurs et particuliers, tout en garantissant la qualité et les meilleurs prix.</p>
+                </div>
+
+                <div class="company-card" style="animation-delay: 0.3s;">
+                    <h2>⚙️ Nos domaines d'expertise</h2>
+                    <div class="domains-grid">
+                        <button class="domain-btn">🔌 Électricité industrielle</button>
+                        <button class="domain-btn">🤖 Automatisme et PLC</button>
+                        <button class="domain-btn">🛠️ Équipements industriels</button>
+                        <button class="domain-btn">⚡ Pièces détachées</button>
+                        <button class="domain-btn">📊 Appareils de mesure</button>
+                        <button class="domain-btn">🔧 Maintenance industrielle</button>
+                        <button class="domain-btn">📡 Instrumentation</button>
+                        <button class="domain-btn">🚚 Importation d'équipements</button>
+                        <button class="domain-btn">💡 Solutions énergétiques</button>
+                        <button class="domain-btn">🏭 Lignes de production</button>
+                    </div>
+                </div>
+
+                <div class="company-card" style="animation-delay: 0.4s;">
+                    <h2>📘 Nos pages Facebook</h2>
+                    <div class="links-section">
+                        <div class="link-card">
+                            <div class="link-icon">📘</div>
+                            <h3>Tech Industrie Maroc</h3>
+                            <div class="stats-number">9,402+ abonnés</div>
+                            <button class="btn-link" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')">Visiter la page →</button>
+                        </div>
+                        <div class="link-card">
+                            <div class="link-icon">🔌</div>
+                            <h3>Électricité Industrielle Du Maroc</h3>
+                            <div class="stats-number">1,565+ abonnés</div>
+                            <button class="btn-link" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')">Visiter la page →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="company-card" style="animation-delay: 0.5s;">
+                    <h2>👥 Nos groupes Facebook</h2>
+                    <div class="links-section">
+                        <div class="link-card">
+                            <div class="link-icon">👥</div>
+                            <h3>Les Fournisseurs Industrielle Du Maroc</h3>
+                            <div class="stats-number">29,000+ membres</div>
+                            <button class="btn-link" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')">Rejoindre le groupe →</button>
+                        </div>
+                        <div class="link-card">
+                            <div class="link-icon">🔧</div>
+                            <h3>Vente de PLC et Équipements d'Automatisme</h3>
+                            <div class="stats-number">5,900+ membres</div>
+                            <button class="btn-link" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')">Rejoindre le groupe →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="company-card" style="animation-delay: 0.6s;">
+                    <h2>💬 Nos groupes WhatsApp</h2>
+                    <div class="links-section">
+                        <div class="link-card">
+                            <div class="link-icon">💬</div>
+                            <h3>Les Fournisseurs Industrielle Du Maroc</h3>
+                            <div class="stats-number">750+ membres</div>
+                            <button class="btn-link btn-whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')">Rejoindre le groupe →</button>
+                        </div>
+                        <div class="link-card">
+                            <div class="link-icon">🎓</div>
+                            <h3>Génie Électrique Industriel Maroc</h3>
+                            <div class="stats-number">420+ membres</div>
+                            <button class="btn-link btn-whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')">Rejoindre le groupe →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="company-card" style="animation-delay: 0.7s;">
+                    <h2>📞 Contactez-nous</h2>
+                    <div class="contact-box">
+                        <p>Pour des demandes rapides ou une aide immédiate</p>
+                        <div class="contact-number">
+                            <a href="https://wa.me/212690292010" target="_blank">📱 +212 690-292010</a>
+                        </div>
+                        <p>Service disponible : Dimanche à Jeudi | 9h00 - 18h00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page Nos Spécialistes -->
+        <div id="specialists" class="page">
+            <div class="specialists-container">
+                <!-- Connect Industry Maroc -->
+                <div class="platform-card" style="animation-delay:0.1s; border-top: 3px solid var(--accent-orange);">
+                    <div class="platform-logo-area">
+                        <div class="platform-logo-icon">⚙️</div>
+                        <div class="platform-logo-text">
+                            <h2>Connect Industry Maroc</h2>
+                            <p>Plateforme de mise en relation industrielle — Maroc</p>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-secondary); line-height:1.7;">منصة رقمية متخصصة في ربط طالبي المنتجات الصناعية بأكبر شبكة من الموردين في المغرب. نسهّل عمليات التوريد ونوفر الوقت والجهد للشركات والمقاولين والأفراد مع ضمان الجودة وأفضل الأسعار.</p>
+                    <div class="platform-features">
+                        <div class="platform-feature"><i class="fas fa-network-wired"></i> أكبر شبكة موردين بالمغرب</div>
+                        <div class="platform-feature"><i class="fas fa-bolt"></i> معالجة فورية للطلبات</div>
+                        <div class="platform-feature"><i class="fas fa-star"></i> جودة مضمونة</div>
+                        <div class="platform-feature"><i class="fas fa-tags"></i> أفضل الأسعار التنافسية</div>
+                        <div class="platform-feature"><i class="fas fa-headset"></i> دعم مباشر عبر واتساب</div>
+                        <div class="platform-feature"><i class="fas fa-industry"></i> تغطية كل القطاعات الصناعية</div>
+                    </div>
+                    <div style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap;">
+                        <button class="btn-link" style="width:auto; padding:0.7rem 1.5rem;" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/','_blank')">📘 صفحتنا على فيسبوك</button>
+                        <button class="btn-link btn-whatsapp" style="width:auto; padding:0.7rem 1.5rem;" onclick="window.open('https://wa.me/212690292010','_blank')">💬 تواصل مباشرة</button>
+                    </div>
+                </div>
+
+                <!-- Connect Industry Maroc - Services -->
+                <div class="platform-card" style="animation-delay:0.2s;">
+                    <div class="platform-logo-area">
+                        <div class="platform-logo-icon">🏭</div>
+                        <div class="platform-logo-text">
+                            <h2>Connect Industry Maroc</h2>
+                            <p>Nos services & domaines d'expertise</p>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:1rem; margin-top:1rem;">
+                        <div style="background:var(--steel-light); border:1px solid var(--steel-border); padding:1.2rem; border-right:3px solid var(--accent-orange);">
+                            <h4 style="color:var(--accent-orange); margin-bottom:0.8rem;">🔌 Électricité & Automatisme</h4>
+                            <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6;">PLC, Variateurs, Contacteurs, Disjoncteurs, Capteurs industriels, HMI, Câblages industriels...</p>
+                        </div>
+                        <div style="background:var(--steel-light); border:1px solid var(--steel-border); padding:1.2rem; border-right:3px solid var(--accent-orange);">
+                            <h4 style="color:var(--accent-orange); margin-bottom:0.8rem;">🛠️ Équipements & Machines</h4>
+                            <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6;">Motoréducteurs, Pompes, Compresseurs, Convoyeurs, Équipements de levage, Outils de précision...</p>
+                        </div>
+                        <div style="background:var(--steel-light); border:1px solid var(--steel-border); padding:1.2rem; border-right:3px solid var(--accent-orange);">
+                            <h4 style="color:var(--accent-orange); margin-bottom:0.8rem;">📊 Instrumentation & Mesure</h4>
+                            <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6;">Débitmètres, Manomètres, Analyseurs, Thermocouples, Transmetteurs de pression...</p>
+                        </div>
+                        <div style="background:var(--steel-light); border:1px solid var(--steel-border); padding:1.2rem; border-right:3px solid var(--accent-orange);">
+                            <h4 style="color:var(--accent-orange); margin-bottom:0.8rem;">💡 Énergie & Solutions</h4>
+                            <p style="color:var(--text-secondary); font-size:0.88rem; line-height:1.6;">Panneaux solaires, Onduleurs, Groupes électrogènes, Solutions d'économie d'énergie...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Summary -->
+                <div class="platform-card" style="animation-delay:0.3s;">
+                    <h2 style="margin-bottom:1.5rem; color:var(--text-primary);">📈 Notre réseau en chiffres</h2>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem;">
+                        <div style="text-align:center; background:var(--steel-light); padding:1.2rem; border-top:3px solid var(--accent-orange);">
+                            <div style="font-size:2rem; font-weight:700; color:var(--accent-orange); font-family:'Share Tech Mono',monospace;">29,000+</div>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.3rem;">أعضاء المجموعة على فيسبوك</div>
+                        </div>
+                        <div style="text-align:center; background:var(--steel-light); padding:1.2rem; border-top:3px solid var(--accent-orange);">
+                            <div style="font-size:2rem; font-weight:700; color:var(--accent-orange); font-family:'Share Tech Mono',monospace;">750+</div>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.3rem;">محترف على واتساب</div>
+                        </div>
+                        <div style="text-align:center; background:var(--steel-light); padding:1.2rem; border-top:3px solid var(--accent-orange);">
+                            <div style="font-size:2rem; font-weight:700; color:var(--accent-orange); font-family:'Share Tech Mono',monospace;">9,402+</div>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.3rem;">مشترك في الصفحة</div>
+                        </div>
+                        <div style="text-align:center; background:var(--steel-light); padding:1.2rem; border-top:3px solid var(--accent-orange);">
+                            <div style="font-size:2rem; font-weight:700; color:var(--accent-orange); font-family:'Share Tech Mono',monospace;">5,900+</div>
+                            <div style="color:var(--text-secondary); font-size:0.85rem; margin-top:0.3rem;">أعضاء مجموعة PLC</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>© 2026 Connect Industry Maroc | Tous droits réservés</p>
+        <p>📞 Traitement des commandes : <strong>+212 690-292010</strong></p>
+    </footer>
+
+    <div id="toast" class="toast-notification"></div>
+
+    <!-- WhatsApp Floating Button -->
+    <div class="whatsapp-float" id="waFloat">
+        <span class="whatsapp-float-tooltip">تواصل معنا مباشرة</span>
+        <button class="whatsapp-float-btn" onclick="openWaContactModal()" title="تواصل عبر واتساب">
+            <i class="fab fa-whatsapp" style="font-size:1.8rem;"></i>
+        </button>
+    </div>
+
+    <!-- WhatsApp Contact Confirmation Modal -->
+    <div class="confirm-modal-overlay" id="waContactModal">
+        <div class="confirm-modal" style="border-top-color:#25D366;">
+            <h3><i class="fab fa-whatsapp" style="margin-left:0.4rem;"></i> التواصل المباشر</h3>
+            <p style="margin-bottom:0.5rem;">سيتم فتح محادثة واتساب مع فريق <strong style="color:var(--accent-orange);">Connect Industry Maroc</strong></p>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">متوفرون: الأحد–الخميس | 09:00 – 18:00</p>
+            <div class="confirm-modal-btns">
+                <button class="btn-confirm-send" onclick="confirmWaContact()"><i class="fab fa-whatsapp" style="margin-left:0.4rem;"></i> فتح واتساب</button>
+                <button class="btn-confirm-cancel" onclick="document.getElementById('waContactModal').classList.remove('show')">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirm-modal-overlay" id="confirmModal">
+        <div class="confirm-modal">
+            <h3>📤 تأكيد الإرسال عبر واتساب</h3>
+            <p>سيتم حفظ طلبك وإرسال رسالة تأكيد.<br>هل تريد المتابعة؟</p>
+            <div class="confirm-modal-btns">
+                <button class="btn-confirm-send" id="btnConfirmSend">✅ إرسال عبر واتساب</button>
+                <button class="btn-confirm-cancel" id="btnConfirmCancel">❌ تراجع</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
             
-            const preparing = orders.filter(o => (o.status || 'En préparation') === 'En préparation').length;
-            const ready = orders.filter(o => o.status === 'Prêt').length;
-            const cancelled = orders.filter(o => o.status === 'Annulé').length;
-            if (statusChart) { statusChart.data.datasets[0].data = [preparing, ready, cancelled]; statusChart.update(); }
+            const WHATSAPP_NUMBER = "212690292010";
+            let orders = JSON.parse(localStorage.getItem('industry_orders') || '[]');
+            let productsChart, monthlyChart;
             
-            const prodCount = {};
-            orders.forEach(o => { prodCount[o.productName] = (prodCount[o.productName] || 0) + 1; });
-            const top = Object.entries(prodCount).sort((a,b) => b[1] - a[1]).slice(0,5);
-            if (productsChart) {
-                productsChart.data.labels = top.map(p => p[0].substring(0,12));
-                productsChart.data.datasets[0].data = top.map(p => p[1]);
-                productsChart.update();
-            }
-            
-            // KPI
-            const kpiDiv = document.getElementById('statsKpiGrid');
-            if (kpiDiv) {
-                const uniqueClients = new Set(orders.map(o => o.fullName)).size;
-                kpiDiv.innerHTML = `
-                    <div class="client-stat-box"><div class="num">${orders.length}</div><div class="lbl">Total demandes</div></div>
-                    <div class="client-stat-box"><div class="num">${uniqueClients}</div><div class="lbl">Total clients</div></div>
-                    <div class="client-stat-box"><div class="num">${preparing}</div><div class="lbl">En préparation</div></div>
-                    <div class="client-stat-box"><div class="num">${ready}</div><div class="lbl">Prêt</div></div>
-                    <div class="client-stat-box"><div class="num">${cancelled}</div><div class="lbl">Annulé</div></div>
-                `;
-            }
-            
-            // Client table
-            const tableDiv = document.getElementById('clientStatsTable');
-            if (tableDiv) {
-                const clientMap = {};
-                orders.forEach(o => {
-                    const name = o.fullName || 'Inconnu';
-                    if (!clientMap[name]) clientMap[name] = { count: 0, last: o.date };
-                    clientMap[name].count++;
-                    if (new Date(o.date) > new Date(clientMap[name].last)) clientMap[name].last = o.date;
+            // Format date in French
+            function formatDateFrench(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
-                const sorted = Object.entries(clientMap).sort((a,b) => b[1].count - a[1].count);
-                if (sorted.length === 0) tableDiv.innerHTML = '<p>Aucune donnée</p>';
-                else {
-                    tableDiv.innerHTML = `<div style="overflow-x:auto;"><table class="client-orders-table"><thead><tr><th>Client</th><th>Demandes</th><th>Dernier</th></tr></thead><tbody>${sorted.map(([name, data]) => `<tr><td><strong>${sanitize(name)}</strong>${data.count>1?' ⭐':''}</td><td style="color:var(--accent-orange);">${data.count}</td><td>${formatDate(data.last)}</td></tr>`).join('')}</tbody></table></div>`;
+            }
+            
+            function sanitizeInput(input) {
+                if (!input) return '';
+                const div = document.createElement('div');
+                div.textContent = input;
+                return div.innerHTML;
+            }
+            
+            // Center toast notification
+            function showToast(message, type = 'success') {
+                const toast = document.getElementById('toast');
+                toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}" style="color: var(--accent-orange);"></i> ${message}`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+            
+            function showFormError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'success-msg error-msg';
+                errorDiv.innerHTML = `⚠️ ${message}`;
+                const form = document.getElementById('productRequestForm');
+                form.parentNode.insertBefore(errorDiv, form);
+                setTimeout(() => errorDiv.remove(), 3000);
+            }
+            
+            function updateOrdersBadge() {
+                const count = orders.length;
+                const badge = document.getElementById('ordersBadge');
+                const offcanvasBadge = document.getElementById('offcanvasBadge');
+                if (badge) {
+                    badge.textContent = count;
+                    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+                }
+                if (offcanvasBadge) {
+                    offcanvasBadge.textContent = count;
+                    offcanvasBadge.style.display = count > 0 ? 'inline-flex' : 'none';
                 }
             }
-        }
-
-        // ==================== FORM HANDLING ====================
-        function formatWhatsApp(data) {
-            return `*🏭 Connect Industry Maroc - Nouvelle demande*\n\n📌 Produit: ${data.productName}\n🔧 Spécifications: ${data.specifications}\n🔢 Quantité: ${data.quantity}\n💰 Budget: ${data.budget || "Non spécifié"} MAD\n⏱️ Délai: ${data.deliveryTime}\n📝 Type: ${data.requestType}\n\n👤 Demandeur: ${data.fullName}\n📞 Téléphone: ${data.phone}\n\n---\nDemande envoyée via la plateforme.`;
-        }
-
-        function clearForm() {
-            ['productName', 'specifications', 'quantity', 'budget', 'details', 'fullName', 'phone'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.value = '';
-                localStorage.removeItem(`form_${id}`);
-            });
-            document.getElementById('deliveryTime').value = 'Normal (7-15 jours)';
-            document.getElementById('requestType').value = 'Achat direct';
-        }
-
-        function autoSaveForm() {
-            ['productName', 'specifications', 'quantity', 'budget', 'fullName', 'phone', 'details'].forEach(field => {
-                const el = document.getElementById(field);
-                if (el) {
-                    const saved = localStorage.getItem(`form_${field}`);
-                    if (saved && !el.value) el.value = saved;
-                    el.addEventListener('input', () => localStorage.setItem(`form_${field}`, el.value));
+            
+            function updateOrderStatus(orderId, newStatus) {
+                const orderIndex = orders.findIndex(o => o.id == orderId);
+                if (orderIndex !== -1) {
+                    orders[orderIndex].status = newStatus;
+                    localStorage.setItem('industry_orders', JSON.stringify(orders));
+                    displayOrders();
+                    updateChartsWithRealData();
+                    showToast(`Statut mis à jour : ${newStatus}`);
                 }
-            });
-        }
-
-        function checkFormValidity() {
-            const required = ['productName', 'specifications', 'quantity', 'fullName', 'phone'];
-            const allFilled = required.every(f => document.getElementById(f)?.value.trim());
-            const btn = document.getElementById('submitBtn');
-            if (btn) btn.style.opacity = allFilled ? '1' : '0.7';
-        }
-
-        // ==================== PAGE NAVIGATION ====================
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.offcanvas-btn').forEach(btn => btn.classList.remove('active'));
-            const activeNav = document.querySelector(`.nav-btn[data-page="${pageId}"]`);
-            const activeOff = document.querySelector(`.offcanvas-btn[data-page="${pageId}"]`);
-            if (activeNav) activeNav.classList.add('active');
-            if (activeOff) activeOff.classList.add('active');
-            const waFloat = document.querySelector('.whatsapp-float');
-            if (waFloat) waFloat.style.display = pageId === 'home' ? 'flex' : 'none';
-            if (pageId === 'orders') displayOrders();
-            if (pageId === 'statistics') setTimeout(() => updateCharts(), 100);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            closeOffcanvas();
-        }
-
-        function openOffcanvas() {
-            document.getElementById('offcanvasMenu').classList.add('open');
-            document.getElementById('offcanvasOverlay').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeOffcanvas() {
-            document.getElementById('offcanvasMenu').classList.remove('open');
-            document.getElementById('offcanvasOverlay').classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeToggle').innerHTML = isLight ? '☀️' : '🌙';
-            if (monthlyChart) monthlyChart.update();
-            if (statusChart) statusChart.update();
-            if (productsChart) productsChart.update();
-        }
-
-        function initCharts() {
-            const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-            const statusCtx = document.getElementById('statusChart')?.getContext('2d');
-            const productsCtx = document.getElementById('productsChart')?.getContext('2d');
-            if (monthlyCtx) {
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: { labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'], datasets: [{ label: 'Demandes', data: [0,0,0,0,0,0], borderColor: '#e06c00', backgroundColor: 'rgba(224,108,0,0.1)', tension: 0.3, fill: true }] },
-                    options: { responsive: true, maintainAspectRatio: true }
-                });
             }
-            if (statusCtx) {
-                statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: { labels: ['En préparation', 'Prêt', 'Annulé'], datasets: [{ data: [0,0,0], backgroundColor: ['#d4a017', '#2da44e', '#da3633'] }] },
-                    options: { responsive: true, maintainAspectRatio: true }
-                });
+            
+            function shareOrder(order) {
+                const statusText = order.status ? `\n📊 Statut: ${order.status}` : '';
+                const text = `📦 Demande: ${order.productName}\n📝 ${order.specifications}\n🔢 Qté: ${order.quantity}${statusText}`;
+                if (navigator.share) {
+                    navigator.share({ title: 'Partager la demande', text: text });
+                } else {
+                    navigator.clipboard.writeText(text);
+                    showToast('Demande copiée dans le presse-papiers !');
+                }
             }
-            if (productsCtx) {
-                productsChart = new Chart(productsCtx, {
-                    type: 'bar',
-                    data: { labels: [], datasets: [{ label: 'Demandes', data: [], backgroundColor: '#e06c00', borderRadius: 6 }] },
-                    options: { responsive: true, maintainAspectRatio: true }
-                });
+            
+            function filterOrders() {
+                const searchTerm = document.getElementById('searchOrders')?.value.toLowerCase() || '';
+                const category = document.getElementById('categoryFilter')?.value || 'all';
+                const status = document.getElementById('statusFilter')?.value || 'all';
+                const dateFrom = document.getElementById('dateFrom')?.value;
+                const dateTo = document.getElementById('dateTo')?.value;
+                
+                let filtered = orders;
+                if (searchTerm) filtered = filtered.filter(o => o.productName.toLowerCase().includes(searchTerm));
+                if (category !== 'all') filtered = filtered.filter(o => o.productName.includes(category));
+                if (status !== 'all') filtered = filtered.filter(o => o.status === status);
+                if (dateFrom) filtered = filtered.filter(o => new Date(o.date) >= new Date(dateFrom));
+                if (dateTo) filtered = filtered.filter(o => new Date(o.date) <= new Date(dateTo));
+                
+                displayOrders(filtered);
             }
-            updateCharts();
-        }
+            
+            function deleteOrder(orderId) {
+                orders = orders.filter(o => o.id != orderId);
+                localStorage.setItem('industry_orders', JSON.stringify(orders));
+                updateOrdersBadge();
+                displayOrders();
+                updateChartsWithRealData();
+                showToast('🗑️ Demande supprimée');
+            }
 
-        function animateNumbers() {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const target = parseInt(entry.target.getAttribute('data-target'));
-                        if (!target) return;
-                        let current = 0;
-                        const increment = target / 40;
-                        const update = () => {
-                            current += increment;
-                            if (current < target) {
-                                entry.target.textContent = Math.floor(current);
-                                requestAnimationFrame(update);
-                            } else {
-                                entry.target.textContent = target;
-                            }
-                        };
-                        update();
-                        observer.unobserve(entry.target);
+            function displayOrders(ordersToShow = orders) {
+                const container = document.getElementById('ordersList');
+                if (!container) return;
+                if (ordersToShow.length === 0) {
+                    container.innerHTML = `<div class="empty-orders" style="grid-column:1/-1;"><i class="fas fa-inbox" style="font-size:2.5rem;color:var(--text-muted);margin-bottom:1rem;display:block;"></i><p>Aucune demande envoyée pour le moment.</p><p style="margin-top:0.5rem;"><button class="btn-link" onclick="showPage('home',event)" style="width:auto;padding:0.5rem 1.5rem;display:inline-block;">📦 Faire une demande</button></p></div>`;
+                    return;
+                }
+                container.innerHTML = ordersToShow.slice().reverse().map(order => {
+                    const statusClass = order.status === 'Annulé' ? 'status-cancelled' : (order.status === 'Prêt' ? 'status-ready' : 'status-preparing');
+                    return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-date">📅 ${formatDateFrench(order.date)}</span>
+                        </div>
+                        <div class="order-product">🛠️ ${sanitizeInput(order.productName)}</div>
+                        <div class="order-details">📝 ${sanitizeInput(order.specifications.substring(0,80))}${order.specifications.length>80?'...':''}</div>
+                        <div class="order-details">🔢 Quantité: ${order.quantity||'—'}</div>
+                        <div class="order-details">💰 Budget: ${order.budget?order.budget+' MAD':'Non spécifié'}</div>
+                        <div class="order-details">⏱️ Délai: ${order.deliveryTime||'—'}</div>
+                        <div class="order-details">📋 Type: ${order.requestType||'—'}</div>
+                        <div class="order-details">📝 Détails: ${order.details?sanitizeInput(order.details):'Aucun'}</div>
+                        <div class="order-details">👤 Demandeur: ${sanitizeInput(order.fullName)||'—'}</div>
+                        <div class="order-status">
+                            <span class="status-badge ${statusClass}">${order.status||'En préparation'}</span>
+                            <select class="status-select" onchange="updateOrderStatus(${order.id},this.value)">
+                                <option value="En préparation" ${(order.status||'En préparation')==='En préparation'?'selected':''}>⚙️ En préparation</option>
+                                <option value="Prêt" ${order.status==='Prêt'?'selected':''}>✅ Prêt</option>
+                                <option value="Annulé" ${order.status==='Annulé'?'selected':''}>❌ Annulé</option>
+                            </select>
+                            <button class="btn-delete-order" onclick="deleteOrder(${order.id})" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            
+            function updateChartsWithRealData() {
+                const monthlyData = [0,0,0,0,0,0];
+                orders.forEach(order => {
+                    const month = new Date(order.date).getMonth();
+                    if(month >= 0 && month < 6) monthlyData[month]++;
+                });
+                if(monthlyChart) {
+                    monthlyChart.data.datasets[0].data = monthlyData;
+                    monthlyChart.update();
+                }
+
+                // Status chart
+                const preparing = orders.filter(o => (o.status || 'En préparation') === 'En préparation').length;
+                const ready = orders.filter(o => o.status === 'Prêt').length;
+                const cancelled = orders.filter(o => o.status === 'Annulé').length;
+                if(window.statusChart) {
+                    window.statusChart.data.datasets[0].data = [preparing, ready, cancelled];
+                    window.statusChart.update();
+                }
+
+                // KPI boxes
+                const kpiGrid = document.getElementById('statsKpiGrid');
+                if (kpiGrid) {
+                    const clientMap = {};
+                    orders.forEach(o => {
+                        const name = o.fullName || 'Inconnu';
+                        clientMap[name] = (clientMap[name] || 0) + 1;
+                    });
+                    const uniqueClients = Object.keys(clientMap).length;
+                    const vipClients = Object.values(clientMap).filter(v => v > 1).length;
+                    kpiGrid.innerHTML = `
+                        <div class="client-stat-box"><div class="num">${orders.length}</div><div class="lbl">📦 إجمالي الطلبات</div></div>
+                        <div class="client-stat-box"><div class="num">${uniqueClients}</div><div class="lbl">👤 إجمالي العملاء</div></div>
+                        <div class="client-stat-box"><div class="num">${vipClients}</div><div class="lbl">⭐ عملاء متكررون</div></div>
+                        <div class="client-stat-box"><div class="num">${preparing}</div><div class="lbl">⚙️ En préparation</div></div>
+                        <div class="client-stat-box"><div class="num">${ready}</div><div class="lbl">✅ Prêt</div></div>
+                        <div class="client-stat-box"><div class="num">${cancelled}</div><div class="lbl">❌ Annulé</div></div>
+                    `;
+                }
+
+                // Client stats table
+                const tableDiv = document.getElementById('clientStatsTable');
+                if (tableDiv) {
+                    const clientMap2 = {};
+                    orders.forEach(o => {
+                        const name = o.fullName || 'Inconnu';
+                        if (!clientMap2[name]) clientMap2[name] = { count: 0, last: o.date, products: [] };
+                        clientMap2[name].count++;
+                        if (new Date(o.date) > new Date(clientMap2[name].last)) clientMap2[name].last = o.date;
+                        clientMap2[name].products.push(o.productName);
+                    });
+                    const sorted = Object.entries(clientMap2).sort((a,b) => b[1].count - a[1].count);
+                    if (sorted.length === 0) {
+                        tableDiv.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:1rem;">Aucune donnée disponible</p>';
+                    } else {
+                        tableDiv.innerHTML = `
+                            <div style="overflow-x:auto;">
+                            <table class="client-orders-table">
+                                <thead><tr>
+                                    <th>👤 الاسم</th>
+                                    <th>📦 عدد الطلبات</th>
+                                    <th>🛠️ آخر منتج</th>
+                                    <th>📅 آخر طلب</th>
+                                </tr></thead>
+                                <tbody>${sorted.map(([name, data]) => `
+                                    <tr>
+                                        <td><strong style="color:var(--text-primary)">${sanitizeInput(name)}</strong>${data.count > 1 ? ' <span style="color:#d4a017;font-size:0.75rem;">⭐ VIP</span>' : ''}</td>
+                                        <td style="color:var(--accent-orange); font-weight:700;">${data.count}</td>
+                                        <td>${sanitizeInput(data.products[data.products.length-1] || '—')}</td>
+                                        <td style="font-family:'Share Tech Mono',monospace; font-size:0.8rem;">${formatDateFrench(data.last)}</td>
+                                    </tr>
+                                `).join('')}</tbody>
+                            </table>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            function saveOrder(orderData) {
+                const sanitizedOrder = {
+                    ...orderData,
+                    productName: sanitizeInput(orderData.productName),
+                    specifications: sanitizeInput(orderData.specifications),
+                    fullName: sanitizeInput(orderData.fullName),
+                    phone: sanitizeInput(orderData.phone),
+                    details: sanitizeInput(orderData.details || ''),
+                    status: 'En préparation',
+                    id: Date.now(),
+                    date: new Date().toISOString()
+                };
+                orders.push(sanitizedOrder);
+                localStorage.setItem('industry_orders', JSON.stringify(orders));
+                updateOrdersBadge();
+                displayOrders();
+                updateChartsWithRealData();
+                showToast('✅ Demande enregistrée avec succès !');
+            }
+            
+            function clearAllOrders() {
+                // Use custom modal
+                const overlay = document.createElement('div');
+                overlay.className = 'confirm-modal-overlay show';
+                overlay.innerHTML = `<div class="confirm-modal" style="border-top-color:#da3633;">
+                    <h3 style="color:#da3633;">🗑️ Supprimer tout</h3>
+                    <p>Êtes-vous sûr ? Toutes les demandes seront supprimées définitivement.</p>
+                    <div class="confirm-modal-btns" style="margin-top:1.2rem;">
+                        <button class="btn-confirm-send" style="background:#da3633;" id="_clearYes">✅ Confirmer</button>
+                        <button class="btn-confirm-cancel" id="_clearNo">Annuler</button>
+                    </div>
+                </div>`;
+                document.body.appendChild(overlay);
+                overlay.querySelector('#_clearYes').addEventListener('click', () => {
+                    localStorage.removeItem('industry_orders');
+                    orders = [];
+                    updateOrdersBadge();
+                    displayOrders();
+                    updateChartsWithRealData();
+                    showToast('Toutes les demandes ont été supprimées');
+                    overlay.remove();
+                });
+                overlay.querySelector('#_clearNo').addEventListener('click', () => overlay.remove());
+                overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+            }
+            
+            function exportOrdersToCSV() {
+                if (orders.length === 0) {
+                    showToast('Aucune demande à exporter', 'info');
+                    return;
+                }
+                const headers = ['Date', 'Produit', 'Spécifications', 'Quantité', 'Budget', 'Statut'];
+                const csvRows = [headers.join(',')];
+                orders.forEach(order => {
+                    const row = [
+                        new Date(order.date).toLocaleDateString('fr-FR'),
+                        `"${order.productName}"`,
+                        `"${order.specifications.replace(/"/g, '""')}"`,
+                        order.quantity,
+                        order.budget || '',
+                        `"${order.status || 'En préparation'}"`
+                    ];
+                    csvRows.push(row.join(','));
+                });
+                const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `demandes_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+                showToast('Export réussi !');
+            }
+            
+            function formatWhatsAppMessage(data) {
+                return `*🏭 Connect Industry Maroc - Nouvelle demande*\n\n📌 Produit: ${data.productName}\n🔧 Spécifications: ${data.specifications}\n🔢 Quantité: ${data.quantity}\n💰 Budget: ${data.budget || "Non spécifié"} MAD\n⏱️ Délai: ${data.deliveryTime}\n📝 Type: ${data.requestType}\n📋 Détails: ${data.details || "Aucun"}\n\n👤 Demandeur: ${data.fullName}\n📞 Téléphone: ${data.phone}\n\n---\nDemande envoyée via la plateforme.`;
+            }
+            
+            function checkFormValidity() {
+                const required = ['productName', 'specifications', 'quantity', 'fullName', 'phone'];
+                const allFilled = required.every(f => {
+                    const el = document.getElementById(f);
+                    return el && el.value.trim() !== '';
+                });
+                const btn = document.getElementById('submitBtn');
+                if (btn) {
+                    btn.classList.toggle('form-ready', allFilled);
+                }
+            }
+
+            function autoSaveForm() {
+                const formFields = ['productName', 'specifications', 'quantity', 'budget', 'fullName', 'phone', 'details'];
+                formFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) {
+                        const saved = localStorage.getItem(`form_${field}`);
+                        if (saved && !element.value) element.value = saved;
+                        element.addEventListener('input', () => {
+                            localStorage.setItem(`form_${field}`, element.value);
+                            checkFormValidity();
+                        });
                     }
                 });
-            }, { threshold: 0.3 });
-            document.querySelectorAll('.stat-number[data-target]').forEach(el => observer.observe(el));
-        }
-
-        // ==================== EVENT LISTENERS ====================
-        document.addEventListener('DOMContentLoaded', () => {
-            // Navigation
-            document.querySelectorAll('.nav-btn[data-page]').forEach(btn => {
-                btn.addEventListener('click', () => showPage(btn.getAttribute('data-page')));
-            });
-            document.querySelectorAll('.offcanvas-btn[data-page]').forEach(btn => {
-                btn.addEventListener('click', () => showPage(btn.getAttribute('data-page')));
-            });
-            document.getElementById('menuToggle')?.addEventListener('click', openOffcanvas);
-            document.getElementById('closeOffcanvas')?.addEventListener('click', closeOffcanvas);
-            document.getElementById('offcanvasOverlay')?.addEventListener('click', closeOffcanvas);
-            document.getElementById('offcanvasThemeBtn')?.addEventListener('click', toggleTheme);
-            document.getElementById('themeToggle')?.addEventListener('click', toggleTheme);
+                checkFormValidity();
+            }
             
-            // Form submit
-            const form = document.getElementById('productRequestForm');
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const data = {
+            function clearFormData() {
+                const formFields = ['productName', 'specifications', 'quantity', 'budget', 'fullName', 'phone', 'details'];
+                formFields.forEach(field => {
+                    localStorage.removeItem(`form_${field}`);
+                });
+            }
+            
+            let pendingRequestData = null;
+
+            function handleProductRequest(event) {
+                event.preventDefault();
+                const requestData = {
                     productName: document.getElementById('productName').value,
                     specifications: document.getElementById('specifications').value,
                     quantity: document.getElementById('quantity').value,
@@ -1019,73 +1722,357 @@
                     fullName: document.getElementById('fullName').value,
                     phone: document.getElementById('phone').value
                 };
-                if (!data.productName || !data.specifications || !data.quantity || !data.fullName || !data.phone) {
-                    showToast('⚠️ Veuillez remplir tous les champs obligatoires', 'error');
+                if (!requestData.productName || !requestData.specifications || !requestData.quantity || !requestData.fullName || !requestData.phone) {
+                    showFormError('⚠️ Veuillez remplir tous les champs obligatoires');
                     return;
                 }
-                pendingRequest = data;
+                pendingRequestData = requestData;
                 document.getElementById('confirmModal').classList.add('show');
-            });
+            }
             
-            // Confirm modal
-            document.getElementById('confirmSendBtn').onclick = () => {
-                if (pendingRequest) {
-                    showProgress();
-                    saveOrder(pendingRequest);
-                    const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(formatWhatsApp(pendingRequest))}`;
-                    window.open(waUrl, '_blank');
-                    document.getElementById('confirmModal').classList.remove('show');
-                    clearForm();
-                    pendingRequest = null;
-                    showToast('✅ Demande envoyée avec succès !');
+            function animateNumbersInElement(element) {
+                const target = parseInt(element.getAttribute('data-target'));
+                const showPlus = element.getAttribute('data-plus') === 'true';
+                if (!target || isNaN(target)) return;
+                let current = 0;
+                const increment = target / 50;
+                const updateNumber = () => {
+                    current += increment;
+                    if (current < target) {
+                        element.textContent = Math.floor(current).toLocaleString();
+                        requestAnimationFrame(updateNumber);
+                    } else {
+                        element.textContent = target.toLocaleString() + (showPlus ? '+' : '');
+                    }
+                };
+                updateNumber();
+            }
+            
+            function initNumberObservers() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            animateNumbersInElement(entry.target);
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.3 });
+                document.querySelectorAll('.stat-card-enhanced .stat-number[data-target]').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+            
+            function initParticles() {
+                const canvas = document.getElementById('particles-canvas');
+                if (!canvas || window.innerWidth <= 768) return;
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                const particles = Array.from({ length: 30 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: (Math.random() - 0.5) * 0.5
+                }));
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => {
+                        ctx.fillStyle = 'rgba(224,108,0,0.3)';
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        if (p.x < 0) p.x = canvas.width;
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.y < 0) p.y = canvas.height;
+                        if (p.y > canvas.height) p.y = 0;
+                    });
+                    requestAnimationFrame(draw);
                 }
+                draw();
+            }
+            
+            function initCharts() {
+                const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
+                const statusCtx = document.getElementById('statusChart')?.getContext('2d');
+                if (monthlyCtx) {
+                    monthlyChart = new Chart(monthlyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                            datasets: [{
+                                label: 'Demandes',
+                                data: [0, 0, 0, 0, 0, 0],
+                                borderColor: '#e06c00',
+                                backgroundColor: 'rgba(224,108,0,0.08)',
+                                tension: 0.3,
+                                fill: true,
+                                pointBackgroundColor: '#e06c00',
+                                pointBorderColor: '#0d1117',
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { labels: { color: '#8b949e' } } },
+                            scales: {
+                                x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+                                y: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } }
+                            }
+                        }
+                    });
+                }
+                if (statusCtx) {
+                    window.statusChart = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['En préparation', 'Prêt', 'Annulé'],
+                            datasets: [{
+                                data: [0, 0, 0],
+                                backgroundColor: ['rgba(212,160,23,0.7)', 'rgba(45,164,78,0.7)', 'rgba(218,54,51,0.7)'],
+                                borderColor: ['#d4a017', '#2da44e', '#da3633'],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { labels: { color: '#8b949e' } } }
+                        }
+                    });
+                }
+                updateChartsWithRealData();
+            }
+
+            function initConfirmModal() {
+                document.getElementById('btnConfirmSend').addEventListener('click', function() {
+                    if (!pendingRequestData) return;
+                    // Save with "En préparation"
+                    saveOrder(pendingRequestData);
+                    const message = formatWhatsAppMessage(pendingRequestData);
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+                    document.getElementById('confirmModal').classList.remove('show');
+                    const form = document.getElementById('productRequestForm');
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'success-msg';
+                    successMsg.innerHTML = '✅ Demande enregistrée ! Redirection vers WhatsApp...';
+                    form.parentNode.insertBefore(successMsg, form);
+                    form.reset();
+                    clearFormData();
+                    pendingRequestData = null;
+                    setTimeout(() => {
+                        window.open(whatsappUrl, '_blank');
+                        successMsg.remove();
+                    }, 1000);
+                });
+                document.getElementById('btnConfirmCancel').addEventListener('click', function() {
+                    if (pendingRequestData) {
+                        // Save with "Annulé"
+                        const cancelledData = { ...pendingRequestData };
+                        const sanitizedOrder = {
+                            ...cancelledData,
+                            productName: sanitizeInput(cancelledData.productName),
+                            specifications: sanitizeInput(cancelledData.specifications),
+                            fullName: sanitizeInput(cancelledData.fullName),
+                            phone: sanitizeInput(cancelledData.phone),
+                            details: sanitizeInput(cancelledData.details || ''),
+                            status: 'Annulé',
+                            id: Date.now(),
+                            date: new Date().toISOString()
+                        };
+                        orders.push(sanitizedOrder);
+                        localStorage.setItem('industry_orders', JSON.stringify(orders));
+                        updateOrdersBadge();
+                        displayOrders();
+                        updateChartsWithRealData();
+                        showToast('❌ Demande annulée et enregistrée');
+                    }
+                    document.getElementById('confirmModal').classList.remove('show');
+                    pendingRequestData = null;
+                });
+                // Close on overlay click
+                document.getElementById('confirmModal').addEventListener('click', function(e) {
+                    if (e.target === this) this.classList.remove('show');
+                });
+            }
+            
+            function initTypingEffect() {
+                const typingTexts = [
+                    "Le plus grand réseau de fournisseurs au Maroc",
+                    "Obtenez les meilleures offres industrielles",
+                    "Gagnez du temps et des efforts",
+                    "Qualité et prix compétitifs"
+                ];
+                let textIndex = 0, charIndex = 0, isDeleting = false;
+                function typeEffect() {
+                    const currentText = typingTexts[textIndex];
+                    const typedElement = document.getElementById('typed-text');
+                    if (!typedElement) return;
+                    if (isDeleting) {
+                        typedElement.textContent = currentText.substring(0, charIndex - 1);
+                        charIndex--;
+                    } else {
+                        typedElement.textContent = currentText.substring(0, charIndex + 1);
+                        charIndex++;
+                    }
+                    if (!isDeleting && charIndex === currentText.length) {
+                        isDeleting = true;
+                        setTimeout(typeEffect, 2000);
+                        return;
+                    }
+                    if (isDeleting && charIndex === 0) {
+                        isDeleting = false;
+                        textIndex = (textIndex + 1) % typingTexts.length;
+                        setTimeout(typeEffect, 500);
+                        return;
+                    }
+                    setTimeout(typeEffect, isDeleting ? 50 : 100);
+                }
+                setTimeout(() => typeEffect(), 1000);
+            }
+            
+            // Offcanvas Menu Functions
+            function openOffcanvas() {
+                document.getElementById('offcanvasMenu').classList.add('open');
+                document.getElementById('offcanvasOverlay').classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeOffcanvas() {
+                document.getElementById('offcanvasMenu').classList.remove('open');
+                document.getElementById('offcanvasOverlay').classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            
+            function initMobileMenu() {
+                const menuToggle = document.getElementById('menuToggle');
+                const closeBtn = document.getElementById('closeOffcanvas');
+                const overlay = document.getElementById('offcanvasOverlay');
+                
+                if (menuToggle) {
+                    menuToggle.addEventListener('click', openOffcanvas);
+                }
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeOffcanvas);
+                }
+                if (overlay) {
+                    overlay.addEventListener('click', closeOffcanvas);
+                }
+            }
+            
+            window.showPageFromMenu = function(pageId) {
+                showPage(pageId);
+                closeOffcanvas();
             };
-            document.getElementById('confirmCancelBtn').onclick = () => {
-                document.getElementById('confirmModal').classList.remove('show');
-                pendingRequest = null;
+            
+            window.updateOrderStatus = updateOrderStatus;
+            
+            function toggleTheme() {
+                document.body.classList.toggle('light-mode');
+                const isLight = document.body.classList.contains('light-mode');
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                const themeToggle = document.getElementById('themeToggle');
+                if (themeToggle) themeToggle.innerHTML = isLight ? '☀️' : '🌙';
+                if (monthlyChart) monthlyChart.update();
+                if (window.statusChart) window.statusChart.update();
+            }
+            
+            function loadTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'light') {
+                    document.body.classList.add('light-mode');
+                    const themeToggle = document.getElementById('themeToggle');
+                    if (themeToggle) themeToggle.innerHTML = '☀️';
+                }
+            }
+            
+            document.addEventListener('keydown', (e) => {
+                if(e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    const form = document.getElementById('productRequestForm');
+                    if(form && document.querySelector('#home.active')) {
+                        form.dispatchEvent(new Event('submit'));
+                    }
+                }
+                if(e.key === 'Escape') {
+                    closeOffcanvas();
+                }
+            });
+            
+            window.showPage = function(pageId, event) {
+                document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.offcanvas-btn').forEach(btn => btn.classList.remove('active'));
+                if (event && event.target) {
+                    event.target.closest('.nav-btn')?.classList.add('active');
+                }
+                const activeOffcanvasBtn = document.querySelector(`.offcanvas-btn[onclick*="${pageId}"]`);
+                if (activeOffcanvasBtn) activeOffcanvasBtn.classList.add('active');
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+                // Show WhatsApp float only on home page
+                const waFloat = document.getElementById('waFloat');
+                if (waFloat) waFloat.style.display = pageId === 'home' ? 'flex' : 'none';
+                if (pageId === 'orders') displayOrders();
+                if (pageId === 'statistics') {
+                    setTimeout(() => {
+                        if (monthlyChart) monthlyChart.update();
+                        if (window.statusChart) window.statusChart.update();
+                        updateChartsWithRealData();
+                    }, 100);
+                }
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             };
-            document.getElementById('confirmModal').addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+            
+            window.openWaContactModal = function() {
+                document.getElementById('waContactModal').classList.add('show');
+            };
+            window.confirmWaContact = function() {
+                document.getElementById('waContactModal').classList.remove('show');
+                const msg = encodeURIComponent('مرحباً، أريد الاستفسار عن منتج صناعي عبر منصة Connect Industry Maroc 🏭');
+                window.open(`https://wa.me/212690292010?text=${msg}`, '_blank');
+            };
+            // Close modals on overlay click
+            document.getElementById('waContactModal').addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('show');
             });
+            window.exportOrdersToCSV = exportOrdersToCSV;
+            window.filterOrders = filterOrders;
+            window.toggleTheme = toggleTheme;
+            window.deleteOrder = deleteOrder;
+            window.clearAllOrders = clearAllOrders;
             
-            // Filters
-            document.getElementById('searchOrders')?.addEventListener('input', filterOrders);
-            document.getElementById('clientFilter')?.addEventListener('change', filterOrders);
-            document.getElementById('statusFilter')?.addEventListener('change', filterOrders);
-            document.getElementById('clearAllBtn')?.addEventListener('click', clearAllOrders);
-            
-            // WhatsApp float
-            document.getElementById('waFloatBtn')?.addEventListener('click', () => {
-                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحباً، أريد الاستفسار عن منتج صناعي')}`, '_blank');
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('productRequestForm').addEventListener('submit', handleProductRequest);
+                initNumberObservers();
+                initParticles();
+                initCharts();
+                initTypingEffect();
+                initMobileMenu();
+                initConfirmModal();
+                autoSaveForm();
+                loadTheme();
+                updateOrdersBadge();
+                displayOrders();
+                
+                window.addEventListener('resize', () => {
+                    const canvas = document.getElementById('particles-canvas');
+                    if (canvas && window.innerWidth > 768) {
+                        canvas.width = canvas.offsetWidth;
+                        canvas.height = canvas.offsetHeight;
+                    }
+                    if (monthlyChart) monthlyChart.resize();
+                    if (window.statusChart) window.statusChart.resize();
+                });
+                
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').classList.add('hide');
+                }, 1000);
             });
-            
-            // Auto save & load
-            autoSaveForm();
-            document.querySelectorAll('#productRequestForm input, #productRequestForm textarea, #productRequestForm select').forEach(el => {
-                el.addEventListener('input', checkFormValidity);
-            });
-            checkFormValidity();
-            
-            // Load saved theme
-            if (localStorage.getItem('theme') === 'light') toggleTheme();
-            
-            // Initial display
-            updateBadges();
-            displayOrders();
-            initCharts();
-            animateNumbers();
-            
-            // Hide loading screen
-            setTimeout(() => {
-                document.getElementById('loadingScreen')?.classList.add('hide');
-            }, 800);
-        });
-        
-        // Make functions global for onclick
-        window.updateOrderStatus = updateOrderStatus;
-        window.deleteOrder = deleteOrder;
-        window.editOrder = editOrder;
-        window.showOrderDetail = showOrderDetail;
+        })();
     </script>
 </body>
 </html>
