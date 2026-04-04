@@ -952,6 +952,10 @@
                     <i class="fas fa-box"></i>
                     <span>طلب منتج</span>
                 </button>
+                <button class="offcanvas-btn" onclick="showPageFromMenu('orders')">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>الطلبات <span id="orders-badge-menu" class="orders-badge" style="display:none;">0</span></span>
+                </button>
                 <button class="offcanvas-btn" onclick="showPageFromMenu('about')">
                     <i class="fas fa-building"></i>
                     <span>من نحن</span>
@@ -960,10 +964,6 @@
             
             <div class="offcanvas-section admin-only" id="adminMenuSection">
                 <div class="offcanvas-section-title">الواجهات المخصصة</div>
-                <button class="offcanvas-btn admin-only" onclick="showPageFromMenu('orders')">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span>الطلبات <span id="orders-badge-menu" class="orders-badge" style="display:none;">0</span></span>
-                </button>
                 <button class="offcanvas-btn admin-only" onclick="showPageFromMenu('statistics')">
                     <i class="fas fa-chart-line"></i>
                     <span>الإحصائيات</span>
@@ -1267,9 +1267,9 @@
                 <div class="row-2"><div class="form-group"><label>الكمية</label><input type="number" id="editQuantity" required></div><div class="form-group"><label>الميزانية</label><input type="number" id="editBudget"></div></div>
                 <div class="form-group"><label>تفاصيل إضافية</label><textarea id="editDetails" rows="2"></textarea></div>
                 <div class="row-2"><div class="form-group"><label>الاسم الكامل</label><input type="text" id="editFullName" required></div><div class="form-group"><label>رقم الهاتف</label><input type="tel" id="editPhone" required></div></div>
-                <div class="confirm-modal-btns">
-                    <button type="submit" class="btn-confirm-send" style="background:var(--accent-orange);">💾 حفظ</button>
-                    <button type="button" class="btn-confirm-cancel" onclick="closeEditModal()">إلغاء</button>
+                <div class="confirm-modal-btns" style="display:flex;gap:0.8rem;margin-top:1rem;flex-wrap:nowrap;">
+                    <button type="submit" class="btn-confirm-send" style="background:var(--accent-orange);flex:1;width:100%;">💾 حفظ</button>
+                    <button type="button" class="btn-confirm-cancel" onclick="closeEditModal()" style="flex:1;width:100%;">إلغاء</button>
                 </div>
             </form>
         </div>
@@ -1363,6 +1363,7 @@
                         adminMenuBtn.onclick = () => logoutAdmin();
                     }
                     document.getElementById('adminLoginOverlay').classList.add('hide');
+                    displayOrders();
                 } else {
                     document.body.classList.remove('admin-mode');
                     adminOnlyElements.forEach(el => el.style.display = 'none');
@@ -1371,10 +1372,10 @@
                         adminMenuText.innerHTML = '<i class="fas fa-user-shield"></i> الاتصال كمدير';
                         adminMenuBtn.onclick = () => showAdminLogin();
                     }
-                    if (document.getElementById('orders').classList.contains('active') || 
-                        document.getElementById('statistics').classList.contains('active')) {
+                    if (document.getElementById('statistics').classList.contains('active')) {
                         showPage('home');
                     }
+                    displayOrders();
                 }
             }
             
@@ -1491,10 +1492,6 @@
             function displayOrders(ordersToShow = orders) {
                 const container = document.getElementById('ordersList');
                 if (!container) return;
-                if (!isAdmin) {
-                    container.innerHTML = `<div class="empty-orders" style="text-align:center;padding:2rem;background:var(--steel-card);border:1px solid var(--steel-border);"><i class="fas fa-lock" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i><p>🔐 هذه الصفحة خاصة بالمدير فقط</p><button class="btn-link" onclick="showAdminLogin()" style="margin-top:1rem;">🔑 تسجيل الدخول كمدير</button></div>`;
-                    return;
-                }
                 if (ordersToShow.length === 0) {
                     container.innerHTML = `<div class="empty-orders" style="text-align:center;padding:2rem;background:var(--steel-card);border:1px solid var(--steel-border);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i><p>لا توجد طلبات مرسلة حتى الآن</p></div>`;
                     return;
@@ -1503,15 +1500,7 @@
                     const statusText = order.status || 'En préparation';
                     const statusColor = statusText === 'En préparation' ? '#d4a017' : (statusText === 'Prêt' ? '#2da44e' : '#da3633');
                     const statusLabel = statusText === 'En préparation' ? '⚙️ قيد التحضير' : (statusText === 'Prêt' ? '✅ جاهز' : '❌ ملغي');
-                    return `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-date">📅 ${formatDateFrench(order.date)}</span>
-                            <span class="order-id" style="color:${statusColor};border:1px solid ${statusColor};padding:2px 8px;font-size:0.65rem;border-radius:0;">${statusLabel}</span>
-                        </div>
-                        <div class="order-product">🛠️ ${sanitizeInput(order.productName)}</div>
-                        <div class="order-details">📝 ${sanitizeInput(order.specifications.substring(0,60))}${order.specifications.length>60?'...':''}</div>
-                        <div class="order-details">🔢 ${order.quantity||'—'} &nbsp;|&nbsp; 💰 ${order.budget?order.budget+' MAD':'غير محدد'} &nbsp;|&nbsp; 👤 ${sanitizeInput(order.fullName)||'—'}</div>
+                    const bottomSection = isAdmin ? `
                         <div class="order-actions-bottom">
                             <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)" style="border-color:${statusColor};color:${statusColor};">
                                 <option value="En préparation" ${statusText==='En préparation'?'selected':''}>⚙️ قيد التحضير</option>
@@ -1523,7 +1512,19 @@
                                 <button class="btn-icon btn-edit" onclick="openEditModal(${order.id})" title="تعديل"><i class="fas fa-edit"></i></button>
                                 <button class="btn-icon btn-delete" onclick="deleteOrder(${order.id})" title="حذف"><i class="fas fa-trash-alt"></i></button>
                             </div>
+                        </div>` : `
+                        <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--steel-border);">
+                            <span style="color:${statusColor};border:1px solid ${statusColor};padding:2px 10px;font-size:0.7rem;">${statusLabel}</span>
+                        </div>`;
+                    return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-date">📅 ${formatDateFrench(order.date)}</span>
                         </div>
+                        <div class="order-product">🛠️ ${sanitizeInput(order.productName)}</div>
+                        <div class="order-details">📝 ${sanitizeInput(order.specifications.substring(0,60))}${order.specifications.length>60?'...':''}</div>
+                        <div class="order-details">🔢 ${order.quantity||'—'} &nbsp;|&nbsp; 💰 ${order.budget?order.budget+' MAD':'غير محدد'} &nbsp;|&nbsp; 👤 ${sanitizeInput(order.fullName)||'—'}</div>
+                        ${bottomSection}
                     </div>`;
                 }).join('');
             }
@@ -1659,11 +1660,31 @@
                     phone: document.getElementById('phone').value
                 };
                 
-                if (!requestData.productName.trim()) { showToast('⚠️ الرجاء إدخال اسم المنتج', 'error'); return; }
-                if (!requestData.specifications.trim()) { showToast('⚠️ الرجاء إدخال المواصفات', 'error'); return; }
-                if (!requestData.quantity) { showToast('⚠️ الرجاء إدخال الكمية', 'error'); return; }
-                if (!requestData.fullName.trim()) { showToast('⚠️ الرجاء إدخال الاسم الكامل', 'error'); return; }
-                if (!requestData.phone.trim()) { showToast('⚠️ الرجاء إدخال رقم الهاتف', 'error'); return; }
+                if (!requestData.productName.trim()) { 
+                    document.getElementById('productName').scrollIntoView({behavior:'smooth', block:'center'});
+                    document.getElementById('productName').focus();
+                    showToast('⚠️ الرجاء إدخال اسم المنتج', 'error'); return; 
+                }
+                if (!requestData.specifications.trim()) { 
+                    document.getElementById('specifications').scrollIntoView({behavior:'smooth', block:'center'});
+                    document.getElementById('specifications').focus();
+                    showToast('⚠️ الرجاء إدخال المواصفات', 'error'); return; 
+                }
+                if (!requestData.quantity) { 
+                    document.getElementById('quantity').scrollIntoView({behavior:'smooth', block:'center'});
+                    document.getElementById('quantity').focus();
+                    showToast('⚠️ الرجاء إدخال الكمية', 'error'); return; 
+                }
+                if (!requestData.fullName.trim()) { 
+                    document.getElementById('fullName').scrollIntoView({behavior:'smooth', block:'center'});
+                    document.getElementById('fullName').focus();
+                    showToast('⚠️ الرجاء إدخال الاسم الكامل', 'error'); return; 
+                }
+                if (!requestData.phone.trim()) { 
+                    document.getElementById('phone').scrollIntoView({behavior:'smooth', block:'center'});
+                    document.getElementById('phone').focus();
+                    showToast('⚠️ الرجاء إدخال رقم الهاتف', 'error'); return; 
+                }
                 
                 pendingRequestData = requestData;
                 document.getElementById('confirmModal').classList.add('show');
@@ -1723,7 +1744,7 @@
                 document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
                 document.getElementById(pageId).classList.add('active');
                 document.getElementById('waFloat').style.display = pageId === 'home' ? 'flex' : 'none';
-                if (pageId === 'orders' && isAdmin) displayOrders();
+                if (pageId === 'orders') displayOrders();
                 if (pageId === 'statistics' && isAdmin) setTimeout(() => updateAllCharts(), 100);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 closeOffcanvas();
