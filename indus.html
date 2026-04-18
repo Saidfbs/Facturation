@@ -184,27 +184,28 @@
         .nav-right { display: flex; align-items: center; gap: 0.5rem; }
         .menu-toggle { display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 0; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; flex-shrink: 0; }
         .menu-toggle:hover { box-shadow: 0 0 15px rgba(224,108,0,0.4); transform: translateY(-2px); }
-        .logo { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
-        .logo-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 0.5rem; min-width: 0; cursor: pointer; }
+        .logo-icon { font-size: 1.3rem; flex-shrink: 0; transition: transform 0.3s ease; }
+        .logo-icon:hover { transform: rotate(30deg); }
         .logo-text { font-size: 0.85rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .logo-text span { color: var(--accent-orange); }
         .offcanvas { position: fixed; top: 0; right: -100%; width: 85%; max-width: 350px; height: 100%; background: var(--steel-mid); z-index: 2000; transition: right 0.3s ease; box-shadow: -5px 0 30px rgba(0,0,0,0.5); border-left: 2px solid var(--accent-orange); display: flex; flex-direction: column; }
         .offcanvas.open { right: 0; }
         .offcanvas-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1999; display: none; }
         .offcanvas-overlay.show { display: block; }
-        .offcanvas-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--steel-border); }
+        .offcanvas-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--steel-border); flex-shrink: 0; }
         .offcanvas-header h3 { color: var(--accent-orange); font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem; }
         .offcanvas-close { background: transparent; border: 1px solid var(--steel-border); color: var(--text-secondary); width: 36px; height: 36px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .offcanvas-close:hover { border-color: var(--accent-orange); color: var(--accent-orange); }
-        .offcanvas-menu { flex: 1; display: flex; flex-direction: column; padding: 1rem 1.5rem; gap: 0.8rem; }
+        .offcanvas-menu { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; gap: 0.8rem; display: flex; flex-direction: column; }
         .offcanvas-section { margin-bottom: 1rem; }
         .offcanvas-section-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; padding-right: 0.5rem; border-right: 2px solid var(--accent-orange); }
         .offcanvas-btn { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: flex-start; gap: 0.8rem; font-family: 'Cairo', sans-serif; cursor: pointer; font-size: 0.9rem; transition: all 0.2s; background: transparent; border: 1px solid var(--steel-border); color: var(--text-secondary); padding: 0 1rem; margin-bottom: 0.5rem; text-align: right; }
         .offcanvas-btn i:first-child { width: 24px; font-size: 1.1rem; }
         .offcanvas-btn:hover { border-color: var(--accent-orange); color: var(--accent-orange); transform: translateX(-4px); }
         .offcanvas-btn.active { border-color: var(--accent-orange); color: var(--accent-orange); background: rgba(224,108,0,0.1); }
-        .offcanvas-divider { height: 1px; background: var(--steel-border); margin: 0.5rem 0; }
-        .offcanvas-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--steel-border); }
+        .offcanvas-divider { height: 1px; background: var(--steel-border); margin: 0.5rem 0; flex-shrink: 0; }
+        .offcanvas-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--steel-border); flex-shrink: 0; }
         .footer-contact-info { text-align: center; font-size: 0.7rem; color: var(--text-muted); line-height: 1.8; direction: ltr; }
         .footer-contact-info i { margin-left: 0.3rem; color: var(--accent-orange); }
         footer { background: var(--steel-mid); color: var(--text-muted); text-align: center; padding: 1rem; margin-top: 2rem; border-top: 2px solid var(--accent-orange); font-size: 0.75rem; }
@@ -263,7 +264,7 @@
     <header>
         <nav>
             <div class="nav-left">
-                <div class="logo">
+                <div class="logo" id="scrollToTopBtn">
                     <div class="logo-icon">⚙️</div>
                     <div class="logo-text">Connect <span>Industry</span> Maroc</div>
                 </div>
@@ -460,29 +461,46 @@
             let automaticiensData = [];
             let fournisseursData = [];
             
-            // Fonctions de navigation pour les statistiques
+            // Fonction pour remonter en haut de page (avec effet smooth)
+            function scrollToTop() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                showToast('⬆️ Retour en haut de page');
+            }
+            
+            // Fonctions de navigation pour les statistiques (sans focus sur la barre de recherche)
             window.navigateToExperts = function() {
-                showSection('automaticiens');
-                showToast('👨‍🔧 Navigation vers les Experts en Automatisme');
-                setTimeout(() => {
-                    document.getElementById('searchAutoInput')?.focus();
-                }, 300);
+                const expertsSection = document.getElementById('automaticiensSection');
+                if (expertsSection) {
+                    showSection('automaticiens');
+                    setTimeout(() => {
+                        expertsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('👨‍🔧 Navigation vers les Experts en Automatisme');
+                    }, 100);
+                }
             };
             
             window.navigateToFournisseurs = function() {
-                showSection('fournisseurs');
-                showToast('🏭 Navigation vers les Fournisseurs Industriels');
-                setTimeout(() => {
-                    document.getElementById('searchFourInput')?.focus();
-                }, 300);
+                const fournisseursSection = document.getElementById('fournisseursSection');
+                if (fournisseursSection) {
+                    showSection('fournisseurs');
+                    setTimeout(() => {
+                        fournisseursSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('🏭 Navigation vers les Fournisseurs Industriels');
+                    }, 100);
+                }
             };
             
             window.navigateToClients = function() {
                 showSection('about');
                 const groupesFacebook = document.getElementById('nosGroupesFacebook');
                 if (groupesFacebook) {
-                    groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    showToast('📱 Navigation vers Nos Groupes Facebook');
+                    setTimeout(() => {
+                        groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('📱 Navigation vers Nos Groupes Facebook');
+                    }, 100);
                 }
             };
             
@@ -490,8 +508,10 @@
                 showSection('about');
                 const pagesFacebook = document.getElementById('nosPagesFacebook');
                 if (pagesFacebook) {
-                    pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    showToast('📘 Navigation vers Nos Pages Facebook');
+                    setTimeout(() => {
+                        pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('📘 Navigation vers Nos Pages Facebook');
+                    }, 100);
                 }
             };
             
@@ -1156,7 +1176,7 @@
                 const activeBtn = document.querySelector(`.offcanvas-btn[data-section="${sectionId}"]`);
                 if (activeBtn) activeBtn.classList.add('active');
                 closeOffcanvas();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Ne pas faire de scroll automatique ici pour éviter les conflits
             };
             
             function saveCurrentSection(sectionId) {
@@ -1214,6 +1234,13 @@
                 document.body.style.overflow = '';
             }
             
+            function initScrollToTop() {
+                const scrollBtn = document.getElementById('scrollToTopBtn');
+                if (scrollBtn) {
+                    scrollBtn.addEventListener('click', scrollToTop);
+                }
+            }
+            
             window.openWaContactModal = function() { document.getElementById('waContactModal').classList.add('show'); };
             window.confirmWaContact = function() {
                 document.getElementById('waContactModal').classList.remove('show');
@@ -1225,6 +1252,7 @@
                 loadAdminMode();
                 initTypingEffect();
                 initMobileMenu();
+                initScrollToTop();
                 selectMessageType('اقتراح');
                 
                 const [autoData, fourData] = await Promise.all([
