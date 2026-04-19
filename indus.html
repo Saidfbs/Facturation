@@ -47,7 +47,6 @@
         .btn-filter-modal { background: transparent; border: 1px solid var(--steel-border); color: var(--text-secondary); width: 42px; height: 42px; min-width: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; transition: all 0.25s; flex-shrink: 0; border-radius: 8px; position: relative; }
         .btn-filter-modal:hover { border-color: var(--accent-orange); color: var(--accent-orange); box-shadow: 0 0 10px var(--glow-orange); }
         .btn-filter-modal.active-filter { border-color: var(--accent-green); color: var(--accent-green); box-shadow: 0 0 8px var(--glow-green); }
-        .filter-badge { position: absolute; top: -5px; right: -5px; background: var(--accent-green); color: white; font-size: 0.6rem; padding: 0.1rem 0.3rem; border-radius: 10px; min-width: 18px; text-align: center; }
         .filter-group { display: flex; gap: 0.5rem; }
         .orders-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         .order-card { background: var(--steel-card); border: 1px solid var(--steel-border); border-right: 3px solid var(--accent-orange); padding: 1rem; transition: all 0.3s ease; position: relative; overflow: hidden; word-wrap: break-word; border-radius: 8px; }
@@ -61,6 +60,7 @@
         .pin-btn.pinned { color: var(--accent-yellow); }
         .member-badge-card { background: var(--accent-green); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .pinned-badge-card { background: var(--accent-yellow); color: #1a1a2e; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
+        .admin-pinned-badge { background: #e06c00; color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .order-info { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
         .order-detail { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap; }
         .order-detail i { width: 22px; margin-top: 0.1rem; flex-shrink: 0; color: var(--accent-orange); }
@@ -356,8 +356,8 @@
                     <div class="orders-toolbar">
                         <div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" id="searchFourInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone..." oninput="filterFournisseurs()"></div>
                         <div class="filter-group">
-                            <button class="btn-filter-modal" id="filterFourBtn" onclick="openFourFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i><span id="fourDomaineBadge" class="filter-badge" style="display:none;">1</span></button>
-                            <button class="btn-filter-modal" id="filterFourVilleBtn" onclick="openFourVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i><span id="fourVilleBadge" class="filter-badge" style="display:none;">1</span></button>
+                            <button class="btn-filter-modal" id="filterFourBtn" onclick="openFourFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
+                            <button class="btn-filter-modal" id="filterFourVilleBtn" onclick="openFourVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
                         </div>
                     </div>
                     <div class="orders-grid" id="fournisseursGrid"><div class="loading-spinner">Chargement des données...</div></div>
@@ -371,8 +371,8 @@
                     <div class="orders-toolbar">
                         <div class="search-box"><i class="fas fa-search search-icon"></i><input type="text" id="searchAutoInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone..." oninput="filterAutomaticiens()"></div>
                         <div class="filter-group">
-                            <button class="btn-filter-modal" id="filterAutoBtn" onclick="openAutoFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i><span id="autoDomaineBadge" class="filter-badge" style="display:none;">1</span></button>
-                            <button class="btn-filter-modal" id="filterAutoVilleBtn" onclick="openAutoVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i><span id="autoVilleBadge" class="filter-badge" style="display:none;">1</span></button>
+                            <button class="btn-filter-modal" id="filterAutoBtn" onclick="openAutoFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
+                            <button class="btn-filter-modal" id="filterAutoVilleBtn" onclick="openAutoVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
                         </div>
                     </div>
                     <div class="orders-grid" id="automaticiensGrid"><div class="loading-spinner">Chargement des données...</div></div>
@@ -555,79 +555,89 @@
             let automaticiensData = [];
             let fournisseursData = [];
             
-            // قائمة العناصر المثبتة
-            let pinnedFournisseurs = JSON.parse(localStorage.getItem('pinnedFournisseurs') || '[]');
-            let pinnedAutomaticiens = JSON.parse(localStorage.getItem('pinnedAutomaticiens') || '[]');
+            // Clés pour localStorage
+            const STORAGE_KEYS = {
+                ADMIN_PINNED_FOUR: 'adminPinnedFournisseurs',
+                ADMIN_PINNED_AUTO: 'adminPinnedAutomaticiens',
+                MEMBER_PINNED_PREFIX: 'memberPinned_',
+                VISITOR_PINNED_FOUR: 'visitorPinnedFournisseurs',
+                VISITOR_PINNED_AUTO: 'visitorPinnedAutomaticiens'
+            };
             
-            // Fonction pour mettre à jour les badges des filtres
-            function updateFilterBadges() {
-                // Fournisseurs
-                const fourDomaineBadge = document.getElementById('fourDomaineBadge');
-                const fourVilleBadge = document.getElementById('fourVilleBadge');
-                
-                if (selectedFourDomaine !== null) {
-                    fourDomaineBadge.style.display = 'inline-block';
-                    document.getElementById('filterFourBtn').classList.add('active-filter');
-                } else {
-                    fourDomaineBadge.style.display = 'none';
-                    document.getElementById('filterFourBtn').classList.remove('active-filter');
+            // Récupérer l'ID du membre connecté
+            function getMemberId() {
+                if (isMemberMode && currentMemberItem && currentMemberItem.phone) {
+                    return normalizePhoneNumber(currentMemberItem.phone);
                 }
-                
-                if (selectedFourVille !== null) {
-                    fourVilleBadge.style.display = 'inline-block';
-                    document.getElementById('filterFourVilleBtn').classList.add('active-filter');
-                } else {
-                    fourVilleBadge.style.display = 'none';
-                    document.getElementById('filterFourVilleBtn').classList.remove('active-filter');
-                }
-                
-                // Experts
-                const autoDomaineBadge = document.getElementById('autoDomaineBadge');
-                const autoVilleBadge = document.getElementById('autoVilleBadge');
-                
-                if (selectedAutoDomaine !== null) {
-                    autoDomaineBadge.style.display = 'inline-block';
-                    document.getElementById('filterAutoBtn').classList.add('active-filter');
-                } else {
-                    autoDomaineBadge.style.display = 'none';
-                    document.getElementById('filterAutoBtn').classList.remove('active-filter');
-                }
-                
-                if (selectedAutoVille !== null) {
-                    autoVilleBadge.style.display = 'inline-block';
-                    document.getElementById('filterAutoVilleBtn').classList.add('active-filter');
-                } else {
-                    autoVilleBadge.style.display = 'none';
-                    document.getElementById('filterAutoVilleBtn').classList.remove('active-filter');
-                }
+                return null;
             }
             
-            // دالة لحفظ العناصر المثبتة
-            function savePinnedItems() {
-                localStorage.setItem('pinnedFournisseurs', JSON.stringify(pinnedFournisseurs));
-                localStorage.setItem('pinnedAutomaticiens', JSON.stringify(pinnedAutomaticiens));
+            // Récupérer la liste des éléments épinglés selon le contexte
+            function getPinnedItems(type) {
+                // Admin
+                if (isAdminMode) {
+                    const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                    return JSON.parse(localStorage.getItem(key) || '[]');
+                }
+                
+                // Membre
+                if (isMemberMode) {
+                    const memberId = getMemberId();
+                    if (memberId) {
+                        const key = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
+                        return JSON.parse(localStorage.getItem(key) || '[]');
+                    }
+                }
+                
+                // Visiteur - session uniquement (sessionStorage)
+                const key = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
+                const saved = sessionStorage.getItem(key);
+                return saved ? JSON.parse(saved) : [];
             }
             
-            // دالة لتبديل حالة التثبيت (متاحة لجميع المستخدمين)
+            // Sauvegarder la liste des éléments épinglés selon le contexte
+            function setPinnedItems(type, items) {
+                // Admin
+                if (isAdminMode) {
+                    const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                    localStorage.setItem(key, JSON.stringify(items));
+                    return;
+                }
+                
+                // Membre
+                if (isMemberMode) {
+                    const memberId = getMemberId();
+                    if (memberId) {
+                        const key = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
+                        localStorage.setItem(key, JSON.stringify(items));
+                    }
+                    return;
+                }
+                
+                // Visiteur - session uniquement
+                const key = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
+                sessionStorage.setItem(key, JSON.stringify(items));
+            }
+            
+            // دالة لتبديل حالة التثبيت
             function togglePin(type, itemId, itemName) {
-                let pinnedList = type === 'fournisseur' ? pinnedFournisseurs : pinnedAutomaticiens;
+                let pinnedList = getPinnedItems(type);
                 const index = pinnedList.indexOf(itemId);
+                
+                let source = '📌';
+                if (isAdminMode) source = '👑 ';
+                else if (isMemberMode) source = '👤 ';
+                else source = '👋 ';
                 
                 if (index === -1) {
                     pinnedList.push(itemId);
-                    showToast(`📌 ${itemName} épinglé`);
+                    showToast(`${source} ${itemName} épinglé`);
                 } else {
                     pinnedList.splice(index, 1);
-                    showToast(`📍 ${itemName} désépinglé`);
+                    showToast(`${source} ${itemName} désépinglé`);
                 }
                 
-                if (type === 'fournisseur') {
-                    pinnedFournisseurs = pinnedList;
-                } else {
-                    pinnedAutomaticiens = pinnedList;
-                }
-                
-                savePinnedItems();
+                setPinnedItems(type, pinnedList);
                 
                 // Re-render
                 if (type === 'fournisseur') {
@@ -638,7 +648,8 @@
             }
             
             // دالة لترتيب العناصر (المثبتة أولاً)
-            function sortWithPinned(items, pinnedList, type) {
+            function sortWithPinned(items, type) {
+                const pinnedList = getPinnedItems(type);
                 const pinnedItems = [];
                 const unpinnedItems = [];
                 
@@ -652,6 +663,48 @@
                 }
                 
                 return [...pinnedItems, ...unpinnedItems];
+            }
+            
+            // Vérifier si un élément est épinglé
+            function isItemPinned(item, type) {
+                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                const pinnedList = getPinnedItems(type);
+                return pinnedList.includes(itemId);
+            }
+            
+            // Nettoyer les données visiteur au chargement (sessionStorage est déjà nettoyé à la fermeture)
+            function clearVisitorPins() {
+                // sessionStorage est automatiquement vidé à la fermeture du navigateur
+                // On peut simplement laisser
+            }
+            
+            // Fonction pour mettre à jour les badges des filtres (sans badge circulaire)
+            function updateFilterBadges() {
+                // Fournisseurs
+                if (selectedFourDomaine !== null) {
+                    document.getElementById('filterFourBtn').classList.add('active-filter');
+                } else {
+                    document.getElementById('filterFourBtn').classList.remove('active-filter');
+                }
+                
+                if (selectedFourVille !== null) {
+                    document.getElementById('filterFourVilleBtn').classList.add('active-filter');
+                } else {
+                    document.getElementById('filterFourVilleBtn').classList.remove('active-filter');
+                }
+                
+                // Experts
+                if (selectedAutoDomaine !== null) {
+                    document.getElementById('filterAutoBtn').classList.add('active-filter');
+                } else {
+                    document.getElementById('filterAutoBtn').classList.remove('active-filter');
+                }
+                
+                if (selectedAutoVille !== null) {
+                    document.getElementById('filterAutoVilleBtn').classList.add('active-filter');
+                } else {
+                    document.getElementById('filterAutoVilleBtn').classList.remove('active-filter');
+                }
             }
             
             // Fonction pour normaliser les numéros de téléphone
@@ -1039,12 +1092,6 @@
             function isCurrentMember(item) {
                 if (!isMemberMode || !currentMemberItem) return false;
                 return phoneMatches(item.phone, currentMemberItem.phone);
-            }
-            
-            function isItemPinned(item, type) {
-                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                const pinnedList = type === 'fournisseur' ? pinnedFournisseurs : pinnedAutomaticiens;
-                return pinnedList.includes(itemId);
             }
             
             function matchesSearch(item, searchTerm) {
@@ -1505,7 +1552,7 @@
                     filtered = filtered.filter(person => matchesSearch(person, searchTerm));
                 }
                 
-                filtered = sortWithPinned(filtered, pinnedAutomaticiens, 'expert');
+                filtered = sortWithPinned(filtered, 'expert');
                 
                 const grid = document.getElementById('automaticiensGrid');
                 if (grid) {
@@ -1533,7 +1580,7 @@
                     filtered = filtered.filter(supplier => matchesSearch(supplier, searchTerm));
                 }
                 
-                filtered = sortWithPinned(filtered, pinnedFournisseurs, 'fournisseur');
+                filtered = sortWithPinned(filtered, 'fournisseur');
                 
                 const grid = document.getElementById('fournisseursGrid');
                 if (grid) {
