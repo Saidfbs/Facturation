@@ -29,7 +29,9 @@
         }
         body { font-family: 'Cairo', 'Segoe UI', sans-serif; background: var(--steel-dark); color: var(--text-primary); line-height: 1.6; transition: all 0.3s ease; min-height: 100vh; display: flex; flex-direction: column; }
         body.admin-mode .admin-badge { display: flex; }
+        body.member-mode .member-badge { display: flex; }
         .admin-badge { display: none; align-items: center; gap: 0.3rem; background: rgba(224,108,0,0.2); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; color: var(--accent-orange); margin-left: 0.5rem; }
+        .member-badge { display: none; align-items: center; gap: 0.3rem; background: rgba(45,164,78,0.2); padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; color: var(--accent-green); margin-left: 0.5rem; }
         main { flex: 1; width: 100%; max-width: 100%; padding: 0; margin: 0; margin-top: 70px; }
         .about-container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0.5rem; }
         .company-card { background: var(--steel-card); margin: 1rem auto; padding: 1.5rem; border: 1px solid var(--steel-border); border-right: 3px solid var(--accent-orange); transition: all 0.3s ease; overflow: hidden; border-radius: 8px; }
@@ -48,8 +50,10 @@
         .orders-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         .order-card { background: var(--steel-card); border: 1px solid var(--steel-border); border-right: 3px solid var(--accent-orange); padding: 1rem; transition: all 0.3s ease; position: relative; overflow: hidden; word-wrap: break-word; border-radius: 8px; }
         .order-card:hover { box-shadow: 0 0 18px rgba(224,108,0,0.15), 0 4px 20px rgba(0,0,0,0.3); border-right-color: var(--accent-orange); }
+        .order-card.member-highlight { border-right: 3px solid var(--accent-green); background: rgba(45,164,78,0.05); box-shadow: 0 0 20px rgba(45,164,78,0.2); }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--steel-border); flex-wrap: wrap; gap: 0.5rem; }
         .order-name { font-size: 1rem; font-weight: 700; color: var(--accent-orange); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .member-badge-card { background: var(--accent-green); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .order-info { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
         .order-detail { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap; }
         .order-detail i { width: 22px; margin-top: 0.1rem; flex-shrink: 0; color: var(--accent-orange); }
@@ -263,6 +267,8 @@
         .password-input { width: 100%; padding: 0.7rem; border: 1px solid var(--steel-border); background: var(--steel-light); color: var(--text-primary); font-size: 0.85rem; margin-bottom: 1rem; text-align: left; direction: ltr; border-radius: 8px; }
         .clickable-stat { cursor: pointer; transition: all 0.3s ease; }
         .clickable-stat:hover { transform: translateY(-2px); box-shadow: 0 0 12px rgba(224,108,0,0.15); background: rgba(224,108,0,0.05); }
+        .phone-input { width: 100%; padding: 0.7rem; border: 1px solid var(--steel-border); background: var(--steel-light); color: var(--text-primary); font-size: 0.85rem; border-radius: 8px; text-align: left; direction: ltr; }
+        .info-text { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
     </style>
 </head>
 <body>
@@ -284,6 +290,7 @@
             <div class="offcanvas-divider"></div>
             <div class="offcanvas-section">
                 <div class="offcanvas-section-title">Paramètres</div>
+                <button class="offcanvas-btn" id="memberModeBtn" onclick="openMemberModal()"><i class="fas fa-user-circle"></i><span>Espace Membre</span></button>
                 <button class="offcanvas-btn" id="adminModeBtn" onclick="toggleAdminMode()"><i class="fas fa-key"></i><span id="adminModeText">Mode Admin</span></button>
                 <button class="offcanvas-btn" id="themeMenuBtn" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i><span id="themeText">Mode Nuit</span></button>
                 <button class="offcanvas-btn" id="whatsappMenuBtn" onclick="openWaContactModal()"><i class="fab fa-whatsapp" style="color:#25D366;"></i><span>Contact WhatsApp</span></button>
@@ -303,6 +310,7 @@
                     <div class="logo-text">Connect <span>Industry</span> Maroc</div>
                 </div>
                 <div class="admin-badge" id="adminBadge"><i class="fas fa-key"></i> Mode Admin</div>
+                <div class="member-badge" id="memberBadge"><i class="fas fa-user-check"></i> <span id="memberName">Membre</span></div>
             </div>
             <div class="nav-right">
                 <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
@@ -414,6 +422,20 @@
     <div class="confirm-modal-overlay" id="shareModal"><div class="confirm-modal"><h3><i class="fas fa-share-alt"></i> Partager</h3><p id="shareMessage">...</p><div class="confirm-modal-btns"><button class="btn-confirm-send" onclick="shareToWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="btn-confirm-cancel" onclick="document.getElementById('shareModal').classList.remove('show')">Annuler</button></div></div></div>
     <div class="confirm-modal-overlay" id="confirmSendModal"><div class="confirm-modal"><h3><i class="fab fa-whatsapp"></i> Confirmation</h3><p id="confirmSendMessage">Voulez-vous envoyer ces informations via WhatsApp ?</p><div class="confirm-modal-btns"><button class="btn-confirm-send" id="confirmSendBtn">Envoyer</button><button class="btn-confirm-cancel" onclick="document.getElementById('confirmSendModal').classList.remove('show')">Annuler</button></div></div></div>
     
+    <!-- Modal d'inscription membre -->
+    <div class="confirm-modal-overlay" id="memberModal">
+        <div class="confirm-modal" style="text-align:right;">
+            <h3><i class="fas fa-user-circle"></i> Espace Membre</h3>
+            <p style="margin-bottom: 1rem;">Entrez votre numéro de téléphone pour accéder à votre espace</p>
+            <input type="text" id="memberPhoneInput" class="phone-input" placeholder="Ex: 0612345678 ou +212612345678" autocomplete="off">
+            <div class="info-text"><i class="fas fa-info-circle"></i> Vous pouvez entrer le numéro avec ou sans indicatif (06, 07, +212...)</div>
+            <div class="confirm-modal-btns" style="margin-top: 1rem;">
+                <button class="btn-confirm-send" onclick="verifyMember()">Se connecter</button>
+                <button class="btn-confirm-cancel" onclick="closeMemberModal()">Annuler</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="confirm-modal-overlay" id="adminPasswordModal">
         <div class="confirm-modal" style="text-align:right;">
             <h3><i class="fas fa-key"></i> Mode Admin</h3>
@@ -519,9 +541,181 @@
             let selectedMessageType = 'اقتراح';
             let currentSection = 'fournisseurs';
             let isAdminMode = false;
+            let isMemberMode = false;
+            let currentMemberItem = null;
+            let currentMemberSection = null;
             
             let automaticiensData = [];
             let fournisseursData = [];
+            
+            // Fonction pour normaliser les numéros de téléphone (supprimer les caractères, gérer les multiples)
+            function normalizePhoneNumber(phone) {
+                if (!phone) return null;
+                // Extraire le premier numéro si plusieurs séparés par /
+                let firstPhone = phone.toString().split('/')[0].trim();
+                // Supprimer tous les caractères non numériques sauf +
+                let cleaned = firstPhone.replace(/[^\d+]/g, '');
+                // Si commence par 06 ou 07, convertir en +212
+                if (cleaned.match(/^0[67]\d{8}$/)) {
+                    cleaned = '+212' + cleaned.substring(1);
+                }
+                // Si commence par 6 ou 7 (sans 0), ajouter +212
+                else if (cleaned.match(/^[67]\d{8}$/)) {
+                    cleaned = '+212' + cleaned;
+                }
+                // Si commence par 212 sans +, ajouter +
+                else if (cleaned.match(/^212[67]\d{8}$/)) {
+                    cleaned = '+' + cleaned;
+                }
+                return cleaned;
+            }
+            
+            // Fonction pour vérifier si un numéro correspond (recherche partielle)
+            function phoneMatches(phone1, phone2) {
+                if (!phone1 || !phone2) return false;
+                const norm1 = normalizePhoneNumber(phone1);
+                const norm2 = normalizePhoneNumber(phone2);
+                if (norm1 && norm2) return norm1 === norm2;
+                // Sinon, vérifier si l'un contient l'autre
+                const p1 = phone1.toString().replace(/[^\d]/g, '');
+                const p2 = phone2.toString().replace(/[^\d]/g, '');
+                if (p1.length > 5 && p2.length > 5) {
+                    return p1.includes(p2) || p2.includes(p1);
+                }
+                return false;
+            }
+            
+            // Fonction pour rechercher un membre par téléphone
+            function findMemberByPhone(phone) {
+                const normalizedInput = normalizePhoneNumber(phone);
+                if (!normalizedInput) return null;
+                
+                // Chercher dans les fournisseurs
+                for (let i = 0; i < fournisseursData.length; i++) {
+                    const item = fournisseursData[i];
+                    if (item.phone && phoneMatches(item.phone, normalizedInput)) {
+                        return { type: 'fournisseur', data: item, index: i };
+                    }
+                }
+                
+                // Chercher dans les experts
+                for (let i = 0; i < automaticiensData.length; i++) {
+                    const item = automaticiensData[i];
+                    if (item.phone && phoneMatches(item.phone, normalizedInput)) {
+                        return { type: 'expert', data: item, index: i };
+                    }
+                }
+                
+                return null;
+            }
+            
+            // Fonction pour activer le mode membre
+            function activateMemberMode(member) {
+                isMemberMode = true;
+                currentMemberItem = member.data;
+                currentMemberSection = member.type;
+                
+                // Afficher le badge membre
+                const memberBadge = document.getElementById('memberBadge');
+                const memberNameSpan = document.getElementById('memberName');
+                if (memberBadge) {
+                    memberBadge.style.display = 'flex';
+                    if (memberNameSpan) memberNameSpan.textContent = member.data.name.substring(0, 20);
+                }
+                
+                // Sauvegarder en localStorage
+                localStorage.setItem('memberMode', 'true');
+                localStorage.setItem('memberPhone', member.data.phone);
+                localStorage.setItem('memberName', member.data.name);
+                localStorage.setItem('memberType', member.type);
+                
+                // Ouvrir la section correspondante
+                if (member.type === 'fournisseur') {
+                    showSection('fournisseurs');
+                    setTimeout(() => {
+                        highlightAndReorderMember('fournisseur', member.index);
+                    }, 300);
+                } else {
+                    showSection('automaticiens');
+                    setTimeout(() => {
+                        highlightAndReorderMember('expert', member.index);
+                    }, 300);
+                }
+                
+                showToast(`✅ Bienvenue ${member.data.name}`);
+            }
+            
+            // Fonction pour mettre en évidence et réorganiser la liste
+            function highlightAndReorderMember(type, memberIndex) {
+                let container, items;
+                if (type === 'fournisseur') {
+                    container = document.getElementById('fournisseursGrid');
+                    items = fournisseursData;
+                } else {
+                    container = document.getElementById('automaticiensGrid');
+                    items = automaticiensData;
+                }
+                
+                if (!container) return;
+                
+                // Créer un tableau avec l'élément membre en premier
+                const memberItem = items[memberIndex];
+                const otherItems = items.filter((_, idx) => idx !== memberIndex);
+                const reorderedItems = [memberItem, ...otherItems];
+                
+                // Mettre à jour les données
+                if (type === 'fournisseur') {
+                    fournisseursData = reorderedItems;
+                    renderFournisseurs();
+                } else {
+                    automaticiensData = reorderedItems;
+                    renderAutomaticiens();
+                }
+                
+                // Mettre en évidence la carte du membre
+                setTimeout(() => {
+                    const cards = container.querySelectorAll('.order-card');
+                    if (cards.length > 0) {
+                        cards[0].classList.add('member-highlight');
+                        // Faire défiler jusqu'à la carte
+                        cards[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+            
+            // Fonction pour quitter le mode membre
+            function logoutMember() {
+                isMemberMode = false;
+                currentMemberItem = null;
+                currentMemberSection = null;
+                
+                const memberBadge = document.getElementById('memberBadge');
+                if (memberBadge) memberBadge.style.display = 'none';
+                
+                localStorage.removeItem('memberMode');
+                localStorage.removeItem('memberPhone');
+                localStorage.removeItem('memberName');
+                localStorage.removeItem('memberType');
+                
+                // Recharger les données originales
+                location.reload();
+            }
+            
+            // Vérifier si un membre est déjà connecté au chargement
+            function loadMemberMode() {
+                const savedMember = localStorage.getItem('memberMode');
+                if (savedMember === 'true') {
+                    const savedPhone = localStorage.getItem('memberPhone');
+                    if (savedPhone) {
+                        const member = findMemberByPhone(savedPhone);
+                        if (member) {
+                            activateMemberMode(member);
+                        } else {
+                            localStorage.removeItem('memberMode');
+                        }
+                    }
+                }
+            }
             
             // Fonction pour créer une ligne de séparation (12 tirets)
             function makeSeparator() {
@@ -597,6 +791,7 @@
             function maskPhoneNumber(phone) {
                 if (!phone) return null;
                 if (isAdminMode) return phone;
+                if (isMemberMode && currentMemberItem && phoneMatches(phone, currentMemberItem.phone)) return phone;
                 if (phone.length >= 8) {
                     const start = phone.substring(0, 4);
                     const masked = '*'.repeat(Math.min(phone.length - 4, 7));
@@ -607,7 +802,7 @@
             
             function formatPhoneNumber(phone) {
                 if (!phone) return null;
-                let cleanPhone = phone.toString().replace(/[\s\-\(\)]/g, '');
+                let cleanPhone = phone.toString().split('/')[0].replace(/[\s\-\(\)]/g, '');
                 if (cleanPhone.startsWith('+212')) return cleanPhone;
                 if (cleanPhone.startsWith('00212')) return '+' + cleanPhone.substring(2);
                 if (cleanPhone.startsWith('212')) return '+' + cleanPhone;
@@ -742,6 +937,12 @@
                 return '';
             }
             
+            // Fonction pour vérifier si un élément est le membre connecté
+            function isCurrentMember(item) {
+                if (!isMemberMode || !currentMemberItem) return false;
+                return phoneMatches(item.phone, currentMemberItem.phone);
+            }
+            
             // Fonction de recherche améliorée - cherche dans tous les champs
             function matchesSearch(item, searchTerm) {
                 if (!searchTerm) return true;
@@ -759,40 +960,51 @@
                 let whatsappUrl = '#';
                 const maskedPhone = maskPhoneNumber(person.phone);
                 const hasPhone = person.phone && person.phone !== 'null';
+                const isMember = isCurrentMember(person);
                 
-                if (isAdminMode && hasPhone) {
+                // Pour le membre connecté, tous les boutons sont actifs
+                const showFullAccess = isAdminMode || isMember;
+                
+                if (showFullAccess && hasPhone) {
                     whatsappUrl = `https://wa.me/${person.phone.replace('+', '')}`;
                     buttons.push(`<a class="btn-icon wa" href="${whatsappUrl}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>`);
+                } else if (hasPhone) {
+                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
+                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
-                if (isAdminMode && person.email) {
+                if (showFullAccess && person.email) {
                     buttons.push(`<a class="btn-icon email" href="mailto:${person.email}"><i class="fas fa-envelope"></i> Email</a>`);
+                } else if (person.email) {
+                    buttons.push(`<button class="btn-icon email disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-envelope"></i> Email</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon email disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-envelope"></i> Email</button>`);
+                    buttons.push(`<button class="btn-icon email disabled-btn" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
-                if (isAdminMode && person.web && person.web !== 'null' && person.web !== '') {
+                if (showFullAccess && person.web && person.web !== 'null' && person.web !== '') {
                     buttons.push(`<a class="btn-icon web" href="${person.web.startsWith('http') ? person.web : 'https://' + person.web}" target="_blank"><i class="fas fa-globe"></i> Site</a>`);
+                } else if (person.web && person.web !== 'null' && person.web !== '') {
+                    buttons.push(`<button class="btn-icon web disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-globe"></i> Site</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon web disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-globe"></i> Site</button>`);
+                    buttons.push(`<button class="btn-icon web disabled-btn" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
-                if (isAdminMode) {
+                if (showFullAccess) {
                     const webUrl = (person.web && person.web !== 'null' && person.web !== '') ? person.web : '';
                     buttons.push(`<button class="btn-icon share" onclick="shareCardAuto('${escapeHtml(person.name)}', '${escapeHtml(person.domaine)}', '${escapeHtml(person.specialite)}', '${escapeHtml(person.city)}', '${person.phone ? person.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon share disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-share-alt"></i> Partager</button>`);
+                    buttons.push(`<button class="btn-icon share disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-share-alt"></i> Partager</button>`);
                 }
                 
                 const actionsClass = getActionsClass(buttons.length);
-                const phoneDisplay = hasPhone ? (isAdminMode ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
-                const visitorWarning = !isAdminMode && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant qu'admin pour voir le numéro</div>` : '';
+                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
+                const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant que membre pour voir le numéro</div>` : '';
+                const memberBadgeHtml = isMember ? `<span class="member-badge-card"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 
                 return `
-                    <div class="order-card">
-                        <div class="order-header"><span class="order-name"><i class="fas fa-user-astronaut"></i> ${escapeHtml(person.name)}</span></div>
+                    <div class="order-card ${isMember ? 'member-highlight' : ''}">
+                        <div class="order-header"><span class="order-name"><i class="fas fa-user-astronaut"></i> ${escapeHtml(person.name)} ${memberBadgeHtml}</span></div>
                         <div class="order-info">
                             <div class="order-detail"><i class="fas fa-folder"></i><span class="label">Domaine:</span><span class="value">${escapeHtml(person.domaine)}</span></div>
                             <div class="order-detail"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(person.specialite)}</span></div>
@@ -810,40 +1022,50 @@
                 let whatsappUrl = '#';
                 const maskedPhone = maskPhoneNumber(supplier.phone);
                 const hasPhone = supplier.phone && supplier.phone !== 'null';
+                const isMember = isCurrentMember(supplier);
                 
-                if (isAdminMode && hasPhone) {
+                const showFullAccess = isAdminMode || isMember;
+                
+                if (showFullAccess && hasPhone) {
                     whatsappUrl = `https://wa.me/${supplier.phone.replace('+', '')}`;
                     buttons.push(`<a class="btn-icon wa" href="${whatsappUrl}" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp</a>`);
+                } else if (hasPhone) {
+                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
+                    buttons.push(`<button class="btn-icon wa disabled-btn" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
-                if (isAdminMode && supplier.email) {
+                if (showFullAccess && supplier.email) {
                     buttons.push(`<a class="btn-icon email" href="mailto:${supplier.email}"><i class="fas fa-envelope"></i> Email</a>`);
+                } else if (supplier.email) {
+                    buttons.push(`<button class="btn-icon email disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-envelope"></i> Email</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon email disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-envelope"></i> Email</button>`);
+                    buttons.push(`<button class="btn-icon email disabled-btn" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
-                if (isAdminMode && supplier.web && supplier.web !== 'null' && supplier.web !== '') {
+                if (showFullAccess && supplier.web && supplier.web !== 'null' && supplier.web !== '') {
                     buttons.push(`<a class="btn-icon web" href="${supplier.web.startsWith('http') ? supplier.web : 'https://' + supplier.web}" target="_blank"><i class="fas fa-globe"></i> Site</a>`);
+                } else if (supplier.web && supplier.web !== 'null' && supplier.web !== '') {
+                    buttons.push(`<button class="btn-icon web disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-globe"></i> Site</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon web disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-globe"></i> Site</button>`);
+                    buttons.push(`<button class="btn-icon web disabled-btn" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
-                if (isAdminMode) {
+                if (showFullAccess) {
                     const webUrl = (supplier.web && supplier.web !== 'null' && supplier.web !== '') ? supplier.web : '';
                     buttons.push(`<button class="btn-icon share" onclick="shareCardFour('${escapeHtml(supplier.name)}', '${escapeHtml(supplier.domaine)}', '${escapeHtml(supplier.specialite)}', '${escapeHtml(supplier.city)}', '${supplier.phone ? supplier.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
                 } else {
-                    buttons.push(`<button class="btn-icon share disabled-btn" disabled title="Connectez-vous en tant qu'admin"><i class="fas fa-share-alt"></i> Partager</button>`);
+                    buttons.push(`<button class="btn-icon share disabled-btn" disabled title="Connectez-vous en tant qu'admin ou membre"><i class="fas fa-share-alt"></i> Partager</button>`);
                 }
                 
                 const actionsClass = getActionsClass(buttons.length);
-                const phoneDisplay = hasPhone ? (isAdminMode ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
-                const visitorWarning = !isAdminMode && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant qu'admin pour voir le numéro</div>` : '';
+                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
+                const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant que membre pour voir le numéro</div>` : '';
+                const memberBadgeHtml = isMember ? `<span class="member-badge-card"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 
                 return `
-                    <div class="order-card">
-                        <div class="order-header"><span class="order-name"><i class="fas fa-building"></i> ${escapeHtml(supplier.name)}</span></div>
+                    <div class="order-card ${isMember ? 'member-highlight' : ''}">
+                        <div class="order-header"><span class="order-name"><i class="fas fa-building"></i> ${escapeHtml(supplier.name)} ${memberBadgeHtml}</span></div>
                         <div class="order-info">
                             <div class="order-detail"><i class="fas fa-folder"></i><span class="label">Domaine:</span><span class="value">${escapeHtml(supplier.domaine)}</span></div>
                             <div class="order-detail"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(supplier.specialite)}</span></div>
@@ -971,6 +1193,37 @@
                 }
             }
             
+            // Fonctions pour les modals de membre
+            window.openMemberModal = function() {
+                if (isMemberMode) {
+                    logoutMember();
+                } else {
+                    document.getElementById('memberModal').classList.add('show');
+                }
+            };
+            
+            window.verifyMember = function() {
+                const phone = document.getElementById('memberPhoneInput').value;
+                if (!phone.trim()) {
+                    showToast('❌ Veuillez entrer un numéro de téléphone');
+                    return;
+                }
+                
+                const member = findMemberByPhone(phone);
+                if (member) {
+                    activateMemberMode(member);
+                    closeMemberModal();
+                } else {
+                    showToast('❌ Aucun compte trouvé avec ce numéro. Vérifiez votre numéro ou inscrivez-vous.');
+                }
+            };
+            
+            function closeMemberModal() {
+                document.getElementById('memberModal').classList.remove('show');
+                document.getElementById('memberPhoneInput').value = '';
+            }
+            window.closeMemberModal = closeMemberModal;
+            
             // Fonctions pour les modals de domaine et ville
             window.openAutoDomaineModal = function() {
                 const domaines = [...new Set(automaticiensData.map(item => item.domaine).filter(d => d && d.trim() !== ''))];
@@ -1046,7 +1299,6 @@
                 document.getElementById('fourDomaineModal').classList.add('show');
             };
             
-            // Fonctions pour les modals de ville
             window.openAutoVilleModal = function() {
                 const villes = [...new Set(automaticiensData.map(item => item.city).filter(v => v && v.trim() !== ''))];
                 const container = document.getElementById('autoVilleList');
@@ -1114,17 +1366,14 @@
                 const grid = document.getElementById('automaticiensGrid');
                 let filtered = [...automaticiensData];
                 
-                // Filtre par domaine
                 if (autoFilterType === 'domaine' && selectedAutoDomaine !== null) {
                     filtered = filtered.filter(person => person.domaine === selectedAutoDomaine);
                 }
                 
-                // Filtre par ville
                 if (selectedAutoVille !== null) {
                     filtered = filtered.filter(person => person.city === selectedAutoVille);
                 }
                 
-                // Recherche textuelle
                 if (searchTerm) {
                     filtered = filtered.filter(person => matchesSearch(person, searchTerm));
                 }
@@ -1143,17 +1392,14 @@
                 const grid = document.getElementById('fournisseursGrid');
                 let filtered = [...fournisseursData];
                 
-                // Filtre par domaine
                 if (fourFilterType === 'domaine' && selectedFourDomaine !== null) {
                     filtered = filtered.filter(supplier => supplier.domaine === selectedFourDomaine);
                 }
                 
-                // Filtre par ville
                 if (selectedFourVille !== null) {
                     filtered = filtered.filter(supplier => supplier.city === selectedFourVille);
                 }
                 
-                // Recherche textuelle
                 if (searchTerm) {
                     filtered = filtered.filter(supplier => matchesSearch(supplier, searchTerm));
                 }
@@ -1338,7 +1584,6 @@
                 const activeBtn = document.querySelector(`.offcanvas-btn[data-section="${sectionId}"]`);
                 if (activeBtn) activeBtn.classList.add('active');
                 closeOffcanvas();
-                // تمرير الصفحة إلى الأعلى عند تغيير القسم
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
@@ -1430,6 +1675,10 @@
                 fournisseursData = fourData;
                 
                 updateStats();
+                
+                // Charger le mode membre après avoir chargé les données
+                loadMemberMode();
+                
                 renderAutomaticiens();
                 renderFournisseurs();
                 updateAutoFilterUI();
