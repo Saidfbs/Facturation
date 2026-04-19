@@ -18,7 +18,7 @@
             --steel-border: #30363d; --steel-light: #21262d; --accent-orange: #e06c00;
             --accent-yellow: #d4a017; --accent-steel: #8b9eb7; --accent-blue: #1f6feb;
             --accent-purple: #8b5cf6; --accent-cyan: #06b6d4; --accent-green: #2da44e;
-            --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+            --accent-red: #e06c00; --text-primary: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
             --glow-orange: rgba(224,108,0,0.4); --glow-blue: rgba(31,111,235,0.4);
             --glow-yellow: rgba(212,160,23,0.4); --glow-green: rgba(45,164,78,0.4);
         }
@@ -53,6 +53,7 @@
         .order-card:hover { box-shadow: 0 0 18px rgba(224,108,0,0.15), 0 4px 20px rgba(0,0,0,0.3); border-right-color: var(--accent-orange); }
         .order-card.member-highlight { border-right: 3px solid var(--accent-green); background: rgba(45,164,78,0.05); box-shadow: 0 0 20px rgba(45,164,78,0.2); }
         .order-card.pinned { border-top: 2px solid var(--accent-yellow); position: relative; }
+        .order-card.admin-pinned { border-top: 2px solid var(--accent-orange); position: relative; }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--steel-border); flex-wrap: wrap; gap: 0.5rem; }
         .order-name { font-size: 1rem; font-weight: 700; color: var(--accent-orange); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .pin-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: all 0.2s; padding: 0 0.2rem; }
@@ -60,7 +61,7 @@
         .pin-btn.pinned { color: var(--accent-yellow); }
         .member-badge-card { background: var(--accent-green); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .pinned-badge-card { background: var(--accent-yellow); color: #1a1a2e; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
-        .admin-pinned-badge { background: #e06c00; color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
+        .admin-pinned-badge { background: var(--accent-orange); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .order-info { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
         .order-detail { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4; display: flex; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap; }
         .order-detail i { width: 22px; margin-top: 0.1rem; flex-shrink: 0; color: var(--accent-orange); }
@@ -197,8 +198,10 @@
         nav { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .nav-left { display: flex; align-items: center; gap: 0.5rem; }
         .nav-right { display: flex; align-items: center; gap: 0.5rem; }
-        .menu-toggle { display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 0; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; flex-shrink: 0; border-radius: 8px; }
-        .menu-toggle:hover { box-shadow: 0 0 15px rgba(224,108,0,0.4); transform: translateY(-2px); }
+        .menu-toggle { background: transparent; border: 1px solid var(--accent-orange); color: var(--accent-orange); padding: 0; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; transition: all 0.3s ease; flex-shrink: 0; border-radius: 8px; }
+        body.admin-mode .menu-toggle { border-color: var(--accent-red); color: var(--accent-red); box-shadow: 0 0 5px rgba(224,108,0,0.3); }
+        body.member-mode .menu-toggle { border-color: var(--accent-green); color: var(--accent-green); box-shadow: 0 0 5px rgba(45,164,78,0.3); }
+        .menu-toggle:hover { transform: translateY(-2px); }
         .logo { display: flex; align-items: center; gap: 0.5rem; min-width: 0; cursor: pointer; }
         .logo-icon { font-size: 1.3rem; flex-shrink: 0; transition: transform 0.3s ease; }
         .logo-icon:hover { transform: rotate(30deg); }
@@ -519,7 +522,7 @@
         (function() {
             'use strict';
             
-            const ADMIN_PASSWORD = "admin123";
+            const ADMIN_PASSWORD = "11111111"; // Mot de passe admin modifié
             
             const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
             const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
@@ -572,72 +575,96 @@
                 return null;
             }
             
-            // Récupérer la liste des éléments épinglés selon le contexte
-            function getPinnedItems(type) {
-                // Admin
-                if (isAdminMode) {
-                    const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
-                    return JSON.parse(localStorage.getItem(key) || '[]');
-                }
-                
-                // Membre
-                if (isMemberMode) {
-                    const memberId = getMemberId();
-                    if (memberId) {
-                        const key = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
-                        return JSON.parse(localStorage.getItem(key) || '[]');
-                    }
-                }
-                
-                // Visiteur - session uniquement (sessionStorage)
-                const key = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
-                const saved = sessionStorage.getItem(key);
-                return saved ? JSON.parse(saved) : [];
+            // Vérifier si un élément est épinglé par l'admin
+            function isAdminPinned(item, type) {
+                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                const adminPinned = JSON.parse(localStorage.getItem(key) || '[]');
+                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                return adminPinned.includes(itemId);
             }
             
-            // Sauvegarder la liste des éléments épinglés selon le contexte
-            function setPinnedItems(type, items) {
-                // Admin
-                if (isAdminMode) {
-                    const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
-                    localStorage.setItem(key, JSON.stringify(items));
-                    return;
-                }
+            // Récupérer la liste des éléments épinglés selon le contexte
+            function getPinnedItems(type) {
+                // Admin pins (toujours inclus pour tout le monde)
+                const adminKey = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                const adminPinned = JSON.parse(localStorage.getItem(adminKey) || '[]');
                 
-                // Membre
-                if (isMemberMode) {
+                let userPinned = [];
+                
+                // Ajouter les pins de l'utilisateur courant
+                if (isAdminMode) {
+                    // En mode admin, les pins admin sont déjà inclus, pas de pins supplémentaires
+                } else if (isMemberMode) {
                     const memberId = getMemberId();
                     if (memberId) {
-                        const key = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
-                        localStorage.setItem(key, JSON.stringify(items));
+                        const memberKey = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
+                        userPinned = JSON.parse(localStorage.getItem(memberKey) || '[]');
                     }
-                    return;
+                } else {
+                    // Visiteur
+                    const visitorKey = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
+                    userPinned = JSON.parse(sessionStorage.getItem(visitorKey) || '[]');
                 }
                 
-                // Visiteur - session uniquement
-                const key = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
-                sessionStorage.setItem(key, JSON.stringify(items));
+                // Fusionner les deux listes (admin pins + user pins)
+                return [...new Set([...adminPinned, ...userPinned])];
+            }
+            
+            // Sauvegarder la liste des éléments épinglés pour l'utilisateur courant (hors admin)
+            function setUserPinnedItems(type, items) {
+                // Ne pas sauvegarder les pins admin ici
+                if (isAdminMode) {
+                    // En mode admin, sauvegarder dans admin pins
+                    const adminKey = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                    localStorage.setItem(adminKey, JSON.stringify(items));
+                } else if (isMemberMode) {
+                    const memberId = getMemberId();
+                    if (memberId) {
+                        const memberKey = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
+                        localStorage.setItem(memberKey, JSON.stringify(items));
+                    }
+                } else {
+                    const visitorKey = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
+                    sessionStorage.setItem(visitorKey, JSON.stringify(items));
+                }
             }
             
             // دالة لتبديل حالة التثبيت
             function togglePin(type, itemId, itemName) {
-                let pinnedList = getPinnedItems(type);
-                const index = pinnedList.indexOf(itemId);
+                // Récupérer les pins existants pour ce type (admin pins + user pins)
+                const adminKey = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                const adminPinned = JSON.parse(localStorage.getItem(adminKey) || '[]');
                 
-                let source = '📌';
+                let currentUserPins = [];
+                if (isAdminMode) {
+                    currentUserPins = adminPinned;
+                } else if (isMemberMode) {
+                    const memberId = getMemberId();
+                    if (memberId) {
+                        const memberKey = `${STORAGE_KEYS.MEMBER_PINNED_PREFIX}${memberId}_${type}`;
+                        currentUserPins = JSON.parse(localStorage.getItem(memberKey) || '[]');
+                    }
+                } else {
+                    const visitorKey = type === 'fournisseur' ? STORAGE_KEYS.VISITOR_PINNED_FOUR : STORAGE_KEYS.VISITOR_PINNED_AUTO;
+                    currentUserPins = JSON.parse(sessionStorage.getItem(visitorKey) || '[]');
+                }
+                
+                const index = currentUserPins.indexOf(itemId);
+                let source = '';
+                
                 if (isAdminMode) source = '👑 ';
                 else if (isMemberMode) source = '👤 ';
                 else source = '👋 ';
                 
                 if (index === -1) {
-                    pinnedList.push(itemId);
+                    currentUserPins.push(itemId);
                     showToast(`${source} ${itemName} épinglé`);
                 } else {
-                    pinnedList.splice(index, 1);
+                    currentUserPins.splice(index, 1);
                     showToast(`${source} ${itemName} désépinglé`);
                 }
                 
-                setPinnedItems(type, pinnedList);
+                setUserPinnedItems(type, currentUserPins);
                 
                 // Re-render
                 if (type === 'fournisseur') {
@@ -656,26 +683,24 @@
                 for (const item of items) {
                     const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
                     if (pinnedList.includes(itemId)) {
-                        pinnedItems.push({ ...item, _pinnedId: itemId });
+                        pinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: isAdminPinned(item, type) });
                     } else {
-                        unpinnedItems.push({ ...item, _pinnedId: itemId });
+                        unpinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: false });
                     }
                 }
                 
-                return [...pinnedItems, ...unpinnedItems];
+                // Trier les pins admin en premier
+                const adminPinnedItems = pinnedItems.filter(item => item._isAdminPinned);
+                const userPinnedItems = pinnedItems.filter(item => !item._isAdminPinned);
+                
+                return [...adminPinnedItems, ...userPinnedItems, ...unpinnedItems];
             }
             
-            // Vérifier si un élément est épinglé
+            // Vérifier si un élément est épinglé (par admin ou utilisateur)
             function isItemPinned(item, type) {
-                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
                 const pinnedList = getPinnedItems(type);
+                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
                 return pinnedList.includes(itemId);
-            }
-            
-            // Nettoyer les données visiteur au chargement (sessionStorage est déjà nettoyé à la fermeture)
-            function clearVisitorPins() {
-                // sessionStorage est automatiquement vidé à la fermeture du navigateur
-                // On peut simplement laisser
             }
             
             // Fonction pour mettre à jour les badges des filtres (sans badge circulaire)
@@ -940,8 +965,12 @@
                 }
             };
             
-            function maskPhoneNumber(phone) {
+            function maskPhoneNumber(phone, item) {
                 if (!phone) return null;
+                // Si l'élément est épinglé par l'admin, afficher le numéro complet pour tout le monde
+                if (item && isAdminPinned(item, item._type)) {
+                    return phone;
+                }
                 if (isAdminMode) return phone;
                 if (isMemberMode && currentMemberItem && phoneMatches(phone, currentMemberItem.phone)) return phone;
                 if (phone.length >= 8) {
@@ -1108,11 +1137,13 @@
             function createAutomaticienCard(person) {
                 let buttons = [];
                 let whatsappUrl = '#';
-                const maskedPhone = maskPhoneNumber(person.phone);
-                const hasPhone = person.phone && person.phone !== 'null';
                 const isMember = isCurrentMember(person);
                 const isPinned = isItemPinned(person, 'expert');
-                const showFullAccess = isAdminMode || isMember;
+                const isAdminPinnedItem = isAdminPinned(person, 'expert');
+                const showFullAccess = isAdminMode || isMember || isAdminPinnedItem;
+                
+                const maskedPhone = maskPhoneNumber(person.phone, { _type: 'expert', ...person });
+                const hasPhone = person.phone && person.phone !== 'null';
                 
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
                 const pinButton = `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>`;
@@ -1153,7 +1184,7 @@
                 const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant que membre pour voir le numéro</div>` : '';
                 const memberBadgeHtml = isMember ? `<span class="member-badge-card"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
-                const pinnedBadgeHtml = isPinned ? `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>` : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 
                 return `
                     <div class="order-card ${isMember ? 'member-highlight' : ''} ${isPinned ? 'pinned' : ''}">
@@ -1180,11 +1211,13 @@
             function createFournisseurCard(supplier) {
                 let buttons = [];
                 let whatsappUrl = '#';
-                const maskedPhone = maskPhoneNumber(supplier.phone);
-                const hasPhone = supplier.phone && supplier.phone !== 'null';
                 const isMember = isCurrentMember(supplier);
                 const isPinned = isItemPinned(supplier, 'fournisseur');
-                const showFullAccess = isAdminMode || isMember;
+                const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
+                const showFullAccess = isAdminMode || isMember || isAdminPinnedItem;
+                
+                const maskedPhone = maskPhoneNumber(supplier.phone, { _type: 'fournisseur', ...supplier });
+                const hasPhone = supplier.phone && supplier.phone !== 'null';
                 
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
                 const pinButton = `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>`;
@@ -1225,7 +1258,7 @@
                 const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Connectez-vous en tant que membre pour voir le numéro</div>` : '';
                 const memberBadgeHtml = isMember ? `<span class="member-badge-card"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
-                const pinnedBadgeHtml = isPinned ? `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>` : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 
                 return `
                     <div class="order-card ${isMember ? 'member-highlight' : ''} ${isPinned ? 'pinned' : ''}">
