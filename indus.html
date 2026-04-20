@@ -80,10 +80,10 @@
             background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
         }
 
-        /* ========== TASKBAR ========== */
+        /* ========== TASKBAR (EN HAUT) ========== */
         .taskbar {
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
             width: 100%;
             height: 48px;
@@ -94,7 +94,7 @@
             justify-content: space-between;
             padding: 0 12px;
             z-index: 1100;
-            border-top: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--win-border);
         }
 
         body.light-mode .taskbar {
@@ -119,29 +119,19 @@
         .start-btn i { font-size: 1.2rem; }
         .start-btn span { font-size: 0.85rem; font-weight: 500; }
 
-        /* Couleurs du bouton Démarrer selon le mode */
         body.admin-mode .start-btn { color: var(--win-orange); }
         body.subscriber-mode .start-btn { color: var(--win-green); }
         body:not(.admin-mode):not(.subscriber-mode) .start-btn { color: var(--win-text); }
 
-        .taskbar-icons { display: flex; gap: 4px; }
-        .taskbar-icon {
-            background: transparent;
-            border: none;
-            color: var(--win-text);
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        .taskbar-icon:hover { background: var(--win-hover); }
         .taskbar-time { font-size: 0.75rem; color: var(--win-text); padding: 4px 8px; border-radius: 4px; }
+
+        /* Ajustement du main à cause de la taskbar en haut */
+        main { padding-top: 60px; padding-bottom: 20px; }
 
         /* ========== START MENU ========== */
         .start-menu {
             position: fixed;
-            bottom: 52px;
+            top: 52px;
             left: 12px;
             width: 380px;
             max-width: calc(100% - 24px);
@@ -149,7 +139,7 @@
             backdrop-filter: blur(30px);
             border-radius: 8px;
             z-index: 1050;
-            transform: translateY(20px);
+            transform: translateY(-20px);
             opacity: 0;
             visibility: hidden;
             transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
@@ -209,8 +199,6 @@
         body.subscriber-mode #startAdminBtn { color: var(--win-green); }
 
         /* ========== MAIN CONTENT ========== */
-        main { padding-bottom: 60px; padding-top: 20px; }
-
         .window-card {
             background: var(--win-card-bg);
             backdrop-filter: blur(10px);
@@ -344,7 +332,7 @@
         }
         .filter-btn:hover, .filter-btn.active-filter { background: var(--win-blue); color: white; border-color: var(--win-blue); }
 
-        /* ========== SECTION À LA UNE (Carrousel horizontal) ========== */
+        /* ========== SECTION À LA UNE ========== */
         .featured-section {
             background: var(--win-acrylic);
             border: 1px solid var(--win-border);
@@ -713,18 +701,12 @@
 <body>
     <div class="wallpaper"></div>
 
-    <!-- Windows 10 Taskbar -->
+    <!-- Windows 10 Taskbar (en haut) -->
     <div class="taskbar">
         <button class="start-btn" id="startBtn">
             <i class="fab fa-windows"></i>
             <span>Démarrer</span>
         </button>
-        <div class="taskbar-icons">
-            <button class="taskbar-icon" onclick="showSection('database')"><i class="fas fa-database"></i></button>
-            <button class="taskbar-icon" onclick="showSection('about')"><i class="fas fa-building"></i></button>
-            <button class="taskbar-icon" onclick="showSection('join')"><i class="fas fa-user-plus"></i></button>
-            <button class="taskbar-icon" onclick="showSection('suggestions')"><i class="fas fa-comment-dots"></i></button>
-        </div>
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
 
@@ -738,10 +720,12 @@
             </div>
         </div>
         <div class="start-menu-items">
-            <button class="start-menu-item" onclick="showSection('database'); closeStartMenu();"><i class="fas fa-database"></i> Base de données</button>
-            <button class="start-menu-item" onclick="showSection('about'); closeStartMenu();"><i class="fas fa-building"></i> À Propos</button>
-            <button class="start-menu-item" onclick="showSection('join'); closeStartMenu();"><i class="fas fa-user-plus"></i> Rejoindre</button>
-            <button class="start-menu-item" onclick="showSection('suggestions'); closeStartMenu();"><i class="fas fa-comment-dots"></i> Suggestions</button>
+            <!-- Accueil - Affiche la section principale (avec les tabs) -->
+            <button class="start-menu-item" onclick="showMainSection(); closeStartMenu();"><i class="fas fa-home"></i> Accueil</button>
+            <!-- Rejoindre -->
+            <button class="start-menu-item" onclick="showJoinSection(); closeStartMenu();"><i class="fas fa-user-plus"></i> Rejoindre</button>
+            <!-- Suggestions -->
+            <button class="start-menu-item" onclick="showSuggestionsSection(); closeStartMenu();"><i class="fas fa-comment-dots"></i> Suggestions</button>
             <div class="start-divider"></div>
             <button class="start-menu-item" id="startSubscribeBtn" onclick="openSubscribeModal(); closeStartMenu();"><i class="fas fa-user-plus"></i> <span id="subscribeText">S'abonner</span></button>
             <button class="start-menu-item" id="startAdminBtn" onclick="toggleAdminMode(); closeStartMenu();"><i class="fas fa-key"></i> <span id="adminModeText">Mode Admin</span></button>
@@ -752,26 +736,100 @@
 
     <main>
         <div class="about-container">
-            <!-- SECTION BASE DE DONNÉES -->
-            <div id="databaseSection" class="section-container active-section">
+            <!-- SECTION PRINCIPALE (ACCUEIL) AVEC TABS -->
+            <div id="mainSection" class="section-container active-section">
                 <div class="window-card">
                     <div class="window-header">
-                        <i class="fas fa-database"></i>
-                        <h2>Base de données Industrielle</h2>
+                        <i class="fas fa-home"></i>
+                        <h2>Plateforme Industrielle Maroc</h2>
                         <div class="window-controls"><button class="win-btn"><i class="fas fa-minus"></i></button><button class="win-btn"><i class="fas fa-window-maximize"></i></button><button class="win-btn"><i class="fas fa-times"></i></button></div>
                     </div>
                     <div class="window-content">
+                        <!-- Tabs principaux -->
                         <div class="tabs-container">
-                            <button class="tab-btn active" data-tab="fournisseursTab" onclick="switchTab('fournisseursTab')">
-                                <i class="fas fa-industry"></i> Fournisseurs Industriels
+                            <button class="tab-btn active" data-main-tab="aboutMainTab" onclick="switchMainTab('aboutMainTab')">
+                                <i class="fas fa-building"></i> À Propos
                             </button>
-                            <button class="tab-btn" data-tab="automaticiensTab" onclick="switchTab('automaticiensTab')">
-                                <i class="fas fa-microchip"></i> Experts en Automatisme
+                            <button class="tab-btn" data-main-tab="fournisseursMainTab" onclick="switchMainTab('fournisseursMainTab')">
+                                <i class="fas fa-industry"></i> Fournisseurs
+                            </button>
+                            <button class="tab-btn" data-main-tab="automaticiensMainTab" onclick="switchMainTab('automaticiensMainTab')">
+                                <i class="fas fa-microchip"></i> Experts
                             </button>
                         </div>
 
+                        <!-- Tab À Propos -->
+                        <div id="aboutMainTab" class="main-tab-content active-tab">
+                            <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
+                                <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
+                            </div>
+
+                            <div class="window-card" style="margin: 0 0 1rem 0;">
+                                <div class="window-header"><i class="fas fa-chart-line"></i><h2>La Plateforme en Chiffres</h2></div>
+                                <div class="window-content">
+                                    <div class="stats-grid">
+                                        <div class="live-tile" onclick="switchToExpertsTab()"><div class="tile-number" id="statAutomaticiens">0</div><div class="tile-label">Experts</div></div>
+                                        <div class="live-tile" onclick="switchToFournisseursTab()"><div class="tile-number" id="statFournisseurs">0</div><div class="tile-label">Fournisseurs</div></div>
+                                        <div class="live-tile" onclick="scrollToClients()"><div class="tile-number" id="statClients">28700</div><div class="tile-label">Clients</div></div>
+                                        <div class="live-tile" onclick="scrollToExperience()"><div class="tile-number" id="statExperience">20</div><div class="tile-label">Années</div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="window-card" style="margin: 0 0 1rem 0;">
+                                <div class="window-header"><i class="fas fa-cogs"></i><h2>Nos Domaines d'Expertise</h2></div>
+                                <div class="window-content">
+                                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;">
+                                        <button class="join-btn" style="border-color: var(--win-border);">🔌 Électricité Industrielle</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">🤖 Automatisme & PLC</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">🛠️ Équipements Industriels</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">⚡ Pièces de Rechange</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">📊 Instruments de Mesure</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">🔧 Maintenance Industrielle</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">📡 Contrôle et Mesure</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">🚚 Import d'Équipements</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">💡 Solutions Énergétiques</button>
+                                        <button class="join-btn" style="border-color: var(--win-border);">🏭 Lignes de Production</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="window-card" style="margin: 0 0 1rem 0;">
+                                <div class="window-header"><i class="fab fa-facebook"></i><h2>Nos Pages Facebook</h2></div>
+                                <div class="window-content">
+                                    <div class="links-grid">
+                                        <div class="link-tile"><h3>Tech Industrie Maroc</h3><div class="stat">9,402+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Tech Industrie Maroc', 'https://www.facebook.com/share/1G4zgP99qm/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>Électricité Industrielle Du Maroc</h3><div class="stat">1,565+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Électricité Industrielle Du Maroc', 'https://www.facebook.com/share/1Dg363LV39/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="window-card" style="margin: 0 0 1rem 0;">
+                                <div class="window-header"><i class="fas fa-users"></i><h2>Nos Groupes Facebook</h2></div>
+                                <div class="window-content">
+                                    <div class="links-grid">
+                                        <div class="link-tile"><h3>Les Fournisseurs Industrielle Du Maroc</h3><div class="stat">29,000+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Les Fournisseurs Industrielle Du Maroc', 'https://www.facebook.com/share/g/176XJV7sJE/', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>Vente de PLC et Équipements d'Automatisme</h3><div class="stat">5,900+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Vente de PLC et Équipements d'Automatisme', 'https://www.facebook.com/share/g/1EaoJJuEqd/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="window-card" style="margin: 0;">
+                                <div class="window-header"><i class="fab fa-whatsapp"></i><h2>Nos Groupes WhatsApp</h2></div>
+                                <div class="window-content">
+                                    <div class="links-grid">
+                                        <div class="link-tile"><h3>🇲🇦 Stations de Dessalement Maroc</h3><div class="stat">120+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Stations de Dessalement Maroc', 'https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>🇲🇦 Comptables & Gestionnaires Maroc</h3><div class="stat">200+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Comptables & Gestionnaires Maroc', 'https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>🇲🇦 Fournisseurs Industrielle Du Maroc</h3><div class="stat">250+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Fournisseurs Industrielle Du Maroc', 'https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>🇲🇦 Énergie Solaire Maroc</h3><div class="stat">750+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Énergie Solaire Maroc', 'https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                        <div class="link-tile"><h3>🇲🇦 Génie Électrique Industriel Maroc</h3><div class="stat">420+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Génie Électrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Tab Fournisseurs -->
-                        <div id="fournisseursTab" class="tab-content active-tab">
+                        <div id="fournisseursMainTab" class="main-tab-content">
                             <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
                                 <p>Les plus grands fournisseurs d'équipements et pièces industrielles au Maroc. Qualité garantie et meilleurs prix.</p>
                             </div>
@@ -794,7 +852,7 @@
                         </div>
 
                         <!-- Tab Experts -->
-                        <div id="automaticiensTab" class="tab-content">
+                        <div id="automaticiensMainTab" class="main-tab-content">
                             <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
                                 <p>Réseau d'ingénieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
                             </div>
@@ -815,88 +873,6 @@
                             </div>
                             <div class="items-grid" id="automaticiensGrid"><div class="win-loader-spinner" style="margin: 2rem auto;"></div></div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECTION À PROPOS -->
-            <div id="aboutSection" class="section-container">
-                <div class="window-card">
-                    <div class="window-header">
-                        <i class="fas fa-building"></i>
-                        <h2>À Propos</h2>
-                        <div class="window-controls"><button class="win-btn"><i class="fas fa-minus"></i></button><button class="win-btn"><i class="fas fa-window-maximize"></i></button><button class="win-btn"><i class="fas fa-times"></i></button></div>
-                    </div>
-                    <div class="window-content"><p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc. Nous facilitons les processus d'approvisionnement et faisons gagner du temps et des efforts aux entreprises, entrepreneurs et particuliers, tout en garantissant qualité et meilleurs prix.</p></div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fas fa-chart-line"></i><h2>La Plateforme en Chiffres</h2></div>
-                    <div class="window-content">
-                        <div class="stats-grid">
-                            <div class="live-tile" onclick="switchTabAndNavigate('automaticiensTab', 'experts')"><div class="tile-number" id="statAutomaticiens">0</div><div class="tile-label">Experts</div></div>
-                            <div class="live-tile" onclick="switchTabAndNavigate('fournisseursTab', 'fournisseurs')"><div class="tile-number" id="statFournisseurs">0</div><div class="tile-label">Fournisseurs</div></div>
-                            <div class="live-tile" onclick="navigateToClients()"><div class="tile-number" id="statClients">28700</div><div class="tile-label">Clients</div></div>
-                            <div class="live-tile" onclick="navigateToExperience()"><div class="tile-number" id="statExperience">20</div><div class="tile-label">Années</div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fas fa-cogs"></i><h2>Nos Domaines d'Expertise</h2></div>
-                    <div class="window-content">
-                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;">
-                            <button class="join-btn" style="border-color: var(--win-border);">🔌 Électricité Industrielle</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">🤖 Automatisme & PLC</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">🛠️ Équipements Industriels</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">⚡ Pièces de Rechange</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">📊 Instruments de Mesure</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">🔧 Maintenance Industrielle</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">📡 Contrôle et Mesure</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">🚚 Import d'Équipements</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">💡 Solutions Énergétiques</button>
-                            <button class="join-btn" style="border-color: var(--win-border);">🏭 Lignes de Production</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fab fa-facebook"></i><h2>Nos Pages Facebook</h2></div>
-                    <div class="window-content">
-                        <div class="links-grid">
-                            <div class="link-tile"><h3>Tech Industrie Maroc</h3><div class="stat">9,402+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Tech Industrie Maroc', 'https://www.facebook.com/share/1G4zgP99qm/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>Électricité Industrielle Du Maroc</h3><div class="stat">1,565+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Électricité Industrielle Du Maroc', 'https://www.facebook.com/share/1Dg363LV39/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fas fa-users"></i><h2>Nos Groupes Facebook</h2></div>
-                    <div class="window-content">
-                        <div class="links-grid">
-                            <div class="link-tile"><h3>Les Fournisseurs Industrielle Du Maroc</h3><div class="stat">29,000+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Les Fournisseurs Industrielle Du Maroc', 'https://www.facebook.com/share/g/176XJV7sJE/', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>Vente de PLC et Équipements d'Automatisme</h3><div class="stat">5,900+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Vente de PLC et Équipements d'Automatisme', 'https://www.facebook.com/share/g/1EaoJJuEqd/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fab fa-whatsapp"></i><h2>Nos Groupes WhatsApp</h2></div>
-                    <div class="window-content">
-                        <div class="links-grid">
-                            <div class="link-tile"><h3>🇲🇦 Stations de Dessalement Maroc</h3><div class="stat">120+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Stations de Dessalement Maroc', 'https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>🇲🇦 Comptables & Gestionnaires Maroc</h3><div class="stat">200+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Comptables & Gestionnaires Maroc', 'https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>🇲🇦 Fournisseurs Industrielle Du Maroc</h3><div class="stat">250+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Fournisseurs Industrielle Du Maroc', 'https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>🇲🇦 Énergie Solaire Maroc</h3><div class="stat">750+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Énergie Solaire Maroc', 'https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                            <div class="link-tile"><h3>🇲🇦 Génie Électrique Industriel Maroc</h3><div class="stat">420+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Génie Électrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="window-card">
-                    <div class="window-header"><i class="fas fa-phone-alt"></i><h2>Contactez-nous</h2></div>
-                    <div class="window-content">
-                        <div class="contact-window"><p>Pour toute question ou assistance rapide</p><div class="contact-number"><a href="https://wa.me/212690292010" target="_blank">📱 +212 690-292010</a></div><p>Service disponible : Dimanche à Jeudi | 09:00 – 18:00</p></div>
                     </div>
                 </div>
             </div>
@@ -991,12 +967,11 @@
             let selectedAutoVille = null;
             let selectedFourVille = null;
             let selectedMessageType = 'اقتراح';
-            let currentSection = 'database';
+            let currentMainTab = 'aboutMainTab';
             let isAdminMode = false;
             let isSubscriberMode = false;
             let currentSubscriberPhone = null;
             let currentSubscriberMember = null;
-            let currentTab = 'fournisseursTab';
             
             let automaticiensData = [];
             let fournisseursData = [];
@@ -1009,7 +984,7 @@
                 ADMIN_MODE: 'adminMode',
                 SUBSCRIBER_PHONE: 'subscriberPhone',
                 SAVED_PASSWORD: 'savedAdminPassword',
-                CURRENT_TAB: 'currentTab'
+                CURRENT_MAIN_TAB: 'currentMainTab'
             };
             
             // ========== UTILITIES ==========
@@ -1082,29 +1057,80 @@
             
             function makeSeparator() { return '➖➖➖➖➖➖➖➖➖➖➖➖'; }
             
-            // ========== TAB MANAGEMENT ==========
-            function switchTab(tabId) {
-                currentTab = tabId;
-                localStorage.setItem(STORAGE_KEYS.CURRENT_TAB, tabId);
+            // ========== SECTION NAVIGATION ==========
+            function showMainSection() {
+                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
+                document.getElementById('mainSection').classList.add('active-section');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            function showJoinSection() {
+                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
+                document.getElementById('joinSection').classList.add('active-section');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            function showSuggestionsSection() {
+                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
+                document.getElementById('suggestionsSection').classList.add('active-section');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            
+            // ========== MAIN TAB MANAGEMENT ==========
+            function switchMainTab(tabId) {
+                currentMainTab = tabId;
+                localStorage.setItem(STORAGE_KEYS.CURRENT_MAIN_TAB, tabId);
                 
-                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+                document.querySelectorAll('[data-main-tab]').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-main-tab="${tabId}"]`).classList.add('active');
                 
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active-tab'));
+                document.querySelectorAll('.main-tab-content').forEach(content => content.classList.remove('active-tab'));
                 document.getElementById(tabId).classList.add('active-tab');
             }
             
-            function switchTabAndNavigate(tabId, type) {
-                switchTab(tabId);
-                showSection('database');
-                if (type === 'experts') showToast('👨‍🔧 Navigation vers les Experts');
-                else showToast('🏭 Navigation vers les Fournisseurs');
+            function switchToFournisseursTab() {
+                switchMainTab('fournisseursMainTab');
+                showMainSection();
+                showToast('🏭 Navigation vers les Fournisseurs');
             }
             
-            function loadSavedTab() {
-                const savedTab = localStorage.getItem(STORAGE_KEYS.CURRENT_TAB);
-                if (savedTab && (savedTab === 'fournisseursTab' || savedTab === 'automaticiensTab')) switchTab(savedTab);
-                else switchTab('fournisseursTab');
+            function switchToExpertsTab() {
+                switchMainTab('automaticiensMainTab');
+                showMainSection();
+                showToast('👨‍🔧 Navigation vers les Experts');
+            }
+            
+            function scrollToClients() {
+                switchMainTab('aboutMainTab');
+                showMainSection();
+                setTimeout(() => {
+                    const groupesFacebook = document.querySelector('#aboutMainTab .links-grid');
+                    if (groupesFacebook) {
+                        groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('📱 Groupes Facebook');
+                    }
+                }, 100);
+            }
+            
+            function scrollToExperience() {
+                switchMainTab('aboutMainTab');
+                showMainSection();
+                setTimeout(() => {
+                    const pagesFacebook = document.querySelector('#aboutMainTab .links-grid');
+                    if (pagesFacebook) {
+                        pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        showToast('📘 Pages Facebook');
+                    }
+                }, 100);
+            }
+            
+            function loadSavedMainTab() {
+                const savedTab = localStorage.getItem(STORAGE_KEYS.CURRENT_MAIN_TAB);
+                if (savedTab && (savedTab === 'aboutMainTab' || savedTab === 'fournisseursMainTab' || savedTab === 'automaticiensMainTab')) {
+                    switchMainTab(savedTab);
+                } else {
+                    switchMainTab('aboutMainTab');
+                }
             }
             
             // ========== PINNED SYSTEM ==========
@@ -1176,7 +1202,6 @@
             // ========== ACCESS CONTROL ==========
             function maskPhoneNumber(phone, item) {
                 if (!phone) return null;
-                // Les éléments épinglés par l'admin montrent toujours le numéro complet
                 if (item && isAdminPinned(item, item._type)) return phone;
                 if (isSubscriberMode) return phone;
                 if (isAdminMode) return phone;
@@ -1188,7 +1213,7 @@
                 return '*******';
             }
             
-            // ========== RENDER FEATURED (À la une) ==========
+            // ========== RENDER FEATURED ==========
             function renderFeaturedItems(type, adminPinnedItems) {
                 if (adminPinnedItems.length === 0) {
                     const featuredSection = document.getElementById(type === 'fournisseur' ? 'fourFeaturedSection' : 'autoFeaturedSection');
@@ -1242,7 +1267,6 @@
                 const hasPhone = person.phone && person.phone !== 'null';
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
-                // Pour les éléments épinglés par l'admin, toujours afficher toutes les informations
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const maskedPhone = maskPhoneNumber(person.phone, { _type: 'expert', ...person });
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
@@ -1666,7 +1690,7 @@
                     closeModal('subscribeModal');
                 } else {
                     closeModal('subscribeModal');
-                    showSection('join');
+                    showJoinSection();
                     showToast('📝 Numéro non trouvé. Veuillez vous inscrire dans "Rejoignez notre réseau"');
                 }
             }
@@ -1684,7 +1708,7 @@
                 renderAutomaticiens();
                 renderFournisseurs();
                 showToast('👋 Déconnexion');
-                showSection('database');
+                showMainSection();
             }
             
             function loadSubscriberMode() {
@@ -1733,7 +1757,7 @@
                 renderAutomaticiens();
                 renderFournisseurs();
                 showToast('👋 Mode visiteur');
-                showSection('database');
+                showMainSection();
             }
             
             function toggleAdminMode() {
@@ -1902,25 +1926,6 @@
             function applyAutoFilter(type) { if (type === 'all') { autoFilterType = 'all'; selectedAutoDomaine = null; renderAutomaticiens(); updateFilterBadges(); closeModal('autoFilterModal'); } }
             function applyFourFilter(type) { if (type === 'all') { fourFilterType = 'all'; selectedFourDomaine = null; renderFournisseurs(); updateFilterBadges(); closeModal('fourFilterModal'); } }
             
-            // ========== NAVIGATION ==========
-            function navigateToClients() { showSection('about'); document.getElementById('nosGroupesFacebook')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); showToast('📱 Groupes FB'); }
-            function navigateToExperience() { showSection('about'); document.getElementById('nosPagesFacebook')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); showToast('📘 Pages FB'); }
-            
-            function showSection(sectionId) {
-                localStorage.setItem('currentSection', sectionId);
-                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
-                const target = document.getElementById(`${sectionId}Section`);
-                if (target) target.classList.add('active-section');
-                closeStartMenu();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            
-            function loadSavedSection() {
-                const saved = localStorage.getItem('currentSection');
-                if (saved && ['database', 'about', 'join', 'suggestions'].includes(saved)) showSection(saved);
-                else showSection('database');
-            }
-            
             // ========== START MENU ==========
             function toggleStartMenu() { document.getElementById('startMenu').classList.toggle('open'); }
             function closeStartMenu() { document.getElementById('startMenu').classList.remove('open'); }
@@ -2014,8 +2019,8 @@
                 renderAutomaticiens();
                 renderFournisseurs();
                 updateFilterBadges();
-                loadSavedSection();
-                loadSavedTab();
+                showMainSection();
+                loadSavedMainTab();
                 
                 setTimeout(() => {
                     const loader = document.getElementById('loadingScreen');
@@ -2043,7 +2048,6 @@
             window.verifyAdminPassword = verifyAdminPassword;
             window.openWaContactModal = openWaContactModal;
             window.confirmWaContact = confirmWaContact;
-            window.showSection = showSection;
             window.toggleTheme = toggleTheme;
             window.openAutoFilterModal = openAutoFilterModal;
             window.openFourFilterModal = openFourFilterModal;
@@ -2053,12 +2057,16 @@
             window.openFourVilleModal = openFourVilleModal;
             window.applyAutoFilter = applyAutoFilter;
             window.applyFourFilter = applyFourFilter;
-            window.navigateToClients = navigateToClients;
-            window.navigateToExperience = navigateToExperience;
             window.selectMessageType = selectMessageType;
             window.closeModal = closeModal;
-            window.switchTab = switchTab;
-            window.switchTabAndNavigate = switchTabAndNavigate;
+            window.switchMainTab = switchMainTab;
+            window.switchToFournisseursTab = switchToFournisseursTab;
+            window.switchToExpertsTab = switchToExpertsTab;
+            window.scrollToClients = scrollToClients;
+            window.scrollToExperience = scrollToExperience;
+            window.showMainSection = showMainSection;
+            window.showJoinSection = showJoinSection;
+            window.showSuggestionsSection = showSuggestionsSection;
             
             init();
         })();
