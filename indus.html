@@ -440,20 +440,12 @@
     <div class="confirm-modal-overlay" id="subscribeModal">
         <div class="confirm-modal" style="text-align:right;">
             <h3><i class="fas fa-user-plus"></i> Abonnement</h3>
-            <p style="margin-bottom: 1rem;">Entrez votre numéro de téléphone pour vérifier votre compte</p>
+            <p style="margin-bottom: 1rem;">Entrez votre numéro de téléphone pour activer votre abonnement</p>
             <input type="tel" id="subscribePhoneInput" class="phone-input" placeholder="Ex: 0612345678 ou +212612345678" autocomplete="off">
             <div class="info-text"><i class="fas fa-info-circle"></i> Si votre numéro n'existe pas, vous serez redirigé vers le formulaire d'inscription</div>
             <div class="confirm-modal-btns" style="margin-top: 1rem;">
-                <button class="btn-confirm-send" id="checkPhoneBtn" onclick="checkPhoneAndSubscribe()">Vérifier</button>
+                <button class="btn-confirm-send" id="checkPhoneBtn" onclick="checkPhoneAndSubscribe()">S'abonner</button>
                 <button class="btn-confirm-cancel" onclick="closeSubscribeModal()">Annuler</button>
-            </div>
-            <div id="codeVerificationSection" style="display: none; margin-top: 1rem;">
-                <div class="info-text" style="margin-bottom: 0.5rem;"><i class="fas fa-key"></i> Entrez le code d'activation reçu</div>
-                <input type="text" id="verificationCodeInput" class="code-input" placeholder="[1234567890]" maxlength="12" autocomplete="off">
-                <div class="confirm-modal-btns" style="margin-top: 1rem;">
-                    <button class="btn-confirm-send" onclick="verifyActivationCode()">Activer</button>
-                    <button class="btn-confirm-cancel" onclick="closeSubscribeModal()">Annuler</button>
-                </div>
             </div>
         </div>
     </div>
@@ -536,6 +528,7 @@
             
             const ADMIN_PASSWORD = "11111111";
             const ADMIN_WHATSAPP = "212690292010";
+            const TEMP_ACTIVATION_CODE = "123456789"; // Code temporaire pour tous les abonnés
             
             const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
             const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
@@ -563,7 +556,6 @@
             let isAdminMode = false;
             let isSubscriberMode = false;
             let currentSubscriberPhone = null;
-            let pendingActivationPhone = null;
             
             let automaticiensData = [];
             let fournisseursData = [];
@@ -572,6 +564,7 @@
             const STORAGE_KEYS = {
                 ADMIN_PINNED_FOUR: 'adminPinnedFournisseurs',
                 ADMIN_PINNED_AUTO: 'adminPinnedAutomaticiens',
+                ADMIN_MODE: 'adminMode',
                 SUBSCRIBER_PHONE: 'subscriberPhone'
             };
             
@@ -632,17 +625,36 @@
                 return false;
             }
             
-            // Envoyer les informations du membre à l'admin
+            // Envoyer les informations du membre à l'admin (sans code d'activation)
             function sendMemberInfoToAdmin(member) {
-                const message = `📋 *Demande d'abonnement - Connect Industry Maroc*\n\n👤 *Nom:* ${member.data.name}\n📂 *Type:* ${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'}\n📞 *Téléphone:* ${member.data.phone}\n📧 *Email:* ${member.data.email || 'Non renseigné'}\n🌐 *Site web:* ${member.data.web || 'Non renseigné'}\n📍 *Ville:* ${member.data.city}\n\n🔑 Pour activer l'abonnement, envoyez le code suivant à l'utilisateur:\n*[${generateActivationCode()}]*\n\n🌐 Plateforme Industrielle Maroc`;
+                const message = `📋 *Nouvel abonné - Connect Industry Maroc*\n\n👤 *Nom:* ${member.data.name}\n📂 *Type:* ${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'}\n📞 *Téléphone:* ${member.data.phone}\n📧 *Email:* ${member.data.email || 'Non renseigné'}\n🌐 *Site web:* ${member.data.web || 'Non renseigné'}\n📍 *Ville:* ${member.data.city}\n\n✅ Abonnement activé avec le code temporaire: *${TEMP_ACTIVATION_CODE}*\n\n🌐 Plateforme Industrielle Maroc`;
                 
                 window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
-                return message.match(/\[(.*?)\]/)[1];
+                return true;
             }
             
-            // Générer un code d'activation aléatoire
-            function generateActivationCode() {
-                return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+            // Activer l'abonnement
+            function activateSubscriber(phone, memberName) {
+                if (isAdminMode) {
+                    logoutAdmin();
+                }
+                
+                isSubscriberMode = true;
+                currentSubscriberPhone = phone;
+                
+                const subscriberBadge = document.getElementById('subscriberBadge');
+                const subscribeText = document.getElementById('subscribeText');
+                const subscriberNameSpan = document.getElementById('subscriberName');
+                
+                if (subscriberBadge) subscriberBadge.style.display = 'flex';
+                if (subscriberNameSpan && memberName) subscriberNameSpan.textContent = memberName.substring(0, 20);
+                if (subscribeText) subscribeText.innerHTML = '<i class="fas fa-sign-out-alt"></i> Quitter';
+                document.body.classList.add('subscriber-mode');
+                
+                localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_PHONE, phone);
+                
+                renderAutomaticiens();
+                renderFournisseurs();
             }
             
             // Vérifier le téléphone et gérer l'abonnement
@@ -664,65 +676,17 @@
                 const member = findMemberByPhone(normalizedPhone);
                 
                 if (member) {
-                    // Numéro trouvé - envoyer les infos à l'admin
-                    pendingActivationPhone = normalizedPhone;
-                    const activationCode = sendMemberInfoToAdmin(member);
-                    pendingActivationCode = activationCode;
-                    
-                    // Afficher la section de vérification du code
-                    document.getElementById('codeVerificationSection').style.display = 'block';
-                    document.getElementById('checkPhoneBtn').style.display = 'none';
-                    showToast('📱 Informations envoyées à l\'administrateur. Vous recevrez un code d\'activation.');
+                    // Numéro trouvé - envoyer les infos à l'admin et activer
+                    sendMemberInfoToAdmin(member);
+                    activateSubscriber(normalizedPhone, member.data.name);
+                    closeSubscribeModal();
+                    showToast('✅ Abonnement activé! Vous pouvez maintenant voir tous les contacts.');
                 } else {
                     // Numéro non trouvé - rediriger vers le formulaire d'inscription
                     closeSubscribeModal();
                     showSection('join');
                     showToast('📝 Numéro non trouvé. Veuillez vous inscrire dans "Rejoignez notre réseau"');
                 }
-            }
-            
-            let pendingActivationCode = null;
-            
-            // Vérifier le code d'activation
-            function verifyActivationCode() {
-                const codeInput = document.getElementById('verificationCodeInput');
-                const code = codeInput.value.trim();
-                
-                if (!code) {
-                    showToast('❌ Veuillez entrer le code d\'activation');
-                    return;
-                }
-                
-                if (code === pendingActivationCode) {
-                    // Activer l'abonnement
-                    activateSubscriber(pendingActivationPhone);
-                    closeSubscribeModal();
-                    showToast('✅ Abonnement activé avec succès!');
-                } else {
-                    showToast('❌ Code incorrect. Veuillez réessayer.');
-                }
-            }
-            
-            // Activer le mode abonné
-            function activateSubscriber(phone) {
-                if (isAdminMode) {
-                    logoutAdmin();
-                }
-                
-                isSubscriberMode = true;
-                currentSubscriberPhone = phone;
-                
-                const subscriberBadge = document.getElementById('subscriberBadge');
-                const subscribeText = document.getElementById('subscribeText');
-                
-                if (subscriberBadge) subscriberBadge.style.display = 'flex';
-                if (subscribeText) subscribeText.innerHTML = '<i class="fas fa-sign-out-alt"></i> Quitter';
-                document.body.classList.add('subscriber-mode');
-                
-                localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_PHONE, phone);
-                
-                renderAutomaticiens();
-                renderFournisseurs();
             }
             
             // Déconnexion de l'abonné
@@ -750,7 +714,7 @@
                 if (savedPhone) {
                     const member = findMemberByPhone(savedPhone);
                     if (member) {
-                        activateSubscriber(savedPhone);
+                        activateSubscriber(savedPhone, member.data.name);
                     } else {
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
                     }
@@ -1294,7 +1258,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                     }
                     
                     isAdminMode = true;
-                    localStorage.setItem('adminMode', 'true');
+                    localStorage.setItem(STORAGE_KEYS.ADMIN_MODE, 'true');
                     document.body.classList.add('admin-mode');
                     updateAdminUI(true);
                     renderAutomaticiens();
@@ -1315,7 +1279,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             
             function logoutAdmin() {
                 isAdminMode = false;
-                localStorage.removeItem('adminMode');
+                localStorage.removeItem(STORAGE_KEYS.ADMIN_MODE);
                 document.body.classList.remove('admin-mode');
                 updateAdminUI(false);
                 renderAutomaticiens();
@@ -1336,7 +1300,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             }
             
             function loadAdminMode() {
-                const savedAdmin = localStorage.getItem('adminMode');
+                const savedAdmin = localStorage.getItem(STORAGE_KEYS.ADMIN_MODE);
                 if (savedAdmin === 'true') {
                     isAdminMode = true;
                     document.body.classList.add('admin-mode');
@@ -1351,21 +1315,15 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 } else {
                     // Réinitialiser le modal
                     document.getElementById('subscribePhoneInput').value = '';
-                    document.getElementById('verificationCodeInput').value = '';
-                    document.getElementById('codeVerificationSection').style.display = 'none';
-                    document.getElementById('checkPhoneBtn').style.display = 'block';
                     document.getElementById('subscribeModal').classList.add('show');
                 }
             };
             
             function closeSubscribeModal() {
                 document.getElementById('subscribeModal').classList.remove('show');
-                pendingActivationPhone = null;
-                pendingActivationCode = null;
             }
             window.closeSubscribeModal = closeSubscribeModal;
             window.checkPhoneAndSubscribe = checkPhoneAndSubscribe;
-            window.verifyActivationCode = verifyActivationCode;
             
             function scrollToTop() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1783,7 +1741,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                     case 'automaticiens': targetSection = document.getElementById('automaticiensSection'); break;
                     case 'join': targetSection = document.getElementById('joinSection'); break;
                     case 'suggestions': targetSection = document.getElementById('suggestionsSection'); break;
-                    default: targetSection = document.getElementById('fournisseursSection');
+                    default: targetSection = document.getElementById('aboutSection');
                 }
                 if (targetSection) targetSection.classList.add('active-section');
                 document.querySelectorAll('.offcanvas-btn').forEach(btn => btn.classList.remove('active'));
