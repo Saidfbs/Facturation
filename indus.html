@@ -440,18 +440,18 @@
     <div class="confirm-modal-overlay" id="subscribeModal">
         <div class="confirm-modal" style="text-align:right;">
             <h3><i class="fas fa-user-plus"></i> Abonnement</h3>
-            <p style="margin-bottom: 1rem;">Entrez votre numéro de téléphone pour recevoir votre code d'accès</p>
+            <p style="margin-bottom: 1rem;">Entrez votre numéro de téléphone pour vérifier votre compte</p>
             <input type="tel" id="subscribePhoneInput" class="phone-input" placeholder="Ex: 0612345678 ou +212612345678" autocomplete="off">
-            <div class="info-text"><i class="fas fa-info-circle"></i> Vous recevrez un code de vérification par WhatsApp</div>
+            <div class="info-text"><i class="fas fa-info-circle"></i> Si votre numéro n'existe pas, vous serez redirigé vers le formulaire d'inscription</div>
             <div class="confirm-modal-btns" style="margin-top: 1rem;">
-                <button class="btn-confirm-send" id="sendCodeBtn" onclick="sendVerificationCode()">Envoyer le code</button>
+                <button class="btn-confirm-send" id="checkPhoneBtn" onclick="checkPhoneAndSubscribe()">Vérifier</button>
                 <button class="btn-confirm-cancel" onclick="closeSubscribeModal()">Annuler</button>
             </div>
             <div id="codeVerificationSection" style="display: none; margin-top: 1rem;">
-                <div class="info-text" style="margin-bottom: 0.5rem;"><i class="fas fa-key"></i> Entrez le code reçu</div>
-                <input type="text" id="verificationCodeInput" class="code-input" placeholder="000000" maxlength="6" autocomplete="off">
+                <div class="info-text" style="margin-bottom: 0.5rem;"><i class="fas fa-key"></i> Entrez le code d'activation reçu</div>
+                <input type="text" id="verificationCodeInput" class="code-input" placeholder="[1234567890]" maxlength="12" autocomplete="off">
                 <div class="confirm-modal-btns" style="margin-top: 1rem;">
-                    <button class="btn-confirm-send" onclick="verifyCode()">Vérifier</button>
+                    <button class="btn-confirm-send" onclick="verifyActivationCode()">Activer</button>
                     <button class="btn-confirm-cancel" onclick="closeSubscribeModal()">Annuler</button>
                 </div>
             </div>
@@ -535,7 +535,7 @@
             'use strict';
             
             const ADMIN_PASSWORD = "11111111";
-            const WHATSAPP_ADMIN_NUMBER = "212690292010";
+            const ADMIN_WHATSAPP = "212690292010";
             
             const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
             const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
@@ -563,8 +563,7 @@
             let isAdminMode = false;
             let isSubscriberMode = false;
             let currentSubscriberPhone = null;
-            let pendingVerificationPhone = null;
-            let generatedCode = null;
+            let pendingActivationPhone = null;
             
             let automaticiensData = [];
             let fournisseursData = [];
@@ -575,11 +574,6 @@
                 ADMIN_PINNED_AUTO: 'adminPinnedAutomaticiens',
                 SUBSCRIBER_PHONE: 'subscriberPhone'
             };
-            
-            // Fonction pour générer un code aléatoire à 6 chiffres
-            function generateVerificationCode() {
-                return Math.floor(100000 + Math.random() * 900000).toString();
-            }
             
             // Fonction pour normaliser le numéro de téléphone
             function normalizePhoneNumber(phone) {
@@ -603,8 +597,56 @@
                 return cleaned;
             }
             
-            // Envoyer le code de vérification via WhatsApp
-            function sendVerificationCode() {
+            // Vérifier si un numéro existe dans la base de données
+            function findMemberByPhone(phone) {
+                const normalizedInput = normalizePhoneNumber(phone);
+                if (!normalizedInput) return null;
+                
+                for (let i = 0; i < fournisseursData.length; i++) {
+                    const item = fournisseursData[i];
+                    if (item.phone && phoneMatches(item.phone, normalizedInput)) {
+                        return { type: 'fournisseur', data: item, index: i };
+                    }
+                }
+                
+                for (let i = 0; i < automaticiensData.length; i++) {
+                    const item = automaticiensData[i];
+                    if (item.phone && phoneMatches(item.phone, normalizedInput)) {
+                        return { type: 'expert', data: item, index: i };
+                    }
+                }
+                
+                return null;
+            }
+            
+            function phoneMatches(phone1, phone2) {
+                if (!phone1 || !phone2) return false;
+                const norm1 = normalizePhoneNumber(phone1);
+                const norm2 = normalizePhoneNumber(phone2);
+                if (norm1 && norm2) return norm1 === norm2;
+                const p1 = phone1.toString().replace(/[^\d]/g, '');
+                const p2 = phone2.toString().replace(/[^\d]/g, '');
+                if (p1.length > 5 && p2.length > 5) {
+                    return p1.includes(p2) || p2.includes(p1);
+                }
+                return false;
+            }
+            
+            // Envoyer les informations du membre à l'admin
+            function sendMemberInfoToAdmin(member) {
+                const message = `📋 *Demande d'abonnement - Connect Industry Maroc*\n\n👤 *Nom:* ${member.data.name}\n📂 *Type:* ${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'}\n📞 *Téléphone:* ${member.data.phone}\n📧 *Email:* ${member.data.email || 'Non renseigné'}\n🌐 *Site web:* ${member.data.web || 'Non renseigné'}\n📍 *Ville:* ${member.data.city}\n\n🔑 Pour activer l'abonnement, envoyez le code suivant à l'utilisateur:\n*[${generateActivationCode()}]*\n\n🌐 Plateforme Industrielle Maroc`;
+                
+                window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
+                return message.match(/\[(.*?)\]/)[1];
+            }
+            
+            // Générer un code d'activation aléatoire
+            function generateActivationCode() {
+                return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+            }
+            
+            // Vérifier le téléphone et gérer l'abonnement
+            function checkPhoneAndSubscribe() {
                 const phoneInput = document.getElementById('subscribePhoneInput');
                 const phone = phoneInput.value.trim();
                 
@@ -619,34 +661,41 @@
                     return;
                 }
                 
-                pendingVerificationPhone = normalizedPhone;
-                generatedCode = generateVerificationCode();
+                const member = findMemberByPhone(normalizedPhone);
                 
-                const message = `🔐 *Code de vérification Connect Industry Maroc*\n\nBonjour,\n\nVotre code d'accès est : *${generatedCode}*\n\nCe code est valable pour une utilisation unique.\n\n🌐 Plateforme Industrielle Maroc - Mise en relation des professionnels et industriels`;
-                
-                // Ouvrir WhatsApp avec le message
-                window.open(`https://wa.me/${normalizedPhone.replace('+', '')}?text=${encodeURIComponent(message)}`, '_blank');
-                
-                // Afficher la section de vérification
-                document.getElementById('codeVerificationSection').style.display = 'block';
-                document.getElementById('sendCodeBtn').style.display = 'none';
-                
-                showToast('📱 Code envoyé par WhatsApp! Vérifiez votre téléphone');
+                if (member) {
+                    // Numéro trouvé - envoyer les infos à l'admin
+                    pendingActivationPhone = normalizedPhone;
+                    const activationCode = sendMemberInfoToAdmin(member);
+                    pendingActivationCode = activationCode;
+                    
+                    // Afficher la section de vérification du code
+                    document.getElementById('codeVerificationSection').style.display = 'block';
+                    document.getElementById('checkPhoneBtn').style.display = 'none';
+                    showToast('📱 Informations envoyées à l\'administrateur. Vous recevrez un code d\'activation.');
+                } else {
+                    // Numéro non trouvé - rediriger vers le formulaire d'inscription
+                    closeSubscribeModal();
+                    showSection('join');
+                    showToast('📝 Numéro non trouvé. Veuillez vous inscrire dans "Rejoignez notre réseau"');
+                }
             }
             
-            // Vérifier le code saisi
-            function verifyCode() {
+            let pendingActivationCode = null;
+            
+            // Vérifier le code d'activation
+            function verifyActivationCode() {
                 const codeInput = document.getElementById('verificationCodeInput');
                 const code = codeInput.value.trim();
                 
                 if (!code) {
-                    showToast('❌ Veuillez entrer le code reçu');
+                    showToast('❌ Veuillez entrer le code d\'activation');
                     return;
                 }
                 
-                if (code === generatedCode) {
-                    // Activation de l'abonnement
-                    activateSubscriber(pendingVerificationPhone);
+                if (code === pendingActivationCode) {
+                    // Activer l'abonnement
+                    activateSubscriber(pendingActivationPhone);
                     closeSubscribeModal();
                     showToast('✅ Abonnement activé avec succès!');
                 } else {
@@ -699,7 +748,12 @@
             function loadSubscriberMode() {
                 const savedPhone = localStorage.getItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
                 if (savedPhone) {
-                    activateSubscriber(savedPhone);
+                    const member = findMemberByPhone(savedPhone);
+                    if (member) {
+                        activateSubscriber(savedPhone);
+                    } else {
+                        localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
+                    }
                 }
             }
             
@@ -814,19 +868,6 @@
                 } else {
                     document.getElementById('filterAutoVilleBtn').classList.remove('active-filter');
                 }
-            }
-            
-            function phoneMatches(phone1, phone2) {
-                if (!phone1 || !phone2) return false;
-                const norm1 = normalizePhoneNumber(phone1);
-                const norm2 = normalizePhoneNumber(phone2);
-                if (norm1 && norm2) return norm1 === norm2;
-                const p1 = phone1.toString().replace(/[^\d]/g, '');
-                const p2 = phone2.toString().replace(/[^\d]/g, '');
-                if (p1.length > 5 && p2.length > 5) {
-                    return p1.includes(p2) || p2.includes(p1);
-                }
-                return false;
             }
             
             function maskPhoneNumber(phone, item) {
@@ -1312,50 +1353,19 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                     document.getElementById('subscribePhoneInput').value = '';
                     document.getElementById('verificationCodeInput').value = '';
                     document.getElementById('codeVerificationSection').style.display = 'none';
-                    document.getElementById('sendCodeBtn').style.display = 'block';
+                    document.getElementById('checkPhoneBtn').style.display = 'block';
                     document.getElementById('subscribeModal').classList.add('show');
                 }
             };
             
             function closeSubscribeModal() {
                 document.getElementById('subscribeModal').classList.remove('show');
-                pendingVerificationPhone = null;
-                generatedCode = null;
+                pendingActivationPhone = null;
+                pendingActivationCode = null;
             }
             window.closeSubscribeModal = closeSubscribeModal;
-            window.sendVerificationCode = sendVerificationCode;
-            window.verifyCode = verifyCode;
-            
-            function logoutSubscriber() {
-                isSubscriberMode = false;
-                currentSubscriberPhone = null;
-                
-                const subscriberBadge = document.getElementById('subscriberBadge');
-                const subscribeText = document.getElementById('subscribeText');
-                
-                if (subscriberBadge) subscriberBadge.style.display = 'none';
-                if (subscribeText) subscribeText.innerHTML = '<i class="fas fa-user-plus"></i> S\'abonner';
-                document.body.classList.remove('subscriber-mode');
-                
-                localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
-                
-                renderAutomaticiens();
-                renderFournisseurs();
-                showToast('👋 Déconnexion de l\'abonnement');
-            }
-            
-            function loadSubscriberMode() {
-                const savedPhone = localStorage.getItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
-                if (savedPhone) {
-                    isSubscriberMode = true;
-                    currentSubscriberPhone = savedPhone;
-                    const subscriberBadge = document.getElementById('subscriberBadge');
-                    const subscribeText = document.getElementById('subscribeText');
-                    if (subscriberBadge) subscriberBadge.style.display = 'flex';
-                    if (subscribeText) subscribeText.innerHTML = '<i class="fas fa-sign-out-alt"></i> Quitter';
-                    document.body.classList.add('subscriber-mode');
-                }
-            }
+            window.checkPhoneAndSubscribe = checkPhoneAndSubscribe;
+            window.verifyActivationCode = verifyActivationCode;
             
             function scrollToTop() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1854,7 +1864,6 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             async function init() {
                 loadTheme();
                 loadAdminMode();
-                loadSubscriberMode();
                 initTypingEffect();
                 initMobileMenu();
                 initScrollToTop();
@@ -1869,6 +1878,8 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 fournisseursData = fourData;
                 
                 updateStats();
+                
+                loadSubscriberMode();
                 
                 renderAutomaticiens();
                 renderFournisseurs();
