@@ -80,7 +80,7 @@
             background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
         }
 
-        /* ========== TASKBAR (EN HAUT) ========== */
+        /* ========== TASKBAR (EN HAUT AVEC ICONES) ========== */
         .taskbar {
             position: fixed;
             top: 0;
@@ -119,9 +119,33 @@
         .start-btn i { font-size: 1.2rem; }
         .start-btn span { font-size: 0.85rem; font-weight: 500; }
 
+        /* Couleurs du bouton Démarrer selon le mode */
         body.admin-mode .start-btn { color: var(--win-orange); }
         body.subscriber-mode .start-btn { color: var(--win-green); }
         body:not(.admin-mode):not(.subscriber-mode) .start-btn { color: var(--win-text); }
+
+        /* Icônes de la barre des tâches */
+        .taskbar-icons {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+            justify-content: center;
+        }
+        .taskbar-icon {
+            background: transparent;
+            border: none;
+            color: var(--win-text);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .taskbar-icon:hover { background: var(--win-hover); }
+        .taskbar-icon span { font-size: 0.75rem; }
 
         .taskbar-time { font-size: 0.75rem; color: var(--win-text); padding: 4px 8px; border-radius: 4px; }
 
@@ -193,10 +217,8 @@
         .start-divider { height: 1px; background: var(--win-border); margin: 8px; }
 
         /* Couleurs des boutons dans le menu démarrer */
-        body.admin-mode #startSubscribeBtn { color: var(--win-orange); }
-        body.subscriber-mode #startSubscribeBtn { color: var(--win-green); }
         body.admin-mode #startAdminBtn { color: var(--win-orange); }
-        body.subscriber-mode #startAdminBtn { color: var(--win-green); }
+        body.subscriber-mode #startSubscribeBtn { color: var(--win-green); }
 
         /* ========== MAIN CONTENT ========== */
         .window-card {
@@ -224,46 +246,9 @@
         .window-content { padding: 16px; }
         .about-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
 
-        /* ========== TABS STYLE ========== */
-        .tabs-container {
-            background: var(--win-acrylic);
-            border-bottom: 1px solid var(--win-border);
-            display: flex;
-            gap: 0;
-            margin-bottom: 1rem;
-        }
-        .tab-btn {
-            background: transparent;
-            border: none;
-            padding: 10px 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--win-text-secondary);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-        }
-        .tab-btn:hover {
-            color: var(--win-text);
-            background: var(--win-hover);
-        }
-        .tab-btn.active {
-            color: var(--win-blue);
-            border-bottom-color: var(--win-blue);
-        }
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .tab-content.active-tab {
-            display: block;
-            opacity: 1;
-        }
+        /* ========== SECTIONS ========== */
+        .section-container { display: none; }
+        .section-container.active-section { display: block; }
 
         /* ========== STATS TILES ========== */
         .stats-grid {
@@ -663,10 +648,6 @@
         }
         .win-toast.show { opacity: 1; visibility: visible; }
 
-        /* Sections */
-        .section-container { display: none; }
-        .section-container.active-section { display: block; }
-
         /* Loading */
         .loading-screen {
             position: fixed;
@@ -695,18 +676,46 @@
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .win-toast { white-space: normal; text-align: center; max-width: 90%; bottom: 70px; }
             .start-menu { width: calc(100% - 24px); left: 12px; right: 12px; }
+            .taskbar-icon span { display: none; }
+            .taskbar-icon { padding: 8px; }
         }
     </style>
 </head>
 <body>
     <div class="wallpaper"></div>
 
-    <!-- Windows 10 Taskbar (en haut) -->
+    <!-- Windows 10 Taskbar (en haut avec icônes) -->
     <div class="taskbar">
         <button class="start-btn" id="startBtn">
             <i class="fab fa-windows"></i>
             <span>Démarrer</span>
         </button>
+        <div class="taskbar-icons">
+            <button class="taskbar-icon" onclick="showSection('accueil')" title="Accueil">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('fournisseurs')" title="Fournisseurs">
+                <i class="fas fa-industry"></i>
+                <span>Fournisseurs</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('experts')" title="Experts">
+                <i class="fas fa-microchip"></i>
+                <span>Experts</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('apropos')" title="À Propos">
+                <i class="fas fa-building"></i>
+                <span>À Propos</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('rejoindre')" title="Rejoindre">
+                <i class="fas fa-user-plus"></i>
+                <span>Rejoindre</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('suggestions')" title="Suggestions">
+                <i class="fas fa-comment-dots"></i>
+                <span>Suggestions</span>
+            </button>
+        </div>
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
 
@@ -720,12 +729,12 @@
             </div>
         </div>
         <div class="start-menu-items">
-            <!-- Accueil - Affiche la section principale (avec les tabs) -->
-            <button class="start-menu-item" onclick="showMainSection(); closeStartMenu();"><i class="fas fa-home"></i> Accueil</button>
-            <!-- Rejoindre -->
-            <button class="start-menu-item" onclick="showJoinSection(); closeStartMenu();"><i class="fas fa-user-plus"></i> Rejoindre</button>
-            <!-- Suggestions -->
-            <button class="start-menu-item" onclick="showSuggestionsSection(); closeStartMenu();"><i class="fas fa-comment-dots"></i> Suggestions</button>
+            <button class="start-menu-item" onclick="showSection('accueil'); closeStartMenu();"><i class="fas fa-home"></i> Accueil</button>
+            <button class="start-menu-item" onclick="showSection('fournisseurs'); closeStartMenu();"><i class="fas fa-industry"></i> Fournisseurs</button>
+            <button class="start-menu-item" onclick="showSection('experts'); closeStartMenu();"><i class="fas fa-microchip"></i> Experts</button>
+            <button class="start-menu-item" onclick="showSection('apropos'); closeStartMenu();"><i class="fas fa-building"></i> À Propos</button>
+            <button class="start-menu-item" onclick="showSection('rejoindre'); closeStartMenu();"><i class="fas fa-user-plus"></i> Rejoindre</button>
+            <button class="start-menu-item" onclick="showSection('suggestions'); closeStartMenu();"><i class="fas fa-comment-dots"></i> Suggestions</button>
             <div class="start-divider"></div>
             <button class="start-menu-item" id="startSubscribeBtn" onclick="openSubscribeModal(); closeStartMenu();"><i class="fas fa-user-plus"></i> <span id="subscribeText">S'abonner</span></button>
             <button class="start-menu-item" id="startAdminBtn" onclick="toggleAdminMode(); closeStartMenu();"><i class="fas fa-key"></i> <span id="adminModeText">Mode Admin</span></button>
@@ -736,8 +745,8 @@
 
     <main>
         <div class="about-container">
-            <!-- SECTION PRINCIPALE (ACCUEIL) AVEC TABS -->
-            <div id="mainSection" class="section-container active-section">
+            <!-- SECTION ACCUEIL (avec les 3 onglets) -->
+            <div id="accueilSection" class="section-container">
                 <div class="window-card">
                     <div class="window-header">
                         <i class="fas fa-home"></i>
@@ -745,21 +754,20 @@
                         <div class="window-controls"><button class="win-btn"><i class="fas fa-minus"></i></button><button class="win-btn"><i class="fas fa-window-maximize"></i></button><button class="win-btn"><i class="fas fa-times"></i></button></div>
                     </div>
                     <div class="window-content">
-                        <!-- Tabs principaux -->
                         <div class="tabs-container">
-                            <button class="tab-btn active" data-main-tab="aboutMainTab" onclick="switchMainTab('aboutMainTab')">
+                            <button class="tab-btn active" data-tab="aboutTab" onclick="switchAccueilTab('aboutTab')">
                                 <i class="fas fa-building"></i> À Propos
                             </button>
-                            <button class="tab-btn" data-main-tab="fournisseursMainTab" onclick="switchMainTab('fournisseursMainTab')">
+                            <button class="tab-btn" data-tab="fournisseursTab" onclick="switchAccueilTab('fournisseursTab')">
                                 <i class="fas fa-industry"></i> Fournisseurs
                             </button>
-                            <button class="tab-btn" data-main-tab="automaticiensMainTab" onclick="switchMainTab('automaticiensMainTab')">
+                            <button class="tab-btn" data-tab="expertsTab" onclick="switchAccueilTab('expertsTab')">
                                 <i class="fas fa-microchip"></i> Experts
                             </button>
                         </div>
 
                         <!-- Tab À Propos -->
-                        <div id="aboutMainTab" class="main-tab-content active-tab">
+                        <div id="aboutTab" class="tab-content active-tab">
                             <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
                                 <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
                             </div>
@@ -828,8 +836,8 @@
                             </div>
                         </div>
 
-                        <!-- Tab Fournisseurs -->
-                        <div id="fournisseursMainTab" class="main-tab-content">
+                        <!-- Tab Fournisseurs (Accueil) -->
+                        <div id="fournisseursTab" class="tab-content">
                             <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
                                 <p>Les plus grands fournisseurs d'équipements et pièces industrielles au Maroc. Qualité garantie et meilleurs prix.</p>
                             </div>
@@ -851,8 +859,8 @@
                             <div class="items-grid" id="fournisseursGrid"><div class="win-loader-spinner" style="margin: 2rem auto;"></div></div>
                         </div>
 
-                        <!-- Tab Experts -->
-                        <div id="automaticiensMainTab" class="main-tab-content">
+                        <!-- Tab Experts (Accueil) -->
+                        <div id="expertsTab" class="tab-content">
                             <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
                                 <p>Réseau d'ingénieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
                             </div>
@@ -877,8 +885,139 @@
                 </div>
             </div>
 
+            <!-- SECTION FOURNISSEURS (indépendante) -->
+            <div id="fournisseursSection" class="section-container">
+                <div class="window-card">
+                    <div class="window-header"><i class="fas fa-industry"></i><h2>Fournisseurs Industriels</h2></div>
+                    <div class="window-content">
+                        <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
+                            <p>Les plus grands fournisseurs d'équipements et pièces industrielles au Maroc. Qualité garantie et meilleurs prix.</p>
+                        </div>
+                        
+                        <div id="fourFeaturedSection2" class="featured-section" style="display: none;">
+                            <div class="featured-header">
+                                <i class="fas fa-star"></i>
+                                <h3>À la une - Épinglé par l'administrateur</h3>
+                            </div>
+                            <div class="featured-scroll">
+                                <div id="fourFeaturedItems2" class="featured-items"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="search-bar">
+                            <div class="search-input-wrapper"><i class="fas fa-search"></i><input type="text" id="searchFourInput2" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone..." oninput="filterFournisseurs2()"></div>
+                            <div class="filter-buttons"><button class="filter-btn" id="filterFourBtn2" onclick="openFourFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button><button class="filter-btn" id="filterFourVilleBtn2" onclick="openFourVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button></div>
+                        </div>
+                        <div class="items-grid" id="fournisseursGrid2"><div class="win-loader-spinner" style="margin: 2rem auto;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION EXPERTS (indépendante) -->
+            <div id="expertsSection" class="section-container">
+                <div class="window-card">
+                    <div class="window-header"><i class="fas fa-microchip"></i><h2>Experts en Automatisme</h2></div>
+                    <div class="window-content">
+                        <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
+                            <p>Réseau d'ingénieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
+                        </div>
+                        
+                        <div id="autoFeaturedSection2" class="featured-section" style="display: none;">
+                            <div class="featured-header">
+                                <i class="fas fa-star"></i>
+                                <h3>À la une - Épinglé par l'administrateur</h3>
+                            </div>
+                            <div class="featured-scroll">
+                                <div id="autoFeaturedItems2" class="featured-items"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="search-bar">
+                            <div class="search-input-wrapper"><i class="fas fa-search"></i><input type="text" id="searchAutoInput2" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone..." oninput="filterAutomaticiens2()"></div>
+                            <div class="filter-buttons"><button class="filter-btn" id="filterAutoBtn2" onclick="openAutoFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button><button class="filter-btn" id="filterAutoVilleBtn2" onclick="openAutoVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button></div>
+                        </div>
+                        <div class="items-grid" id="automaticiensGrid2"><div class="win-loader-spinner" style="margin: 2rem auto;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION À PROPOS (indépendante) -->
+            <div id="aproposSection" class="section-container">
+                <div class="window-card">
+                    <div class="window-header"><i class="fas fa-building"></i><h2>À Propos</h2></div>
+                    <div class="window-content">
+                        <div class="description-box" style="margin-bottom: 1rem; padding: 0.75rem; background: var(--win-acrylic); border-radius: 6px;">
+                            <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
+                        </div>
+
+                        <div class="window-card" style="margin: 0 0 1rem 0;">
+                            <div class="window-header"><i class="fas fa-chart-line"></i><h2>La Plateforme en Chiffres</h2></div>
+                            <div class="window-content">
+                                <div class="stats-grid">
+                                    <div class="live-tile" onclick="switchToExpertsFromApropos()"><div class="tile-number" id="statAutomaticiens2">0</div><div class="tile-label">Experts</div></div>
+                                    <div class="live-tile" onclick="switchToFournisseursFromApropos()"><div class="tile-number" id="statFournisseurs2">0</div><div class="tile-label">Fournisseurs</div></div>
+                                    <div class="live-tile" onclick="scrollToClientsApropos()"><div class="tile-number" id="statClients2">28700</div><div class="tile-label">Clients</div></div>
+                                    <div class="live-tile" onclick="scrollToExperienceApropos()"><div class="tile-number" id="statExperience2">20</div><div class="tile-label">Années</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="window-card" style="margin: 0 0 1rem 0;">
+                            <div class="window-header"><i class="fas fa-cogs"></i><h2>Nos Domaines d'Expertise</h2></div>
+                            <div class="window-content">
+                                <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;">
+                                    <button class="join-btn" style="border-color: var(--win-border);">🔌 Électricité Industrielle</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">🤖 Automatisme & PLC</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">🛠️ Équipements Industriels</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">⚡ Pièces de Rechange</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">📊 Instruments de Mesure</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">🔧 Maintenance Industrielle</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">📡 Contrôle et Mesure</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">🚚 Import d'Équipements</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">💡 Solutions Énergétiques</button>
+                                    <button class="join-btn" style="border-color: var(--win-border);">🏭 Lignes de Production</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="window-card" style="margin: 0 0 1rem 0;">
+                            <div class="window-header"><i class="fab fa-facebook"></i><h2>Nos Pages Facebook</h2></div>
+                            <div class="window-content">
+                                <div class="links-grid">
+                                    <div class="link-tile"><h3>Tech Industrie Maroc</h3><div class="stat">9,402+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Tech Industrie Maroc', 'https://www.facebook.com/share/1G4zgP99qm/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>Électricité Industrielle Du Maroc</h3><div class="stat">1,565+ followers</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn share" onclick="sharePage('Électricité Industrielle Du Maroc', 'https://www.facebook.com/share/1Dg363LV39/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="window-card" style="margin: 0 0 1rem 0;">
+                            <div class="window-header"><i class="fas fa-users"></i><h2>Nos Groupes Facebook</h2></div>
+                            <div class="window-content">
+                                <div class="links-grid">
+                                    <div class="link-tile"><h3>Les Fournisseurs Industrielle Du Maroc</h3><div class="stat">29,000+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Les Fournisseurs Industrielle Du Maroc', 'https://www.facebook.com/share/g/176XJV7sJE/', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>Vente de PLC et Équipements d'Automatisme</h3><div class="stat">5,900+ membres</div><div class="link-btns"><button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button><button class="link-btn share" onclick="shareGroup('Vente de PLC et Équipements d'Automatisme', 'https://www.facebook.com/share/g/1EaoJJuEqd/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="window-card" style="margin: 0;">
+                            <div class="window-header"><i class="fab fa-whatsapp"></i><h2>Nos Groupes WhatsApp</h2></div>
+                            <div class="window-content">
+                                <div class="links-grid">
+                                    <div class="link-tile"><h3>🇲🇦 Stations de Dessalement Maroc</h3><div class="stat">120+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Stations de Dessalement Maroc', 'https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>🇲🇦 Comptables & Gestionnaires Maroc</h3><div class="stat">200+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Comptables & Gestionnaires Maroc', 'https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>🇲🇦 Fournisseurs Industrielle Du Maroc</h3><div class="stat">250+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Fournisseurs Industrielle Du Maroc', 'https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>🇲🇦 Énergie Solaire Maroc</h3><div class="stat">750+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Énergie Solaire Maroc', 'https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                    <div class="link-tile"><h3>🇲🇦 Génie Électrique Industriel Maroc</h3><div class="stat">420+ membres</div><div class="link-btns"><button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn share" onclick="shareWhatsAppGroup('Génie Électrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- SECTION REJOINDRE -->
-            <div id="joinSection" class="section-container">
+            <div id="rejoindreSection" class="section-container">
                 <div class="window-card">
                     <div class="window-header"><i class="fas fa-user-plus"></i><h2>Rejoignez notre réseau</h2></div>
                     <div class="window-content">
@@ -967,11 +1106,11 @@
             let selectedAutoVille = null;
             let selectedFourVille = null;
             let selectedMessageType = 'اقتراح';
-            let currentMainTab = 'aboutMainTab';
             let isAdminMode = false;
             let isSubscriberMode = false;
             let currentSubscriberPhone = null;
             let currentSubscriberMember = null;
+            let currentAccueilTab = 'aboutTab';
             
             let automaticiensData = [];
             let fournisseursData = [];
@@ -984,7 +1123,7 @@
                 ADMIN_MODE: 'adminMode',
                 SUBSCRIBER_PHONE: 'subscriberPhone',
                 SAVED_PASSWORD: 'savedAdminPassword',
-                CURRENT_MAIN_TAB: 'currentMainTab'
+                CURRENT_ACCUEIL_TAB: 'currentAccueilTab'
             };
             
             // ========== UTILITIES ==========
@@ -1058,78 +1197,95 @@
             function makeSeparator() { return '➖➖➖➖➖➖➖➖➖➖➖➖'; }
             
             // ========== SECTION NAVIGATION ==========
-            function showMainSection() {
+            function showSection(sectionId) {
                 document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
-                document.getElementById('mainSection').classList.add('active-section');
+                let targetId = '';
+                switch(sectionId) {
+                    case 'accueil': targetId = 'accueilSection'; break;
+                    case 'fournisseurs': targetId = 'fournisseursSection'; break;
+                    case 'experts': targetId = 'expertsSection'; break;
+                    case 'apropos': targetId = 'aproposSection'; break;
+                    case 'rejoindre': targetId = 'rejoindreSection'; break;
+                    case 'suggestions': targetId = 'suggestionsSection'; break;
+                    default: targetId = 'accueilSection';
+                }
+                document.getElementById(targetId).classList.add('active-section');
+                closeStartMenu();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             
-            function showJoinSection() {
-                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
-                document.getElementById('joinSection').classList.add('active-section');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            
-            function showSuggestionsSection() {
-                document.querySelectorAll('.section-container').forEach(s => s.classList.remove('active-section'));
-                document.getElementById('suggestionsSection').classList.add('active-section');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            
-            // ========== MAIN TAB MANAGEMENT ==========
-            function switchMainTab(tabId) {
-                currentMainTab = tabId;
-                localStorage.setItem(STORAGE_KEYS.CURRENT_MAIN_TAB, tabId);
+            // ========== ACCUEIL TABS ==========
+            function switchAccueilTab(tabId) {
+                currentAccueilTab = tabId;
+                localStorage.setItem(STORAGE_KEYS.CURRENT_ACCUEIL_TAB, tabId);
                 
-                document.querySelectorAll('[data-main-tab]').forEach(btn => btn.classList.remove('active'));
-                document.querySelector(`[data-main-tab="${tabId}"]`).classList.add('active');
+                document.querySelectorAll('#accueilSection .tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`#accueilSection .tab-btn[data-tab="${tabId}"]`).classList.add('active');
                 
-                document.querySelectorAll('.main-tab-content').forEach(content => content.classList.remove('active-tab'));
+                document.querySelectorAll('#accueilSection .tab-content').forEach(content => content.classList.remove('active-tab'));
                 document.getElementById(tabId).classList.add('active-tab');
             }
             
             function switchToFournisseursTab() {
-                switchMainTab('fournisseursMainTab');
-                showMainSection();
+                switchAccueilTab('fournisseursTab');
+                showSection('accueil');
                 showToast('🏭 Navigation vers les Fournisseurs');
             }
             
             function switchToExpertsTab() {
-                switchMainTab('automaticiensMainTab');
-                showMainSection();
+                switchAccueilTab('expertsTab');
+                showSection('accueil');
+                showToast('👨‍🔧 Navigation vers les Experts');
+            }
+            
+            function switchToFournisseursFromApropos() {
+                showSection('fournisseurs');
+                showToast('🏭 Navigation vers les Fournisseurs');
+            }
+            
+            function switchToExpertsFromApropos() {
+                showSection('experts');
                 showToast('👨‍🔧 Navigation vers les Experts');
             }
             
             function scrollToClients() {
-                switchMainTab('aboutMainTab');
-                showMainSection();
-                setTimeout(() => {
-                    const groupesFacebook = document.querySelector('#aboutMainTab .links-grid');
-                    if (groupesFacebook) {
-                        groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        showToast('📱 Groupes Facebook');
-                    }
-                }, 100);
+                const groupesFacebook = document.querySelector('#aboutTab .links-grid:first-of-type');
+                if (groupesFacebook) {
+                    groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showToast('📱 Groupes Facebook');
+                }
             }
             
             function scrollToExperience() {
-                switchMainTab('aboutMainTab');
-                showMainSection();
-                setTimeout(() => {
-                    const pagesFacebook = document.querySelector('#aboutMainTab .links-grid');
-                    if (pagesFacebook) {
-                        pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        showToast('📘 Pages Facebook');
-                    }
-                }, 100);
+                const pagesFacebook = document.querySelectorAll('#aboutTab .links-grid')[1];
+                if (pagesFacebook) {
+                    pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showToast('📘 Pages Facebook');
+                }
             }
             
-            function loadSavedMainTab() {
-                const savedTab = localStorage.getItem(STORAGE_KEYS.CURRENT_MAIN_TAB);
-                if (savedTab && (savedTab === 'aboutMainTab' || savedTab === 'fournisseursMainTab' || savedTab === 'automaticiensMainTab')) {
-                    switchMainTab(savedTab);
+            function scrollToClientsApropos() {
+                const groupesFacebook = document.querySelector('#aproposSection .links-grid:first-of-type');
+                if (groupesFacebook) {
+                    groupesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showToast('📱 Groupes Facebook');
+                }
+            }
+            
+            function scrollToExperienceApropos() {
+                const pagesFacebook = document.querySelectorAll('#aproposSection .links-grid')[1];
+                if (pagesFacebook) {
+                    pagesFacebook.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    showToast('📘 Pages Facebook');
+                }
+            }
+            
+            function loadSavedAccueilTab() {
+                const savedTab = localStorage.getItem(STORAGE_KEYS.CURRENT_ACCUEIL_TAB);
+                if (savedTab && (savedTab === 'aboutTab' || savedTab === 'fournisseursTab' || savedTab === 'expertsTab')) {
+                    switchAccueilTab(savedTab);
                 } else {
-                    switchMainTab('aboutMainTab');
+                    switchAccueilTab('aboutTab');
                 }
             }
             
@@ -1170,8 +1326,7 @@
                     showToast(`📍 ${itemName} désépinglé`);
                 }
                 setUserPinnedItems(type, pinnedList);
-                if (type === 'fournisseur') renderFournisseurs();
-                else renderAutomaticiens();
+                renderAll();
             }
             
             function isItemPinned(item, type) {
@@ -1213,23 +1368,22 @@
                 return '*******';
             }
             
-            // ========== RENDER FEATURED ==========
-            function renderFeaturedItems(type, adminPinnedItems) {
-                if (adminPinnedItems.length === 0) {
-                    const featuredSection = document.getElementById(type === 'fournisseur' ? 'fourFeaturedSection' : 'autoFeaturedSection');
+            // ========== RENDER FUNCTIONS ==========
+            function renderFeaturedItems(containerId, items, type) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                if (!items || items.length === 0) {
+                    const featuredSection = container.closest('.featured-section');
                     if (featuredSection) featuredSection.style.display = 'none';
                     return;
                 }
                 
-                const featuredContainer = document.getElementById(type === 'fournisseur' ? 'fourFeaturedItems' : 'autoFeaturedItems');
-                const featuredSection = document.getElementById(type === 'fournisseur' ? 'fourFeaturedSection' : 'autoFeaturedSection');
-                
-                if (!featuredContainer || !featuredSection) return;
-                
-                featuredSection.style.display = 'block';
+                const featuredSection = container.closest('.featured-section');
+                if (featuredSection) featuredSection.style.display = 'block';
                 
                 let html = '';
-                for (const item of adminPinnedItems) {
+                for (const item of items) {
                     const hasPhone = item.phone && item.phone !== 'null';
                     const phoneDisplay = hasPhone ? item.phone : 'Non disponible';
                     
@@ -1258,10 +1412,9 @@
                         </div>
                     `;
                 }
-                featuredContainer.innerHTML = html;
+                container.innerHTML = html;
             }
             
-            // ========== RENDER FUNCTIONS ==========
             function createAutomaticienCard(person, isSubscriberCard = false) {
                 let buttons = [];
                 const hasPhone = person.phone && person.phone !== 'null';
@@ -1384,119 +1537,101 @@
                 `;
             }
             
-            function renderAutomaticiens() {
-                const searchTerm = document.getElementById('searchAutoInput')?.value.toLowerCase() || '';
-                let filtered = [...automaticiensData];
-                if (autoFilterType === 'domaine' && selectedAutoDomaine !== null) filtered = filtered.filter(p => p.domaine === selectedAutoDomaine);
-                if (selectedAutoVille !== null) filtered = filtered.filter(p => p.city === selectedAutoVille);
-                if (searchTerm) filtered = filtered.filter(p => matchesSearch(p, searchTerm));
+            function renderGrid(gridId, items, type, isSubscriberCard = false) {
+                const grid = document.getElementById(gridId);
+                if (!grid) return;
                 
-                const adminPinnedItems = [];
-                const otherItems = [];
-                for (const item of filtered) {
-                    if (isAdminPinned(item, 'expert')) {
-                        adminPinnedItems.push(item);
-                    } else {
-                        otherItems.push(item);
-                    }
+                if (!items || items.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--win-text-secondary);">❌ Aucun résultat trouvé</div>';
+                    return;
                 }
                 
-                renderFeaturedItems('expert', adminPinnedItems);
-                
-                const userPinned = getUserPinnedItems('expert');
-                const pinnedItems = [];
-                const unpinnedItems = [];
-                for (const item of otherItems) {
-                    const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                    if (userPinned.includes(itemId)) {
-                        pinnedItems.push(item);
-                    } else {
-                        unpinnedItems.push(item);
-                    }
-                }
-                let finalItems = [...pinnedItems, ...unpinnedItems];
-                
-                if (isSubscriberMode && currentSubscriberMember && currentSubscriberMember.type === 'expert') {
-                    const subscriberIndex = finalItems.findIndex(item => 
-                        item.phone && phoneMatches(item.phone, currentSubscriberPhone)
-                    );
-                    if (subscriberIndex > 0) {
-                        const subItem = finalItems[subscriberIndex];
-                        finalItems.splice(subscriberIndex, 1);
-                        finalItems = [subItem, ...finalItems];
-                    }
-                }
-                
-                const grid = document.getElementById('automaticiensGrid');
-                if (grid) {
-                    if (finalItems.length === 0 && adminPinnedItems.length === 0) {
-                        grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--win-text-secondary);">❌ Aucun résultat trouvé</div>';
-                    } else {
-                        grid.innerHTML = finalItems.map(item => {
-                            const isSubscriber = isSubscriberMode && currentSubscriberMember && 
-                                item.phone && phoneMatches(item.phone, currentSubscriberPhone);
-                            return createAutomaticienCard(item, isSubscriber);
-                        }).join('');
-                    }
+                if (type === 'expert') {
+                    grid.innerHTML = items.map(item => createAutomaticienCard(item, isSubscriberCard)).join('');
+                } else {
+                    grid.innerHTML = items.map(item => createFournisseurCard(item, isSubscriberCard)).join('');
                 }
             }
             
-            function renderFournisseurs() {
-                const searchTerm = document.getElementById('searchFourInput')?.value.toLowerCase() || '';
-                let filtered = [...fournisseursData];
-                if (fourFilterType === 'domaine' && selectedFourDomaine !== null) filtered = filtered.filter(s => s.domaine === selectedFourDomaine);
-                if (selectedFourVille !== null) filtered = filtered.filter(s => s.city === selectedFourVille);
-                if (searchTerm) filtered = filtered.filter(s => matchesSearch(s, searchTerm));
+            function renderAll() {
+                // Fournisseurs - Accueil Tab
+                const fourSearchTerm = document.getElementById('searchFourInput')?.value.toLowerCase() || '';
+                let fourFiltered = [...fournisseursData];
+                if (fourFilterType === 'domaine' && selectedFourDomaine !== null) fourFiltered = fourFiltered.filter(s => s.domaine === selectedFourDomaine);
+                if (selectedFourVille !== null) fourFiltered = fourFiltered.filter(s => s.city === selectedFourVille);
+                if (fourSearchTerm) fourFiltered = fourFiltered.filter(s => matchesSearch(s, fourSearchTerm));
                 
-                const adminPinnedItems = [];
-                const otherItems = [];
-                for (const item of filtered) {
-                    if (isAdminPinned(item, 'fournisseur')) {
-                        adminPinnedItems.push(item);
-                    } else {
-                        otherItems.push(item);
-                    }
-                }
-                
-                renderFeaturedItems('fournisseur', adminPinnedItems);
-                
-                const userPinned = getUserPinnedItems('fournisseur');
-                const pinnedItems = [];
-                const unpinnedItems = [];
-                for (const item of otherItems) {
+                const fourAdminPinned = fourFiltered.filter(item => isAdminPinned(item, 'fournisseur'));
+                const fourOther = fourFiltered.filter(item => !isAdminPinned(item, 'fournisseur'));
+                const fourUserPinned = getUserPinnedItems('fournisseur');
+                const fourPinned = [];
+                const fourUnpinned = [];
+                for (const item of fourOther) {
                     const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                    if (userPinned.includes(itemId)) {
-                        pinnedItems.push(item);
-                    } else {
-                        unpinnedItems.push(item);
-                    }
+                    if (fourUserPinned.includes(itemId)) fourPinned.push(item);
+                    else fourUnpinned.push(item);
                 }
-                let finalItems = [...pinnedItems, ...unpinnedItems];
-                
+                let fourFinal = [...fourPinned, ...fourUnpinned];
                 if (isSubscriberMode && currentSubscriberMember && currentSubscriberMember.type === 'fournisseur') {
-                    const subscriberIndex = finalItems.findIndex(item => 
-                        item.phone && phoneMatches(item.phone, currentSubscriberPhone)
-                    );
-                    if (subscriberIndex > 0) {
-                        const subItem = finalItems[subscriberIndex];
-                        finalItems.splice(subscriberIndex, 1);
-                        finalItems = [subItem, ...finalItems];
+                    const subIndex = fourFinal.findIndex(item => item.phone && phoneMatches(item.phone, currentSubscriberPhone));
+                    if (subIndex > 0) {
+                        const subItem = fourFinal[subIndex];
+                        fourFinal.splice(subIndex, 1);
+                        fourFinal = [subItem, ...fourFinal];
                     }
+                }
+                renderFeaturedItems('fourFeaturedItems', fourAdminPinned, 'fournisseur');
+                renderFeaturedItems('fourFeaturedItems2', fourAdminPinned, 'fournisseur');
+                renderGrid('fournisseursGrid', fourFinal, 'fournisseur');
+                renderGrid('fournisseursGrid2', fourFinal, 'fournisseur');
+                
+                // Experts
+                const autoSearchTerm = document.getElementById('searchAutoInput')?.value.toLowerCase() || '';
+                const autoSearchTerm2 = document.getElementById('searchAutoInput2')?.value.toLowerCase() || '';
+                let autoFiltered = [...automaticiensData];
+                if (autoFilterType === 'domaine' && selectedAutoDomaine !== null) autoFiltered = autoFiltered.filter(p => p.domaine === selectedAutoDomaine);
+                if (selectedAutoVille !== null) autoFiltered = autoFiltered.filter(p => p.city === selectedAutoVille);
+                if (autoSearchTerm || autoSearchTerm2) {
+                    const term = autoSearchTerm || autoSearchTerm2;
+                    autoFiltered = autoFiltered.filter(p => matchesSearch(p, term));
                 }
                 
-                const grid = document.getElementById('fournisseursGrid');
-                if (grid) {
-                    if (finalItems.length === 0 && adminPinnedItems.length === 0) {
-                        grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--win-text-secondary);">❌ Aucun résultat trouvé</div>';
-                    } else {
-                        grid.innerHTML = finalItems.map(item => {
-                            const isSubscriber = isSubscriberMode && currentSubscriberMember && 
-                                item.phone && phoneMatches(item.phone, currentSubscriberPhone);
-                            return createFournisseurCard(item, isSubscriber);
-                        }).join('');
+                const autoAdminPinned = autoFiltered.filter(item => isAdminPinned(item, 'expert'));
+                const autoOther = autoFiltered.filter(item => !isAdminPinned(item, 'expert'));
+                const autoUserPinned = getUserPinnedItems('expert');
+                const autoPinned = [];
+                const autoUnpinned = [];
+                for (const item of autoOther) {
+                    const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                    if (autoUserPinned.includes(itemId)) autoPinned.push(item);
+                    else autoUnpinned.push(item);
+                }
+                let autoFinal = [...autoPinned, ...autoUnpinned];
+                if (isSubscriberMode && currentSubscriberMember && currentSubscriberMember.type === 'expert') {
+                    const subIndex = autoFinal.findIndex(item => item.phone && phoneMatches(item.phone, currentSubscriberPhone));
+                    if (subIndex > 0) {
+                        const subItem = autoFinal[subIndex];
+                        autoFinal.splice(subIndex, 1);
+                        autoFinal = [subItem, ...autoFinal];
                     }
                 }
+                renderFeaturedItems('autoFeaturedItems', autoAdminPinned, 'expert');
+                renderFeaturedItems('autoFeaturedItems2', autoAdminPinned, 'expert');
+                renderGrid('automaticiensGrid', autoFinal, 'expert');
+                renderGrid('automaticiensGrid2', autoFinal, 'expert');
+                
+                // Mettre à jour les statistiques
+                document.getElementById('statAutomaticiens').textContent = automaticiensData.length.toLocaleString();
+                document.getElementById('statFournisseurs').textContent = fournisseursData.length.toLocaleString();
+                document.getElementById('statAutomaticiens2').textContent = automaticiensData.length.toLocaleString();
+                document.getElementById('statFournisseurs2').textContent = fournisseursData.length.toLocaleString();
             }
+            
+            // Wrappers pour les événements oninput
+            window.filterAutomaticiens = renderAll;
+            window.filterFournisseurs = renderAll;
+            window.filterAutomaticiens2 = renderAll;
+            window.filterFournisseurs2 = renderAll;
             
             // ========== SHARE FUNCTIONS ==========
             function shareCardAuto(name, domaine, specialite, city, phone, website) {
@@ -1642,23 +1777,6 @@
                 return result;
             }
             
-            // ========== STATS & UI ==========
-            function updateStats() {
-                document.getElementById('statAutomaticiens').textContent = automaticiensData.length.toLocaleString();
-                document.getElementById('statFournisseurs').textContent = fournisseursData.length.toLocaleString();
-            }
-            
-            function updateFilterBadges() {
-                const fourBtn = document.getElementById('filterFourBtn');
-                const fourVilleBtn = document.getElementById('filterFourVilleBtn');
-                const autoBtn = document.getElementById('filterAutoBtn');
-                const autoVilleBtn = document.getElementById('filterAutoVilleBtn');
-                if (fourBtn) fourBtn.classList.toggle('active-filter', selectedFourDomaine !== null);
-                if (fourVilleBtn) fourVilleBtn.classList.toggle('active-filter', selectedFourVille !== null);
-                if (autoBtn) autoBtn.classList.toggle('active-filter', selectedAutoDomaine !== null);
-                if (autoVilleBtn) autoVilleBtn.classList.toggle('active-filter', selectedAutoVille !== null);
-            }
-            
             // ========== SUBSCRIPTION ==========
             function activateSubscriber(phone, member) {
                 if (isAdminMode) logoutAdmin();
@@ -1673,8 +1791,7 @@
                 document.body.classList.add('subscriber-mode');
                 localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_PHONE, phone);
                 
-                renderAutomaticiens();
-                renderFournisseurs();
+                renderAll();
                 showToast(`✅ Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`);
             }
             
@@ -1690,7 +1807,7 @@
                     closeModal('subscribeModal');
                 } else {
                     closeModal('subscribeModal');
-                    showJoinSection();
+                    showSection('rejoindre');
                     showToast('📝 Numéro non trouvé. Veuillez vous inscrire dans "Rejoignez notre réseau"');
                 }
             }
@@ -1705,10 +1822,9 @@
                 if (adminModeText) adminModeText.innerHTML = 'Mode Admin';
                 document.body.classList.remove('subscriber-mode');
                 localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
-                renderAutomaticiens();
-                renderFournisseurs();
+                renderAll();
                 showToast('👋 Déconnexion');
-                showMainSection();
+                showSection('accueil');
             }
             
             function loadSubscriberMode() {
@@ -1736,8 +1852,7 @@
                     const adminModeText = document.getElementById('adminModeText');
                     if (subscribeText) subscribeText.innerHTML = 'S\'abonner';
                     if (adminModeText) adminModeText.innerHTML = 'Quitter Admin';
-                    renderAutomaticiens();
-                    renderFournisseurs();
+                    renderAll();
                     showToast('🔓 Mode admin activé');
                     closeModal('adminPasswordModal');
                 } else {
@@ -1754,10 +1869,9 @@
                 const adminModeText = document.getElementById('adminModeText');
                 if (subscribeText) subscribeText.innerHTML = 'S\'abonner';
                 if (adminModeText) adminModeText.innerHTML = 'Mode Admin';
-                renderAutomaticiens();
-                renderFournisseurs();
+                renderAll();
                 showToast('👋 Mode visiteur');
-                showMainSection();
+                showSection('accueil');
             }
             
             function toggleAdminMode() {
@@ -1792,7 +1906,7 @@
                 allBtn.onclick = () => {
                     selectedAutoDomaine = null;
                     autoFilterType = 'domaine';
-                    renderAutomaticiens();
+                    renderAll();
                     updateFilterBadges();
                     closeModal('autoDomaineModal');
                     closeModal('autoFilterModal');
@@ -1807,7 +1921,7 @@
                     btn.onclick = () => {
                         selectedAutoDomaine = dom;
                         autoFilterType = 'domaine';
-                        renderAutomaticiens();
+                        renderAll();
                         updateFilterBadges();
                         closeModal('autoDomaineModal');
                         closeModal('autoFilterModal');
@@ -1829,7 +1943,7 @@
                 allBtn.onclick = () => {
                     selectedFourDomaine = null;
                     fourFilterType = 'domaine';
-                    renderFournisseurs();
+                    renderAll();
                     updateFilterBadges();
                     closeModal('fourDomaineModal');
                     closeModal('fourFilterModal');
@@ -1844,7 +1958,7 @@
                     btn.onclick = () => {
                         selectedFourDomaine = dom;
                         fourFilterType = 'domaine';
-                        renderFournisseurs();
+                        renderAll();
                         updateFilterBadges();
                         closeModal('fourDomaineModal');
                         closeModal('fourFilterModal');
@@ -1865,7 +1979,7 @@
                 allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
                 allBtn.onclick = () => {
                     selectedAutoVille = null;
-                    renderAutomaticiens();
+                    renderAll();
                     updateFilterBadges();
                     closeModal('autoVilleModal');
                     showToast('✅ Toutes les villes');
@@ -1878,7 +1992,7 @@
                     btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedAutoVille === ville ? '1' : '0'};"></i>`;
                     btn.onclick = () => {
                         selectedAutoVille = ville;
-                        renderAutomaticiens();
+                        renderAll();
                         updateFilterBadges();
                         closeModal('autoVilleModal');
                         showToast(`✅ ${ville.substring(0, 20)}`);
@@ -1898,7 +2012,7 @@
                 allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
                 allBtn.onclick = () => {
                     selectedFourVille = null;
-                    renderFournisseurs();
+                    renderAll();
                     updateFilterBadges();
                     closeModal('fourVilleModal');
                     showToast('✅ Toutes les villes');
@@ -1911,7 +2025,7 @@
                     btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedFourVille === ville ? '1' : '0'};"></i>`;
                     btn.onclick = () => {
                         selectedFourVille = ville;
-                        renderFournisseurs();
+                        renderAll();
                         updateFilterBadges();
                         closeModal('fourVilleModal');
                         showToast(`✅ ${ville.substring(0, 20)}`);
@@ -1923,8 +2037,27 @@
             
             function openAutoFilterModal() { document.getElementById('autoFilterModal').classList.add('show'); }
             function openFourFilterModal() { document.getElementById('fourFilterModal').classList.add('show'); }
-            function applyAutoFilter(type) { if (type === 'all') { autoFilterType = 'all'; selectedAutoDomaine = null; renderAutomaticiens(); updateFilterBadges(); closeModal('autoFilterModal'); } }
-            function applyFourFilter(type) { if (type === 'all') { fourFilterType = 'all'; selectedFourDomaine = null; renderFournisseurs(); updateFilterBadges(); closeModal('fourFilterModal'); } }
+            function applyAutoFilter(type) { if (type === 'all') { autoFilterType = 'all'; selectedAutoDomaine = null; renderAll(); updateFilterBadges(); closeModal('autoFilterModal'); } }
+            function applyFourFilter(type) { if (type === 'all') { fourFilterType = 'all'; selectedFourDomaine = null; renderAll(); updateFilterBadges(); closeModal('fourFilterModal'); } }
+            
+            function updateFilterBadges() {
+                const fourBtn = document.getElementById('filterFourBtn');
+                const fourVilleBtn = document.getElementById('filterFourVilleBtn');
+                const autoBtn = document.getElementById('filterAutoBtn');
+                const autoVilleBtn = document.getElementById('filterAutoVilleBtn');
+                const fourBtn2 = document.getElementById('filterFourBtn2');
+                const fourVilleBtn2 = document.getElementById('filterFourVilleBtn2');
+                const autoBtn2 = document.getElementById('filterAutoBtn2');
+                const autoVilleBtn2 = document.getElementById('filterAutoVilleBtn2');
+                if (fourBtn) fourBtn.classList.toggle('active-filter', selectedFourDomaine !== null);
+                if (fourVilleBtn) fourVilleBtn.classList.toggle('active-filter', selectedFourVille !== null);
+                if (autoBtn) autoBtn.classList.toggle('active-filter', selectedAutoDomaine !== null);
+                if (autoVilleBtn) autoVilleBtn.classList.toggle('active-filter', selectedAutoVille !== null);
+                if (fourBtn2) fourBtn2.classList.toggle('active-filter', selectedFourDomaine !== null);
+                if (fourVilleBtn2) fourVilleBtn2.classList.toggle('active-filter', selectedFourVille !== null);
+                if (autoBtn2) autoBtn2.classList.toggle('active-filter', selectedAutoDomaine !== null);
+                if (autoVilleBtn2) autoVilleBtn2.classList.toggle('active-filter', selectedAutoVille !== null);
+            }
             
             // ========== START MENU ==========
             function toggleStartMenu() { document.getElementById('startMenu').classList.toggle('open'); }
@@ -2015,12 +2148,10 @@
                 const [autoData, fourData] = await Promise.all([loadCSV(AUTO_CSV_URL), loadCSV(FOUR_CSV_URL)]);
                 automaticiensData = autoData;
                 fournisseursData = fourData;
-                updateStats();
-                renderAutomaticiens();
-                renderFournisseurs();
+                renderAll();
                 updateFilterBadges();
-                showMainSection();
-                loadSavedMainTab();
+                showSection('accueil');
+                loadSavedAccueilTab();
                 
                 setTimeout(() => {
                     const loader = document.getElementById('loadingScreen');
@@ -2029,8 +2160,6 @@
             }
             
             // Expose global functions
-            window.filterAutomaticiens = renderAutomaticiens;
-            window.filterFournisseurs = renderFournisseurs;
             window.togglePin = togglePin;
             window.shareCardAuto = shareCardAuto;
             window.shareCardFour = shareCardFour;
@@ -2059,14 +2188,16 @@
             window.applyFourFilter = applyFourFilter;
             window.selectMessageType = selectMessageType;
             window.closeModal = closeModal;
-            window.switchMainTab = switchMainTab;
+            window.switchAccueilTab = switchAccueilTab;
             window.switchToFournisseursTab = switchToFournisseursTab;
             window.switchToExpertsTab = switchToExpertsTab;
+            window.switchToFournisseursFromApropos = switchToFournisseursFromApropos;
+            window.switchToExpertsFromApropos = switchToExpertsFromApropos;
             window.scrollToClients = scrollToClients;
             window.scrollToExperience = scrollToExperience;
-            window.showMainSection = showMainSection;
-            window.showJoinSection = showJoinSection;
-            window.showSuggestionsSection = showSuggestionsSection;
+            window.scrollToClientsApropos = scrollToClientsApropos;
+            window.scrollToExperienceApropos = scrollToExperienceApropos;
+            window.showSection = showSection;
             
             init();
         })();
