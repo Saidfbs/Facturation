@@ -51,7 +51,6 @@
         .orders-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
         .order-card { background: var(--steel-card); border: 1px solid var(--steel-border); border-right: 3px solid var(--accent-orange); padding: 1rem; transition: all 0.3s ease; position: relative; overflow: hidden; word-wrap: break-word; border-radius: 8px; }
         .order-card:hover { box-shadow: 0 0 18px rgba(224,108,0,0.15), 0 4px 20px rgba(0,0,0,0.3); border-right-color: var(--accent-orange); }
-        .order-card.subscriber-highlight { border-right: 3px solid var(--accent-green); background: rgba(45,164,78,0.05); box-shadow: 0 0 20px rgba(45,164,78,0.2); }
         .order-card.pinned { border-top: 2px solid var(--accent-yellow); position: relative; }
         .order-card.admin-pinned { border-top: 2px solid var(--accent-orange); position: relative; }
         .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--steel-border); flex-wrap: wrap; gap: 0.5rem; }
@@ -59,7 +58,6 @@
         .pin-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; transition: all 0.2s; padding: 0 0.2rem; }
         .pin-btn:hover { color: var(--accent-yellow); transform: scale(1.1); }
         .pin-btn.pinned { color: var(--accent-yellow); }
-        .subscriber-badge-card { background: var(--accent-green); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .pinned-badge-card { background: var(--accent-yellow); color: #1a1a2e; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .admin-pinned-badge { background: var(--accent-orange); color: white; font-size: 0.6rem; padding: 0.2rem 0.5rem; border-radius: 20px; margin-left: 0.5rem; }
         .order-info { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.8rem; }
@@ -278,7 +276,6 @@
         .clickable-stat { cursor: pointer; transition: all 0.3s ease; }
         .clickable-stat:hover { transform: translateY(-2px); box-shadow: 0 0 12px rgba(224,108,0,0.15); background: rgba(224,108,0,0.05); }
         .phone-input { width: 100%; padding: 0.7rem; border: 1px solid var(--steel-border); background: var(--steel-light); color: var(--text-primary); font-size: 0.85rem; border-radius: 8px; text-align: left; direction: ltr; }
-        .code-input { width: 100%; padding: 0.7rem; border: 1px solid var(--steel-border); background: var(--steel-light); color: var(--text-primary); font-size: 0.85rem; border-radius: 8px; text-align: center; letter-spacing: 4px; font-size: 1.2rem; font-weight: bold; }
         .info-text { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
     </style>
 </head>
@@ -454,7 +451,7 @@
         <div class="confirm-modal" style="text-align:right;">
             <h3><i class="fas fa-key"></i> Mode Admin</h3>
             <p style="margin-bottom: 1rem;">Entrez le mot de passe administrateur</p>
-            <input type="password" id="adminPasswordInput" class="password-input" placeholder="Mot de passe" autocomplete="off">
+            <input type="password" id="adminPasswordInput" class="password-input" placeholder="Mot de passe" autocomplete="off" value="">
             <div class="confirm-modal-btns">
                 <button class="btn-confirm-send" onclick="verifyAdminPassword()">Confirmer</button>
                 <button class="btn-confirm-cancel" onclick="closeAdminModal()">Annuler</button>
@@ -528,7 +525,6 @@
             
             const ADMIN_PASSWORD = "11111111";
             const ADMIN_WHATSAPP = "212690292010";
-            const TEMP_ACTIVATION_CODE = "123456789"; // Code temporaire pour tous les abonnés
             
             const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
             const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
@@ -564,8 +560,11 @@
             const STORAGE_KEYS = {
                 ADMIN_PINNED_FOUR: 'adminPinnedFournisseurs',
                 ADMIN_PINNED_AUTO: 'adminPinnedAutomaticiens',
+                USER_PINNED_FOUR: 'userPinnedFournisseurs',
+                USER_PINNED_AUTO: 'userPinnedAutomaticiens',
                 ADMIN_MODE: 'adminMode',
-                SUBSCRIBER_PHONE: 'subscriberPhone'
+                SUBSCRIBER_PHONE: 'subscriberPhone',
+                SAVED_PASSWORD: 'savedAdminPassword'
             };
             
             // Fonction pour normaliser le numéro de téléphone
@@ -625,9 +624,88 @@
                 return false;
             }
             
+            // Récupérer les éléments épinglés par l'utilisateur (tous les utilisateurs)
+            function getUserPinnedItems(type) {
+                const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
+                return JSON.parse(localStorage.getItem(key) || '[]');
+            }
+            
+            // Sauvegarder les éléments épinglés par l'utilisateur
+            function setUserPinnedItems(type, items) {
+                const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
+                localStorage.setItem(key, JSON.stringify(items));
+            }
+            
+            // Récupérer les éléments épinglés par l'admin
+            function getAdminPinnedItems(type) {
+                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                return JSON.parse(localStorage.getItem(key) || '[]');
+            }
+            
+            // Vérifier si un élément est épinglé par l'admin
+            function isAdminPinned(item, type) {
+                const adminPinned = getAdminPinnedItems(type);
+                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                return adminPinned.includes(itemId);
+            }
+            
+            // دالة لتبديل حالة التثبيت (لجميع المستخدمين)
+            function togglePin(type, itemId, itemName) {
+                let pinnedList = getUserPinnedItems(type);
+                const index = pinnedList.indexOf(itemId);
+                
+                if (index === -1) {
+                    pinnedList.push(itemId);
+                    showToast(`📌 ${itemName} épinglé`);
+                } else {
+                    pinnedList.splice(index, 1);
+                    showToast(`📍 ${itemName} désépinglé`);
+                }
+                
+                setUserPinnedItems(type, pinnedList);
+                
+                if (type === 'fournisseur') {
+                    renderFournisseurs();
+                } else {
+                    renderAutomaticiens();
+                }
+            }
+            
+            // دالة لترتيب العناصر (المثبتة أولاً - admin puis user)
+            function sortWithPinned(items, type) {
+                const adminPinned = getAdminPinnedItems(type);
+                const userPinned = getUserPinnedItems(type);
+                const allPinned = [...new Set([...adminPinned, ...userPinned])];
+                
+                const pinnedItems = [];
+                const unpinnedItems = [];
+                
+                for (const item of items) {
+                    const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                    if (allPinned.includes(itemId)) {
+                        pinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: adminPinned.includes(itemId) });
+                    } else {
+                        unpinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: false });
+                    }
+                }
+                
+                // admin pins d'abord, puis user pins
+                const adminPinnedItems = pinnedItems.filter(item => item._isAdminPinned);
+                const userPinnedItems = pinnedItems.filter(item => !item._isAdminPinned);
+                
+                return [...adminPinnedItems, ...userPinnedItems, ...unpinnedItems];
+            }
+            
+            function isItemPinned(item, type) {
+                const adminPinned = getAdminPinnedItems(type);
+                const userPinned = getUserPinnedItems(type);
+                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                return adminPinned.includes(itemId) || userPinned.includes(itemId);
+            }
+            
             // Envoyer les informations du membre à l'admin (sans code d'activation)
             function sendMemberInfoToAdmin(member) {
-                const message = `📋 *Nouvel abonné - Connect Industry Maroc*\n\n👤 *Nom:* ${member.data.name}\n📂 *Type:* ${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'}\n📞 *Téléphone:* ${member.data.phone}\n📧 *Email:* ${member.data.email || 'Non renseigné'}\n🌐 *Site web:* ${member.data.web || 'Non renseigné'}\n📍 *Ville:* ${member.data.city}\n\n✅ Abonnement activé avec le code temporaire: *${TEMP_ACTIVATION_CODE}*\n\n🌐 Plateforme Industrielle Maroc`;
+                const message = `📋 *Nouvel abonné - Connect Industry Maroc*\n\n👤 *Nom:* ${member.data.name}\n📂 *Type:* ${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'}\n📞 *Téléphone:* ${member.data.phone}\n📧 *Email:* ${member.data.email || 'Non renseigné'}\n🌐 *Site web:* ${member.data.web || 'Non renseigné'}\n📍 *Ville:* ${member.data.city}\n\n🌐 Plateforme Industrielle Maroc`;
                 
                 window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(message)}`, '_blank');
                 return true;
@@ -706,6 +784,9 @@
                 renderAutomaticiens();
                 renderFournisseurs();
                 showToast('👋 Déconnexion de l\'abonnement');
+                
+                // Rester sur À Propos
+                showSection('about');
             }
             
             // Charger l'abonnement sauvegardé
@@ -740,72 +821,6 @@
                 }
                 
                 return false;
-            }
-            
-            // Vérifier si un élément est épinglé par l'admin
-            function isAdminPinned(item, type) {
-                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
-                const adminPinned = JSON.parse(localStorage.getItem(key) || '[]');
-                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                return adminPinned.includes(itemId);
-            }
-            
-            // Récupérer la liste des éléments épinglés par l'admin uniquement
-            function getPinnedItems(type) {
-                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
-                return JSON.parse(localStorage.getItem(key) || '[]');
-            }
-            
-            // دالة لتبديل حالة التثبيت (admin seulement)
-            function togglePin(type, itemId, itemName) {
-                if (!isAdminMode) {
-                    showToast('🔒 Seul l\'administrateur peut épingler des éléments');
-                    return;
-                }
-                
-                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
-                let pinnedList = JSON.parse(localStorage.getItem(key) || '[]');
-                const index = pinnedList.indexOf(itemId);
-                
-                if (index === -1) {
-                    pinnedList.push(itemId);
-                    showToast(`👑 ${itemName} épinglé (visible par tous)`);
-                } else {
-                    pinnedList.splice(index, 1);
-                    showToast(`👑 ${itemName} désépinglé`);
-                }
-                
-                localStorage.setItem(key, JSON.stringify(pinnedList));
-                
-                if (type === 'fournisseur') {
-                    renderFournisseurs();
-                } else {
-                    renderAutomaticiens();
-                }
-            }
-            
-            // دالة لترتيب العناصر (المثبتة أولاً)
-            function sortWithPinned(items, type) {
-                const pinnedList = getPinnedItems(type);
-                const pinnedItems = [];
-                const unpinnedItems = [];
-                
-                for (const item of items) {
-                    const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                    if (pinnedList.includes(itemId)) {
-                        pinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: true });
-                    } else {
-                        unpinnedItems.push({ ...item, _pinnedId: itemId, _isAdminPinned: false });
-                    }
-                }
-                
-                return [...pinnedItems, ...unpinnedItems];
-            }
-            
-            function isItemPinned(item, type) {
-                const pinnedList = getPinnedItems(type);
-                const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                return pinnedList.includes(itemId);
             }
             
             function updateFilterBadges() {
@@ -1053,8 +1068,8 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 const maskedPhone = maskPhoneNumber(person.phone, { _type: 'expert', ...person });
                 
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
-                // Seul l'admin peut épingler
-                const pinButton = isAdminMode ? `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
+                // Le bouton épinglé est disponible pour tous
+                const pinButton = `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>`;
                 
                 if (showFullAccess && hasPhone) {
                     whatsappUrl = `https://wa.me/${person.phone.replace('+', '')}`;
@@ -1091,7 +1106,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 const actionsClass = getActionsClass(buttons.length);
                 const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros et contacter</div>` : '';
-                const pinnedBadgeHtml = isPinned ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 
                 return `
                     <div class="order-card ${isPinned ? 'pinned' : ''}">
@@ -1125,7 +1140,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 const maskedPhone = maskPhoneNumber(supplier.phone, { _type: 'fournisseur', ...supplier });
                 
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
-                const pinButton = isAdminMode ? `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
+                const pinButton = `<button class="pin-btn ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>`;
                 
                 if (showFullAccess && hasPhone) {
                     whatsappUrl = `https://wa.me/${supplier.phone.replace('+', '')}`;
@@ -1162,7 +1177,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 const actionsClass = getActionsClass(buttons.length);
                 const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-warning"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros et contacter</div>` : '';
-                const pinnedBadgeHtml = isPinned ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="admin-pinned-badge"><i class="fas fa-thumbtack"></i> Épinglé (Admin)</span>` : `<span class="pinned-badge-card"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 
                 return `
                     <div class="order-card ${isPinned ? 'pinned' : ''}">
@@ -1246,6 +1261,11 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 if (isAdminMode) {
                     logoutAdmin();
                 } else {
+                    // Charger le mot de passe sauvegardé
+                    const savedPassword = localStorage.getItem(STORAGE_KEYS.SAVED_PASSWORD);
+                    if (savedPassword) {
+                        document.getElementById('adminPasswordInput').value = savedPassword;
+                    }
                     document.getElementById('adminPasswordModal').classList.add('show');
                 }
             };
@@ -1253,6 +1273,9 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             window.verifyAdminPassword = function() {
                 const password = document.getElementById('adminPasswordInput').value;
                 if (password === ADMIN_PASSWORD) {
+                    // Sauvegarder le mot de passe
+                    localStorage.setItem(STORAGE_KEYS.SAVED_PASSWORD, password);
+                    
                     if (isSubscriberMode) {
                         logoutSubscriber();
                     }
@@ -1280,11 +1303,15 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             function logoutAdmin() {
                 isAdminMode = false;
                 localStorage.removeItem(STORAGE_KEYS.ADMIN_MODE);
+                // Ne pas supprimer le mot de passe sauvegardé
                 document.body.classList.remove('admin-mode');
                 updateAdminUI(false);
                 renderAutomaticiens();
                 renderFournisseurs();
                 showToast('👋 Mode visiteur activé');
+                
+                // Rester sur À Propos
+                showSection('about');
             }
             
             function updateAdminUI(isAdmin) {
@@ -1747,6 +1774,7 @@ ${SHARE_TEXT_FOURNISSEURS}`;
                 document.querySelectorAll('.offcanvas-btn').forEach(btn => btn.classList.remove('active'));
                 const activeBtn = document.querySelector(`.offcanvas-btn[data-section="${sectionId}"]`);
                 if (activeBtn) activeBtn.classList.add('active');
+                // Fermeture de la offcanvas avec animation
                 closeOffcanvas();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
@@ -1758,8 +1786,11 @@ ${SHARE_TEXT_FOURNISSEURS}`;
             
             function loadSavedSection() {
                 const savedSection = localStorage.getItem('currentSection');
-                if (savedSection) showSection(savedSection);
-                else showSection('about');
+                if (savedSection && (savedSection === 'about' || savedSection === 'fournisseurs' || savedSection === 'automaticiens' || savedSection === 'join' || savedSection === 'suggestions')) {
+                    showSection(savedSection);
+                } else {
+                    showSection('about');
+                }
             }
             
             window.toggleTheme = function() {
