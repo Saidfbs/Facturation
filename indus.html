@@ -85,7 +85,7 @@
             background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
         }
 
-        /* شريط المهام - بدون تمرير أفقي (أيقونات ثابتة) */
+        /* شريط المهام - بدون تمرير أفقي */
         .taskbar {
             position: fixed;
             top: 0;
@@ -102,7 +102,6 @@
             border-bottom: 1px solid var(--win-border);
             gap: 8px;
             flex-wrap: nowrap;
-            overflow-x: visible;
         }
 
         body.light-mode .taskbar {
@@ -156,6 +155,7 @@
             justify-content: center;
             align-items: center;
             flex-wrap: wrap;
+            overflow-x: visible;
         }
 
         .taskbar-icon {
@@ -267,9 +267,8 @@
             font-size: 0.9rem;
             transition: all 0.2s;
             text-align: left;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .start-menu-item:hover {
@@ -332,7 +331,7 @@
             overflow-x: hidden;
         }
 
-        /* أنماط البطاقات العامة مع دعم النصوص الطويلة */
+        /* أنماط البطاقات مع دعم النصوص الطويلة */
         .window-card {
             background: var(--win-card-bg);
             backdrop-filter: blur(10px);
@@ -370,14 +369,15 @@
             font-weight: 600;
             flex: 1;
             word-break: break-word;
+            overflow-wrap: break-word;
         }
 
         .window-content {
             padding: 16px;
         }
 
-        /* دعم النصوص الطويلة في العناوين والتفاصيل */
-        .item-title, .item-details .value, .detail-row .value, .featured-card .item-title, .join-tile h3, .link-tile h3 {
+        /* دعم النصوص الطويلة في جميع العناصر */
+        .item-title, .item-details .value, .detail-row .value, .featured-card .item-title, .join-tile h3, .link-tile h3, .description-box p, .contact-window p, .tile-label {
             word-break: break-word;
             overflow-wrap: break-word;
             white-space: normal;
@@ -1170,6 +1170,49 @@
             }
         }
 
+        /* مؤشر تحميل PDF */
+        .pdf-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .pdf-loading-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .pdf-loading-content {
+            background: var(--win-card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--win-border);
+        }
+
+        .pdf-loading-content i {
+            font-size: 2rem;
+            color: var(--win-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .pdf-loading-content p {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1198,8 +1241,8 @@
 
             .taskbar-icons {
                 justify-content: flex-start;
-                overflow-x: auto;
                 flex-wrap: nowrap;
+                overflow-x: auto;
             }
             
             .start-menu-item {
@@ -1791,6 +1834,14 @@
         </div>
     </div>
 
+    <!-- مؤشر تحميل PDF -->
+    <div id="pdfLoadingOverlay" class="pdf-loading-overlay">
+        <div class="pdf-loading-content">
+            <i class="fas fa-spinner fa-pulse"></i>
+            <p>جاري تجهيز البطاقة...</p>
+        </div>
+    </div>
+
     <script>
         (function() {
             'use strict';
@@ -1911,7 +1962,7 @@
                 return '➖➖➖➖➖➖➖➖➖➖➖➖';
             }
 
-            // Recherche améliorée (tous les champs)
+            // Recherche améliorée
             function matchesSearch(item, searchTerm) {
                 if (!searchTerm) return true;
                 const term = searchTerm.toLowerCase().trim();
@@ -1967,7 +2018,7 @@
                 }
             }
 
-            // Gestion des épinglages (admin et user indépendants)
+            // Gestion des épinglages
             function getUserPinnedItems(type) {
                 const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
                 return JSON.parse(localStorage.getItem(key) || '[]');
@@ -2039,36 +2090,60 @@
                 return phoneMatches(currentSubscriberPhone, item.phone);
             }
 
-            // Génération PDF à partir d'une carte
+            // PDF amélioré
             async function generatePDF(cardElement, itemName) {
                 if (!cardElement) {
                     showToast("Impossible de générer le PDF");
                     return;
                 }
+                const loadingOverlay = document.getElementById('pdfLoadingOverlay');
                 try {
-                    showToast("Génération du PDF...");
+                    loadingOverlay.classList.add('show');
+                    
+                    // إضافة scale عالية للحصول على جودة أفضل
                     const canvas = await html2canvas(cardElement, {
-                        scale: 2,
+                        scale: 3, // جودة عالية
                         backgroundColor: getComputedStyle(document.body).getPropertyValue('--win-card-bg').trim(),
                         logging: false,
-                        useCORS: true
+                        useCORS: true,
+                        windowWidth: cardElement.scrollWidth,
+                        windowHeight: cardElement.scrollHeight
                     });
-                    const imgData = canvas.toDataURL('image/png');
+                    
+                    // قص المساحة البيضاء الزائدة: حساب الارتفاع الفعلي للعنصر
+                    const actualHeight = cardElement.scrollHeight;
+                    const actualWidth = cardElement.scrollWidth;
+                    
+                    // إنشاء canvas جديد بالحجم الفعلي للبطاقة فقط (بدون مسافات بيضاء)
+                    const croppedCanvas = document.createElement('canvas');
+                    croppedCanvas.width = canvas.width;
+                    croppedCanvas.height = canvas.height;
+                    const ctx = croppedCanvas.getContext('2d');
+                    ctx.drawImage(canvas, 0, 0);
+                    
+                    const imgData = croppedCanvas.toDataURL('image/png');
                     const { jsPDF } = window.jspdf;
+                    
+                    // حساب أبعاد PDF بناءً على نسبة العرض إلى الارتفاع الأصلية للبطاقة
                     const pdf = new jsPDF({
                         orientation: 'portrait',
                         unit: 'mm',
                         format: 'a4'
                     });
+                    
                     const imgProps = pdf.getImageProperties(imgData);
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    
+                    // إضافة الصورة بحيث تملأ الصفحة بشكل مناسب دون هوامش كبيرة
                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                     pdf.save(`${itemName.replace(/[^a-z0-9]/gi, '_')}.pdf`);
                     showToast("PDF téléchargé");
                 } catch (err) {
                     console.error(err);
                     showToast("Erreur lors de la génération du PDF");
+                } finally {
+                    loadingOverlay.classList.remove('show');
                 }
             }
 
@@ -2376,7 +2451,7 @@
             window.filterAutomaticiens2 = renderAll;
             window.filterFournisseurs2 = renderAll;
 
-            // Partage de texte (inchangé)
+            // Partage de texte
             function shareCardAuto(name, domaine, specialite, city, phone, website) {
                 let shareText = `👤*Nom:*\n${name}\n${makeSeparator()}\n📂*Domaine:*\n${domaine}\n${makeSeparator()}\n👷🏻‍♂️*Spécialité:*\n${specialite}\n${makeSeparator()}\n🧭*Ville:*\n${city}\n${makeSeparator()}\n📱*Téléphone:*\n${phone}`;
                 if (website && website !== '') shareText += `\n${makeSeparator()}\n🌐*Site web:*\n${website}`;
@@ -2637,7 +2712,7 @@
                 }
             }
 
-            // Filtres (version simplifiée mais fonctionnelle)
+            // Filtres
             function openAutoDomaineModal() {
                 const domaines = [...new Set(automaticiensData.map(i => i.domaine).filter(d => d && d.trim() !== ''))];
                 const container = document.getElementById('autoDomaineList');
@@ -2755,7 +2830,7 @@
                 }, 50);
             }
 
-            // Autres utilitaires
+            // Autres fonctions
             function updateTaskbarTime() {
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
