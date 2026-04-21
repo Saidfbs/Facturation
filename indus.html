@@ -1103,7 +1103,6 @@
                 <i class="fas fa-building"></i>
                 <span>À Propos</span>
             </button>
-            <!-- أزرار Rejoindre و Suggestions تمت إزالتها من شريط المهام -->
         </div>
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
@@ -1315,7 +1314,7 @@
                             </div>
                         </div>
 
-                        <div class="window-card" style="margin: 0;">
+                        <div class="window-card" style="margin: 0 0 1rem 0;">
                             <div class="window-header">
                                 <i class="fab fa-whatsapp"></i>
                                 <h2>Nos Groupes WhatsApp</h2>
@@ -1362,6 +1361,30 @@
                                             <button class="link-btn share" onclick="shareWhatsAppGroup('Génie Électrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- قسم Contactez-nous -->
+                        <div class="window-card" style="margin: 1rem 0 0 0;">
+                            <div class="window-header">
+                                <i class="fas fa-headset"></i>
+                                <h2>Contactez-nous</h2>
+                            </div>
+                            <div class="window-content">
+                                <div class="contact-window" style="text-align: center; padding: 1rem;">
+                                    <p style="margin-bottom: 0.5rem; color: var(--win-text);">📞 Pour toute question ou assistance rapide</p>
+                                    <div class="contact-number" style="font-size: 1.5rem; font-weight: 600; margin: 0.5rem 0;">
+                                        <a href="https://wa.me/212690292010" style="color: var(--win-green); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                                            <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> +212 690-292010
+                                        </a>
+                                    </div>
+                                    <p style="font-size: 0.7rem; color: var(--win-text-secondary); margin-top: 0.5rem;">
+                                        <i class="fas fa-clock"></i> Service disponible : Dimanche à Jeudi | 09:00 – 18:00
+                                    </p>
+                                    <button class="join-btn" onclick="openWaContactModal()" style="margin-top: 0.75rem; width: auto; padding: 0.5rem 1rem;">
+                                        <i class="fab fa-whatsapp"></i> Contacter via WhatsApp
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1626,7 +1649,7 @@
             'use strict';
 
             const ADMIN_PASSWORD = "11111111";
-            const ADMIN_WHATSAPP = "212690292010";
+            const WHATSAPP_NUMBER = "212690292010";
 
             const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
             const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
@@ -1634,7 +1657,6 @@
             const FORM_AUTO_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform?usp=header";
             const FORM_FOUR_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform?usp=header";
 
-            const WHATSAPP_NUMBER = "212690292010";
             const TARGET_CLIENT_COUNT = 28700;
             const TARGET_EXP_COUNT = 20;
 
@@ -1837,7 +1859,6 @@
                 }
                 
                 if (isAdminMode) {
-                    // Mode Admin: Épingler dans la liste admin
                     let adminPinnedList = getAdminPinnedItems(type);
                     const index = adminPinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -1849,7 +1870,6 @@
                     }
                     setAdminPinnedItems(type, adminPinnedList);
                 } else {
-                    // Mode Subscriber: Épingler dans la liste personnelle
                     let pinnedList = getUserPinnedItems(type);
                     const index = pinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -1888,20 +1908,6 @@
                 return false;
             }
 
-            function maskPhoneNumber(phone, item) {
-                if (!phone) return null;
-                // Les éléments épinglés par l'admin sont visibles pour tous
-                if (item && isAdminPinned(item, item._type)) return phone;
-                if (isSubscriberMode) return phone;
-                if (isAdminMode) return phone;
-                if (phone.length >= 8) {
-                    const start = phone.substring(0, 4);
-                    const masked = '*'.repeat(Math.min(phone.length - 4, 7));
-                    return start + masked;
-                }
-                return '*******';
-            }
-
             function renderFeaturedItems(containerId, items, type) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -1918,8 +1924,6 @@
                 let html = '';
                 for (const item of items) {
                     const hasPhone = item.phone && item.phone !== 'null';
-                    // Les éléments épinglés par l'admin sont visibles pour tous
-                    const showFullAccess = true; // Toujours visible pour les éléments admin
                     const phoneDisplay = hasPhone ? item.phone : 'Non disponible';
 
                     let buttons = '';
@@ -1955,12 +1959,7 @@
                 const hasPhone = person.phone && person.phone !== 'null';
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
-                // Les éléments épinglés par l'admin sont visibles pour tous
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
-                const maskedPhone = maskPhoneNumber(person.phone, {
-                    _type: 'expert',
-                    ...person
-                });
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
                 const pinButton = (isSubscriberMode || isAdminMode) ? `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
 
@@ -1990,7 +1989,7 @@
                     buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
                 }
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
+                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : '*********') : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
                 const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
@@ -2021,10 +2020,6 @@
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
-                const maskedPhone = maskPhoneNumber(supplier.phone, {
-                    _type: 'fournisseur',
-                    ...supplier
-                });
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
                 const pinButton = (isSubscriberMode || isAdminMode) ? `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
 
@@ -2054,7 +2049,7 @@
                     buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
                 }
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
+                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : '*********') : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
                 const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
@@ -2686,11 +2681,11 @@
             }
 
             function openSubscribeModal() {
-                if (isSubscriberMode) logoutSubscriber();
-                else {
+                if (isSubscriberMode) {
+                    logoutSubscriber();
+                } else {
                     const subscribePhoneInput = document.getElementById('subscribePhoneInput');
                     if (subscribePhoneInput) {
-                        // Charger le numéro sauvegardé s'il existe
                         const savedPhone = localStorage.getItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
                         if (savedPhone) {
                             subscribePhoneInput.value = savedPhone;
