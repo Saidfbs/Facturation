@@ -518,6 +518,10 @@
             color: var(--win-red);
             margin-bottom: 0.5rem;
             word-break: break-word;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .featured-card .detail-row {
@@ -582,6 +586,49 @@
         .item-card.subscriber-card {
             border: 2px solid var(--win-green);
             box-shadow: 0 0 0 2px rgba(45, 164, 78, 0.3);
+        }
+
+        /* بطاقة المشترك الحالية - مميزة بلون أخضر خاص */
+        .item-card.current-subscriber-card {
+            border: 3px solid #25D366;
+            background: linear-gradient(135deg, rgba(37, 211, 102, 0.2), rgba(37, 211, 102, 0.05));
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .item-card.current-subscriber-card::before {
+            content: "✓ Mon profil";
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: #25D366;
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 30px;
+            transform: rotate(45deg);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .item-card.current-subscriber-card .item-title {
+            color: #25D366;
+        }
+
+        .unpin-btn {
+            background: rgba(232, 17, 35, 0.1);
+            border: 1px solid var(--win-red);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--win-red);
+        }
+
+        .unpin-btn:hover {
+            background: var(--win-red);
+            color: white;
         }
 
         .item-header {
@@ -1925,6 +1972,18 @@
                 for (const item of items) {
                     const hasPhone = item.phone && item.phone !== 'null';
                     const phoneDisplay = hasPhone ? item.phone : 'Non disponible';
+                    const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                    
+                    let adminActions = '';
+                    if (isAdminMode) {
+                        adminActions = `
+                            <div style="margin-top: 5px;">
+                                <button class="unpin-btn" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')">
+                                    <i class="fas fa-times-circle"></i> Retirer de la une
+                                </button>
+                            </div>
+                        `;
+                    }
 
                     let buttons = '';
                     if (hasPhone) {
@@ -1942,7 +2001,10 @@
 
                     html += `
                         <div class="featured-card">
-                            <div class="item-title"><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name)} <span class="badge-admin-pinned">⭐ Épinglé par Admin</span></div>
+                            <div class="item-title">
+                                <span><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name)} <span class="badge-admin-pinned">⭐ Épinglé par Admin</span></span>
+                                ${adminActions}
+                            </div>
                             <div class="detail-row"><i class="fas fa-folder"></i> ${escapeHtml(item.domaine)}</div>
                             <div class="detail-row"><i class="fas fa-microchip"></i> ${escapeHtml(item.specialite)}</div>
                             <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.city)}</div>
@@ -1959,9 +2021,23 @@
                 const hasPhone = person.phone && person.phone !== 'null';
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
+                
+                const isCurrentSubscriber = isSubscriberMode && currentSubscriberMember && 
+                    currentSubscriberMember.type === 'expert' && 
+                    phoneMatches(currentSubscriberPhone, person.phone);
+                
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
-                const pinButton = (isSubscriberMode || isAdminMode) ? `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
+                
+                let pinButton = '';
+                if (isSubscriberMode || isAdminMode) {
+                    pinButton = `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-thumbtack"></i></button>`;
+                }
+                
+                let adminUnpinButton = '';
+                if (isAdminMode && isAdminPinnedItem) {
+                    adminUnpinButton = `<button class="unpin-btn" style="margin-left: 8px;" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')"><i class="fas fa-star"></i> Retirer de la une</button>`;
+                }
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${person.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
@@ -1991,15 +2067,27 @@
 
                 const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : '*********') : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
-                const cardClass = isSubscriberCard ? 'item-card subscriber-card' : 'item-card';
-                const adminPinnedClass = isAdminPinnedItem ? 'admin-pinned-card' : '';
+                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;"><i class="fas fa-user"></i> Mon profil</span>` : '';
+                
+                let cardClass = 'item-card';
+                if (isSubscriberCard) cardClass += ' subscriber-card';
+                if (isAdminPinnedItem) cardClass += ' admin-pinned-card';
+                if (isCurrentSubscriber) cardClass += ' current-subscriber-card';
+                if (isPinned) cardClass += ' pinned';
 
                 return `
-                    <div class="${cardClass} ${adminPinnedClass} ${isPinned ? 'pinned' : ''}">
+                    <div class="${cardClass}">
                         <div class="item-header">
-                            <span class="item-title"><i class="fas fa-user-astronaut"></i> ${escapeHtml(person.name)} ${pinnedBadgeHtml} ${subscriberBadgeHtml}</span>
+                            <span class="item-title">
+                                <i class="fas fa-user-astronaut"></i> 
+                                ${escapeHtml(person.name)} 
+                                ${pinnedBadgeHtml} 
+                                ${subscriberBadgeHtml}
+                                ${currentSubscriberBadgeHtml}
+                                ${adminUnpinButton}
+                            </span>
                             ${pinButton}
                         </div>
                         <div class="item-details">
@@ -2019,9 +2107,23 @@
                 const hasPhone = supplier.phone && supplier.phone !== 'null';
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
+                
+                const isCurrentSubscriber = isSubscriberMode && currentSubscriberMember && 
+                    currentSubscriberMember.type === 'fournisseur' && 
+                    phoneMatches(currentSubscriberPhone, supplier.phone);
+                
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
-                const pinButton = (isSubscriberMode || isAdminMode) ? `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
+                
+                let pinButton = '';
+                if (isSubscriberMode || isAdminMode) {
+                    pinButton = `<button class="pin-icon ${isPinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-thumbtack"></i></button>`;
+                }
+                
+                let adminUnpinButton = '';
+                if (isAdminMode && isAdminPinnedItem) {
+                    adminUnpinButton = `<button class="unpin-btn" style="margin-left: 8px;" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')"><i class="fas fa-star"></i> Retirer de la une</button>`;
+                }
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${supplier.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
@@ -2051,15 +2153,27 @@
 
                 const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : '*********') : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
-                const cardClass = isSubscriberCard ? 'item-card subscriber-card' : 'item-card';
-                const adminPinnedClass = isAdminPinnedItem ? 'admin-pinned-card' : '';
+                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;"><i class="fas fa-user"></i> Mon profil</span>` : '';
+                
+                let cardClass = 'item-card';
+                if (isSubscriberCard) cardClass += ' subscriber-card';
+                if (isAdminPinnedItem) cardClass += ' admin-pinned-card';
+                if (isCurrentSubscriber) cardClass += ' current-subscriber-card';
+                if (isPinned) cardClass += ' pinned';
 
                 return `
-                    <div class="${cardClass} ${adminPinnedClass} ${isPinned ? 'pinned' : ''}">
+                    <div class="${cardClass}">
                         <div class="item-header">
-                            <span class="item-title"><i class="fas fa-building"></i> ${escapeHtml(supplier.name)} ${pinnedBadgeHtml} ${subscriberBadgeHtml}</span>
+                            <span class="item-title">
+                                <i class="fas fa-building"></i> 
+                                ${escapeHtml(supplier.name)} 
+                                ${pinnedBadgeHtml} 
+                                ${subscriberBadgeHtml}
+                                ${currentSubscriberBadgeHtml}
+                                ${adminUnpinButton}
+                            </span>
                             ${pinButton}
                         </div>
                         <div class="item-details">
