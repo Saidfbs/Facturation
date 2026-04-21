@@ -1145,7 +1145,18 @@
                 <i class="fas fa-microchip"></i>
                 <span>Experts</span>
             </button>
-            <!-- أيقونة À Propos تمت إزالتها من شريط المهام -->
+            <button class="taskbar-icon" onclick="showSection('apropos')" title="À Propos">
+                <i class="fas fa-building"></i>
+                <span>À Propos</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('rejoindre')" title="Rejoindre">
+                <i class="fas fa-user-plus"></i>
+                <span>Rejoindre</span>
+            </button>
+            <button class="taskbar-icon" onclick="showSection('suggestions')" title="Suggestions">
+                <i class="fas fa-comment-dots"></i>
+                <span>Suggestions</span>
+            </button>
         </div>
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
@@ -1159,22 +1170,22 @@
             </div>
         </div>
         <div class="start-menu-items">
-            <button class="start-menu-item" onclick="showSection('apropos'); closeStartMenu();"><i class="fas fa-building"></i> À Propos</button>
-            <button class="start-menu-item" onclick="showSection('fournisseurs'); closeStartMenu();"><i class="fas fa-industry"></i> Fournisseurs</button>
-            <button class="start-menu-item" onclick="showSection('experts'); closeStartMenu();"><i class="fas fa-microchip"></i> Experts</button>
-            <button class="start-menu-item" onclick="showSection('rejoindre'); closeStartMenu();"><i class="fas fa-user-plus"></i> Rejoindre</button>
-            <button class="start-menu-item" onclick="showSection('suggestions'); closeStartMenu();"><i class="fas fa-comment-dots"></i> Suggestions</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('apropos')"><i class="fas fa-building"></i> À Propos</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('fournisseurs')"><i class="fas fa-industry"></i> Fournisseurs</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('experts')"><i class="fas fa-microchip"></i> Experts</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('rejoindre')"><i class="fas fa-user-plus"></i> Rejoindre</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('suggestions')"><i class="fas fa-comment-dots"></i> Suggestions</button>
             <div class="start-divider"></div>
-            <button class="start-menu-item" id="startSubscribeBtn" onclick="openSubscribeModal(); closeStartMenu();"><i class="fas fa-user-plus"></i> <span id="subscribeText">S'abonner</span></button>
-            <button class="start-menu-item" id="startAdminBtn" onclick="toggleAdminMode(); closeStartMenu();"><i class="fas fa-key"></i> <span id="adminModeText">Mode Admin</span></button>
-            <button class="start-menu-item" onclick="toggleTheme(); closeStartMenu();"><i class="fas fa-moon" id="startThemeIcon"></i> Mode Nuit</button>
-            <button class="start-menu-item" onclick="openWaContactModal(); closeStartMenu();"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
+            <button class="start-menu-item" id="startSubscribeBtn" onclick="handleMenuItemClick('subscribe')"><i class="fas fa-user-plus"></i> <span id="subscribeText">S'abonner</span></button>
+            <button class="start-menu-item" id="startAdminBtn" onclick="handleMenuItemClick('admin')"><i class="fas fa-key"></i> <span id="adminModeText">Mode Admin</span></button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('theme')"><i class="fas fa-moon" id="startThemeIcon"></i> Mode Nuit</button>
+            <button class="start-menu-item" onclick="handleMenuItemClick('wa')"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
         </div>
     </div>
 
     <main>
         <div class="about-container">
-            <!-- SECTION À PROPOS (الصفحة الرئيسية) -->
+            <!-- SECTION À PROPOS -->
             <div id="aproposSection" class="section-container active-section">
                 <div class="window-card">
                     <div class="window-header">
@@ -1339,7 +1350,6 @@
                             </div>
                         </div>
 
-                        <!-- قسم Contactez-nous -->
                         <div class="window-card" style="margin: 1rem 0 0 0;">
                             <div class="window-header">
                                 <i class="fas fa-headset"></i>
@@ -1811,24 +1821,16 @@
                 return '➖➖➖➖➖➖➖➖➖➖➖➖';
             }
 
-            // تحسين دالة البحث لتشمل جميع الحقول
             function matchesSearch(item, searchTerm) {
                 if (!searchTerm) return true;
                 const term = searchTerm.toLowerCase().trim();
                 
-                // البحث في الاسم
                 if (item.name.toLowerCase().includes(term)) return true;
-                // البحث في المجال/الدومين
                 if (item.domaine.toLowerCase().includes(term)) return true;
-                // البحث في التخصص
                 if (item.specialite.toLowerCase().includes(term)) return true;
-                // البحث في المدينة
                 if (item.city.toLowerCase().includes(term)) return true;
-                // البحث في البريد الإلكتروني
                 if (item.email && item.email.toLowerCase().includes(term)) return true;
-                // البحث في الموقع الإلكتروني
                 if (item.web && item.web !== 'null' && item.web.toLowerCase().includes(term)) return true;
-                // البحث في رقم الهاتف
                 if (item.phone) {
                     const cleanPhone = item.phone.toString().replace(/[^\d+]/g, '');
                     const cleanSearchTerm = term.replace(/[^\d+]/g, '');
@@ -1836,6 +1838,45 @@
                     if (item.rawPhone && item.rawPhone.toString().toLowerCase().includes(term)) return true;
                 }
                 return false;
+            }
+
+            // وظيفة جديدة لإغلاق القائمة بشكل سلس بعد اختيار عنصر
+            function handleMenuItemClick(action) {
+                // إغلاق القائمة بشكل سلس
+                closeStartMenu();
+                
+                // تنفيذ الإجراء المطلوب بعد تأخير بسيط لإتاحة الوقت لإغلاق القائمة
+                setTimeout(() => {
+                    switch(action) {
+                        case 'apropos':
+                            showSection('apropos');
+                            break;
+                        case 'fournisseurs':
+                            showSection('fournisseurs');
+                            break;
+                        case 'experts':
+                            showSection('experts');
+                            break;
+                        case 'rejoindre':
+                            showSection('rejoindre');
+                            break;
+                        case 'suggestions':
+                            showSection('suggestions');
+                            break;
+                        case 'subscribe':
+                            openSubscribeModal();
+                            break;
+                        case 'admin':
+                            toggleAdminMode();
+                            break;
+                        case 'theme':
+                            toggleTheme();
+                            break;
+                        case 'wa':
+                            openWaContactModal();
+                            break;
+                    }
+                }, 50);
             }
 
             function showSection(sectionId) {
@@ -1862,7 +1903,6 @@
                 }
                 const targetElement = document.getElementById(targetId);
                 if (targetElement) targetElement.classList.add('active-section');
-                closeStartMenu();
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
@@ -1927,6 +1967,7 @@
                 return adminPinned.includes(itemId);
             }
 
+            // دالة التثبيت المعدلة - المدير لا يؤثر على تثبيت المشتركين
             function togglePin(type, itemId, itemName) {
                 if (!isSubscriberMode && !isAdminMode) {
                     showToast('🔒 Veuillez vous abonner pour épingler des éléments');
@@ -1934,6 +1975,7 @@
                 }
                 
                 if (isAdminMode) {
+                    // المدير يتحكم فقط في قائمة التثبيت الخاصة به (admin pins)
                     let adminPinnedList = getAdminPinnedItems(type);
                     const index = adminPinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -1945,6 +1987,7 @@
                     }
                     setAdminPinnedItems(type, adminPinnedList);
                 } else {
+                    // المشترك يتحكم فقط في قائمة التثبيت الخاصة به (user pins)
                     let pinnedList = getUserPinnedItems(type);
                     const index = pinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -1959,11 +2002,22 @@
                 renderAll();
             }
 
+            // دالة للتحقق مما إذا كان العنصر مثبتًا (للمستخدم الحالي أو للمدير)
             function isItemPinned(item, type) {
                 const adminPinned = getAdminPinnedItems(type);
                 const userPinned = getUserPinnedItems(type);
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                return adminPinned.includes(itemId) || userPinned.includes(itemId);
+                
+                // إذا كان المستخدم في وضع المشترك، يظهر له تثبيتاته الشخصية بالإضافة إلى تثبيتات المدير
+                if (isSubscriberMode) {
+                    return adminPinned.includes(itemId) || userPinned.includes(itemId);
+                }
+                // إذا كان المستخدم في وضع المدير، يظهر له تثبيتاته الخاصة فقط
+                if (isAdminMode) {
+                    return adminPinned.includes(itemId);
+                }
+                // الزوار يرون فقط تثبيتات المدير
+                return adminPinned.includes(itemId);
             }
 
             function renderFeaturedItems(containerId, items, type) {
@@ -2224,15 +2278,12 @@
                 const fourSearchTerm = document.getElementById('searchFourInput2')?.value.toLowerCase() || '';
                 let fourFiltered = [...fournisseursData];
                 
-                // تطبيق فلتر الدومين إذا تم تحديده
                 if (fourFilterType === 'domaine' && selectedFourDomaine !== null) {
                     fourFiltered = fourFiltered.filter(s => s.domaine === selectedFourDomaine);
                 }
-                // تطبيق فلتر المدينة إذا تم تحديدها
                 if (selectedFourVille !== null) {
                     fourFiltered = fourFiltered.filter(s => s.city === selectedFourVille);
                 }
-                // تطبيق البحث العام
                 if (fourSearchTerm) {
                     fourFiltered = fourFiltered.filter(s => matchesSearch(s, fourSearchTerm));
                 }
@@ -2264,15 +2315,12 @@
                 const autoSearchTerm = document.getElementById('searchAutoInput2')?.value.toLowerCase() || '';
                 let autoFiltered = [...automaticiensData];
                 
-                // تطبيق فلتر الدومين إذا تم تحديده
                 if (autoFilterType === 'domaine' && selectedAutoDomaine !== null) {
                     autoFiltered = autoFiltered.filter(p => p.domaine === selectedAutoDomaine);
                 }
-                // تطبيق فلتر المدينة إذا تم تحديدها
                 if (selectedAutoVille !== null) {
                     autoFiltered = autoFiltered.filter(p => p.city === selectedAutoVille);
                 }
-                // تطبيق البحث العام
                 if (autoSearchTerm) {
                     autoFiltered = autoFiltered.filter(p => matchesSearch(p, autoSearchTerm));
                 }
@@ -2300,7 +2348,6 @@
                 renderFeaturedItems('autoFeaturedItems2', autoAdminPinned, 'expert');
                 renderGrid('automaticiensGrid2', autoFinal, 'expert');
 
-                // Mettre à jour les statistiques
                 const statAuto = document.getElementById('statAutomaticiens2');
                 const statFour = document.getElementById('statFournisseurs2');
                 if (statAuto) statAuto.textContent = automaticiensData.length.toLocaleString();
@@ -2483,7 +2530,6 @@
 
                 renderAll();
                 showToast(`Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`);
-                // العودة إلى الصفحة الرئيسية (À Propos)
                 showSection('apropos');
             }
 
@@ -2569,7 +2615,6 @@
                     renderAll();
                     showToast('🔓 Mode admin activé');
                     closeModal('adminPasswordModal');
-                    // العودة إلى الصفحة الرئيسية (À Propos)
                     showSection('apropos');
                 } else {
                     showToast('❌ Mot de passe incorrect');
@@ -2965,7 +3010,6 @@
                     });
                 }
 
-                // جعل À Propos الصفحة الرئيسية
                 showSection('apropos');
 
                 setTimeout(() => {
@@ -2974,6 +3018,7 @@
                 }, 800);
             }
 
+            // تصدير الدوال المطلوبة
             window.togglePin = togglePin;
             window.shareCardAuto = shareCardAuto;
             window.shareCardFour = shareCardFour;
@@ -3007,6 +3052,7 @@
             window.scrollToClientsApropos = scrollToClientsApropos;
             window.scrollToExperienceApropos = scrollToExperienceApropos;
             window.showSection = showSection;
+            window.handleMenuItemClick = handleMenuItemClick;
 
             init();
         })();
