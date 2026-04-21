@@ -1103,14 +1103,7 @@
                 <i class="fas fa-building"></i>
                 <span>À Propos</span>
             </button>
-            <button class="taskbar-icon" onclick="showSection('rejoindre')" title="Rejoindre">
-                <i class="fas fa-user-plus"></i>
-                <span>Rejoindre</span>
-            </button>
-            <button class="taskbar-icon" onclick="showSection('suggestions')" title="Suggestions">
-                <i class="fas fa-comment-dots"></i>
-                <span>Suggestions</span>
-            </button>
+            <!-- أزرار Rejoindre و Suggestions تمت إزالتها من شريط المهام -->
         </div>
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
@@ -1826,6 +1819,11 @@
                 return JSON.parse(localStorage.getItem(key) || '[]');
             }
 
+            function setAdminPinnedItems(type, items) {
+                const key = type === 'fournisseur' ? STORAGE_KEYS.ADMIN_PINNED_FOUR : STORAGE_KEYS.ADMIN_PINNED_AUTO;
+                localStorage.setItem(key, JSON.stringify(items));
+            }
+
             function isAdminPinned(item, type) {
                 const adminPinned = getAdminPinnedItems(type);
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
@@ -1837,16 +1835,32 @@
                     showToast('🔒 Veuillez vous abonner pour épingler des éléments');
                     return;
                 }
-                let pinnedList = getUserPinnedItems(type);
-                const index = pinnedList.indexOf(itemId);
-                if (index === -1) {
-                    pinnedList.push(itemId);
-                    showToast(`📌 ${itemName} épinglé`);
+                
+                if (isAdminMode) {
+                    // Mode Admin: Épingler dans la liste admin
+                    let adminPinnedList = getAdminPinnedItems(type);
+                    const index = adminPinnedList.indexOf(itemId);
+                    if (index === -1) {
+                        adminPinnedList.push(itemId);
+                        showToast(`⭐ ${itemName} épinglé par l'administrateur`);
+                    } else {
+                        adminPinnedList.splice(index, 1);
+                        showToast(`📍 ${itemName} désépinglé par l'administrateur`);
+                    }
+                    setAdminPinnedItems(type, adminPinnedList);
                 } else {
-                    pinnedList.splice(index, 1);
-                    showToast(`📍 ${itemName} désépinglé`);
+                    // Mode Subscriber: Épingler dans la liste personnelle
+                    let pinnedList = getUserPinnedItems(type);
+                    const index = pinnedList.indexOf(itemId);
+                    if (index === -1) {
+                        pinnedList.push(itemId);
+                        showToast(`📌 ${itemName} épinglé`);
+                    } else {
+                        pinnedList.splice(index, 1);
+                        showToast(`📍 ${itemName} désépinglé`);
+                    }
+                    setUserPinnedItems(type, pinnedList);
                 }
-                setUserPinnedItems(type, pinnedList);
                 renderAll();
             }
 
@@ -1876,6 +1890,7 @@
 
             function maskPhoneNumber(phone, item) {
                 if (!phone) return null;
+                // Les éléments épinglés par l'admin sont visibles pour tous
                 if (item && isAdminPinned(item, item._type)) return phone;
                 if (isSubscriberMode) return phone;
                 if (isAdminMode) return phone;
@@ -1903,6 +1918,8 @@
                 let html = '';
                 for (const item of items) {
                     const hasPhone = item.phone && item.phone !== 'null';
+                    // Les éléments épinglés par l'admin sont visibles pour tous
+                    const showFullAccess = true; // Toujours visible pour les éléments admin
                     const phoneDisplay = hasPhone ? item.phone : 'Non disponible';
 
                     let buttons = '';
@@ -1938,6 +1955,7 @@
                 const hasPhone = person.phone && person.phone !== 'null';
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
+                // Les éléments épinglés par l'admin sont visibles pour tous
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const maskedPhone = maskPhoneNumber(person.phone, {
                     _type: 'expert',
@@ -1974,7 +1992,7 @@
 
                 const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-thumbtack"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 const cardClass = isSubscriberCard ? 'item-card subscriber-card' : 'item-card';
                 const adminPinnedClass = isAdminPinnedItem ? 'admin-pinned-card' : '';
@@ -2038,7 +2056,7 @@
 
                 const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : `<span class="phone-hidden">${maskedPhone}</span>`) : 'Non disponible';
                 const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-thumbtack"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> Admin</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 const cardClass = isSubscriberCard ? 'item-card subscriber-card' : 'item-card';
                 const adminPinnedClass = isAdminPinnedItem ? 'admin-pinned-card' : '';
@@ -2312,7 +2330,7 @@
 
                 const subscribeText = document.getElementById('subscribeText');
                 const adminModeText = document.getElementById('adminModeText');
-                if (subscribeText) subscribeText.innerHTML = 'Abonné ✅';
+                if (subscribeText) subscribeText.innerHTML = 'Abonné';
                 if (adminModeText) adminModeText.innerHTML = 'Mode Admin';
                 document.body.classList.add('subscriber-mode');
 
@@ -2320,7 +2338,7 @@
                 localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE, 'true');
 
                 renderAll();
-                showToast(`✅ Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`);
+                showToast(`Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`);
             }
 
             function checkPhoneAndSubscribe() {
@@ -2376,12 +2394,11 @@
 
                         const subscribeText = document.getElementById('subscribeText');
                         const adminModeText = document.getElementById('adminModeText');
-                        if (subscribeText) subscribeText.innerHTML = 'Abonné ✅';
+                        if (subscribeText) subscribeText.innerHTML = 'Abonné';
                         if (adminModeText) adminModeText.innerHTML = 'Mode Admin';
 
                         setTimeout(() => {
                             renderAll();
-                            showToast('🔄 Session restaurée');
                         }, 500);
                     } else {
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
@@ -2672,7 +2689,15 @@
                 if (isSubscriberMode) logoutSubscriber();
                 else {
                     const subscribePhoneInput = document.getElementById('subscribePhoneInput');
-                    if (subscribePhoneInput) subscribePhoneInput.value = '';
+                    if (subscribePhoneInput) {
+                        // Charger le numéro sauvegardé s'il existe
+                        const savedPhone = localStorage.getItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
+                        if (savedPhone) {
+                            subscribePhoneInput.value = savedPhone;
+                        } else {
+                            subscribePhoneInput.value = '';
+                        }
+                    }
                     const subscribeModal = document.getElementById('subscribeModal');
                     if (subscribeModal) subscribeModal.classList.add('show');
                 }
