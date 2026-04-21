@@ -83,6 +83,7 @@
             background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
         }
 
+        /* شريط المهام مع تمرير أفقي */
         .taskbar {
             position: fixed;
             top: 0;
@@ -97,6 +98,7 @@
             padding: 0 12px;
             z-index: 1100;
             border-bottom: 1px solid var(--win-border);
+            gap: 8px;
         }
 
         body.light-mode .taskbar {
@@ -115,6 +117,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-shrink: 0;
         }
 
         .start-btn:hover {
@@ -142,11 +145,31 @@
             color: var(--win-text);
         }
 
+        /* حاوية أيقونات شريط المهام مع تمرير أفقي */
         .taskbar-icons {
             display: flex;
             gap: 4px;
             flex: 1;
-            justify-content: center;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        .taskbar-icons::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .taskbar-icons::-webkit-scrollbar-track {
+            background: var(--win-border);
+            border-radius: 3px;
+        }
+
+        .taskbar-icons::-webkit-scrollbar-thumb {
+            background: var(--win-blue);
+            border-radius: 3px;
         }
 
         .taskbar-icon {
@@ -161,6 +184,8 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .taskbar-icon:hover {
@@ -176,6 +201,7 @@
             color: var(--win-text);
             padding: 4px 8px;
             border-radius: 4px;
+            flex-shrink: 0;
         }
 
         main {
@@ -1099,6 +1125,7 @@
             }
         }
 
+        /* تحسينات للشاشات الصغيرة */
         @media (max-width: 640px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1123,6 +1150,21 @@
 
             .taskbar-icon {
                 padding: 8px;
+            }
+            
+            .taskbar-icons {
+                gap: 2px;
+            }
+        }
+        
+        /* تحسين للشاشات المتوسطة */
+        @media (max-width: 900px) and (min-width: 641px) {
+            .taskbar-icon span {
+                font-size: 0.7rem;
+            }
+            
+            .taskbar-icon {
+                padding: 8px 8px;
             }
         }
     </style>
@@ -1734,6 +1776,8 @@
             let isSubscriberMode = false;
             let currentSubscriberPhone = null;
             let currentSubscriberMember = null;
+            // تخزين معلومات المشترك في كلا القسمين
+            let currentSubscriberMembers = { fournisseur: null, expert: null };
 
             let automaticiensData = [];
             let fournisseursData = [];
@@ -1782,18 +1826,27 @@
                 return false;
             }
 
+            // البحث عن المشترك في كلا القسمين
             function findMemberByPhone(phone) {
                 const normalizedInput = normalizePhoneNumber(phone);
                 if (!normalizedInput) return null;
+                
+                let foundFournisseur = null;
+                let foundExpert = null;
+                
                 for (let i = 0; i < fournisseursData.length; i++) {
-                    if (fournisseursData[i].phone && phoneMatches(fournisseursData[i].phone, normalizedInput))
-                        return { type: 'fournisseur', data: fournisseursData[i], index: i };
+                    if (fournisseursData[i].phone && phoneMatches(fournisseursData[i].phone, normalizedInput)) {
+                        foundFournisseur = { type: 'fournisseur', data: fournisseursData[i], index: i };
+                    }
                 }
                 for (let i = 0; i < automaticiensData.length; i++) {
-                    if (automaticiensData[i].phone && phoneMatches(automaticiensData[i].phone, normalizedInput))
-                        return { type: 'expert', data: automaticiensData[i], index: i };
+                    if (automaticiensData[i].phone && phoneMatches(automaticiensData[i].phone, normalizedInput)) {
+                        foundExpert = { type: 'expert', data: automaticiensData[i], index: i };
+                    }
                 }
-                return null;
+                
+                // إرجاع أول عنصر موجود، ولكن سيتم تخزين كلا العنصرين لاحقًا
+                return foundFournisseur || foundExpert;
             }
 
             function formatPhoneNumber(phone) {
@@ -1840,12 +1893,9 @@
                 return false;
             }
 
-            // وظيفة جديدة لإغلاق القائمة بشكل سلس بعد اختيار عنصر
             function handleMenuItemClick(action) {
-                // إغلاق القائمة بشكل سلس
                 closeStartMenu();
                 
-                // تنفيذ الإجراء المطلوب بعد تأخير بسيط لإتاحة الوقت لإغلاق القائمة
                 setTimeout(() => {
                     switch(action) {
                         case 'apropos':
@@ -1967,7 +2017,6 @@
                 return adminPinned.includes(itemId);
             }
 
-            // دالة التثبيت المعدلة - المدير لا يؤثر على تثبيت المشتركين
             function togglePin(type, itemId, itemName) {
                 if (!isSubscriberMode && !isAdminMode) {
                     showToast('🔒 Veuillez vous abonner pour épingler des éléments');
@@ -1975,7 +2024,6 @@
                 }
                 
                 if (isAdminMode) {
-                    // المدير يتحكم فقط في قائمة التثبيت الخاصة به (admin pins)
                     let adminPinnedList = getAdminPinnedItems(type);
                     const index = adminPinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -1987,7 +2035,6 @@
                     }
                     setAdminPinnedItems(type, adminPinnedList);
                 } else {
-                    // المشترك يتحكم فقط في قائمة التثبيت الخاصة به (user pins)
                     let pinnedList = getUserPinnedItems(type);
                     const index = pinnedList.indexOf(itemId);
                     if (index === -1) {
@@ -2002,22 +2049,24 @@
                 renderAll();
             }
 
-            // دالة للتحقق مما إذا كان العنصر مثبتًا (للمستخدم الحالي أو للمدير)
             function isItemPinned(item, type) {
                 const adminPinned = getAdminPinnedItems(type);
                 const userPinned = getUserPinnedItems(type);
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
                 
-                // إذا كان المستخدم في وضع المشترك، يظهر له تثبيتاته الشخصية بالإضافة إلى تثبيتات المدير
                 if (isSubscriberMode) {
                     return adminPinned.includes(itemId) || userPinned.includes(itemId);
                 }
-                // إذا كان المستخدم في وضع المدير، يظهر له تثبيتاته الخاصة فقط
                 if (isAdminMode) {
                     return adminPinned.includes(itemId);
                 }
-                // الزوار يرون فقط تثبيتات المدير
                 return adminPinned.includes(itemId);
+            }
+
+            // دالة للتحقق مما إذا كان العنصر هو بطاقة المشترك الحالي في أي قسم
+            function isCurrentSubscriberItem(item, type) {
+                if (!isSubscriberMode || !currentSubscriberPhone) return false;
+                return phoneMatches(currentSubscriberPhone, item.phone);
             }
 
             function renderFeaturedItems(containerId, items, type) {
@@ -2087,9 +2136,8 @@
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
                 
-                const isCurrentSubscriber = isSubscriberMode && currentSubscriberMember && 
-                    currentSubscriberMember.type === 'expert' && 
-                    phoneMatches(currentSubscriberPhone, person.phone);
+                // التحقق مما إذا كان هذا العنصر هو المشترك الحالي
+                const isCurrentSubscriber = isCurrentSubscriberItem(person, 'expert');
                 
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
@@ -2175,9 +2223,7 @@
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
                 
-                const isCurrentSubscriber = isSubscriberMode && currentSubscriberMember && 
-                    currentSubscriberMember.type === 'fournisseur' && 
-                    phoneMatches(currentSubscriberPhone, supplier.phone);
+                const isCurrentSubscriber = isCurrentSubscriberItem(supplier, 'fournisseur');
                 
                 const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
@@ -2299,8 +2345,10 @@
                     else fourUnpinned.push(item);
                 }
                 let fourFinal = [...fourPinned, ...fourUnpinned];
-                if (isSubscriberMode && currentSubscriberMember && currentSubscriberMember.type === 'fournisseur') {
-                    const subIndex = fourFinal.findIndex(item => item.phone && phoneMatches(item.phone, currentSubscriberPhone));
+                
+                // التأكد من ظهور بطاقة المشترك في المقدمة إذا كان موجودًا في هذا القسم
+                if (isSubscriberMode && currentSubscriberPhone) {
+                    const subIndex = fourFinal.findIndex(item => phoneMatches(currentSubscriberPhone, item.phone));
                     if (subIndex > 0) {
                         const subItem = fourFinal[subIndex];
                         fourFinal.splice(subIndex, 1);
@@ -2336,8 +2384,10 @@
                     else autoUnpinned.push(item);
                 }
                 let autoFinal = [...autoPinned, ...autoUnpinned];
-                if (isSubscriberMode && currentSubscriberMember && currentSubscriberMember.type === 'expert') {
-                    const subIndex = autoFinal.findIndex(item => item.phone && phoneMatches(item.phone, currentSubscriberPhone));
+                
+                // التأكد من ظهور بطاقة المشترك في المقدمة إذا كان موجودًا في هذا القسم
+                if (isSubscriberMode && currentSubscriberPhone) {
+                    const subIndex = autoFinal.findIndex(item => phoneMatches(currentSubscriberPhone, item.phone));
                     if (subIndex > 0) {
                         const subItem = autoFinal[subIndex];
                         autoFinal.splice(subIndex, 1);
@@ -2513,11 +2563,27 @@
                 return result;
             }
 
+            // تحديث دالة تنشيط المشترك لتخزين معلومات في كلا القسمين
             function activateSubscriber(phone, member) {
                 if (isAdminMode) logoutAdmin();
                 isSubscriberMode = true;
                 currentSubscriberPhone = phone;
                 currentSubscriberMember = member;
+                
+                // البحث عن المشترك في كلا القسمين
+                const normalizedPhone = normalizePhoneNumber(phone);
+                if (normalizedPhone) {
+                    for (let i = 0; i < fournisseursData.length; i++) {
+                        if (fournisseursData[i].phone && phoneMatches(fournisseursData[i].phone, normalizedPhone)) {
+                            currentSubscriberMembers.fournisseur = { type: 'fournisseur', data: fournisseursData[i], index: i };
+                        }
+                    }
+                    for (let i = 0; i < automaticiensData.length; i++) {
+                        if (automaticiensData[i].phone && phoneMatches(automaticiensData[i].phone, normalizedPhone)) {
+                            currentSubscriberMembers.expert = { type: 'expert', data: automaticiensData[i], index: i };
+                        }
+                    }
+                }
 
                 const subscribeText = document.getElementById('subscribeText');
                 const adminModeText = document.getElementById('adminModeText');
@@ -2529,7 +2595,16 @@
                 localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE, 'true');
 
                 renderAll();
-                showToast(`Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`);
+                
+                let welcomeMessage = `Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`;
+                if (currentSubscriberMembers.fournisseur && currentSubscriberMembers.expert) {
+                    welcomeMessage += " (Fournisseur & Expert)";
+                } else if (currentSubscriberMembers.fournisseur) {
+                    welcomeMessage += " (Fournisseur)";
+                } else if (currentSubscriberMembers.expert) {
+                    welcomeMessage += " (Expert)";
+                }
+                showToast(welcomeMessage);
                 showSection('apropos');
             }
 
@@ -2560,6 +2635,7 @@
                 isSubscriberMode = false;
                 currentSubscriberPhone = null;
                 currentSubscriberMember = null;
+                currentSubscriberMembers = { fournisseur: null, expert: null };
                 const subscribeText = document.getElementById('subscribeText');
                 const adminModeText = document.getElementById('adminModeText');
                 if (subscribeText) subscribeText.innerHTML = 'S\'abonner';
@@ -2579,20 +2655,7 @@
                 if (savedPhone && wasSubscriber) {
                     const member = findMemberByPhone(savedPhone);
                     if (member) {
-                        isSubscriberMode = true;
-                        currentSubscriberPhone = savedPhone;
-                        currentSubscriberMember = member;
-                        document.body.classList.add('subscriber-mode');
-
-                        const subscribeText = document.getElementById('subscribeText');
-                        const adminModeText = document.getElementById('adminModeText');
-                        if (subscribeText) subscribeText.innerHTML = 'Abonné';
-                        if (adminModeText) adminModeText.innerHTML = 'Mode Admin';
-
-                        setTimeout(() => {
-                            renderAll();
-                            showToast('🔄 Session restaurée');
-                        }, 500);
+                        activateSubscriber(savedPhone, member);
                     } else {
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE);
@@ -3018,7 +3081,6 @@
                 }, 800);
             }
 
-            // تصدير الدوال المطلوبة
             window.togglePin = togglePin;
             window.shareCardAuto = shareCardAuto;
             window.shareCardFour = shareCardFour;
