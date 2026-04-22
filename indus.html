@@ -275,7 +275,6 @@
             flex-shrink: 0;
         }
 
-        /* تلوين عناصر القائمة حسب نوع الاتصال */
         body.admin-mode #startAdminBtn {
             background: rgba(224, 108, 0, 0.2);
             border-left: 3px solid var(--win-orange);
@@ -1281,6 +1280,7 @@
     </div>
 
     <main>
+        <!-- حاوية التمرير للأقسام الأساسية (Fournisseurs و Experts) -->
         <div class="sections-scroll-container" id="sectionsScrollContainer">
             <div class="sections-wrapper" id="sectionsWrapper">
                 <div id="fournisseursSection" class="main-section">
@@ -1350,6 +1350,7 @@
             </div>
         </div>
 
+        <!-- الأقسام المخفية (تظهر فقط من قائمة Démarrer) -->
         <div id="aproposSection" class="hidden-section">
             <div class="window-card">
                 <div class="window-header">
@@ -1879,29 +1880,42 @@
                 return fields.some(f => f.toLowerCase().includes(term));
             }
 
-            // Section navigation functions
+            // Section navigation functions - IMPROVED
             function showHiddenSection(sectionId) {
+                // Hide all hidden sections
                 document.querySelectorAll('.hidden-section').forEach(section => {
                     section.classList.add('hidden-section');
                 });
+                // Show the selected section
                 const targetSection = document.getElementById(sectionId);
                 if (targetSection) {
                     targetSection.classList.remove('hidden-section');
                 }
+                // Hide the main scroll container
                 document.querySelector('.sections-scroll-container').style.display = 'none';
-                currentVisibleSection = sectionId;
+                currentVisibleSection = 'hidden';
+                // Remove active class from taskbar icons
                 document.querySelectorAll('.taskbar-icon').forEach(btn => {
                     btn.classList.remove('active');
                 });
             }
 
             function showMainSections() {
+                // Hide all hidden sections
                 document.querySelectorAll('.hidden-section').forEach(section => {
                     section.classList.add('hidden-section');
                 });
+                // Show the main scroll container
                 document.querySelector('.sections-scroll-container').style.display = 'block';
                 currentVisibleSection = 'main';
                 updateTaskbarActive(getCurrentMainSection());
+                // Ensure scroll position is correct
+                setTimeout(() => {
+                    const container = document.getElementById('sectionsScrollContainer');
+                    const currentSection = getCurrentMainSection();
+                    const index = currentSection === 'fournisseurs' ? 0 : 1;
+                    container.scrollTo({ left: index * window.innerWidth, behavior: 'auto' });
+                }, 50);
             }
 
             function getCurrentMainSection() {
@@ -1946,7 +1960,7 @@
                 updateTaskbarActive(sectionId);
             }
 
-            // Pin functions
+            // Pin functions - FIXED
             function getUserPinnedItems(type) {
                 const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
                 return JSON.parse(localStorage.getItem(key) || '[]');
@@ -2008,10 +2022,9 @@
                 const adminPinned = getAdminPinnedItems(type);
                 const userPinned = getUserPinnedItems(type);
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                // User pinned items are always considered pinned for display
                 if (userPinned.includes(itemId)) return true;
-                if (isAdminMode) return adminPinned.includes(itemId);
-                return adminPinned.includes(itemId);
+                if (adminPinned.includes(itemId)) return true;
+                return false;
             }
 
             function isCurrentSubscriberItem(item, type) {
@@ -2019,7 +2032,7 @@
                 return phoneMatches(currentSubscriberPhone, item.phone);
             }
 
-            // PDF generation
+            // PDF generation - HIGH QUALITY & CENTERED
             async function generatePDF(cardElement, itemName) {
                 if (!cardElement) {
                     showToast("Impossible de générer le PDF");
@@ -2028,6 +2041,7 @@
                 const overlay = document.getElementById('pdfLoadingOverlay');
                 overlay.classList.add('show');
                 try {
+                    // Clone the card to remove buttons
                     const cloneCard = cardElement.cloneNode(true);
                     const actionButtonsDiv = cloneCard.querySelector('.action-buttons');
                     if (actionButtonsDiv) {
@@ -2036,16 +2050,19 @@
                     const pinBtn = cloneCard.querySelector('.pin-icon');
                     if (pinBtn) pinBtn.remove();
                     
+                    // Style the clone for better rendering
                     cloneCard.style.position = 'absolute';
                     cloneCard.style.top = '-9999px';
                     cloneCard.style.left = '-9999px';
                     cloneCard.style.width = cardElement.offsetWidth + 'px';
                     cloneCard.style.margin = '0';
                     cloneCard.style.padding = '1rem';
+                    cloneCard.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--win-card-bg').trim();
                     document.body.appendChild(cloneCard);
                     
+                    // High quality capture with scale 4 for better resolution
                     const canvas = await html2canvas(cloneCard, {
-                        scale: 3,
+                        scale: 4,
                         backgroundColor: getComputedStyle(document.body).getPropertyValue('--win-card-bg').trim(),
                         logging: false,
                         useCORS: true,
@@ -2058,26 +2075,29 @@
                     const imgData = canvas.toDataURL('image/png', 1.0);
                     const { jsPDF } = window.jspdf;
                     
+                    // Calculate dimensions to fit card perfectly with minimal white space
                     const imgWidthMm = canvas.width * 0.264583;
                     const imgHeightMm = canvas.height * 0.264583;
                     const pageWidth = 210;
                     const pageHeight = 297;
                     
+                    // Calculate scaling to fit within page with minimal margins (5mm each side)
                     let finalWidth = imgWidthMm;
                     let finalHeight = imgHeightMm;
                     
-                    if (finalWidth > pageWidth - 20) {
-                        const ratio = (pageWidth - 20) / finalWidth;
-                        finalWidth = pageWidth - 20;
+                    if (finalWidth > pageWidth - 10) {
+                        const ratio = (pageWidth - 10) / finalWidth;
+                        finalWidth = pageWidth - 10;
                         finalHeight = finalHeight * ratio;
                     }
                     
-                    if (finalHeight > pageHeight - 20) {
-                        const ratio = (pageHeight - 20) / finalHeight;
-                        finalHeight = pageHeight - 20;
+                    if (finalHeight > pageHeight - 10) {
+                        const ratio = (pageHeight - 10) / finalHeight;
+                        finalHeight = pageHeight - 10;
                         finalWidth = finalWidth * ratio;
                     }
                     
+                    // Center the card on the page
                     const x = (pageWidth - finalWidth) / 2;
                     const y = (pageHeight - finalHeight) / 2;
                     
@@ -2106,9 +2126,7 @@
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
                 const isCurrentSubscriber = isCurrentSubscriberItem(person, 'expert');
                 const isVisitor = !isAdminMode && !isSubscriberMode;
-                // Show full access for admin, subscriber, or admin-pinned items (even for visitors, but without contact info)
                 const showFullAccess = isAdminMode || isSubscriberMode;
-                // Show pin badge for all users (so pinned items are visible to everyone)
                 const showPinBadge = isPinned;
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
                 
@@ -2124,20 +2142,20 @@
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${person.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else if (hasPhone && !showFullAccess) {
+                } else if (hasPhone) {
                     buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
                 if (showFullAccess && person.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${person.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else if (person.email && !showFullAccess) {
+                } else if (person.email) {
                     buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
                 if (showFullAccess && person.web && person.web !== 'null' && person.web !== '') {
                     const webUrl = person.web.startsWith('http') ? person.web : 'https://' + person.web;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else if (person.web && person.web !== 'null' && !showFullAccess) {
+                } else if (person.web && person.web !== 'null') {
                     buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
@@ -2212,20 +2230,20 @@
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${supplier.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else if (hasPhone && !showFullAccess) {
+                } else if (hasPhone) {
                     buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
                 if (showFullAccess && supplier.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${supplier.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else if (supplier.email && !showFullAccess) {
+                } else if (supplier.email) {
                     buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
                 if (showFullAccess && supplier.web && supplier.web !== 'null' && supplier.web !== '') {
                     const webUrl = supplier.web.startsWith('http') ? supplier.web : 'https://' + supplier.web;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else if (supplier.web && supplier.web !== 'null' && !showFullAccess) {
+                } else if (supplier.web && supplier.web !== 'null') {
                     buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
