@@ -7,7 +7,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Connect Industry">
-    <link rel="manifest" href="data:application/manifest+json,{"name":"Connect Industry Maroc","short_name":"CIM","start_url":".","display":"standalone","background_color":"#1c1c1c","theme_color":"#0078D4","orientation":"portrait","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230078D4'/%3E%3Ctext x='50' y='68' font-size='60' text-anchor='middle' fill='white' font-weight='bold'%3E⚙%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}">
     <title>Connect Industry Maroc | Plateforme Industrielle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -72,15 +71,6 @@
             max-width: 100%;
         }
 
-        .detail-row .value, .item-details .value {
-            overflow-x: auto;
-            white-space: pre-wrap;
-        }
-
-        a, .contact-number {
-            word-break: break-all;
-        }
-
         .wallpaper {
             position: fixed;
             top: 0;
@@ -91,19 +81,26 @@
             z-index: -2;
         }
 
-        .wallpaper::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 80%, rgba(0, 120, 212, 0.15) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
         body.light-mode .wallpaper {
             background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1099;
+        }
+
+        .scroll-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--win-blue);
+            transition: width 0.1s ease;
         }
 
         /* Mobile optimizations */
@@ -113,7 +110,7 @@
                 min-width: 44px;
             }
             
-            .card, .item-card, .window-card {
+            .item-card {
                 margin: 8px;
             }
             
@@ -121,18 +118,10 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            .sections-scroll-container {
-                scrollbar-width: thin;
-            }
-            
             .action-btn {
                 white-space: normal;
                 font-size: 0.7rem;
                 padding: 8px 6px;
-            }
-            
-            .item-header {
-                flex-wrap: wrap;
             }
             
             .stats-grid {
@@ -155,10 +144,6 @@
         }
 
         @media (max-width: 480px) {
-            .taskbar-icon span {
-                display: none;
-            }
-            
             .join-btn[data-type] {
                 font-size: 0.7rem !important;
                 padding: 8px 4px !important;
@@ -434,19 +419,115 @@
             border-bottom: 1px solid var(--win-border);
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             flex-wrap: wrap;
-        }
-
-        .window-header i {
-            font-size: 1rem;
-            color: var(--win-blue);
+            gap: 8px;
         }
 
         .window-header h2 {
             font-size: 1rem;
             font-weight: 600;
             flex: 1;
+        }
+
+        .window-header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        /* Grid/List Toggle Buttons */
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--win-acrylic);
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: var(--win-text-secondary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            min-height: 32px;
+        }
+
+        .view-btn:hover {
+            background: var(--win-hover);
+            color: var(--win-text);
+        }
+
+        .view-btn.active {
+            background: var(--win-blue);
+            color: white;
+        }
+
+        /* Grid View (default) */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1rem;
+        }
+
+        /* List View */
+        .items-grid.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .items-grid.list-view .item-card {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .items-grid.list-view .item-header {
+            flex: 2;
+            min-width: 200px;
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .items-grid.list-view .item-details {
+            flex: 3;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        .items-grid.list-view .action-buttons {
+            flex: 2;
+            min-width: 200px;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+
+        .items-grid.list-view .visitor-note {
+            flex: 1;
+            min-width: 150px;
+            margin-top: 0;
+        }
+
+        @media (max-width: 768px) {
+            .items-grid.list-view .item-card {
+                flex-direction: column;
+            }
+            
+            .items-grid.list-view .item-details {
+                grid-template-columns: 1fr;
+            }
         }
 
         .window-content {
@@ -486,6 +567,16 @@
         .pin-icon.pinned {
             color: var(--win-yellow);
             transform: rotate(-45deg);
+        }
+
+        .pin-icon.updating {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         .unpin-btn {
@@ -618,6 +709,7 @@
             gap: 0.75rem;
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .search-input-wrapper {
@@ -737,19 +829,6 @@
         .featured-card:hover {
             transform: translateY(-2px);
             box-shadow: var(--win-shadow-hover);
-        }
-
-        /* Items grid */
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 1rem;
-        }
-
-        @media (max-width: 800px) {
-            .items-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
         .item-card {
@@ -1237,7 +1316,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="wallpaper"></div>
 
@@ -1276,6 +1354,10 @@
         <div class="taskbar-time" id="taskbarTime"></div>
     </div>
 
+    <div class="scroll-indicator" id="scrollIndicator">
+        <div class="scroll-progress" id="scrollProgress"></div>
+    </div>
+
     <div class="start-menu" id="startMenu">
         <div class="start-header">
             <div class="user-icon"><i class="fas fa-user"></i></div>
@@ -1293,7 +1375,7 @@
             <div class="start-divider"></div>
             <button class="start-menu-item" id="startSubscribeBtn"><i class="fas fa-user-plus"></i> <span id="subscribeText">S'abonner</span></button>
             <button class="start-menu-item" id="startAdminBtn"><i class="fas fa-key"></i> <span id="adminModeText">Mode Admin</span></button>
-            <button class="start-menu-item" id="unpinAllBtn"><i class="fas fa-trash-alt"></i> <span>Annuler tous les épinglages</span></button>
+            <button class="start-menu-item" id="unpinAllBtn"><i class="fas fa-trash-alt"></i> <span>Annuler tous les epinglages</span></button>
             <button class="start-menu-item" id="startThemeBtn"><i class="fas fa-moon" id="startThemeIcon"></i> Mode Nuit</button>
             <button class="start-menu-item" id="startWaBtn"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
         </div>
@@ -1303,7 +1385,7 @@
         <div class="sections-scroll-container" id="sectionsScrollContainer">
             <div class="sections-wrapper" id="sectionsWrapper">
                 
-                <!-- Section A Propos -->
+                <!-- Section A Propos (same as before) -->
                 <div id="aproposSection" class="section-item">
                     <div class="window-card">
                         <div class="window-header">
@@ -1312,7 +1394,7 @@
                         </div>
                         <div class="window-content">
                             <div class="description-box">
-                                <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand reseau de fournisseurs et professionnels au Maroc.</p>
+                                <p>Plateforme digitale specialisee dans la mise en relation des demandeurs de produits industriels avec le plus grand reseau de fournisseurs et professionnels au Maroc.</p>
                             </div>
                             
                             <div class="window-card" style="margin: 0 0 1rem 0;">
@@ -1494,12 +1576,17 @@
                     </div>
                 </div>
 
-                <!-- Section Fournisseurs -->
+                <!-- Section Fournisseurs with Grid/List Toggle -->
                 <div id="fournisseursSection" class="section-item">
                     <div class="window-card">
                         <div class="window-header">
-                            <i class="fas fa-industry"></i>
                             <h2>Fournisseurs Industriels</h2>
+                            <div class="window-header-actions">
+                                <div class="view-toggle" id="fourViewToggle">
+                                    <button class="view-btn active" data-view="grid" data-section="fournisseurs" title="Vue grille"><i class="fas fa-th"></i></button>
+                                    <button class="view-btn" data-view="list" data-section="fournisseurs" title="Vue liste"><i class="fas fa-list"></i></button>
+                                </div>
+                            </div>
                         </div>
                         <div class="window-content">
                             <div class="description-box">
@@ -1531,12 +1618,17 @@
                     </div>
                 </div>
 
-                <!-- Section Experts -->
+                <!-- Section Experts with Grid/List Toggle -->
                 <div id="expertsSection" class="section-item">
                     <div class="window-card">
                         <div class="window-header">
-                            <i class="fas fa-microchip"></i>
                             <h2>Experts & Automaticiens</h2>
+                            <div class="window-header-actions">
+                                <div class="view-toggle" id="expertViewToggle">
+                                    <button class="view-btn active" data-view="grid" data-section="experts" title="Vue grille"><i class="fas fa-th"></i></button>
+                                    <button class="view-btn" data-view="list" data-section="experts" title="Vue liste"><i class="fas fa-list"></i></button>
+                                </div>
+                            </div>
                         </div>
                         <div class="window-content">
                             <div class="description-box">
@@ -1650,7 +1742,7 @@
 
     <div id="winToast" class="win-toast"></div>
 
-    <!-- Modals -->
+    <!-- Modals (same as before) -->
     <div class="win-modal-overlay" id="waContactModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1854,7 +1946,7 @@
             const TARGET_CLIENT_COUNT = 28700;
             const TARGET_EXP_COUNT = 20;
 
-            // Professional share texts (no emojis)
+            // Professional share texts
             const SHARE_TEXT_PLATFORM = "Connect Industry Maroc - Plateforme de mise en relation des professionnels et industriels au Maroc";
             const SHARE_TEXT_FOURNISSEURS = "Connect Industry Maroc - Reseau des fournisseurs industriels au Maroc";
             const SHARE_TEXT_EXPERTS = "Connect Industry Maroc - Reseau des experts en automatisme industriel au Maroc";
@@ -1879,6 +1971,10 @@
             let automaticiensData = [];
             let fournisseursData = [];
 
+            // View preferences
+            let fournisseursView = localStorage.getItem('fournisseursView') || 'grid';
+            let expertsView = localStorage.getItem('expertsView') || 'grid';
+
             // Cache system
             let cachedItems = null;
             let cachedRenderTime = 0;
@@ -1895,7 +1991,9 @@
                 SUBSCRIBER_ACTIVE: 'subscriber_active',
                 ACTIVE_SECTION: 'activeSection',
                 LAST_VISIT: 'lastVisit',
-                THEME: 'theme'
+                THEME: 'theme',
+                FOURNISSEURS_VIEW: 'fournisseursView',
+                EXPERTS_VIEW: 'expertsView'
             };
 
             const sectionsOrder = ['apropos', 'fournisseurs', 'experts', 'rejoindre', 'suggestions'];
@@ -1969,6 +2067,86 @@
                 return fields.some(f => f.toLowerCase().includes(term));
             }
 
+            // ==================== VIEW TOGGLE FUNCTIONS ====================
+            function setView(section, view) {
+                if (section === 'fournisseurs') {
+                    fournisseursView = view;
+                    localStorage.setItem(STORAGE_KEYS.FOURNISSEURS_VIEW, view);
+                    updateViewButtons('fournisseurs', view);
+                    const grid = document.getElementById('fournisseursGrid2');
+                    if (grid) {
+                        if (view === 'list') {
+                            grid.classList.add('list-view');
+                        } else {
+                            grid.classList.remove('list-view');
+                        }
+                    }
+                } else if (section === 'experts') {
+                    expertsView = view;
+                    localStorage.setItem(STORAGE_KEYS.EXPERTS_VIEW, view);
+                    updateViewButtons('experts', view);
+                    const grid = document.getElementById('automaticiensGrid2');
+                    if (grid) {
+                        if (view === 'list') {
+                            grid.classList.add('list-view');
+                        } else {
+                            grid.classList.remove('list-view');
+                        }
+                    }
+                }
+                renderAll(true);
+            }
+
+            function updateViewButtons(section, activeView) {
+                const toggleId = section === 'fournisseurs' ? 'fourViewToggle' : 'expertViewToggle';
+                const container = document.getElementById(toggleId);
+                if (!container) return;
+                const buttons = container.querySelectorAll('.view-btn');
+                buttons.forEach(btn => {
+                    const view = btn.getAttribute('data-view');
+                    if (view === activeView) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            function initViewButtons() {
+                // Fournisseurs view buttons
+                const fourToggle = document.getElementById('fourViewToggle');
+                if (fourToggle) {
+                    const buttons = fourToggle.querySelectorAll('.view-btn');
+                    buttons.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const view = btn.getAttribute('data-view');
+                            setView('fournisseurs', view);
+                        });
+                    });
+                }
+                
+                // Experts view buttons
+                const expertToggle = document.getElementById('expertViewToggle');
+                if (expertToggle) {
+                    const buttons = expertToggle.querySelectorAll('.view-btn');
+                    buttons.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const view = btn.getAttribute('data-view');
+                            setView('experts', view);
+                        });
+                    });
+                }
+                
+                // Apply saved views
+                updateViewButtons('fournisseurs', fournisseursView);
+                updateViewButtons('experts', expertsView);
+                
+                const fourGrid = document.getElementById('fournisseursGrid2');
+                if (fourGrid && fournisseursView === 'list') fourGrid.classList.add('list-view');
+                const expertGrid = document.getElementById('automaticiensGrid2');
+                if (expertGrid && expertsView === 'list') expertGrid.classList.add('list-view');
+            }
+
             // ==================== SESSION MANAGEMENT ====================
             function checkSessionExpiry() {
                 const lastVisit = localStorage.getItem(STORAGE_KEYS.LAST_VISIT);
@@ -2004,7 +2182,9 @@
                 if (index !== -1) {
                     const container = document.getElementById('sectionsScrollContainer');
                     const targetScroll = index * window.innerWidth;
-                    container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                    requestAnimationFrame(() => {
+                        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                    });
                     currentSectionIndex = index;
                     updateTaskbarActive(sectionId);
                     localStorage.setItem(STORAGE_KEYS.ACTIVE_SECTION, sectionId);
@@ -2020,6 +2200,17 @@
                     currentSectionIndex = index;
                     updateTaskbarActive(sectionsOrder[index]);
                 }
+                updateScrollIndicator();
+            }
+
+            function updateScrollIndicator() {
+                const container = document.getElementById('sectionsScrollContainer');
+                const progressBar = document.getElementById('scrollProgress');
+                if (!container || !progressBar) return;
+                const maxScroll = container.scrollWidth - container.clientWidth;
+                const currentScroll = container.scrollLeft;
+                const progress = maxScroll > 0 ? (currentScroll / maxScroll) * 100 : 0;
+                progressBar.style.width = `${progress}%`;
             }
 
             // ==================== PIN FUNCTIONS ====================
@@ -2054,17 +2245,20 @@
                     showToast('Veuillez vous abonner pour epingler des elements');
                     return;
                 }
+                
+                // Add animation to pin button
+                const pinButtons = document.querySelectorAll(`.pin-icon[onclick*="${itemId}"]`);
+                pinButtons.forEach(btn => btn.classList.add('updating'));
+                
                 if (isAdminMode) {
                     let adminPinnedList = getAdminPinnedItems(type);
                     const index = adminPinnedList.indexOf(itemId);
                     if (index === -1) {
                         adminPinnedList.push(itemId);
-                        showToast(`${itemName} epingle par l'administrateur`);
-                        renderAll(true);
+                        showToast(`${itemName} - Ajoute a la une`);
                     } else {
                         adminPinnedList.splice(index, 1);
-                        showToast(`${itemName} desepingle par l'administrateur`);
-                        renderAll(true);
+                        showToast(`${itemName} - Retire de la une`);
                     }
                     setAdminPinnedItems(type, adminPinnedList);
                 } else {
@@ -2072,15 +2266,19 @@
                     const index = pinnedList.indexOf(itemId);
                     if (index === -1) {
                         pinnedList.push(itemId);
-                        showToast(`${itemName} epingle`);
-                        renderAll(true);
+                        showToast(`${itemName} - Epingle`);
                     } else {
                         pinnedList.splice(index, 1);
-                        showToast(`${itemName} desepingle`);
-                        renderAll(true);
+                        showToast(`${itemName} - Desepingle`);
                     }
                     setUserPinnedItems(type, pinnedList);
                 }
+                
+                setTimeout(() => {
+                    pinButtons.forEach(btn => btn.classList.remove('updating'));
+                }, 300);
+                
+                renderAll(true);
             }
 
             function unpinAll() {
@@ -3007,6 +3205,10 @@
                 automaticiensData = autoData;
                 fournisseursData = fourData;
                 loadSubscriberMode();
+                
+                // Initialize view buttons
+                initViewButtons();
+                
                 renderAll(true);
                 updateFilterBadges();
                 updateTaskbarTime();
@@ -3115,6 +3317,7 @@
             window.generatePDF = generatePDF;
             window.togglePin = togglePin;
             window.unpinAll = unpinAll;
+            window.setView = setView;
 
             init();
         })();
