@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0078D4">
+    <meta name="theme-color" content="#1a73e8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Connect Industry">
@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -20,55 +21,56 @@
         }
 
         :root {
-            --win-bg: #1c1c1c;
-            --win-card-bg: rgba(32, 32, 32, 0.85);
-            --win-acrylic: rgba(255, 255, 255, 0.08);
-            --win-border: rgba(255, 255, 255, 0.1);
-            --win-text: #ffffff;
-            --win-text-secondary: #c0c0c0;
-            --win-blue: #0078D4;
-            --win-blue-light: #1a93eb;
-            --win-green: #107C10;
-            --win-yellow: #FFB900;
-            --win-red: #E81123;
-            --win-orange: #e06c00;
-            --win-gray: #2d2d2d;
-            --win-gray-light: #3c3c3c;
-            --win-hover: rgba(255, 255, 255, 0.1);
-            --win-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-            --win-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        body.light-mode {
-            --win-bg: #e6e6e6;
-            --win-card-bg: rgba(240, 240, 240, 0.9);
-            --win-acrylic: rgba(0, 0, 0, 0.05);
-            --win-border: rgba(0, 0, 0, 0.1);
-            --win-text: #1a1a1a;
-            --win-text-secondary: #5a5a5a;
-            --win-gray: #f0f0f0;
-            --win-gray-light: #e0e0e0;
-            --win-hover: rgba(0, 0, 0, 0.05);
+            --primary-blue: #1a73e8;
+            --primary-dark: #0d47a1;
+            --primary-light: #4285f4;
+            --success-green: #00a86b;
+            --warning-orange: #ff8c00;
+            --danger-red: #dc3545;
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --dark-border: #2c2c2c;
+            --light-bg: #f5f7fa;
+            --light-card: #ffffff;
+            --light-border: #e0e0e0;
+            --text-dark: #202124;
+            --text-light: #e8eaed;
+            --text-secondary-dark: #9aa0a6;
+            --text-secondary-light: #5f6368;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--win-bg);
-            color: var(--win-text);
+            background: var(--dark-bg);
+            color: var(--text-light);
             min-height: 100vh;
-            overflow-x: hidden;
+            transition: all 0.3s ease;
         }
 
-        /* Fix text overflow */
-        .item-title, .item-details .value, .detail-row .value, 
-        .featured-card .item-title, .join-tile h3, .link-tile h3, 
-        .description-box p, .window-header h2, .item-card, 
-        .featured-card, .detail-row, .action-btn, .tile-label,
-        .start-menu-item span, .taskbar-icon span {
-            white-space: normal !important;
-            word-break: break-word;
-            overflow-wrap: break-word;
-            max-width: 100%;
+        body.light-mode {
+            background: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        body {
+            --bg-primary: var(--dark-bg);
+            --bg-card: var(--dark-card);
+            --border-color: var(--dark-border);
+            --text-primary: var(--text-light);
+            --text-secondary: var(--text-secondary-dark);
+            --hover-bg: rgba(255, 255, 255, 0.08);
+        }
+
+        body.light-mode {
+            --bg-primary: var(--light-bg);
+            --bg-card: var(--light-card);
+            --border-color: var(--light-border);
+            --text-primary: var(--text-dark);
+            --text-secondary: var(--text-secondary-light);
+            --hover-bg: rgba(0, 0, 0, 0.05);
         }
 
         .wallpaper {
@@ -82,25 +84,19 @@
         }
 
         body.light-mode .wallpaper {
-            background: linear-gradient(135deg, #d4d4d4 0%, #e8e8e8 50%, #d4d4d4 100%);
+            background: linear-gradient(135deg, #e8eaed 0%, #f5f7fa 50%, #e8eaed 100%);
         }
 
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: fixed;
-            top: 48px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 1099;
-        }
-
-        .scroll-progress {
-            width: 0%;
-            height: 100%;
-            background: var(--win-blue);
-            transition: width 0.1s ease;
+        /* Fix text overflow */
+        .item-title, .item-details .value, .detail-row .value, 
+        .featured-card .item-title, .join-tile h3, .link-tile h3, 
+        .description-box p, .window-header h2, .item-card, 
+        .featured-card, .detail-row, .action-btn, .tile-label,
+        .start-menu-item span, .taskbar-icon span {
+            white-space: normal !important;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         /* Mobile optimizations */
@@ -158,25 +154,24 @@
             left: 0;
             width: 100%;
             height: 48px;
-            background: rgba(32, 32, 32, 0.95);
-            backdrop-filter: blur(20px);
+            background: var(--primary-blue);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 12px;
             z-index: 1100;
-            border-bottom: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--border-color);
             gap: 8px;
         }
 
         body.light-mode .taskbar {
-            background: rgba(240, 240, 240, 0.95);
+            background: var(--primary-blue);
         }
 
         .start-btn {
             background: transparent;
             border: none;
-            color: var(--win-text);
+            color: white;
             font-size: 1.2rem;
             cursor: pointer;
             padding: 8px 12px;
@@ -190,20 +185,12 @@
         }
 
         .start-btn:hover {
-            background: var(--win-hover);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .start-btn span {
             font-size: 0.85rem;
             font-weight: 500;
-        }
-
-        body.admin-mode .start-btn {
-            color: var(--win-orange);
-        }
-
-        body.subscriber-mode .start-btn {
-            color: var(--win-green);
         }
 
         .taskbar-icons {
@@ -217,7 +204,7 @@
         .taskbar-icon {
             background: transparent;
             border: none;
-            color: var(--win-text);
+            color: rgba(255, 255, 255, 0.85);
             font-size: 0.9rem;
             cursor: pointer;
             padding: 8px 12px;
@@ -230,24 +217,17 @@
         }
 
         .taskbar-icon:hover {
-            background: var(--win-hover);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
         }
 
         .taskbar-icon.active {
-            background: var(--win-blue);
+            background: var(--primary-dark);
             color: white;
         }
 
         .taskbar-icon span {
             font-size: 0.75rem;
-        }
-
-        .taskbar-time {
-            font-size: 0.75rem;
-            color: var(--win-text);
-            padding: 4px 8px;
-            border-radius: 4px;
-            flex-shrink: 0;
         }
 
         /* Start Menu */
@@ -257,16 +237,16 @@
             left: 12px;
             width: 380px;
             max-width: calc(100% - 24px);
-            background: rgba(32, 32, 32, 0.95);
-            backdrop-filter: blur(30px);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
             border-radius: 12px;
             z-index: 1050;
             transform: translateY(-20px);
             opacity: 0;
             visibility: hidden;
             transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            box-shadow: var(--win-shadow);
-            border: 1px solid var(--win-border);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
             overflow-y: auto;
             max-height: 80vh;
         }
@@ -277,27 +257,29 @@
             visibility: visible;
         }
 
-        body.light-mode .start-menu {
-            background: rgba(240, 240, 240, 0.95);
-        }
-
         .start-header {
             padding: 20px 16px;
-            border-bottom: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             gap: 14px;
+            flex-wrap: wrap;
         }
 
         .start-header .user-icon {
             width: 48px;
             height: 48px;
-            background: var(--win-blue);
+            background: var(--primary-blue);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.3rem;
+            color: white;
+        }
+
+        .start-header .user-info {
+            flex: 1;
         }
 
         .start-header .user-info h4 {
@@ -307,7 +289,20 @@
 
         .start-header .user-info p {
             font-size: 0.75rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .start-time {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            text-align: right;
+        }
+
+        .start-date {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: right;
         }
 
         .start-menu-items {
@@ -323,7 +318,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            color: var(--win-text);
+            color: var(--text-primary);
             cursor: pointer;
             font-size: 0.9rem;
             transition: all 0.2s;
@@ -332,7 +327,7 @@
         }
 
         .start-menu-item:hover {
-            background: var(--win-hover);
+            background: var(--hover-bg);
         }
 
         .start-menu-item i {
@@ -341,82 +336,62 @@
             flex-shrink: 0;
         }
 
-        body.admin-mode #startAdminBtn {
-            background: rgba(224, 108, 0, 0.2);
-            border-left: 3px solid var(--win-orange);
-            color: var(--win-orange);
-        }
-
-        body.subscriber-mode #startSubscribeBtn {
-            background: rgba(16, 124, 16, 0.2);
-            border-left: 3px solid var(--win-green);
-            color: var(--win-green);
-        }
-
         .start-divider {
             height: 1px;
-            background: var(--win-border);
+            background: var(--border-color);
             margin: 12px 0;
         }
 
-        /* Scroll container */
-        .sections-scroll-container {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-            cursor: grab;
-            display: block;
-        }
-
-        .sections-scroll-container:active {
-            cursor: grabbing;
-        }
-
-        .sections-wrapper {
-            display: flex;
-            flex-direction: row;
-            width: max-content;
-        }
-
-        .section-item {
-            scroll-snap-align: start;
-            width: 100vw;
-            flex-shrink: 0;
-            display: block !important;
-            padding: 0 1rem;
-        }
-
+        /* Main content */
         main {
             padding-top: 60px;
             padding-bottom: 20px;
-            overflow-x: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-item {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section-item.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Cards */
         .window-card {
-            background: var(--win-card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--win-border);
-            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
             margin: 1rem auto;
             overflow: hidden;
             transition: all 0.2s;
-            box-shadow: var(--win-shadow);
+            box-shadow: var(--shadow-sm);
             max-width: 100%;
         }
 
         .window-card:hover {
-            box-shadow: var(--win-shadow-hover);
+            box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
 
         .window-header {
             padding: 12px 16px;
-            background: var(--win-acrylic);
-            border-bottom: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -430,129 +405,29 @@
             flex: 1;
         }
 
-        .window-header-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        /* Grid/List Toggle Buttons */
-        .view-toggle {
-            display: flex;
-            gap: 4px;
-            background: var(--win-acrylic);
-            border-radius: 8px;
-            padding: 2px;
-        }
-
-        .view-btn {
-            background: transparent;
-            border: none;
-            color: var(--win-text-secondary);
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
-            min-height: 32px;
-        }
-
-        .view-btn:hover {
-            background: var(--win-hover);
-            color: var(--win-text);
-        }
-
-        .view-btn.active {
-            background: var(--win-blue);
-            color: white;
-        }
-
-        /* Grid View (default) */
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 1rem;
-        }
-
-        /* List View */
-        .items-grid.list-view {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .items-grid.list-view .item-card {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            gap: 1rem;
-            padding: 1rem;
-        }
-
-        .items-grid.list-view .item-header {
-            flex: 2;
-            min-width: 200px;
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .items-grid.list-view .item-details {
-            flex: 3;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 0.5rem;
-            margin-bottom: 0;
-        }
-
-        .items-grid.list-view .action-buttons {
-            flex: 2;
-            min-width: 200px;
-            margin-top: 0;
-            padding-top: 0;
-            border-top: none;
-        }
-
-        .items-grid.list-view .visitor-note {
-            flex: 1;
-            min-width: 150px;
-            margin-top: 0;
-        }
-
-        @media (max-width: 768px) {
-            .items-grid.list-view .item-card {
-                flex-direction: column;
-            }
-            
-            .items-grid.list-view .item-details {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .window-content {
             padding: 16px;
         }
 
         /* Pinned items styling */
         .item-card.pinned {
-            border-left: 4px solid var(--win-yellow);
-            background: linear-gradient(90deg, rgba(255, 185, 0, 0.08), var(--win-card-bg));
+            border-left: 4px solid var(--warning-orange);
+            background: linear-gradient(90deg, rgba(255, 140, 0, 0.08), var(--bg-card));
             position: relative;
         }
 
         .item-card.admin-pinned-card {
-            border-left: 4px solid var(--win-red);
-            background: linear-gradient(90deg, rgba(232, 17, 35, 0.1), var(--win-card-bg));
+            border-left: 4px solid var(--warning-orange);
+            background: linear-gradient(90deg, rgba(255, 140, 0, 0.1), var(--bg-card));
             position: relative;
         }
 
         .pin-icon {
             background: transparent;
             border: none;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 1rem;
             flex-shrink: 0;
             padding: 8px;
             min-width: 36px;
@@ -565,12 +440,27 @@
         }
 
         .pin-icon.pinned {
-            color: var(--win-yellow);
-            transform: rotate(-45deg);
+            color: var(--warning-orange);
         }
 
         .pin-icon.updating {
             animation: pulse 0.3s ease;
+        }
+
+        .admin-unpin-icon {
+            background: transparent;
+            border: none;
+            color: var(--warning-orange);
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .admin-unpin-icon:hover {
+            transform: scale(1.1);
+            color: var(--danger-red);
         }
 
         @keyframes pulse {
@@ -579,30 +469,13 @@
             100% { transform: scale(1); }
         }
 
-        .unpin-btn {
-            background: rgba(232, 17, 35, 0.1);
-            border: 1px solid var(--win-red);
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--win-red);
-            min-height: 32px;
-        }
-
-        .unpin-btn:hover {
-            background: var(--win-red);
-            color: white;
-        }
-
         /* Detail rows */
         .detail-row {
             display: flex;
             align-items: flex-start;
             gap: 0.5rem;
             font-size: 0.8rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             flex-wrap: wrap;
             width: 100%;
             margin-bottom: 0.5rem;
@@ -630,7 +503,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(8px);
             z-index: 10000;
             display: flex;
@@ -651,14 +524,127 @@
         .pdf-loader-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid rgba(0, 120, 212, 0.2);
-            border-top-color: var(--win-blue);
+            border: 4px solid rgba(26, 115, 232, 0.2);
+            border-top-color: var(--primary-blue);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* Enhanced QR Modal */
+        .qr-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .qr-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .qr-modal {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            max-width: 90%;
+            width: 360px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .qr-modal h3 {
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .qr-modal .qr-description {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            word-break: break-all;
+            max-height: 60px;
+            overflow-y: auto;
+        }
+
+        .qr-code-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 16px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .qr-modal .qr-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .qr-modal .qr-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            min-width: 110px;
+        }
+
+        .qr-modal .qr-btn.close {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .qr-modal .qr-btn.close:hover {
+            background: var(--hover-bg);
+        }
+
+        .qr-modal .qr-btn.share {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .qr-modal .qr-btn.share:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
         }
 
         /* Stats */
@@ -676,8 +662,8 @@
         }
 
         .live-tile {
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
@@ -686,19 +672,19 @@
         }
 
         .live-tile:hover {
-            background: var(--win-hover);
+            background: var(--hover-bg);
             transform: scale(1.02);
         }
 
         .tile-number {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--win-blue);
+            color: var(--primary-blue);
         }
 
         .tile-label {
             font-size: 0.7rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -722,24 +708,24 @@
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
 
         .search-input-wrapper input {
             width: 100%;
             padding: 12px 12px 12px 36px;
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: var(--win-text);
+            color: var(--text-primary);
             font-size: 0.85rem;
             min-height: 44px;
         }
 
         .search-input-wrapper input:focus {
             outline: none;
-            border-color: var(--win-blue);
+            border-color: var(--primary-blue);
         }
 
         .filter-buttons {
@@ -748,9 +734,9 @@
         }
 
         .filter-btn {
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
-            color: var(--win-text-secondary);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             width: 44px;
             height: 44px;
             border-radius: 8px;
@@ -762,15 +748,15 @@
 
         .filter-btn:hover,
         .filter-btn.active-filter {
-            background: var(--win-blue);
+            background: var(--primary-blue);
             color: white;
-            border-color: var(--win-blue);
+            border-color: var(--primary-blue);
         }
 
         /* Featured section */
         .featured-section {
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             margin-bottom: 1.5rem;
             padding: 0.75rem;
@@ -782,12 +768,12 @@
             gap: 8px;
             margin-bottom: 0.75rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--border-color);
         }
 
         .featured-header i {
             font-size: 1rem;
-            color: var(--win-red);
+            color: var(--warning-orange);
         }
 
         .featured-header h3 {
@@ -815,26 +801,38 @@
         }
 
         .featured-card {
-            background: var(--win-card-bg);
-            border: 1px solid var(--win-border);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 0.75rem;
             width: 280px;
             display: inline-block;
             white-space: normal;
             transition: all 0.2s;
-            border-left: 3px solid var(--win-red);
+            border-left: 3px solid var(--warning-orange);
         }
 
         .featured-card:hover {
             transform: translateY(-2px);
-            box-shadow: var(--win-shadow-hover);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Items grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1rem;
+        }
+
+        @media (max-width: 800px) {
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .item-card {
-            background: var(--win-card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--win-border);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1rem;
             transition: all 0.2s;
@@ -843,19 +841,19 @@
         }
 
         .item-card:hover {
-            box-shadow: var(--win-shadow-hover);
+            box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
 
         .item-card.subscriber-card {
-            border: 2px solid var(--win-green);
-            box-shadow: 0 0 0 2px rgba(45, 164, 78, 0.3);
+            border: 2px solid var(--success-green);
+            box-shadow: 0 0 0 2px rgba(0, 168, 107, 0.2);
         }
 
         .item-card.current-subscriber-card {
-            border: 3px solid #25D366;
-            background: linear-gradient(135deg, rgba(37, 211, 102, 0.2), rgba(37, 211, 102, 0.05));
-            box-shadow: 0 0 15px rgba(37, 211, 102, 0.4);
+            border: 2px solid var(--success-green);
+            background: linear-gradient(135deg, rgba(0, 168, 107, 0.1), var(--bg-card));
+            box-shadow: 0 0 12px rgba(0, 168, 107, 0.3);
             position: relative;
             overflow: hidden;
         }
@@ -865,7 +863,7 @@
             position: absolute;
             top: 10px;
             right: -30px;
-            background: #25D366;
+            background: var(--success-green);
             color: white;
             font-size: 0.7rem;
             padding: 4px 30px;
@@ -880,14 +878,14 @@
             align-items: flex-start;
             margin-bottom: 0.75rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--border-color);
             gap: 0.5rem;
             flex-wrap: wrap;
         }
 
         .item-title {
             font-weight: 600;
-            color: var(--win-blue);
+            color: var(--primary-blue);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -902,28 +900,18 @@
             margin-bottom: 1rem;
         }
 
-        .visitor-note {
-            background: rgba(0, 120, 212, 0.15);
-            padding: 8px;
-            font-size: 0.7rem;
-            text-align: center;
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            color: var(--win-yellow);
-        }
-
         .action-buttons {
             display: flex;
             gap: 0.5rem;
             margin-top: 0.75rem;
             padding-top: 0.75rem;
-            border-top: 1px solid var(--win-border);
+            border-top: 1px solid var(--border-color);
             flex-wrap: wrap;
         }
 
         .action-btn {
             background: transparent;
-            border: 1px solid var(--win-border);
+            border: 1px solid var(--border-color);
             padding: 8px 12px;
             font-size: 0.75rem;
             cursor: pointer;
@@ -932,9 +920,9 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             flex: 1 1 auto;
-            min-width: 80px;
+            min-width: 70px;
             transition: all 0.2s;
         }
 
@@ -942,40 +930,34 @@
             transform: translateY(-2px);
         }
 
-        .action-btn:disabled,
-        .action-btn.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
         .action-btn.wa {
-            border-color: #25D366;
-            color: #25D366;
+            border-color: var(--success-green);
+            color: var(--success-green);
         }
 
         .action-btn.email {
-            border-color: var(--win-blue);
-            color: var(--win-blue);
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
 
         .action-btn.web {
-            border-color: var(--win-blue);
-            color: var(--win-blue);
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
 
         .action-btn.share {
-            border-color: var(--win-yellow);
-            color: var(--win-yellow);
+            border-color: var(--warning-orange);
+            color: var(--warning-orange);
         }
 
         .action-btn.pdf {
-            border-color: #E74C3C;
-            color: #E74C3C;
+            border-color: var(--danger-red);
+            color: var(--danger-red);
         }
 
         /* Badges */
         .badge-pinned {
-            background: var(--win-yellow);
+            background: var(--warning-orange);
             color: #1a1a1a;
             font-size: 0.6rem;
             padding: 2px 8px;
@@ -985,8 +967,8 @@
         }
 
         .badge-admin-pinned {
-            background: var(--win-red);
-            color: white;
+            background: var(--warning-orange);
+            color: #1a1a1a;
             font-size: 0.6rem;
             padding: 2px 8px;
             border-radius: 20px;
@@ -995,7 +977,7 @@
         }
 
         .badge-subscriber {
-            background: var(--win-green);
+            background: var(--success-green);
             color: white;
             font-size: 0.6rem;
             padding: 2px 8px;
@@ -1012,8 +994,8 @@
         }
 
         .link-tile {
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
@@ -1022,7 +1004,7 @@
 
         .link-tile:hover {
             transform: translateY(-2px);
-            box-shadow: var(--win-shadow-hover);
+            box-shadow: var(--shadow-md);
         }
 
         .link-tile h3 {
@@ -1032,7 +1014,7 @@
 
         .link-tile .stat {
             font-size: 0.7rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             margin-bottom: 0.75rem;
         }
 
@@ -1044,17 +1026,22 @@
 
         .link-btn {
             background: transparent;
-            border: 1px solid var(--win-border);
+            border: 1px solid var(--border-color);
             padding: 8px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.75rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             min-height: 40px;
         }
 
         .link-btn:hover {
-            background: var(--win-hover);
+            background: var(--hover-bg);
+        }
+
+        .link-btn.qr {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
 
         /* Join section */
@@ -1066,8 +1053,8 @@
         }
 
         .join-tile {
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
@@ -1077,12 +1064,12 @@
 
         .join-tile:hover {
             transform: translateY(-3px);
-            box-shadow: var(--win-shadow-hover);
+            box-shadow: var(--shadow-md);
         }
 
         .join-tile .join-icon {
             font-size: 2rem;
-            color: var(--win-blue);
+            color: var(--primary-blue);
             margin-bottom: 0.75rem;
         }
 
@@ -1093,7 +1080,7 @@
 
         .join-tile p {
             font-size: 0.7rem;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             margin-bottom: 1rem;
         }
 
@@ -1106,8 +1093,8 @@
 
         .join-btn {
             background: transparent;
-            border: 1px solid var(--win-border);
-            color: var(--win-text);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
             padding: 10px;
             border-radius: 10px;
             cursor: pointer;
@@ -1122,34 +1109,39 @@
         }
 
         .join-btn:hover {
-            background: var(--win-hover);
+            background: var(--hover-bg);
             transform: translateY(-2px);
+        }
+
+        .join-btn.qr {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
         }
 
         /* Form elements */
         .win-input {
             width: 100%;
             padding: 12px;
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: var(--win-text);
+            color: var(--text-primary);
             font-size: 0.85rem;
             min-height: 44px;
         }
 
         .win-input:focus {
             outline: none;
-            border-color: var(--win-blue);
+            border-color: var(--primary-blue);
         }
 
         .win-textarea {
             width: 100%;
             padding: 12px;
-            background: var(--win-acrylic);
-            border: 1px solid var(--win-border);
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            color: var(--win-text);
+            color: var(--text-primary);
             font-size: 0.85rem;
             resize: vertical;
             min-height: 100px;
@@ -1179,20 +1171,19 @@
         }
 
         .win-modal {
-            background: var(--win-card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--win-border);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             width: 90%;
             max-width: 450px;
             max-height: 85vh;
             overflow-y: auto;
-            box-shadow: var(--win-shadow);
+            box-shadow: var(--shadow-lg);
         }
 
         .win-modal-header {
             padding: 1rem;
-            border-bottom: 1px solid var(--win-border);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1206,7 +1197,7 @@
         .win-modal-close {
             background: transparent;
             border: none;
-            color: var(--win-text-secondary);
+            color: var(--text-secondary);
             width: 36px;
             height: 36px;
             border-radius: 6px;
@@ -1214,7 +1205,7 @@
         }
 
         .win-modal-close:hover {
-            background: var(--win-hover);
+            background: var(--hover-bg);
         }
 
         .win-modal-body {
@@ -1223,14 +1214,14 @@
 
         .win-modal-footer {
             padding: 1rem;
-            border-top: 1px solid var(--win-border);
+            border-top: 1px solid var(--border-color);
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
         }
 
         .win-btn-primary {
-            background: var(--win-blue);
+            background: var(--primary-blue);
             border: none;
             color: white;
             padding: 10px 20px;
@@ -1241,13 +1232,13 @@
         }
 
         .win-btn-primary:hover {
-            background: var(--win-blue-light);
+            background: var(--primary-dark);
         }
 
         .win-btn-secondary {
             background: transparent;
-            border: 1px solid var(--win-border);
-            color: var(--win-text);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
@@ -1260,7 +1251,7 @@
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--win-card-bg);
+            background: var(--bg-card);
             backdrop-filter: blur(20px);
             padding: 10px 20px;
             border-radius: 8px;
@@ -1268,7 +1259,7 @@
             z-index: 3000;
             opacity: 0;
             visibility: hidden;
-            border: 1px solid var(--win-border);
+            border: 1px solid var(--border-color);
             max-width: 90%;
             text-align: center;
         }
@@ -1291,7 +1282,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--win-bg);
+            background: var(--bg-primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1301,15 +1292,15 @@
         .win-loader-spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid rgba(0, 120, 212, 0.2);
-            border-top-color: var(--win-blue);
+            border: 3px solid rgba(26, 115, 232, 0.2);
+            border-top-color: var(--primary-blue);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin: 0 auto 1rem;
         }
 
         .description-box {
-            background: var(--win-acrylic);
+            background: var(--hover-bg);
             border-radius: 12px;
             padding: 0.75rem;
             margin-bottom: 1rem;
@@ -1326,7 +1317,7 @@
 
     <div class="taskbar">
         <button class="start-btn" id="startBtn">
-            <i class="fas fa-th-large"></i>
+            <i class="fas fa-industry"></i>
             <span>Menu</span>
         </button>
         <div class="taskbar-icons">
@@ -1351,19 +1342,18 @@
                 <span>Suggestions</span>
             </button>
         </div>
-        <div class="taskbar-time" id="taskbarTime"></div>
-    </div>
-
-    <div class="scroll-indicator" id="scrollIndicator">
-        <div class="scroll-progress" id="scrollProgress"></div>
     </div>
 
     <div class="start-menu" id="startMenu">
         <div class="start-header">
-            <div class="user-icon"><i class="fas fa-user"></i></div>
+            <div class="user-icon"><i class="fas fa-industry"></i></div>
             <div class="user-info">
                 <h4 id="startUserStatus">Connect Industry</h4>
                 <p id="startUserSubStatus">Plateforme Industrielle Maroc</p>
+            </div>
+            <div>
+                <div class="start-time" id="startTime">--:--</div>
+                <div class="start-date" id="startDate">--/--/----</div>
             </div>
         </div>
         <div class="start-menu-items">
@@ -1382,367 +1372,378 @@
     </div>
 
     <main>
-        <div class="sections-scroll-container" id="sectionsScrollContainer">
-            <div class="sections-wrapper" id="sectionsWrapper">
-                
-                <!-- Section A Propos (same as before) -->
-                <div id="aproposSection" class="section-item">
-                    <div class="window-card">
+        <!-- Section A Propos -->
+        <div id="aproposSection" class="section-item active-section">
+            <div class="window-card">
+                <div class="window-header">
+                    <i class="fas fa-building"></i>
+                    <h2>A Propos</h2>
+                </div>
+                <div class="window-content">
+                    <div class="description-box">
+                        <p>Plateforme digitale specialisee dans la mise en relation des demandeurs de produits industriels avec le plus grand reseau de fournisseurs et professionnels au Maroc.</p>
+                    </div>
+                    
+                    <div class="window-card" style="margin: 0 0 1rem 0;">
                         <div class="window-header">
-                            <i class="fas fa-building"></i>
-                            <h2>A Propos</h2>
+                            <i class="fas fa-chart-line"></i>
+                            <h2>La Plateforme en Chiffres</h2>
                         </div>
                         <div class="window-content">
-                            <div class="description-box">
-                                <p>Plateforme digitale specialisee dans la mise en relation des demandeurs de produits industriels avec le plus grand reseau de fournisseurs et professionnels au Maroc.</p>
-                            </div>
-                            
-                            <div class="window-card" style="margin: 0 0 1rem 0;">
-                                <div class="window-header">
-                                    <i class="fas fa-chart-line"></i>
-                                    <h2>La Plateforme en Chiffres</h2>
+                            <div class="stats-grid">
+                                <div class="live-tile" data-section="experts">
+                                    <div class="tile-number" id="statAutomaticiens2">0</div>
+                                    <div class="tile-label">Experts</div>
                                 </div>
-                                <div class="window-content">
-                                    <div class="stats-grid">
-                                        <div class="live-tile" data-section="experts">
-                                            <div class="tile-number" id="statAutomaticiens2">0</div>
-                                            <div class="tile-label">Experts</div>
-                                        </div>
-                                        <div class="live-tile" data-section="fournisseurs">
-                                            <div class="tile-number" id="statFournisseurs2">0</div>
-                                            <div class="tile-label">Fournisseurs</div>
-                                        </div>
-                                        <div class="live-tile">
-                                            <div class="tile-number" id="statClients2">28700</div>
-                                            <div class="tile-label">Clients</div>
-                                        </div>
-                                        <div class="live-tile">
-                                            <div class="tile-number" id="statExperience2">20</div>
-                                            <div class="tile-label">Annees</div>
-                                        </div>
+                                <div class="live-tile" data-section="fournisseurs">
+                                    <div class="tile-number" id="statFournisseurs2">0</div>
+                                    <div class="tile-label">Fournisseurs</div>
+                                </div>
+                                <div class="live-tile">
+                                    <div class="tile-number" id="statClients2">28700</div>
+                                    <div class="tile-label">Clients</div>
+                                </div>
+                                <div class="live-tile">
+                                    <div class="tile-number" id="statExperience2">20</div>
+                                    <div class="tile-label">Annees</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="window-card" style="margin: 0 0 1rem 0;">
+                        <div class="window-header">
+                            <i class="fas fa-cogs"></i>
+                            <h2>Nos Domaines d'Expertise</h2>
+                        </div>
+                        <div class="window-content">
+                            <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
+                                <button class="join-btn" style="border-color: var(--border-color);">Electricite Industrielle</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Automatisme & PLC</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Equipements Industriels</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Pieces de Rechange</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Instruments de Mesure</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Maintenance Industrielle</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Controle et Mesure</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Import d'Equipements</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Solutions Energetiques</button>
+                                <button class="join-btn" style="border-color: var(--border-color);">Lignes de Production</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="window-card" style="margin: 0 0 1rem 0;">
+                        <div class="window-header">
+                            <i class="fab fa-facebook-f"></i>
+                            <h2>Nos Pages Facebook</h2>
+                        </div>
+                        <div class="window-content">
+                            <div class="links-grid">
+                                <div class="link-tile">
+                                    <h3>Tech Industrie Maroc</h3>
+                                    <div class="stat">9,402+ followers</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
+                                        <button class="link-btn share" onclick="sharePage('Tech Industrie Maroc', 'https://www.facebook.com/share/1G4zgP99qm/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc - Facebook')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="window-card" style="margin: 0 0 1rem 0;">
-                                <div class="window-header">
-                                    <i class="fas fa-cogs"></i>
-                                    <h2>Nos Domaines d'Expertise</h2>
-                                </div>
-                                <div class="window-content">
-                                    <div class="stats-grid" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
-                                        <button class="join-btn" style="border-color: var(--win-border);">Electricite Industrielle</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Automatisme & PLC</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Equipements Industriels</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Pieces de Rechange</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Instruments de Mesure</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Maintenance Industrielle</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Controle et Mesure</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Import d'Equipements</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Solutions Energetiques</button>
-                                        <button class="join-btn" style="border-color: var(--win-border);">Lignes de Production</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="window-card" style="margin: 0 0 1rem 0;">
-                                <div class="window-header">
-                                    <i class="fab fa-facebook"></i>
-                                    <h2>Nos Pages Facebook</h2>
-                                </div>
-                                <div class="window-content">
-                                    <div class="links-grid">
-                                        <div class="link-tile">
-                                            <h3>Tech Industrie Maroc</h3>
-                                            <div class="stat">9,402+ followers</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
-                                                <button class="link-btn share" onclick="sharePage('Tech Industrie Maroc', 'https://www.facebook.com/share/1G4zgP99qm/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Electricite Industrielle Du Maroc</h3>
-                                            <div class="stat">1,565+ followers</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
-                                                <button class="link-btn share" onclick="sharePage('Electricite Industrielle Du Maroc', 'https://www.facebook.com/share/1Dg363LV39/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="window-card" style="margin: 0 0 1rem 0;">
-                                <div class="window-header">
-                                    <i class="fas fa-users"></i>
-                                    <h2>Nos Groupes Facebook</h2>
-                                </div>
-                                <div class="window-content">
-                                    <div class="links-grid">
-                                        <div class="link-tile">
-                                            <h3>Les Fournisseurs Industriels Du Maroc</h3>
-                                            <div class="stat">29,000+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareGroup('Les Fournisseurs Industriels Du Maroc', 'https://www.facebook.com/share/g/176XJV7sJE/', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Vente de PLC et Equipements d'Automatisme</h3>
-                                            <div class="stat">5,900+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareGroup('Vente de PLC et Equipements d\'Automatisme', 'https://www.facebook.com/share/g/1EaoJJuEqd/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="window-card" style="margin: 0 0 1rem 0;">
-                                <div class="window-header">
-                                    <i class="fab fa-whatsapp"></i>
-                                    <h2>Nos Groupes WhatsApp</h2>
-                                </div>
-                                <div class="window-content">
-                                    <div class="links-grid">
-                                        <div class="link-tile">
-                                            <h3>Stations de Dessalement Maroc</h3>
-                                            <div class="stat">120+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareWhatsAppGroup('Stations de Dessalement Maroc', 'https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Comptables & Gestionnaires Maroc</h3>
-                                            <div class="stat">200+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareWhatsAppGroup('Comptables & Gestionnaires Maroc', 'https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Fournisseurs Industriels Du Maroc</h3>
-                                            <div class="stat">250+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareWhatsAppGroup('Fournisseurs Industriels Du Maroc', 'https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Energie Solaire Maroc</h3>
-                                            <div class="stat">750+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareWhatsAppGroup('Energie Solaire Maroc', 'https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                        <div class="link-tile">
-                                            <h3>Genie Electrique Industriel Maroc</h3>
-                                            <div class="stat">420+ membres</div>
-                                            <div class="link-btns">
-                                                <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
-                                                <button class="link-btn share" onclick="shareWhatsAppGroup('Genie Electrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="window-card">
-                                <div class="window-header">
-                                    <i class="fas fa-headset"></i>
-                                    <h2>Contactez-nous</h2>
-                                </div>
-                                <div class="window-content">
-                                    <div style="text-align: center; padding: 1rem;">
-                                        <p style="margin-bottom: 0.5rem;">Pour toute question ou assistance rapide</p>
-                                        <div style="font-size: 1.3rem; font-weight: 600; margin: 0.5rem 0;">
-                                            <a href="https://wa.me/212690292010" style="color: var(--win-green); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                                                <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> +212 690-292010
-                                            </a>
-                                        </div>
-                                        <p style="font-size: 0.7rem; color: var(--win-text-secondary); margin-top: 0.5rem;">
-                                            <i class="fas fa-clock"></i> Service disponible : Dimanche a Jeudi | 09:00 – 18:00
-                                        </p>
-                                        <button class="join-btn" onclick="openWaContactModal()" style="margin-top: 0.75rem; width: auto; padding: 0.5rem 1rem;">
-                                            <i class="fab fa-whatsapp"></i> Contacter via WhatsApp
-                                        </button>
+                                <div class="link-tile">
+                                    <h3>Electricite Industrielle Du Maroc</h3>
+                                    <div class="stat">1,565+ followers</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
+                                        <button class="link-btn share" onclick="sharePage('Electricite Industrielle Du Maroc', 'https://www.facebook.com/share/1Dg363LV39/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle Du Maroc - Facebook')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Section Fournisseurs with Grid/List Toggle -->
-                <div id="fournisseursSection" class="section-item">
-                    <div class="window-card">
+                    <div class="window-card" style="margin: 0 0 1rem 0;">
                         <div class="window-header">
-                            <h2>Fournisseurs Industriels</h2>
-                            <div class="window-header-actions">
-                                <div class="view-toggle" id="fourViewToggle">
-                                    <button class="view-btn active" data-view="grid" data-section="fournisseurs" title="Vue grille"><i class="fas fa-th"></i></button>
-                                    <button class="view-btn" data-view="list" data-section="fournisseurs" title="Vue liste"><i class="fas fa-list"></i></button>
-                                </div>
-                            </div>
+                            <i class="fas fa-users"></i>
+                            <h2>Nos Groupes Facebook</h2>
                         </div>
                         <div class="window-content">
-                            <div class="description-box">
-                                <p>Les plus grands fournisseurs d'equipements et pieces industrielles au Maroc. Qualite garantie et meilleurs prix.</p>
-                            </div>
-                            <div id="fourFeaturedSection2" class="featured-section" style="display: none;">
-                                <div class="featured-header">
-                                    <i class="fas fa-star"></i>
-                                    <h3>A la une - Epingle par l'administrateur</h3>
-                                </div>
-                                <div class="featured-scroll">
-                                    <div id="fourFeaturedItems2" class="featured-items"></div>
-                                </div>
-                            </div>
-                            <div class="search-bar">
-                                <div class="search-input-wrapper">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="searchFourInput2" placeholder="Rechercher par nom, domaine, specialite, ville, telephone, email, site web..." oninput="filterFournisseurs2()">
-                                </div>
-                                <div class="filter-buttons">
-                                    <button class="filter-btn" id="filterFourBtn2" onclick="openFourFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
-                                    <button class="filter-btn" id="filterFourVilleBtn2" onclick="openFourVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
-                                </div>
-                            </div>
-                            <div class="items-grid" id="fournisseursGrid2">
-                                <div class="win-loader-spinner" style="margin: 2rem auto;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section Experts with Grid/List Toggle -->
-                <div id="expertsSection" class="section-item">
-                    <div class="window-card">
-                        <div class="window-header">
-                            <h2>Experts & Automaticiens</h2>
-                            <div class="window-header-actions">
-                                <div class="view-toggle" id="expertViewToggle">
-                                    <button class="view-btn active" data-view="grid" data-section="experts" title="Vue grille"><i class="fas fa-th"></i></button>
-                                    <button class="view-btn" data-view="list" data-section="experts" title="Vue liste"><i class="fas fa-list"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <div class="description-box">
-                                <p>Reseau d'ingenieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
-                            </div>
-                            <div id="autoFeaturedSection2" class="featured-section" style="display: none;">
-                                <div class="featured-header">
-                                    <i class="fas fa-star"></i>
-                                    <h3>A la une - Epingle par l'administrateur</h3>
-                                </div>
-                                <div class="featured-scroll">
-                                    <div id="autoFeaturedItems2" class="featured-items"></div>
-                                </div>
-                            </div>
-                            <div class="search-bar">
-                                <div class="search-input-wrapper">
-                                    <i class="fas fa-search"></i>
-                                    <input type="text" id="searchAutoInput2" placeholder="Rechercher par nom, domaine, specialite, ville, telephone, email, site web..." oninput="filterAutomaticiens2()">
-                                </div>
-                                <div class="filter-buttons">
-                                    <button class="filter-btn" id="filterAutoBtn2" onclick="openAutoFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
-                                    <button class="filter-btn" id="filterAutoVilleBtn2" onclick="openAutoVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
-                                </div>
-                            </div>
-                            <div class="items-grid" id="automaticiensGrid2">
-                                <div class="win-loader-spinner" style="margin: 2rem auto;"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section Rejoindre -->
-                <div id="rejoindreSection" class="section-item">
-                    <div class="window-card">
-                        <div class="window-header">
-                            <i class="fas fa-user-plus"></i>
-                            <h2>Rejoignez notre reseau</h2>
-                        </div>
-                        <div class="window-content">
-                            <div class="description-box">
-                                <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et developper votre visibilite aupres de milliers de clients potentiels au Maroc.</p>
-                            </div>
-                            <div class="join-grid">
-                                <div class="join-tile">
-                                    <div class="join-icon"><i class="fas fa-microchip"></i></div>
-                                    <h3>Ajouter un expert</h3>
-                                    <p>Formulaire pour les experts en automatisme</p>
-                                    <div class="join-buttons-group">
-                                        <button class="join-btn" onclick="openFormAuto()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
-                                        <button class="join-btn share" onclick="shareFormAuto()"><i class="fas fa-share-alt"></i> Partager le formulaire</button>
+                            <div class="links-grid">
+                                <div class="link-tile">
+                                    <h3>Les Fournisseurs Industriels Du Maroc</h3>
+                                    <div class="stat">29,000+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareGroup('Les Fournisseurs Industriels Du Maroc', 'https://www.facebook.com/share/g/176XJV7sJE/', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://www.facebook.com/share/g/176XJV7sJE/', 'Les Fournisseurs Industriels Du Maroc - Facebook Group')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="join-tile">
-                                    <div class="join-icon"><i class="fas fa-industry"></i></div>
-                                    <h3>Ajouter un fournisseur</h3>
-                                    <p>Formulaire pour les fournisseurs industriels</p>
-                                    <div class="join-buttons-group">
-                                        <button class="join-btn" onclick="openFormFour()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
-                                        <button class="join-btn share" onclick="shareFormFour()"><i class="fas fa-share-alt"></i> Partager le formulaire</button>
+                                <div class="link-tile">
+                                    <h3>Vente de PLC et Equipements d'Automatisme</h3>
+                                    <div class="stat">5,900+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn visit" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-users"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareGroup('Vente de PLC et Equipements d\'Automatisme', 'https://www.facebook.com/share/g/1EaoJJuEqd/', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://www.facebook.com/share/g/1EaoJJuEqd/', 'Vente de PLC et Equipements d\'Automatisme - Facebook Group')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
                             </div>
-                            <div style="text-align: center; font-size: 0.7rem; color: var(--win-text-secondary); margin-top: 1rem;">
-                                <i class="fas fa-info-circle"></i> Les donnees ajoutees via les formulaires apparaîtront automatiquement apres validation.
-                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Section Suggestions -->
-                <div id="suggestionsSection" class="section-item">
-                    <div class="window-card">
+                    <div class="window-card" style="margin: 0 0 1rem 0;">
                         <div class="window-header">
-                            <i class="fas fa-comment-dots"></i>
-                            <h2>Suggestions et Contact</h2>
+                            <i class="fab fa-whatsapp"></i>
+                            <h2>Nos Groupes WhatsApp</h2>
                         </div>
                         <div class="window-content">
-                            <div class="description-box">
-                                <p>Nous accueillons vos avis et suggestions pour ameliorer la plateforme. Laissez votre message, nous vous repondrons dans les plus brefs delais.</p>
-                            </div>
-                            <form id="suggestionForm">
-                                <div style="margin-bottom: 1rem;">
-                                    <input type="text" id="suggestName" class="win-input" placeholder="Nom (optionnel)">
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <input type="text" id="suggestContact" class="win-input" placeholder="Email ou Telephone (optionnel)">
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                                        <button type="button" class="join-btn" data-type="suggestion" style="flex: 1; margin: 0; white-space: normal; min-width: 80px;"><i class="fas fa-lightbulb"></i> Suggestion</button>
-                                        <button type="button" class="join-btn" data-type="reclamation" style="flex: 1; margin: 0; white-space: normal; min-width: 80px;"><i class="fas fa-exclamation-triangle"></i> Reclamation</button>
-                                        <button type="button" class="join-btn" data-type="demande" style="flex: 1; margin: 0; white-space: normal; min-width: 80px;"><i class="fas fa-question-circle"></i> Demande</button>
-                                        <button type="button" class="join-btn" data-type="collaboration" style="flex: 1; margin: 0; white-space: normal; min-width: 80px;"><i class="fas fa-handshake"></i> Collaboration</button>
+                            <div class="links-grid">
+                                <div class="link-tile">
+                                    <h3>Stations de Dessalement Maroc</h3>
+                                    <div class="stat">120+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareWhatsAppGroup('Stations de Dessalement Maroc', 'https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'Stations de Dessalement Maroc - WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
-                                    <input type="hidden" id="suggestType" value="suggestion">
                                 </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <textarea id="suggestMessage" class="win-textarea" rows="4" placeholder="Votre message..."></textarea>
+                                <div class="link-tile">
+                                    <h3>Comptables & Gestionnaires Maroc</h3>
+                                    <div class="stat">200+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareWhatsAppGroup('Comptables & Gestionnaires Maroc', 'https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'Comptables & Gestionnaires Maroc - WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button>
+                                    </div>
                                 </div>
-                                <button type="submit" class="join-btn" style="width: 100%; background: #25D366; border-color: #25D366; color: white;">
-                                    <i class="fab fa-whatsapp"></i> Envoyer via WhatsApp
-                                </button>
-                            </form>
+                                <div class="link-tile">
+                                    <h3>Fournisseurs Industriels Du Maroc</h3>
+                                    <div class="stat">250+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareWhatsAppGroup('Fournisseurs Industriels Du Maroc', 'https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'Fournisseurs Industriels Du Maroc - WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button>
+                                    </div>
+                                </div>
+                                <div class="link-tile">
+                                    <h3>Energie Solaire Maroc</h3>
+                                    <div class="stat">750+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareWhatsAppGroup('Energie Solaire Maroc', 'https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'fournisseurs')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'Energie Solaire Maroc - WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button>
+                                    </div>
+                                </div>
+                                <div class="link-tile">
+                                    <h3>Genie Electrique Industriel Maroc</h3>
+                                    <div class="stat">420+ membres</div>
+                                    <div class="link-btns">
+                                        <button class="link-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="link-btn share" onclick="shareWhatsAppGroup('Genie Electrique Industriel Maroc', 'https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'genie')"><i class="fas fa-share-alt"></i> Partager</button>
+                                        <button class="link-btn qr" onclick="showQRCode('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'Genie Electrique Industriel Maroc - WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="window-card">
+                        <div class="window-header">
+                            <i class="fas fa-headset"></i>
+                            <h2>Contactez-nous</h2>
+                        </div>
+                        <div class="window-content">
+                            <div style="text-align: center; padding: 1rem;">
+                                <p style="margin-bottom: 0.5rem;">Pour toute question ou assistance rapide</p>
+                                <div style="font-size: 1.3rem; font-weight: 600; margin: 0.5rem 0;">
+                                    <a href="https://wa.me/212690292010" style="color: var(--success-green); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                                        <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i> +212 690-292010
+                                    </a>
+                                </div>
+                                <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                    <i class="fas fa-clock"></i> Service disponible : Dimanche a Jeudi | 09:00 – 18:00
+                                </p>
+                                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap;">
+                                    <button class="join-btn" onclick="openWaContactModal()" style="width: auto; padding: 0.5rem 1rem;">
+                                        <i class="fab fa-whatsapp"></i> Contacter
+                                    </button>
+                                    <button class="join-btn qr" onclick="showQRCode('https://wa.me/212690292010', 'Contact WhatsApp Connect Industry')" style="width: auto; padding: 0.5rem 1rem;">
+                                        <i class="fas fa-qrcode"></i> QR
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <!-- Section Fournisseurs -->
+        <div id="fournisseursSection" class="section-item">
+            <div class="window-card">
+                <div class="window-header">
+                    <h2>Fournisseurs Industriels</h2>
+                </div>
+                <div class="window-content">
+                    <div class="description-box">
+                        <p>Les plus grands fournisseurs d'equipements et pieces industrielles au Maroc. Qualite garantie et meilleurs prix.</p>
+                    </div>
+                    <div id="fourFeaturedSection2" class="featured-section" style="display: none;">
+                        <div class="featured-header">
+                            <i class="fas fa-star"></i>
+                            <h3>A la une - Epingle par l'administrateur</h3>
+                        </div>
+                        <div class="featured-scroll">
+                            <div id="fourFeaturedItems2" class="featured-items"></div>
+                        </div>
+                    </div>
+                    <div class="search-bar">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchFourInput2" placeholder="Rechercher par nom, domaine, specialite, ville, telephone, email, site web..." oninput="filterFournisseurs2()">
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn" id="filterFourBtn2" onclick="openFourFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
+                            <button class="filter-btn" id="filterFourVilleBtn2" onclick="openFourVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
+                        </div>
+                    </div>
+                    <div class="items-grid" id="fournisseursGrid2">
+                        <div class="win-loader-spinner" style="margin: 2rem auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Experts -->
+        <div id="expertsSection" class="section-item">
+            <div class="window-card">
+                <div class="window-header">
+                    <h2>Experts & Automaticiens</h2>
+                </div>
+                <div class="window-content">
+                    <div class="description-box">
+                        <p>Reseau d'ingenieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
+                    </div>
+                    <div id="autoFeaturedSection2" class="featured-section" style="display: none;">
+                        <div class="featured-header">
+                            <i class="fas fa-star"></i>
+                            <h3>A la une - Epingle par l'administrateur</h3>
+                        </div>
+                        <div class="featured-scroll">
+                            <div id="autoFeaturedItems2" class="featured-items"></div>
+                        </div>
+                    </div>
+                    <div class="search-bar">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchAutoInput2" placeholder="Rechercher par nom, domaine, specialite, ville, telephone, email, site web..." oninput="filterAutomaticiens2()">
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn" id="filterAutoBtn2" onclick="openAutoFilterModal()" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
+                            <button class="filter-btn" id="filterAutoVilleBtn2" onclick="openAutoVilleModal()" title="Filtrer par ville"><i class="fas fa-city"></i></button>
+                        </div>
+                    </div>
+                    <div class="items-grid" id="automaticiensGrid2">
+                        <div class="win-loader-spinner" style="margin: 2rem auto;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Rejoindre -->
+        <div id="rejoindreSection" class="section-item">
+            <div class="window-card">
+                <div class="window-header">
+                    <i class="fas fa-user-plus"></i>
+                    <h2>Rejoignez notre reseau</h2>
+                </div>
+                <div class="window-content">
+                    <div class="description-box">
+                        <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et developper votre visibilite aupres de milliers de clients potentiels au Maroc.</p>
+                    </div>
+                    <div class="join-grid">
+                        <div class="join-tile">
+                            <div class="join-icon"><i class="fas fa-microchip"></i></div>
+                            <h3>Ajouter un expert</h3>
+                            <p>Formulaire pour les experts en automatisme</p>
+                            <div class="join-buttons-group">
+                                <button class="join-btn" onclick="openFormAuto()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
+                                <button class="join-btn share" onclick="shareFormAuto()"><i class="fas fa-share-alt"></i> Partager</button>
+                                <button class="join-btn qr" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform?usp=header', 'Formulaire Expert')"><i class="fas fa-qrcode"></i> QR</button>
+                            </div>
+                        </div>
+                        <div class="join-tile">
+                            <div class="join-icon"><i class="fas fa-industry"></i></div>
+                            <h3>Ajouter un fournisseur</h3>
+                            <p>Formulaire pour les fournisseurs industriels</p>
+                            <div class="join-buttons-group">
+                                <button class="join-btn" onclick="openFormFour()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
+                                <button class="join-btn share" onclick="shareFormFour()"><i class="fas fa-share-alt"></i> Partager</button>
+                                <button class="join-btn qr" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform?usp=header', 'Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); margin-top: 1rem;">
+                        <i class="fas fa-info-circle"></i> Les donnees ajoutees via les formulaires apparaîtront automatiquement apres validation.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Suggestions -->
+        <div id="suggestionsSection" class="section-item">
+            <div class="window-card">
+                <div class="window-header">
+                    <i class="fas fa-comment-dots"></i>
+                    <h2>Suggestions et Contact</h2>
+                </div>
+                <div class="window-content">
+                    <div class="description-box">
+                        <p>Nous accueillons vos avis et suggestions pour ameliorer la plateforme. Laissez votre message, nous vous repondrons dans les plus brefs delais.</p>
+                    </div>
+                    <form id="suggestionForm">
+                        <div style="margin-bottom: 1rem;">
+                            <input type="text" id="suggestName" class="win-input" placeholder="Nom (optionnel)">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <input type="text" id="suggestContact" class="win-input" placeholder="Email ou Telephone (optionnel)">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <button type="button" class="join-btn" data-type="suggestion" style="width: 100%; margin: 0; white-space: normal;"><i class="fas fa-lightbulb"></i> Suggestion</button>
+                                <button type="button" class="join-btn" data-type="reclamation" style="width: 100%; margin: 0; white-space: normal;"><i class="fas fa-exclamation-triangle"></i> Reclamation</button>
+                                <button type="button" class="join-btn" data-type="demande" style="width: 100%; margin: 0; white-space: normal;"><i class="fas fa-question-circle"></i> Demande</button>
+                                <button type="button" class="join-btn" data-type="collaboration" style="width: 100%; margin: 0; white-space: normal;"><i class="fas fa-handshake"></i> Collaboration</button>
+                            </div>
+                            <input type="hidden" id="suggestType" value="suggestion">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <textarea id="suggestMessage" class="win-textarea" rows="4" placeholder="Votre message..."></textarea>
+                        </div>
+                        <button type="submit" class="join-btn" style="width: 100%; background: var(--success-green); border-color: var(--success-green); color: white;">
+                            <i class="fab fa-whatsapp"></i> Envoyer via WhatsApp
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
     <div id="winToast" class="win-toast"></div>
 
-    <!-- Modals (same as before) -->
+    <!-- Enhanced QR Modal -->
+    <div class="qr-modal-overlay" id="qrModal">
+        <div class="qr-modal">
+            <h3 id="qrTitle">QR Code</h3>
+            <div class="qr-description" id="qrDescription"></div>
+            <div class="qr-code-container" id="qrCodeContainer"></div>
+            <div class="qr-actions">
+                <button class="qr-btn close" onclick="closeQRModal()">Fermer</button>
+                <button class="qr-btn share" onclick="shareQRImage()">Partager l'image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Modals -->
     <div class="win-modal-overlay" id="waContactModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1800,7 +1801,7 @@
             <div class="win-modal-body">
                 <p style="margin-bottom: 1rem;">Entrez votre numero de telephone pour activer votre abonnement</p>
                 <input type="tel" id="subscribePhoneInput" class="win-input" placeholder="Ex: 0612345678 ou +212612345678" autocomplete="off" value="+212690292010">
-                <div style="font-size: 0.7rem; color: var(--win-text-secondary); margin-top: 0.5rem;">
+                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem;">
                     <i class="fas fa-info-circle"></i> Si votre numero existe, vous pourrez voir tous les contacts
                 </div>
             </div>
@@ -1828,6 +1829,7 @@
         </div>
     </div>
 
+    <!-- Filter Modals -->
     <div class="win-modal-overlay" id="autoFilterModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1835,7 +1837,7 @@
                 <button class="win-modal-close" onclick="closeModal('autoFilterModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="win-modal-body">
-                <p style="text-align:center; color:var(--win-text-secondary); font-size:0.8rem; margin-bottom:1rem;">Choisissez le type de recherche</p>
+                <p style="text-align:center; color:var(--text-secondary); font-size:0.8rem; margin-bottom:1rem;">Choisissez le type de recherche</p>
                 <button class="join-btn" onclick="applyAutoFilter('all')" style="width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;" id="auto-opt-all">
                     <span><i class="fas fa-globe"></i> Tous</span>
                     <i class="fas fa-check" id="auto-check-all" style="opacity:0;"></i>
@@ -1858,7 +1860,7 @@
                 <button class="win-modal-close" onclick="closeModal('fourFilterModal')"><i class="fas fa-times"></i></button>
             </div>
             <div class="win-modal-body">
-                <p style="text-align:center; color:var(--win-text-secondary); font-size:0.8rem; margin-bottom:1rem;">Choisissez le type de recherche</p>
+                <p style="text-align:center; color:var(--text-secondary); font-size:0.8rem; margin-bottom:1rem;">Choisissez le type de recherche</p>
                 <button class="join-btn" onclick="applyFourFilter('all')" style="width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;" id="four-opt-all">
                     <span><i class="fas fa-globe"></i> Tous</span>
                     <i class="fas fa-check" id="four-check-all" style="opacity:0;"></i>
@@ -1966,14 +1968,11 @@
             let currentSubscriberPhone = null;
             let currentSubscriberMember = null;
             let currentSubscriberMembers = { fournisseur: null, expert: null };
-            let currentSectionIndex = 0;
+            let currentActiveSection = 'apropos';
+            let sectionHistory = ['apropos'];
 
             let automaticiensData = [];
             let fournisseursData = [];
-
-            // View preferences
-            let fournisseursView = localStorage.getItem('fournisseursView') || 'grid';
-            let expertsView = localStorage.getItem('expertsView') || 'grid';
 
             // Cache system
             let cachedItems = null;
@@ -1991,12 +1990,218 @@
                 SUBSCRIBER_ACTIVE: 'subscriber_active',
                 ACTIVE_SECTION: 'activeSection',
                 LAST_VISIT: 'lastVisit',
-                THEME: 'theme',
-                FOURNISSEURS_VIEW: 'fournisseursView',
-                EXPERTS_VIEW: 'expertsView'
+                THEME: 'theme'
             };
 
-            const sectionsOrder = ['apropos', 'fournisseurs', 'experts', 'rejoindre', 'suggestions'];
+            // ==================== QR CODE FUNCTIONS ====================
+            let currentQRData = null;
+            let currentQRTitle = null;
+
+            function showQRCode(data, title) {
+                const modal = document.getElementById('qrModal');
+                const container = document.getElementById('qrCodeContainer');
+                const titleEl = document.getElementById('qrTitle');
+                const descriptionEl = document.getElementById('qrDescription');
+                
+                currentQRData = data;
+                currentQRTitle = title;
+                
+                titleEl.textContent = title || 'QR Code';
+                descriptionEl.textContent = data;
+                container.innerHTML = '';
+                
+                new QRCode(container, {
+                    text: data,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                modal.classList.add('show');
+            }
+
+            function closeQRModal() {
+                document.getElementById('qrModal').classList.remove('show');
+                currentQRData = null;
+                currentQRTitle = null;
+            }
+
+            async function shareQRImage() {
+                if (!currentQRData) return;
+                
+                const qrContainer = document.getElementById('qrCodeContainer');
+                const qrCanvas = qrContainer.querySelector('canvas');
+                
+                if (!qrCanvas) {
+                    showToast('Impossible de generer l\'image');
+                    return;
+                }
+                
+                try {
+                    const shareCanvas = document.createElement('canvas');
+                    const ctx = shareCanvas.getContext('2d');
+                    
+                    const qrSize = 200;
+                    const padding = 40;
+                    const textHeight = 70;
+                    shareCanvas.width = qrSize + padding * 2;
+                    shareCanvas.height = qrSize + padding * 2 + textHeight;
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, shareCanvas.width, shareCanvas.height);
+                    
+                    ctx.drawImage(qrCanvas, padding, padding, qrSize, qrSize);
+                    
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.font = 'bold 16px "Segoe UI"';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(currentQRTitle || 'QR Code', shareCanvas.width / 2, qrSize + padding + 25);
+                    
+                    let description = currentQRData;
+                    if (description.length > 45) description = description.substring(0, 42) + '...';
+                    ctx.font = '11px "Segoe UI"';
+                    ctx.fillStyle = '#666666';
+                    ctx.fillText(description, shareCanvas.width / 2, qrSize + padding + 48);
+                    
+                    ctx.font = '10px "Segoe UI"';
+                    ctx.fillStyle = '#999999';
+                    ctx.fillText('Scannez pour acceder', shareCanvas.width / 2, qrSize + padding + 65);
+                    
+                    const blob = await new Promise(resolve => shareCanvas.toBlob(resolve, 'image/png'));
+                    const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                    
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: currentQRTitle || 'QR Code',
+                            text: currentQRData,
+                            files: [file]
+                        });
+                        showToast('Partage reussi');
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = 'qrcode.png';
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                        showToast('Image telechargee');
+                    }
+                } catch (err) {
+                    console.error('Share failed:', err);
+                    showToast('Erreur lors du partage');
+                }
+            }
+
+            // ==================== PDF GENERATION WITH QR CODE ====================
+            async function generatePDF(cardElement, itemName, websiteUrl) {
+                if (!cardElement) {
+                    showToast("Impossible de generer le PDF");
+                    return;
+                }
+                const overlay = document.getElementById('pdfLoadingOverlay');
+                overlay.classList.add('show');
+                try {
+                    const cloneCard = cardElement.cloneNode(true);
+                    const actionButtonsDiv = cloneCard.querySelector('.action-buttons');
+                    if (actionButtonsDiv) actionButtonsDiv.remove();
+                    const pinBtn = cloneCard.querySelector('.pin-icon');
+                    if (pinBtn) pinBtn.remove();
+                    
+                    if (websiteUrl && websiteUrl !== '' && websiteUrl !== 'null') {
+                        const qrContainer = document.createElement('div');
+                        qrContainer.style.textAlign = 'center';
+                        qrContainer.style.marginTop = '15px';
+                        qrContainer.style.padding = '15px';
+                        qrContainer.style.borderTop = '1px solid #e0e0e0';
+                        qrContainer.style.backgroundColor = '#f9f9f9';
+                        qrContainer.style.borderRadius = '8px';
+                        qrContainer.innerHTML = `
+                            <div style="font-size: 11px; margin-bottom: 8px; color: #1a73e8; font-weight: 500;">Site web officiel</div>
+                            <div style="font-size: 10px; margin-bottom: 10px; color: #666; word-break: break-all;">${escapeHtml(websiteUrl)}</div>
+                        `;
+                        const qrCodeDiv = document.createElement('div');
+                        qrCodeDiv.id = 'temp-qr-code';
+                        qrCodeDiv.style.display = 'flex';
+                        qrCodeDiv.style.justifyContent = 'center';
+                        qrContainer.appendChild(qrCodeDiv);
+                        cloneCard.appendChild(qrContainer);
+                        
+                        new QRCode(qrCodeDiv, {
+                            text: websiteUrl,
+                            width: 120,
+                            height: 120,
+                            colorDark: '#000000',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                        
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                    }
+                    
+                    const originalWidth = cardElement.offsetWidth;
+                    const originalHeight = cardElement.offsetHeight;
+                    
+                    cloneCard.style.position = 'absolute';
+                    cloneCard.style.top = '-9999px';
+                    cloneCard.style.left = '-9999px';
+                    cloneCard.style.width = originalWidth + 'px';
+                    cloneCard.style.margin = '0';
+                    cloneCard.style.padding = '1rem';
+                    cloneCard.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--bg-card');
+                    document.body.appendChild(cloneCard);
+                    
+                    const canvas = await html2canvas(cloneCard, {
+                        scale: 3,
+                        backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-card'),
+                        logging: false,
+                        useCORS: true,
+                        windowWidth: originalWidth,
+                        windowHeight: originalHeight
+                    });
+                    
+                    document.body.removeChild(cloneCard);
+                    
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    const { jsPDF } = window.jspdf;
+                    const imgWidthMm = canvas.width * 0.264583;
+                    const imgHeightMm = canvas.height * 0.264583;
+                    const pdf = new jsPDF({
+                        orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
+                        unit: 'mm',
+                        format: [imgWidthMm + 5, imgHeightMm + 5]
+                    });
+                    const x = (pdf.internal.pageSize.getWidth() - imgWidthMm) / 2;
+                    const y = (pdf.internal.pageSize.getHeight() - imgHeightMm) / 2;
+                    pdf.addImage(imgData, 'PNG', x, y, imgWidthMm, imgHeightMm);
+                    pdf.save(`${itemName.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+                    showToast("PDF telecharge avec succes");
+                } catch (err) {
+                    console.error(err);
+                    showToast("Erreur lors de la generation du PDF");
+                } finally {
+                    overlay.classList.remove('show');
+                }
+            }
+
+            // ==================== BACK BUTTON NAVIGATION ====================
+            function goBack() {
+                if (sectionHistory.length > 1) {
+                    sectionHistory.pop();
+                    const previousSection = sectionHistory[sectionHistory.length - 1];
+                    showSection(previousSection);
+                } else {
+                    if (confirm('Voulez-vous quitter l\'application ?')) {
+                        window.close();
+                        window.location.href = 'about:blank';
+                    }
+                }
+            }
+
+            window.addEventListener('popstate', function(e) {
+                e.preventDefault();
+                goBack();
+            });
 
             // ==================== UTILITY FUNCTIONS ====================
             function showToast(message) {
@@ -2067,84 +2272,48 @@
                 return fields.some(f => f.toLowerCase().includes(term));
             }
 
-            // ==================== VIEW TOGGLE FUNCTIONS ====================
-            function setView(section, view) {
-                if (section === 'fournisseurs') {
-                    fournisseursView = view;
-                    localStorage.setItem(STORAGE_KEYS.FOURNISSEURS_VIEW, view);
-                    updateViewButtons('fournisseurs', view);
-                    const grid = document.getElementById('fournisseursGrid2');
-                    if (grid) {
-                        if (view === 'list') {
-                            grid.classList.add('list-view');
-                        } else {
-                            grid.classList.remove('list-view');
-                        }
-                    }
-                } else if (section === 'experts') {
-                    expertsView = view;
-                    localStorage.setItem(STORAGE_KEYS.EXPERTS_VIEW, view);
-                    updateViewButtons('experts', view);
-                    const grid = document.getElementById('automaticiensGrid2');
-                    if (grid) {
-                        if (view === 'list') {
-                            grid.classList.add('list-view');
-                        } else {
-                            grid.classList.remove('list-view');
-                        }
-                    }
+            // ==================== SECTION NAVIGATION ====================
+            function showSection(sectionId) {
+                if (sectionHistory[sectionHistory.length - 1] !== sectionId) {
+                    sectionHistory.push(sectionId);
                 }
-                renderAll(true);
-            }
-
-            function updateViewButtons(section, activeView) {
-                const toggleId = section === 'fournisseurs' ? 'fourViewToggle' : 'expertViewToggle';
-                const container = document.getElementById(toggleId);
-                if (!container) return;
-                const buttons = container.querySelectorAll('.view-btn');
-                buttons.forEach(btn => {
-                    const view = btn.getAttribute('data-view');
-                    if (view === activeView) {
+                
+                document.querySelectorAll('.section-item').forEach(section => {
+                    section.classList.remove('active-section');
+                });
+                
+                const targetSection = document.getElementById(`${sectionId}Section`);
+                if (targetSection) {
+                    targetSection.classList.add('active-section');
+                    currentActiveSection = sectionId;
+                    localStorage.setItem(STORAGE_KEYS.ACTIVE_SECTION, sectionId);
+                }
+                
+                document.querySelectorAll('.taskbar-icon').forEach(btn => {
+                    const btnSection = btn.getAttribute('data-section');
+                    if (btnSection === sectionId) {
                         btn.classList.add('active');
                     } else {
                         btn.classList.remove('active');
                     }
                 });
+                
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
             }
 
-            function initViewButtons() {
-                // Fournisseurs view buttons
-                const fourToggle = document.getElementById('fourViewToggle');
-                if (fourToggle) {
-                    const buttons = fourToggle.querySelectorAll('.view-btn');
-                    buttons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const view = btn.getAttribute('data-view');
-                            setView('fournisseurs', view);
-                        });
-                    });
-                }
+            // ==================== TIME UPDATE ====================
+            function updateDateTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 
-                // Experts view buttons
-                const expertToggle = document.getElementById('expertViewToggle');
-                if (expertToggle) {
-                    const buttons = expertToggle.querySelectorAll('.view-btn');
-                    buttons.forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const view = btn.getAttribute('data-view');
-                            setView('experts', view);
-                        });
-                    });
-                }
-                
-                // Apply saved views
-                updateViewButtons('fournisseurs', fournisseursView);
-                updateViewButtons('experts', expertsView);
-                
-                const fourGrid = document.getElementById('fournisseursGrid2');
-                if (fourGrid && fournisseursView === 'list') fourGrid.classList.add('list-view');
-                const expertGrid = document.getElementById('automaticiensGrid2');
-                if (expertGrid && expertsView === 'list') expertGrid.classList.add('list-view');
+                const startTime = document.getElementById('startTime');
+                const startDate = document.getElementById('startDate');
+                if (startTime) startTime.textContent = timeStr;
+                if (startDate) startDate.textContent = dateStr;
             }
 
             // ==================== SESSION MANAGEMENT ====================
@@ -2163,54 +2332,6 @@
                 }
                 localStorage.setItem(STORAGE_KEYS.LAST_VISIT, new Date().toISOString());
                 return false;
-            }
-
-            // ==================== NAVIGATION ====================
-            function updateTaskbarActive(sectionId) {
-                document.querySelectorAll('.taskbar-icon').forEach(btn => {
-                    const btnSection = btn.getAttribute('data-section');
-                    if (btnSection === sectionId) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-
-            function scrollToSection(sectionId) {
-                const index = sectionsOrder.indexOf(sectionId);
-                if (index !== -1) {
-                    const container = document.getElementById('sectionsScrollContainer');
-                    const targetScroll = index * window.innerWidth;
-                    requestAnimationFrame(() => {
-                        container.scrollTo({ left: targetScroll, behavior: 'smooth' });
-                    });
-                    currentSectionIndex = index;
-                    updateTaskbarActive(sectionId);
-                    localStorage.setItem(STORAGE_KEYS.ACTIVE_SECTION, sectionId);
-                }
-            }
-
-            function syncActiveSection() {
-                const container = document.getElementById('sectionsScrollContainer');
-                const scrollLeft = container.scrollLeft;
-                const sectionWidth = window.innerWidth;
-                const index = Math.round(scrollLeft / sectionWidth);
-                if (index >= 0 && index < sectionsOrder.length && sectionsOrder[index] !== undefined) {
-                    currentSectionIndex = index;
-                    updateTaskbarActive(sectionsOrder[index]);
-                }
-                updateScrollIndicator();
-            }
-
-            function updateScrollIndicator() {
-                const container = document.getElementById('sectionsScrollContainer');
-                const progressBar = document.getElementById('scrollProgress');
-                if (!container || !progressBar) return;
-                const maxScroll = container.scrollWidth - container.clientWidth;
-                const currentScroll = container.scrollLeft;
-                const progress = maxScroll > 0 ? (currentScroll / maxScroll) * 100 : 0;
-                progressBar.style.width = `${progress}%`;
             }
 
             // ==================== PIN FUNCTIONS ====================
@@ -2246,7 +2367,6 @@
                     return;
                 }
                 
-                // Add animation to pin button
                 const pinButtons = document.querySelectorAll(`.pin-icon[onclick*="${itemId}"]`);
                 pinButtons.forEach(btn => btn.classList.add('updating'));
                 
@@ -2323,66 +2443,6 @@
                 return null;
             }
 
-            // ==================== PDF GENERATION ====================
-            async function generatePDF(cardElement, itemName) {
-                if (!cardElement) {
-                    showToast("Impossible de generer le PDF");
-                    return;
-                }
-                const overlay = document.getElementById('pdfLoadingOverlay');
-                overlay.classList.add('show');
-                try {
-                    const cloneCard = cardElement.cloneNode(true);
-                    const actionButtonsDiv = cloneCard.querySelector('.action-buttons');
-                    if (actionButtonsDiv) actionButtonsDiv.remove();
-                    const pinBtn = cloneCard.querySelector('.pin-icon');
-                    if (pinBtn) pinBtn.remove();
-                    
-                    const originalWidth = cardElement.offsetWidth;
-                    const originalHeight = cardElement.offsetHeight;
-                    
-                    cloneCard.style.position = 'absolute';
-                    cloneCard.style.top = '-9999px';
-                    cloneCard.style.left = '-9999px';
-                    cloneCard.style.width = originalWidth + 'px';
-                    cloneCard.style.margin = '0';
-                    cloneCard.style.padding = '1rem';
-                    cloneCard.style.backgroundColor = getComputedStyle(document.body).getPropertyValue('--win-card-bg').trim();
-                    document.body.appendChild(cloneCard);
-                    
-                    const canvas = await html2canvas(cloneCard, {
-                        scale: 4,
-                        backgroundColor: getComputedStyle(document.body).getPropertyValue('--win-card-bg').trim(),
-                        logging: false,
-                        useCORS: true,
-                        windowWidth: originalWidth,
-                        windowHeight: originalHeight
-                    });
-                    
-                    document.body.removeChild(cloneCard);
-                    
-                    const imgData = canvas.toDataURL('image/png', 1.0);
-                    const { jsPDF } = window.jspdf;
-                    const imgWidthMm = canvas.width * 0.264583;
-                    const imgHeightMm = canvas.height * 0.264583;
-                    const pdf = new jsPDF({
-                        orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
-                        unit: 'mm',
-                        format: [imgWidthMm + 5, imgHeightMm + 5]
-                    });
-                    const x = (pdf.internal.pageSize.getWidth() - imgWidthMm) / 2;
-                    const y = (pdf.internal.pageSize.getHeight() - imgHeightMm) / 2;
-                    pdf.addImage(imgData, 'PNG', x, y, imgWidthMm, imgHeightMm);
-                    pdf.save(`${itemName.replace(/[^a-z0-9]/gi, '_')}.pdf`);
-                    showToast("PDF telecharge avec succes");
-                } catch (err) {
-                    console.error(err);
-                    showToast("Erreur lors de la generation du PDF");
-                } finally {
-                    overlay.classList.remove('show');
-                }
-            }
-
             // ==================== CARD CREATION ====================
             function createAutomaticienCard(person, isSubscriberCard = false) {
                 let buttons = [];
@@ -2390,8 +2450,8 @@
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
                 const isCurrentSubscriber = isCurrentSubscriberItem(person, 'expert');
-                const showFullAccess = isAdminMode || isSubscriberMode;
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
+                const websiteUrl = (person.web && person.web !== 'null' && person.web !== '') ? person.web : '';
                 
                 let pinButton = '';
                 if (isSubscriberMode || isAdminMode) {
@@ -2400,42 +2460,29 @@
                 
                 let adminUnpinButton = '';
                 if (isAdminMode && isAdminPinnedItem) {
-                    adminUnpinButton = `<button class="unpin-btn" style="margin-left: 8px;" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')">Retirer de la une</button>`;
+                    adminUnpinButton = `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('expert', '${escapeHtml(itemId)}', '${escapeHtml(person.name)}')" title="Retirer de la une"><i class="fas fa-thumbtack"></i></button>`;
                 }
 
-                if (showFullAccess && hasPhone) {
+                if (hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${person.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else if (hasPhone) {
-                    buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
-                if (showFullAccess && person.email) {
+                if (person.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${person.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else if (person.email) {
-                    buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
-                if (showFullAccess && person.web && person.web !== 'null' && person.web !== '') {
-                    const webUrl = person.web.startsWith('http') ? person.web : 'https://' + person.web;
+                if (websiteUrl) {
+                    const webUrl = websiteUrl.startsWith('http') ? websiteUrl : 'https://' + websiteUrl;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else if (person.web && person.web !== 'null') {
-                    buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
-                if (showFullAccess) {
-                    const webUrl = (person.web && person.web !== 'null' && person.web !== '') ? person.web : '';
-                    buttons.push(`<button class="action-btn share" onclick="shareCardAuto('${escapeHtml(person.name)}', '${escapeHtml(person.domaine)}', '${escapeHtml(person.specialite)}', '${escapeHtml(person.city)}', '${person.phone ? person.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
-                    buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); const card = this.closest('.item-card'); if(card) generatePDF(card, '${escapeHtml(person.name)}');"><i class="fas fa-file-pdf"></i> PDF</button>`);
-                } else {
-                    buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
-                    buttons.push(`<button class="action-btn pdf disabled" disabled><i class="fas fa-file-pdf"></i> PDF</button>`);
-                }
+                buttons.push(`<button class="action-btn share" onclick="shareCardAuto('${escapeHtml(person.name)}', '${escapeHtml(person.domaine)}', '${escapeHtml(person.specialite)}', '${escapeHtml(person.city)}', '${person.phone ? person.phone : ''}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
+                buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.item-card'), '${escapeHtml(person.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`);
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : '*********') : 'Non disponible';
-                const visitorWarning = !showFullAccess && hasPhone && !isAdminPinnedItem ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numeros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned">A la une</span>` : `<span class="badge-pinned">Epinglé</span>`) : '';
-                const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber">Mon compte</span>` : '';
-                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;">Mon profil</span>` : '';
+                const phoneDisplay = hasPhone ? person.phone : 'Non disponible';
+                const pinnedBadgeHtml = isPinned ? `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Epingle</span>` : '';
+                const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
+                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: var(--success-green);"><i class="fas fa-user"></i> Mon profil</span>` : '';
                 
                 let cardClass = 'item-card';
                 if (isSubscriberCard) cardClass += ' subscriber-card';
@@ -2461,10 +2508,9 @@
                             <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Specialite:</span><span class="value">${escapeHtml(person.specialite)}</span></div>
                             <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(person.city)}</span></div>
                             <div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Telephone:</span><span class="value">${phoneDisplay}</span></div>
-                            ${person.email && showFullAccess ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(person.email)}</span></div>` : ''}
-                            ${(person.web && person.web !== 'null' && person.web !== '' && showFullAccess) ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(person.web)}</span></div>` : ''}
+                            ${person.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(person.email)}</span></div>` : ''}
+                            ${websiteUrl ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(websiteUrl)}</span></div>` : ''}
                         </div>
-                        ${visitorWarning}
                         <div class="action-buttons">${buttons.join('')}</div>
                     </div>
                 `;
@@ -2476,8 +2522,8 @@
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
                 const isCurrentSubscriber = isCurrentSubscriberItem(supplier, 'fournisseur');
-                const showFullAccess = isAdminMode || isSubscriberMode;
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
+                const websiteUrl = (supplier.web && supplier.web !== 'null' && supplier.web !== '') ? supplier.web : '';
                 
                 let pinButton = '';
                 if (isSubscriberMode || isAdminMode) {
@@ -2486,42 +2532,29 @@
                 
                 let adminUnpinButton = '';
                 if (isAdminMode && isAdminPinnedItem) {
-                    adminUnpinButton = `<button class="unpin-btn" style="margin-left: 8px;" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')">Retirer de la une</button>`;
+                    adminUnpinButton = `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('fournisseur', '${escapeHtml(itemId)}', '${escapeHtml(supplier.name)}')" title="Retirer de la une"><i class="fas fa-thumbtack"></i></button>`;
                 }
 
-                if (showFullAccess && hasPhone) {
+                if (hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${supplier.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else if (hasPhone) {
-                    buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
                 
-                if (showFullAccess && supplier.email) {
+                if (supplier.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${supplier.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else if (supplier.email) {
-                    buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
                 
-                if (showFullAccess && supplier.web && supplier.web !== 'null' && supplier.web !== '') {
-                    const webUrl = supplier.web.startsWith('http') ? supplier.web : 'https://' + supplier.web;
+                if (websiteUrl) {
+                    const webUrl = websiteUrl.startsWith('http') ? websiteUrl : 'https://' + websiteUrl;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else if (supplier.web && supplier.web !== 'null') {
-                    buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
                 
-                if (showFullAccess) {
-                    const webUrl = (supplier.web && supplier.web !== 'null' && supplier.web !== '') ? supplier.web : '';
-                    buttons.push(`<button class="action-btn share" onclick="shareCardFour('${escapeHtml(supplier.name)}', '${escapeHtml(supplier.domaine)}', '${escapeHtml(supplier.specialite)}', '${escapeHtml(supplier.city)}', '${supplier.phone ? supplier.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
-                    buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); const card = this.closest('.item-card'); if(card) generatePDF(card, '${escapeHtml(supplier.name)}');"><i class="fas fa-file-pdf"></i> PDF</button>`);
-                } else {
-                    buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
-                    buttons.push(`<button class="action-btn pdf disabled" disabled><i class="fas fa-file-pdf"></i> PDF</button>`);
-                }
+                buttons.push(`<button class="action-btn share" onclick="shareCardFour('${escapeHtml(supplier.name)}', '${escapeHtml(supplier.domaine)}', '${escapeHtml(supplier.specialite)}', '${escapeHtml(supplier.city)}', '${supplier.phone ? supplier.phone : ''}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
+                buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.item-card'), '${escapeHtml(supplier.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`);
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : '*********') : 'Non disponible';
-                const visitorWarning = !showFullAccess && hasPhone && !isAdminPinnedItem ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numeros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned">A la une</span>` : `<span class="badge-pinned">Epinglé</span>`) : '';
-                const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber">Mon compte</span>` : '';
-                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;">Mon profil</span>` : '';
+                const phoneDisplay = hasPhone ? supplier.phone : 'Non disponible';
+                const pinnedBadgeHtml = isPinned ? `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Epingle</span>` : '';
+                const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
+                const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: var(--success-green);"><i class="fas fa-user"></i> Mon profil</span>` : '';
                 
                 let cardClass = 'item-card';
                 if (isSubscriberCard) cardClass += ' subscriber-card';
@@ -2547,10 +2580,9 @@
                             <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Specialite:</span><span class="value">${escapeHtml(supplier.specialite)}</span></div>
                             <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(supplier.city)}</span></div>
                             <div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Telephone:</span><span class="value">${phoneDisplay}</span></div>
-                            ${supplier.email && showFullAccess ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(supplier.email)}</span></div>` : ''}
-                            ${(supplier.web && supplier.web !== 'null' && supplier.web !== '' && showFullAccess) ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(supplier.web)}</span></div>` : ''}
+                            ${supplier.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(supplier.email)}</span></div>` : ''}
+                            ${websiteUrl ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(websiteUrl)}</span></div>` : ''}
                         </div>
-                        ${visitorWarning}
                         <div class="action-buttons">${buttons.join('')}</div>
                     </div>
                 `;
@@ -2570,24 +2602,24 @@
                     const hasPhone = item.phone && item.phone !== 'null';
                     const phoneDisplay = hasPhone ? item.phone : 'Non disponible';
                     const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
+                    const websiteUrl = (item.web && item.web !== 'null' && item.web !== '') ? item.web : '';
                     let adminActions = '';
                     if (isAdminMode) {
-                        adminActions = `<div style="margin-top:5px;"><button class="unpin-btn" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')">Retirer de la une</button></div>`;
+                        adminActions = `<div style="margin-top:5px;"><button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" title="Retirer de la une"><i class="fas fa-thumbtack"></i></button></div>`;
                     }
                     let buttons = '';
                     if (hasPhone) buttons += `<button class="action-btn wa" onclick="event.stopPropagation(); window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
                     if (item.email) buttons += `<button class="action-btn email" onclick="event.stopPropagation(); window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>`;
-                    if (item.web && item.web !== 'null' && item.web !== '') {
-                        const webUrl = item.web.startsWith('http') ? item.web : 'https://' + item.web;
+                    if (websiteUrl) {
+                        const webUrl = websiteUrl.startsWith('http') ? websiteUrl : 'https://' + websiteUrl;
                         buttons += `<button class="action-btn web" onclick="event.stopPropagation(); window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`;
                     }
-                    const webUrl = (item.web && item.web !== 'null' && item.web !== '') ? item.web : '';
-                    buttons += `<button class="action-btn share" onclick="event.stopPropagation(); shareCard${type === 'fournisseur' ? 'Four' : 'Auto'}('${escapeHtml(item.name)}', '${escapeHtml(item.domaine)}', '${escapeHtml(item.specialite)}', '${escapeHtml(item.city)}', '${item.phone ? item.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`;
-                    buttons += `<button class="action-btn pdf" onclick="event.stopPropagation(); const card = this.closest('.featured-card'); if(card) generatePDF(card, '${escapeHtml(item.name)}');"><i class="fas fa-file-pdf"></i> PDF</button>`;
+                    buttons += `<button class="action-btn share" onclick="event.stopPropagation(); shareCard${type === 'fournisseur' ? 'Four' : 'Auto'}('${escapeHtml(item.name)}', '${escapeHtml(item.domaine)}', '${escapeHtml(item.specialite)}', '${escapeHtml(item.city)}', '${item.phone ? item.phone : ''}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`;
+                    buttons += `<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.featured-card'), '${escapeHtml(item.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`;
                     html += `
                         <div class="featured-card" data-card-name="${escapeHtml(item.name)}">
                             <div class="item-title">
-                                <span><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name)} <span class="badge-admin-pinned">Epinglé par Admin</span></span>
+                                <span><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name)} <span class="badge-admin-pinned"><i class="fas fa-thumbtack"></i> Epingle par Admin</span></span>
                                 ${adminActions}
                             </div>
                             <div class="detail-row"><i class="fas fa-folder"></i> ${escapeHtml(item.domaine)}</div>
@@ -2605,7 +2637,7 @@
                 const grid = document.getElementById(gridId);
                 if (!grid) return;
                 if (!items || items.length === 0) {
-                    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--win-text-secondary);">Aucun resultat trouve</div>';
+                    grid.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary);">Aucun resultat trouve</div>';
                     return;
                 }
                 if (type === 'expert') {
@@ -2615,7 +2647,7 @@
                 }
             }
 
-            // ==================== RENDER ALL WITH CACHE ====================
+            // ==================== RENDER ALL ====================
             function renderAll(forceRefresh = false) {
                 const now = Date.now();
                 if (!forceRefresh && cachedItems && (now - cachedRenderTime) < CACHE_TTL) {
@@ -2878,7 +2910,7 @@
                 else if (currentSubscriberMembers.fournisseur) welcomeMessage += " (Fournisseur)";
                 else if (currentSubscriberMembers.expert) welcomeMessage += " (Expert)";
                 showToast(welcomeMessage);
-                scrollToSection('apropos');
+                showSection('apropos');
                 updateStartMenuStatus();
             }
 
@@ -2893,7 +2925,7 @@
                     closeModal('subscribeModal');
                 } else {
                     closeModal('subscribeModal');
-                    scrollToSection('rejoindre');
+                    showSection('rejoindre');
                     showToast('Numero non trouve. Veuillez vous inscrire dans "Rejoignez notre reseau"');
                 }
             }
@@ -2910,7 +2942,7 @@
                 localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE);
                 renderAll(true);
                 showToast('Deconnexion');
-                scrollToSection('apropos');
+                showSection('apropos');
                 updateStartMenuStatus();
             }
 
@@ -2963,7 +2995,7 @@
                     renderAll(true);
                     showToast('Mode admin active');
                     closeModal('adminPasswordModal');
-                    scrollToSection('apropos');
+                    showSection('apropos');
                     updateStartMenuStatus();
                 } else {
                     showToast('Mot de passe incorrect');
@@ -2979,7 +3011,7 @@
                 document.getElementById('adminModeText').innerHTML = 'Mode Admin';
                 renderAll(true);
                 showToast('Mode visiteur');
-                scrollToSection('apropos');
+                showSection('apropos');
                 updateStartMenuStatus();
             }
 
@@ -3009,8 +3041,8 @@
                     statusTitle.innerHTML = 'Mode Admin';
                     statusSub.innerHTML = 'Connect Industry Maroc (Administrateur)';
                 } else if (isSubscriberMode && currentSubscriberMember) {
-                    statusTitle.innerHTML = 'Mode Abonne';
-                    statusSub.innerHTML = `${currentSubscriberMember.data.name.substring(0, 30)} - Abonne actif`;
+                    statusTitle.innerHTML = `Mode Abonne - ${currentSubscriberMember.data.name.substring(0, 25)}`;
+                    statusSub.innerHTML = 'Abonne actif';
                 } else {
                     statusTitle.innerHTML = 'Connect Industry';
                     statusSub.innerHTML = 'Plateforme Industrielle Maroc';
@@ -3025,14 +3057,14 @@
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
                 allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
                 allBtn.onclick = () => { selectedAutoDomaine = null; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast('Tous les domaines'); };
                 container.appendChild(allBtn);
                 domaines.sort().forEach(dom => {
                     const btn = document.createElement('button');
                     btn.className = 'join-btn';
                     btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedAutoDomaine === dom ? '1' : '0'};"></i>`;
+                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedAutoDomaine === dom ? '1' : '0'};"></i>`;
                     btn.onclick = () => { selectedAutoDomaine = dom; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast(`${dom.substring(0,20)}`); };
                     container.appendChild(btn);
                 });
@@ -3046,14 +3078,14 @@
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
                 allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
                 allBtn.onclick = () => { selectedFourDomaine = null; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast('Tous les domaines'); };
                 container.appendChild(allBtn);
                 domaines.sort().forEach(dom => {
                     const btn = document.createElement('button');
                     btn.className = 'join-btn';
                     btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedFourDomaine === dom ? '1' : '0'};"></i>`;
+                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedFourDomaine === dom ? '1' : '0'};"></i>`;
                     btn.onclick = () => { selectedFourDomaine = dom; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast(`${dom.substring(0,20)}`); };
                     container.appendChild(btn);
                 });
@@ -3067,14 +3099,14 @@
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
                 allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
                 allBtn.onclick = () => { selectedAutoVille = null; renderAll(true); updateFilterBadges(); closeModal('autoVilleModal'); showToast('Toutes les villes'); };
                 container.appendChild(allBtn);
                 villes.sort().forEach(ville => {
                     const btn = document.createElement('button');
                     btn.className = 'join-btn';
                     btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedAutoVille === ville ? '1' : '0'};"></i>`;
+                    btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedAutoVille === ville ? '1' : '0'};"></i>`;
                     btn.onclick = () => { selectedAutoVille = ville; renderAll(true); updateFilterBadges(); closeModal('autoVilleModal'); showToast(`${ville.substring(0,20)}`); };
                     container.appendChild(btn);
                 });
@@ -3088,14 +3120,14 @@
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
                 allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--win-blue);"></i>`;
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Toutes les villes</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
                 allBtn.onclick = () => { selectedFourVille = null; renderAll(true); updateFilterBadges(); closeModal('fourVilleModal'); showToast('Toutes les villes'); };
                 container.appendChild(allBtn);
                 villes.sort().forEach(ville => {
                     const btn = document.createElement('button');
                     btn.className = 'join-btn';
                     btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--win-blue); opacity:${selectedFourVille === ville ? '1' : '0'};"></i>`;
+                    btn.innerHTML = `<span><i class="fas fa-city"></i> ${escapeHtml(ville)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedFourVille === ville ? '1' : '0'};"></i>`;
                     btn.onclick = () => { selectedFourVille = ville; renderAll(true); updateFilterBadges(); closeModal('fourVilleModal'); showToast(`${ville.substring(0,20)}`); };
                     container.appendChild(btn);
                 });
@@ -3135,15 +3167,8 @@
                     else if (action === 'theme') toggleTheme();
                     else if (action === 'wa') openWaContactModal();
                     else if (action === 'unpinAll') unpinAll();
-                    else scrollToSection(action);
+                    else showSection(action);
                 }, 50);
-            }
-
-            function updateTaskbarTime() {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-                document.getElementById('taskbarTime').textContent = `${dateStr} ${timeStr}`;
             }
 
             function openFormAuto() { window.open(FORM_AUTO_URL, '_blank'); showToast('Formulaire Expert'); }
@@ -3175,9 +3200,9 @@
             function selectMessageType(type) {
                 selectedMessageType = type;
                 document.getElementById('suggestType').value = type;
-                document.querySelectorAll('[data-type]').forEach(btn => btn.style.borderColor = 'var(--win-border)');
+                document.querySelectorAll('[data-type]').forEach(btn => btn.style.borderColor = 'var(--border-color)');
                 const activeBtn = document.querySelector(`[data-type="${type}"]`);
-                if (activeBtn) activeBtn.style.borderColor = 'var(--win-blue)';
+                if (activeBtn) activeBtn.style.borderColor = 'var(--primary-blue)';
             }
             
             function toggleTheme() {
@@ -3206,13 +3231,10 @@
                 fournisseursData = fourData;
                 loadSubscriberMode();
                 
-                // Initialize view buttons
-                initViewButtons();
-                
                 renderAll(true);
                 updateFilterBadges();
-                updateTaskbarTime();
-                setInterval(updateTaskbarTime, 60000);
+                updateDateTime();
+                setInterval(updateDateTime, 60000);
 
                 const startBtn = document.getElementById('startBtn');
                 startBtn.addEventListener('click', toggleStartMenu);
@@ -3251,13 +3273,10 @@
                     selectMessageType('suggestion');
                 });
 
-                const scrollContainer = document.getElementById('sectionsScrollContainer');
-                scrollContainer.addEventListener('scroll', syncActiveSection);
-                
                 document.querySelectorAll('.taskbar-icon').forEach(btn => {
                     btn.addEventListener('click', () => {
                         const section = btn.getAttribute('data-section');
-                        if (section) scrollToSection(section);
+                        if (section) showSection(section);
                     });
                 });
                 
@@ -3274,12 +3293,21 @@
                 document.getElementById('startWaBtn').onclick = () => handleMenuItemClick('wa');
                 document.getElementById('unpinAllBtn').onclick = () => handleMenuItemClick('unpinAll');
 
+                history.pushState(null, null, location.href);
+                
                 const savedSection = localStorage.getItem(STORAGE_KEYS.ACTIVE_SECTION);
-                if (savedSection && sectionsOrder.includes(savedSection)) {
-                    scrollToSection(savedSection);
+                if (savedSection && ['apropos', 'fournisseurs', 'experts', 'rejoindre', 'suggestions'].includes(savedSection)) {
+                    showSection(savedSection);
                 } else {
-                    scrollToSection('apropos');
+                    showSection('apropos');
                 }
+                
+                document.querySelectorAll('.live-tile').forEach(tile => {
+                    tile.addEventListener('click', () => {
+                        const section = tile.getAttribute('data-section');
+                        if (section) showSection(section);
+                    });
+                });
                 
                 setTimeout(() => { document.getElementById('loadingScreen').style.display = 'none'; }, 800);
             }
@@ -3312,12 +3340,15 @@
             window.applyFourFilter = applyFourFilter;
             window.selectMessageType = selectMessageType;
             window.closeModal = closeModal;
-            window.showSection = scrollToSection;
+            window.showSection = showSection;
             window.handleMenuItemClick = handleMenuItemClick;
             window.generatePDF = generatePDF;
             window.togglePin = togglePin;
             window.unpinAll = unpinAll;
-            window.setView = setView;
+            window.showQRCode = showQRCode;
+            window.closeQRModal = closeQRModal;
+            window.shareQRImage = shareQRImage;
+            window.goBack = goBack;
 
             init();
         })();
