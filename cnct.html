@@ -1248,8 +1248,8 @@
         <div class="start-header">
             <div class="user-icon"><i class="fas fa-user"></i></div>
             <div class="user-info">
-                <h4>Connect Industry</h4>
-                <p>Plateforme Industrielle Maroc</p>
+                <h4 id="startUserStatus">Connect Industry</h4>
+                <p id="startUserSubStatus">Plateforme Industrielle Maroc</p>
             </div>
         </div>
         <div class="start-menu-items">
@@ -1526,6 +1526,7 @@
 
     <div id="winToast" class="win-toast"></div>
 
+    <!-- Modals -->
     <div class="win-modal-overlay" id="waContactModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1773,6 +1774,21 @@
                 if (modal) modal.classList.remove('show');
             }
 
+            function updateStartMenuStatus() {
+                const statusTitle = document.getElementById('startUserStatus');
+                const statusSub = document.getElementById('startUserSubStatus');
+                if (isAdminMode) {
+                    statusTitle.innerHTML = 'Mode Admin';
+                    statusSub.innerHTML = 'Connect Industry Maroc (Administrateur)';
+                } else if (isSubscriberMode && currentSubscriberMember) {
+                    statusTitle.innerHTML = 'Mode Abonné';
+                    statusSub.innerHTML = `${currentSubscriberMember.data.name.substring(0, 30)} - Abonné actif`;
+                } else {
+                    statusTitle.innerHTML = 'Connect Industry';
+                    statusSub.innerHTML = 'Plateforme Industrielle Maroc';
+                }
+            }
+
             function normalizePhoneNumber(phone) {
                 if (!phone) return null;
                 let cleaned = phone.toString().replace(/[^\d+]/g, '');
@@ -1849,7 +1865,7 @@
                 return fields.some(f => f.toLowerCase().includes(term));
             }
 
-            // Functions for hiding/showing sections
+            // Section navigation functions
             function showHiddenSection(sectionId) {
                 document.querySelectorAll('.hidden-section').forEach(section => {
                     section.classList.add('hidden-section');
@@ -1916,7 +1932,7 @@
                 updateTaskbarActive(sectionId);
             }
 
-            // Pin functions
+            // Pin functions - User pins always visible to all, but info hidden for visitors
             function getUserPinnedItems(type) {
                 const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
                 return JSON.parse(localStorage.getItem(key) || '[]');
@@ -1978,7 +1994,8 @@
                 const adminPinned = getAdminPinnedItems(type);
                 const userPinned = getUserPinnedItems(type);
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                if (isSubscriberMode) return adminPinned.includes(itemId) || userPinned.includes(itemId);
+                // User pinned items are always considered pinned for display
+                if (userPinned.includes(itemId)) return true;
                 if (isAdminMode) return adminPinned.includes(itemId);
                 return adminPinned.includes(itemId);
             }
@@ -1988,7 +2005,7 @@
                 return phoneMatches(currentSubscriberPhone, item.phone);
             }
 
-            // PDF generation without buttons
+            // PDF generation - centered, no white borders
             async function generatePDF(cardElement, itemName) {
                 if (!cardElement) {
                     showToast("Impossible de générer le PDF");
@@ -1997,17 +2014,21 @@
                 const overlay = document.getElementById('pdfLoadingOverlay');
                 overlay.classList.add('show');
                 try {
-                    // Clone the card to remove buttons
                     const cloneCard = cardElement.cloneNode(true);
                     const actionButtonsDiv = cloneCard.querySelector('.action-buttons');
                     if (actionButtonsDiv) {
                         actionButtonsDiv.remove();
                     }
-                    // Style the clone for better rendering
+                    // Remove pin button if exists
+                    const pinBtn = cloneCard.querySelector('.pin-icon');
+                    if (pinBtn) pinBtn.remove();
+                    
                     cloneCard.style.position = 'absolute';
                     cloneCard.style.top = '-9999px';
                     cloneCard.style.left = '-9999px';
                     cloneCard.style.width = cardElement.offsetWidth + 'px';
+                    cloneCard.style.margin = '0';
+                    cloneCard.style.padding = '1rem';
                     document.body.appendChild(cloneCard);
                     
                     const canvas = await html2canvas(cloneCard, {
@@ -2023,14 +2044,41 @@
                     
                     const imgData = canvas.toDataURL('image/png', 1.0);
                     const { jsPDF } = window.jspdf;
-                    const imgWidth = 190;
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                    
+                    // Calculate dimensions to fit card exactly without white borders
+                    const imgWidthMm = canvas.width * 0.264583; // pixels to mm
+                    const imgHeightMm = canvas.height * 0.264583;
+                    
+                    // A4 dimensions: 210mm x 297mm
+                    const pageWidth = 210;
+                    const pageHeight = 297;
+                    
+                    // Calculate scaling to fit within page with margins
+                    let finalWidth = imgWidthMm;
+                    let finalHeight = imgHeightMm;
+                    
+                    if (finalWidth > pageWidth - 20) {
+                        const ratio = (pageWidth - 20) / finalWidth;
+                        finalWidth = pageWidth - 20;
+                        finalHeight = finalHeight * ratio;
+                    }
+                    
+                    if (finalHeight > pageHeight - 20) {
+                        const ratio = (pageHeight - 20) / finalHeight;
+                        finalHeight = pageHeight - 20;
+                        finalWidth = finalWidth * ratio;
+                    }
+                    
+                    const x = (pageWidth - finalWidth) / 2;
+                    const y = (pageHeight - finalHeight) / 2;
+                    
                     const pdf = new jsPDF({
-                        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+                        orientation: finalHeight > finalWidth ? 'portrait' : 'landscape',
                         unit: 'mm',
                         format: 'a4'
                     });
-                    pdf.addImage(imgData, 'PNG', (210 - imgWidth) / 2, 0, imgWidth, imgHeight);
+                    
+                    pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
                     pdf.save(`${itemName.replace(/[^a-z0-9]/gi, '_')}.pdf`);
                     showToast("PDF téléchargé avec succès");
                 } catch (err) {
@@ -2041,14 +2089,17 @@
                 }
             }
 
-            // Card creation functions with PDF button
+            // Card creation functions
             function createAutomaticienCard(person, isSubscriberCard = false) {
                 let buttons = [];
                 const hasPhone = person.phone && person.phone !== 'null';
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
                 const isCurrentSubscriber = isCurrentSubscriberItem(person, 'expert');
-                const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
+                // For visitors: show only admin pinned items without contact info
+                const isVisitor = !isAdminMode && !isSubscriberMode;
+                const showFullAccess = isAdminMode || isSubscriberMode || (isAdminPinnedItem && !isVisitor);
+                const showPinBadge = isPinned && (isAdminMode || isSubscriberMode || isAdminPinnedItem);
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
                 
                 let pinButton = '';
@@ -2063,32 +2114,37 @@
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${person.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else {
+                } else if (!isVisitor && hasPhone) {
+                    buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
+                } else if (!hasPhone) {
                     buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
+                
                 if (showFullAccess && person.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${person.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else {
+                } else if (!isVisitor && person.email) {
                     buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
+                
                 if (showFullAccess && person.web && person.web !== 'null' && person.web !== '') {
                     const webUrl = person.web.startsWith('http') ? person.web : 'https://' + person.web;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else {
+                } else if (!isVisitor && person.web && person.web !== 'null') {
                     buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
+                
                 if (showFullAccess) {
                     const webUrl = (person.web && person.web !== 'null' && person.web !== '') ? person.web : '';
                     buttons.push(`<button class="action-btn share" onclick="shareCardAuto('${escapeHtml(person.name)}', '${escapeHtml(person.domaine)}', '${escapeHtml(person.specialite)}', '${escapeHtml(person.city)}', '${person.phone ? person.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
                     buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); const card = this.closest('.item-card'); if(card) generatePDF(card, '${escapeHtml(person.name)}');"><i class="fas fa-file-pdf"></i> PDF</button>`);
-                } else {
+                } else if (!isVisitor) {
                     buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
                     buttons.push(`<button class="action-btn pdf disabled" disabled><i class="fas fa-file-pdf"></i> PDF</button>`);
                 }
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : '*********') : 'Non disponible';
-                const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const phoneDisplay = hasPhone ? (showFullAccess ? person.phone : (isVisitor ? '*********' : '*********')) : 'Non disponible';
+                const visitorWarning = !showFullAccess && hasPhone && !isAdminPinnedItem ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
+                const pinnedBadgeHtml = showPinBadge ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;"><i class="fas fa-user"></i> Mon profil</span>` : '';
                 
@@ -2096,7 +2152,7 @@
                 if (isSubscriberCard) cardClass += ' subscriber-card';
                 if (isAdminPinnedItem) cardClass += ' admin-pinned-card';
                 if (isCurrentSubscriber) cardClass += ' current-subscriber-card';
-                if (isPinned) cardClass += ' pinned';
+                if (isPinned && showPinBadge) cardClass += ' pinned';
 
                 return `
                     <div class="${cardClass}" data-card-name="${escapeHtml(person.name)}">
@@ -2116,8 +2172,8 @@
                             <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(person.specialite)}</span></div>
                             <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(person.city)}</span></div>
                             <div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Téléphone:</span><span class="value">${phoneDisplay}</span></div>
-                            ${person.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(person.email)}</span></div>` : ''}
-                            ${(person.web && person.web !== 'null' && person.web !== '') ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(person.web)}</span></div>` : ''}
+                            ${person.email && showFullAccess ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(person.email)}</span></div>` : ''}
+                            ${(person.web && person.web !== 'null' && person.web !== '' && showFullAccess) ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(person.web)}</span></div>` : ''}
                         </div>
                         ${visitorWarning}
                         <div class="action-buttons">${buttons.join('')}</div>
@@ -2131,7 +2187,9 @@
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
                 const isCurrentSubscriber = isCurrentSubscriberItem(supplier, 'fournisseur');
-                const showFullAccess = isAdminMode || isSubscriberMode || isAdminPinnedItem;
+                const isVisitor = !isAdminMode && !isSubscriberMode;
+                const showFullAccess = isAdminMode || isSubscriberMode || (isAdminPinnedItem && !isVisitor);
+                const showPinBadge = isPinned && (isAdminMode || isSubscriberMode || isAdminPinnedItem);
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
                 
                 let pinButton = '';
@@ -2146,32 +2204,37 @@
 
                 if (showFullAccess && hasPhone) {
                     buttons.push(`<button class="action-btn wa" onclick="window.open('https://wa.me/${supplier.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
-                } else {
+                } else if (!isVisitor && hasPhone) {
+                    buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
+                } else if (!hasPhone) {
                     buttons.push(`<button class="action-btn wa disabled" disabled><i class="fab fa-whatsapp"></i> WhatsApp</button>`);
                 }
+                
                 if (showFullAccess && supplier.email) {
                     buttons.push(`<button class="action-btn email" onclick="window.location.href='mailto:${supplier.email}'"><i class="fas fa-envelope"></i> Email</button>`);
-                } else {
+                } else if (!isVisitor && supplier.email) {
                     buttons.push(`<button class="action-btn email disabled" disabled><i class="fas fa-envelope"></i> Email</button>`);
                 }
+                
                 if (showFullAccess && supplier.web && supplier.web !== 'null' && supplier.web !== '') {
                     const webUrl = supplier.web.startsWith('http') ? supplier.web : 'https://' + supplier.web;
                     buttons.push(`<button class="action-btn web" onclick="window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`);
-                } else {
+                } else if (!isVisitor && supplier.web && supplier.web !== 'null') {
                     buttons.push(`<button class="action-btn web disabled" disabled><i class="fas fa-globe"></i> Site</button>`);
                 }
+                
                 if (showFullAccess) {
                     const webUrl = (supplier.web && supplier.web !== 'null' && supplier.web !== '') ? supplier.web : '';
                     buttons.push(`<button class="action-btn share" onclick="shareCardFour('${escapeHtml(supplier.name)}', '${escapeHtml(supplier.domaine)}', '${escapeHtml(supplier.specialite)}', '${escapeHtml(supplier.city)}', '${supplier.phone ? supplier.phone : ''}', '${escapeHtml(webUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`);
                     buttons.push(`<button class="action-btn pdf" onclick="event.stopPropagation(); const card = this.closest('.item-card'); if(card) generatePDF(card, '${escapeHtml(supplier.name)}');"><i class="fas fa-file-pdf"></i> PDF</button>`);
-                } else {
+                } else if (!isVisitor) {
                     buttons.push(`<button class="action-btn share disabled" disabled><i class="fas fa-share-alt"></i> Partager</button>`);
                     buttons.push(`<button class="action-btn pdf disabled" disabled><i class="fas fa-file-pdf"></i> PDF</button>`);
                 }
 
-                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : '*********') : 'Non disponible';
-                const visitorWarning = !showFullAccess && hasPhone ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
-                const pinnedBadgeHtml = isPinned ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
+                const phoneDisplay = hasPhone ? (showFullAccess ? supplier.phone : (isVisitor ? '*********' : '*********')) : 'Non disponible';
+                const visitorWarning = !showFullAccess && hasPhone && !isAdminPinnedItem ? `<div class="visitor-note"><i class="fas fa-lock"></i> Abonnez-vous pour voir les numéros</div>` : '';
+                const pinnedBadgeHtml = showPinBadge ? (isAdminPinnedItem ? `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>` : `<span class="badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>`) : '';
                 const subscriberBadgeHtml = isSubscriberCard ? `<span class="badge-subscriber"><i class="fas fa-user-check"></i> Mon compte</span>` : '';
                 const currentSubscriberBadgeHtml = isCurrentSubscriber ? `<span class="badge-subscriber" style="background: #25D366;"><i class="fas fa-user"></i> Mon profil</span>` : '';
                 
@@ -2179,7 +2242,7 @@
                 if (isSubscriberCard) cardClass += ' subscriber-card';
                 if (isAdminPinnedItem) cardClass += ' admin-pinned-card';
                 if (isCurrentSubscriber) cardClass += ' current-subscriber-card';
-                if (isPinned) cardClass += ' pinned';
+                if (isPinned && showPinBadge) cardClass += ' pinned';
 
                 return `
                     <div class="${cardClass}" data-card-name="${escapeHtml(supplier.name)}">
@@ -2199,8 +2262,8 @@
                             <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(supplier.specialite)}</span></div>
                             <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(supplier.city)}</span></div>
                             <div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Téléphone:</span><span class="value">${phoneDisplay}</span></div>
-                            ${supplier.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(supplier.email)}</span></div>` : ''}
-                            ${(supplier.web && supplier.web !== 'null' && supplier.web !== '') ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(supplier.web)}</span></div>` : ''}
+                            ${supplier.email && showFullAccess ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(supplier.email)}</span></div>` : ''}
+                            ${(supplier.web && supplier.web !== 'null' && supplier.web !== '' && showFullAccess) ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(supplier.web)}</span></div>` : ''}
                         </div>
                         ${visitorWarning}
                         <div class="action-buttons">${buttons.join('')}</div>
@@ -2340,6 +2403,8 @@
                 const statFour = document.getElementById('statFournisseurs2');
                 if (statAuto) statAuto.textContent = automaticiensData.length.toLocaleString();
                 if (statFour) statFour.textContent = fournisseursData.length.toLocaleString();
+                
+                updateStartMenuStatus();
             }
 
             window.filterAutomaticiens2 = renderAll;
@@ -2512,6 +2577,7 @@
                 showToast(welcomeMessage);
                 showMainSections();
                 scrollToSection('fournisseurs');
+                updateStartMenuStatus();
             }
 
             function checkPhoneAndSubscribe() {
@@ -2544,6 +2610,7 @@
                 showToast('👋 Déconnexion');
                 showMainSections();
                 scrollToSection('fournisseurs');
+                updateStartMenuStatus();
             }
 
             function loadSubscriberMode() {
@@ -2551,8 +2618,30 @@
                 const wasSubscriber = localStorage.getItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE) === 'true';
                 if (savedPhone && wasSubscriber) {
                     const member = findMemberByPhone(savedPhone);
-                    if (member) activateSubscriber(savedPhone, member);
-                    else {
+                    if (member) {
+                        isSubscriberMode = true;
+                        currentSubscriberPhone = savedPhone;
+                        currentSubscriberMember = member;
+                        document.body.classList.add('subscriber-mode');
+                        document.getElementById('subscribeText').innerHTML = 'Abonné';
+                        document.getElementById('adminModeText').innerHTML = 'Mode Admin';
+                        const normalizedPhone = normalizePhoneNumber(savedPhone);
+                        if (normalizedPhone) {
+                            for (let i = 0; i < fournisseursData.length; i++) {
+                                if (fournisseursData[i].phone && phoneMatches(fournisseursData[i].phone, normalizedPhone)) {
+                                    currentSubscriberMembers.fournisseur = { type: 'fournisseur', data: fournisseursData[i], index: i };
+                                }
+                            }
+                            for (let i = 0; i < automaticiensData.length; i++) {
+                                if (automaticiensData[i].phone && phoneMatches(automaticiensData[i].phone, normalizedPhone)) {
+                                    currentSubscriberMembers.expert = { type: 'expert', data: automaticiensData[i], index: i };
+                                }
+                            }
+                        }
+                        renderAll();
+                        updateStartMenuStatus();
+                        showToast('🔄 Session restaurée');
+                    } else {
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_PHONE);
                         localStorage.removeItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE);
                     }
@@ -2574,6 +2663,7 @@
                     closeModal('adminPasswordModal');
                     showMainSections();
                     scrollToSection('fournisseurs');
+                    updateStartMenuStatus();
                 } else {
                     showToast('❌ Mot de passe incorrect');
                     document.getElementById('adminPasswordInput').value = '';
@@ -2590,6 +2680,7 @@
                 showToast('👋 Mode visiteur');
                 showMainSections();
                 scrollToSection('fournisseurs');
+                updateStartMenuStatus();
             }
 
             function toggleAdminMode() {
@@ -2607,6 +2698,7 @@
                     document.body.classList.add('admin-mode');
                     document.getElementById('subscribeText').innerHTML = 'S\'abonner';
                     document.getElementById('adminModeText').innerHTML = 'Quitter Admin';
+                    updateStartMenuStatus();
                 }
             }
 
