@@ -21,7 +21,6 @@
         }
 
         :root {
-            /* Professional B2B Color Scheme */
             --primary-blue: #1a73e8;
             --primary-dark: #0d47a1;
             --primary-light: #4285f4;
@@ -56,7 +55,6 @@
             color: var(--text-dark);
         }
 
-        /* Dynamic theme variables */
         body {
             --bg-primary: var(--dark-bg);
             --bg-card: var(--dark-card);
@@ -411,7 +409,7 @@
             padding: 16px;
         }
 
-        /* Pinned items styling - Unified pin icon */
+        /* Pinned items styling */
         .item-card.pinned {
             border-left: 4px solid var(--warning-orange);
             background: linear-gradient(90deg, rgba(255, 140, 0, 0.08), var(--bg-card));
@@ -424,7 +422,6 @@
             position: relative;
         }
 
-        /* Unified pin button for both subscriber and admin */
         .pin-icon {
             background: transparent;
             border: none;
@@ -450,7 +447,6 @@
             animation: pulse 0.3s ease;
         }
 
-        /* Admin unpin icon - same as pin but different action */
         .admin-unpin-icon {
             background: transparent;
             border: none;
@@ -538,14 +534,14 @@
             to { transform: rotate(360deg); }
         }
 
-        /* QR Modal - Simplified */
+        /* Enhanced QR Modal */
         .qr-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(8px);
             z-index: 3000;
             display: flex;
@@ -553,7 +549,7 @@
             justify-content: center;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .qr-modal-overlay.show {
@@ -563,41 +559,92 @@
 
         .qr-modal {
             background: var(--bg-card);
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 24px;
             text-align: center;
             max-width: 90%;
-            width: 320px;
+            width: 360px;
             border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .qr-modal h3 {
-            margin-bottom: 20px;
+            margin-bottom: 8px;
             color: var(--text-primary);
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .qr-modal .qr-description {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            word-break: break-all;
+            max-height: 60px;
+            overflow-y: auto;
         }
 
         .qr-code-container {
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 16px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .qr-modal .close-btn {
-            background: var(--primary-blue);
-            border: none;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 8px;
+        .qr-modal .qr-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .qr-modal .qr-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 500;
             transition: all 0.2s;
+            border: none;
+            min-width: 110px;
         }
 
-        .qr-modal .close-btn:hover {
+        .qr-modal .qr-btn.close {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .qr-modal .qr-btn.close:hover {
+            background: var(--hover-bg);
+        }
+
+        .qr-modal .qr-btn.share {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .qr-modal .qr-btn.share:hover {
             background: var(--primary-dark);
-            transform: scale(1.02);
+            transform: translateY(-2px);
         }
 
         /* Stats */
@@ -1683,7 +1730,20 @@
 
     <div id="winToast" class="win-toast"></div>
 
-    <!-- Modals (simplified) -->
+    <!-- Enhanced QR Modal -->
+    <div class="qr-modal-overlay" id="qrModal">
+        <div class="qr-modal">
+            <h3 id="qrTitle">QR Code</h3>
+            <div class="qr-description" id="qrDescription"></div>
+            <div class="qr-code-container" id="qrCodeContainer"></div>
+            <div class="qr-actions">
+                <button class="qr-btn close" onclick="closeQRModal()">Fermer</button>
+                <button class="qr-btn share" onclick="shareQRImage()">Partager l'image</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Modals -->
     <div class="win-modal-overlay" id="waContactModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1934,12 +1994,20 @@
             };
 
             // ==================== QR CODE FUNCTIONS ====================
+            let currentQRData = null;
+            let currentQRTitle = null;
+
             function showQRCode(data, title) {
                 const modal = document.getElementById('qrModal');
                 const container = document.getElementById('qrCodeContainer');
                 const titleEl = document.getElementById('qrTitle');
+                const descriptionEl = document.getElementById('qrDescription');
+                
+                currentQRData = data;
+                currentQRTitle = title;
                 
                 titleEl.textContent = title || 'QR Code';
+                descriptionEl.textContent = data;
                 container.innerHTML = '';
                 
                 new QRCode(container, {
@@ -1956,6 +2024,73 @@
 
             function closeQRModal() {
                 document.getElementById('qrModal').classList.remove('show');
+                currentQRData = null;
+                currentQRTitle = null;
+            }
+
+            async function shareQRImage() {
+                if (!currentQRData) return;
+                
+                const qrContainer = document.getElementById('qrCodeContainer');
+                const qrCanvas = qrContainer.querySelector('canvas');
+                
+                if (!qrCanvas) {
+                    showToast('Impossible de generer l\'image');
+                    return;
+                }
+                
+                try {
+                    const shareCanvas = document.createElement('canvas');
+                    const ctx = shareCanvas.getContext('2d');
+                    
+                    const qrSize = 200;
+                    const padding = 40;
+                    const textHeight = 70;
+                    shareCanvas.width = qrSize + padding * 2;
+                    shareCanvas.height = qrSize + padding * 2 + textHeight;
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, shareCanvas.width, shareCanvas.height);
+                    
+                    ctx.drawImage(qrCanvas, padding, padding, qrSize, qrSize);
+                    
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.font = 'bold 16px "Segoe UI"';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(currentQRTitle || 'QR Code', shareCanvas.width / 2, qrSize + padding + 25);
+                    
+                    let description = currentQRData;
+                    if (description.length > 45) description = description.substring(0, 42) + '...';
+                    ctx.font = '11px "Segoe UI"';
+                    ctx.fillStyle = '#666666';
+                    ctx.fillText(description, shareCanvas.width / 2, qrSize + padding + 48);
+                    
+                    ctx.font = '10px "Segoe UI"';
+                    ctx.fillStyle = '#999999';
+                    ctx.fillText('Scannez pour acceder', shareCanvas.width / 2, qrSize + padding + 65);
+                    
+                    const blob = await new Promise(resolve => shareCanvas.toBlob(resolve, 'image/png'));
+                    const file = new File([blob], 'qrcode.png', { type: 'image/png' });
+                    
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: currentQRTitle || 'QR Code',
+                            text: currentQRData,
+                            files: [file]
+                        });
+                        showToast('Partage reussi');
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = 'qrcode.png';
+                        link.href = URL.createObjectURL(blob);
+                        link.click();
+                        URL.revokeObjectURL(link.href);
+                        showToast('Image telechargee');
+                    }
+                } catch (err) {
+                    console.error('Share failed:', err);
+                    showToast('Erreur lors du partage');
+                }
             }
 
             // ==================== PDF GENERATION WITH QR CODE ====================
@@ -1976,25 +2111,32 @@
                     if (websiteUrl && websiteUrl !== '' && websiteUrl !== 'null') {
                         const qrContainer = document.createElement('div');
                         qrContainer.style.textAlign = 'center';
-                        qrContainer.style.marginTop = '10px';
-                        qrContainer.style.padding = '10px';
-                        qrContainer.style.borderTop = '1px solid #ccc';
-                        qrContainer.innerHTML = '<div style="font-size: 10px; margin-bottom: 5px; color: #666;">Scannez pour visiter le site web</div>';
+                        qrContainer.style.marginTop = '15px';
+                        qrContainer.style.padding = '15px';
+                        qrContainer.style.borderTop = '1px solid #e0e0e0';
+                        qrContainer.style.backgroundColor = '#f9f9f9';
+                        qrContainer.style.borderRadius = '8px';
+                        qrContainer.innerHTML = `
+                            <div style="font-size: 11px; margin-bottom: 8px; color: #1a73e8; font-weight: 500;">Site web officiel</div>
+                            <div style="font-size: 10px; margin-bottom: 10px; color: #666; word-break: break-all;">${escapeHtml(websiteUrl)}</div>
+                        `;
                         const qrCodeDiv = document.createElement('div');
                         qrCodeDiv.id = 'temp-qr-code';
+                        qrCodeDiv.style.display = 'flex';
+                        qrCodeDiv.style.justifyContent = 'center';
                         qrContainer.appendChild(qrCodeDiv);
                         cloneCard.appendChild(qrContainer);
                         
                         new QRCode(qrCodeDiv, {
                             text: websiteUrl,
-                            width: 100,
-                            height: 100,
+                            width: 120,
+                            height: 120,
                             colorDark: '#000000',
                             colorLight: '#ffffff',
                             correctLevel: QRCode.CorrectLevel.H
                         });
                         
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        await new Promise(resolve => setTimeout(resolve, 300));
                     }
                     
                     const originalWidth = cardElement.offsetWidth;
@@ -2010,7 +2152,7 @@
                     document.body.appendChild(cloneCard);
                     
                     const canvas = await html2canvas(cloneCard, {
-                        scale: 4,
+                        scale: 3,
                         backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-card'),
                         logging: false,
                         useCORS: true,
@@ -2192,7 +2334,7 @@
                 return false;
             }
 
-            // ==================== PIN FUNCTIONS (Unified 📌) ====================
+            // ==================== PIN FUNCTIONS ====================
             function getUserPinnedItems(type) {
                 const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
                 return JSON.parse(localStorage.getItem(key) || '[]');
@@ -2233,10 +2375,10 @@
                     const index = adminPinnedList.indexOf(itemId);
                     if (index === -1) {
                         adminPinnedList.push(itemId);
-                        showToast(`${itemName} - Ajoute a la une 📌`);
+                        showToast(`${itemName} - Ajoute a la une`);
                     } else {
                         adminPinnedList.splice(index, 1);
-                        showToast(`${itemName} - Retire de la une 📌`);
+                        showToast(`${itemName} - Retire de la une`);
                     }
                     setAdminPinnedItems(type, adminPinnedList);
                 } else {
@@ -2244,10 +2386,10 @@
                     const index = pinnedList.indexOf(itemId);
                     if (index === -1) {
                         pinnedList.push(itemId);
-                        showToast(`${itemName} - Epingle 📌`);
+                        showToast(`${itemName} - Epingle`);
                     } else {
                         pinnedList.splice(index, 1);
-                        showToast(`${itemName} - Desepingle 📌`);
+                        showToast(`${itemName} - Desepingle`);
                     }
                     setUserPinnedItems(type, pinnedList);
                 }
@@ -3078,20 +3220,6 @@
                 }
             }
 
-            // ==================== QR MODAL SETUP ====================
-            if (!document.getElementById('qrModal')) {
-                const qrModalHTML = `
-                    <div class="qr-modal-overlay" id="qrModal">
-                        <div class="qr-modal">
-                            <h3 id="qrTitle">QR Code</h3>
-                            <div class="qr-code-container" id="qrCodeContainer"></div>
-                            <button class="close-btn" onclick="closeQRModal()">Fermer</button>
-                        </div>
-                    </div>
-                `;
-                document.body.insertAdjacentHTML('beforeend', qrModalHTML);
-            }
-
             // ==================== INITIALIZATION ====================
             async function init() {
                 checkSessionExpiry();
@@ -3219,6 +3347,7 @@
             window.unpinAll = unpinAll;
             window.showQRCode = showQRCode;
             window.closeQRModal = closeQRModal;
+            window.shareQRImage = shareQRImage;
             window.goBack = goBack;
 
             init();
