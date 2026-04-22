@@ -132,7 +132,7 @@
             }
         }
 
-        /* Taskbar */
+        /* Taskbar - بدون توقيت */
         .taskbar {
             position: fixed;
             top: 0;
@@ -223,15 +223,7 @@
             font-size: 0.75rem;
         }
 
-        .taskbar-time {
-            font-size: 0.75rem;
-            color: var(--win-text);
-            padding: 4px 8px;
-            border-radius: 4px;
-            flex-shrink: 0;
-        }
-
-        /* Start Menu */
+        /* Start Menu - مع التوقيت */
         .start-menu {
             position: fixed;
             top: 52px;
@@ -268,6 +260,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            flex-wrap: wrap;
         }
 
         .start-header .user-icon {
@@ -281,6 +274,10 @@
             font-size: 1.3rem;
         }
 
+        .start-header .user-info {
+            flex: 1;
+        }
+
         .start-header .user-info h4 {
             font-size: 1rem;
             font-weight: 600;
@@ -289,6 +286,20 @@
         .start-header .user-info p {
             font-size: 0.75rem;
             color: var(--win-text-secondary);
+        }
+
+        .start-time {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--win-blue);
+            text-align: right;
+            margin-left: auto;
+        }
+
+        .start-date {
+            font-size: 0.7rem;
+            color: var(--win-text-secondary);
+            text-align: right;
         }
 
         .start-menu-items {
@@ -340,7 +351,7 @@
             margin: 12px 0;
         }
 
-        /* Main content - No horizontal scroll */
+        /* Main content */
         main {
             padding-top: 60px;
             padding-bottom: 20px;
@@ -350,9 +361,11 @@
         }
 
         .section-item {
-            display: block !important;
-            width: 100%;
-            padding: 0 1rem;
+            display: none;
+        }
+
+        .section-item.active-section {
+            display: block;
         }
 
         /* Cards */
@@ -775,10 +788,6 @@
             margin-bottom: 1rem;
         }
 
-        .visitor-note {
-            display: none;
-        }
-
         .action-buttons {
             display: flex;
             gap: 0.5rem;
@@ -807,12 +816,6 @@
 
         .action-btn:not(:disabled):hover {
             transform: translateY(-2px);
-        }
-
-        .action-btn:disabled,
-        .action-btn.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
         }
 
         .action-btn.wa {
@@ -1181,15 +1184,6 @@
             padding: 0.75rem;
             margin-bottom: 1rem;
         }
-
-        /* Section visibility */
-        .section-item {
-            display: none;
-        }
-
-        .section-item.active-section {
-            display: block;
-        }
     </style>
 </head>
 <body>
@@ -1227,7 +1221,7 @@
                 <span>Suggestions</span>
             </button>
         </div>
-        <div class="taskbar-time" id="taskbarTime"></div>
+        <!-- تم إزالة التوقيت من شريط المهام -->
     </div>
 
     <div class="start-menu" id="startMenu">
@@ -1237,6 +1231,8 @@
                 <h4 id="startUserStatus">Connect Industry</h4>
                 <p id="startUserSubStatus">Plateforme Industrielle Maroc</p>
             </div>
+            <div class="start-time" id="startTime">--:--</div>
+            <div class="start-date" id="startDate">--/--/----</div>
         </div>
         <div class="start-menu-items">
             <button class="start-menu-item" data-section="apropos"><i class="fas fa-building"></i> A Propos</button>
@@ -1939,6 +1935,18 @@
                 });
             }
 
+            // ==================== TIME UPDATE ====================
+            function updateDateTime() {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                const startTime = document.getElementById('startTime');
+                const startDate = document.getElementById('startDate');
+                if (startTime) startTime.textContent = timeStr;
+                if (startDate) startDate.textContent = dateStr;
+            }
+
             // ==================== SESSION MANAGEMENT ====================
             function checkSessionExpiry() {
                 const lastVisit = localStorage.getItem(STORAGE_KEYS.LAST_VISIT);
@@ -2134,7 +2142,6 @@
                 const isPinned = isItemPinned(person, 'expert');
                 const isAdminPinnedItem = isAdminPinned(person, 'expert');
                 const isCurrentSubscriber = isCurrentSubscriberItem(person, 'expert');
-                const showFullAccess = true; // Always show full access now
                 const itemId = `${person.name}|${person.phone || ''}|${person.email || ''}`;
                 
                 let pinButton = '';
@@ -2207,7 +2214,6 @@
                 const isPinned = isItemPinned(supplier, 'fournisseur');
                 const isAdminPinnedItem = isAdminPinned(supplier, 'fournisseur');
                 const isCurrentSubscriber = isCurrentSubscriberItem(supplier, 'fournisseur');
-                const showFullAccess = true; // Always show full access now
                 const itemId = `${supplier.name}|${supplier.phone || ''}|${supplier.email || ''}`;
                 
                 let pinButton = '';
@@ -2727,8 +2733,8 @@
                     statusTitle.innerHTML = 'Mode Admin';
                     statusSub.innerHTML = 'Connect Industry Maroc (Administrateur)';
                 } else if (isSubscriberMode && currentSubscriberMember) {
-                    statusTitle.innerHTML = 'Mode Abonne';
-                    statusSub.innerHTML = `${currentSubscriberMember.data.name.substring(0, 30)} - Abonne actif`;
+                    statusTitle.innerHTML = `Mode Abonne - ${currentSubscriberMember.data.name.substring(0, 25)}`;
+                    statusSub.innerHTML = 'Abonne actif';
                 } else {
                     statusTitle.innerHTML = 'Connect Industry';
                     statusSub.innerHTML = 'Plateforme Industrielle Maroc';
@@ -2858,10 +2864,8 @@
             }
 
             function updateTaskbarTime() {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-                const dateStr = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-                document.getElementById('taskbarTime').textContent = `${dateStr} ${timeStr}`;
+                // This function is kept for compatibility but no longer updates taskbar
+                updateDateTime();
             }
 
             function openFormAuto() { window.open(FORM_AUTO_URL, '_blank'); showToast('Formulaire Expert'); }
@@ -2926,8 +2930,8 @@
                 
                 renderAll(true);
                 updateFilterBadges();
-                updateTaskbarTime();
-                setInterval(updateTaskbarTime, 60000);
+                updateDateTime();
+                setInterval(updateDateTime, 60000);
 
                 const startBtn = document.getElementById('startBtn');
                 startBtn.addEventListener('click', toggleStartMenu);
