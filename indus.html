@@ -15,52 +15,37 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         /* ═══════════════════════════════════════════════
-           CONNECT INDUSTRY MAROC — INDUSTRIAL DESIGN v4
+           CONNECT INDUSTRY MAROC — INDUSTRIAL DESIGN v5
+           MISES À JOUR: compteurs dynamiques + export CSV
         ═══════════════════════════════════════════════ */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            /* ── INDUSTRIAL PALETTE ── */
-            /* Accent: acier chaud / amber industriel */
-            --accent:        #e07b39;   /* orange métallique */
+            --accent:        #e07b39;
             --accent-dark:   #b85e20;
             --accent-light:  #f0995a;
             --accent-glow:   rgba(224,123,57,0.3);
             --accent-dim:    rgba(224,123,57,0.1);
-
-            /* Steel blue — secondaire technique */
             --steel:         #4a7fa5;
             --steel-dark:    #2e5f80;
             --steel-glow:    rgba(74,127,165,0.25);
             --steel-dim:     rgba(74,127,165,0.1);
-
-            /* Status */
             --success-green: #2ea87e;
             --warning-orange: #e07b39;
             --danger-red:    #d94f4f;
-
-            /* ── DARK THEME (défaut) ── */
-            --dark-bg:    #0c1017;   /* noir charbon */
-            --dark-card:  #131b26;   /* acier foncé */
+            --dark-bg:    #0c1017;
+            --dark-card:  #131b26;
             --dark-border: rgba(255,255,255,0.07);
-
-            /* ── LIGHT THEME ── */
             --light-bg:    #eef1f5;
             --light-card:  #ffffff;
             --light-border: #d4dae4;
-
-            /* Text */
             --text-dark:           #0f1923;
             --text-light:          #d8e0ea;
             --text-secondary-dark: #8a96a8;
             --text-secondary-light: #5a6474;
-
-            /* Shadows */
             --shadow-sm: 0 2px 12px rgba(0,0,0,0.2);
             --shadow-md: 0 6px 28px rgba(0,0,0,0.28);
             --shadow-lg: 0 18px 54px rgba(0,0,0,0.4);
-
-            /* Legacy compat (JS uses these names) */
             --primary-blue:  var(--steel);
             --primary-dark:  var(--steel-dark);
             --primary-light: #6a9fc4;
@@ -68,7 +53,6 @@
             --glow-orange:   var(--accent-glow);
         }
 
-        /* ── THEME TOKENS ── */
         body {
             --bg-primary:   var(--dark-bg);
             --bg-card:      var(--dark-card);
@@ -88,7 +72,6 @@
             --accent-dim:   rgba(224,123,57,0.08);
         }
 
-        /* ── BASE ── */
         body {
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             background: var(--bg-primary);
@@ -99,10 +82,8 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* ── INDUSTRIAL BACKGROUND ── */
         .wallpaper {
             position: fixed; inset: 0; z-index: -2;
-            /* grille industrielle subtile + dégradé acier */
             background:
                 linear-gradient(rgba(224,123,57,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(224,123,57,0.03) 1px, transparent 1px),
@@ -120,7 +101,68 @@
             background-size: 36px 36px, 36px 36px, 100% 100%, 100% 100%;
         }
 
-        /* ── TEXT OVERFLOW FIX ── */
+        /* NOUVEAU: compteurs de recherche */
+        .search-stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .search-stat-badge {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .search-stat-badge i {
+            font-size: 0.7rem;
+        }
+        .search-stat-badge .count {
+            color: var(--accent);
+            font-weight: 800;
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+        .search-stat-badge.highlight {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+        .search-stat-badge.highlight .count {
+            color: var(--accent);
+        }
+
+        /* Bouton export CSV */
+        .export-csv-btn {
+            background: linear-gradient(145deg, var(--steel), var(--steel-dark));
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .export-csv-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--steel-glow);
+        }
+        .export-csv-btn i {
+            font-size: 0.75rem;
+        }
+
+        /* Reste du CSS identique à l'original */
         .item-title, .item-details .value, .detail-row .value,
         .featured-card .item-title, .join-tile h3, .link-tile h3,
         .description-box p, .window-header h2, .item-card,
@@ -132,9 +174,6 @@
             max-width: 100%;
         }
 
-        /* ════════════════════════════════
-           FLOATING MENU BUTTON — left center
-        ════════════════════════════════ */
         .taskbar {
             position: fixed;
             left: 16px;
@@ -165,9 +204,6 @@
         .start-btn i { font-size: 1rem; }
         .start-btn span { display: none; }
 
-        /* ════════════════════════════════
-           START MENU
-        ════════════════════════════════ */
         .start-menu {
             position: fixed;
             left: 62px;
@@ -227,9 +263,6 @@
 
         .start-divider { height: 1px; background: var(--border-color); margin: 5px 4px; }
 
-        /* ════════════════════════════════
-           MAIN LAYOUT
-        ════════════════════════════════ */
         main {
             padding: 20px 14px 20px;
             max-width: 1400px; margin: 0 auto; width: 100%;
@@ -242,9 +275,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ════════════════════════════════
-           WINDOW CARDS
-        ════════════════════════════════ */
         .window-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -279,9 +309,6 @@
 
         .window-content { padding: 16px 18px; }
 
-        /* ════════════════════════════════
-           DESCRIPTION BOX
-        ════════════════════════════════ */
         .description-box {
             background: rgba(224,123,57,0.06);
             border: 1px solid rgba(224,123,57,0.14);
@@ -290,9 +317,6 @@
             color: var(--text-secondary); line-height: 1.6;
         }
 
-        /* ════════════════════════════════
-           STATS / LIVE TILES
-        ════════════════════════════════ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -327,9 +351,6 @@
             position: relative; z-index: 1;
         }
 
-        /* ════════════════════════════════
-           SEARCH BAR
-        ════════════════════════════════ */
         .search-bar {
             display: flex; gap: 10px;
             margin-bottom: 16px; flex-wrap: wrap; align-items: center;
@@ -366,9 +387,6 @@
             box-shadow: 0 4px 14px var(--accent-glow);
         }
 
-        /* ════════════════════════════════
-           FEATURED SECTION
-        ════════════════════════════════ */
         .featured-section {
             background: var(--hover-bg); border: 1px solid var(--border-color);
             border-radius: 14px; margin-bottom: 16px; padding: 12px 14px;
@@ -397,9 +415,6 @@
         }
         .featured-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 
-        /* ════════════════════════════════
-           ITEM CARDS GRID
-        ════════════════════════════════ */
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -456,9 +471,6 @@
         }
         .item-details { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
 
-        /* ════════════════════════════════
-           DETAIL ROWS
-        ════════════════════════════════ */
         .detail-row {
             display: flex; align-items: flex-start; gap: 7px;
             font-size: 0.78rem; color: var(--text-secondary);
@@ -468,9 +480,6 @@
         .detail-row .label { font-weight: 600; flex-shrink: 0; }
         .detail-row .value { flex: 1; color: var(--text-primary); }
 
-        /* ════════════════════════════════
-           ACTION BUTTONS
-        ════════════════════════════════ */
         .action-buttons {
             display: flex; gap: 6px; margin-top: 10px;
             padding-top: 10px; border-top: 1px solid var(--border-color);
@@ -497,9 +506,6 @@
         .action-btn.pdf { border-color: rgba(239,68,68,0.4); color: var(--danger-red); }
         .action-btn.pdf:hover { background: rgba(239,68,68,0.08); }
 
-        /* ════════════════════════════════
-           PIN ICON
-        ════════════════════════════════ */
         .pin-icon {
             background: transparent; border: none;
             color: var(--text-secondary); cursor: pointer;
@@ -521,9 +527,6 @@
         @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
         @keyframes spin { to{transform:rotate(360deg)} }
 
-        /* ════════════════════════════════
-           BADGES
-        ════════════════════════════════ */
         .badge-pinned, .badge-admin-pinned {
             background: rgba(245,158,11,0.18); color: var(--warning-orange);
             border: 1px solid rgba(245,158,11,0.3);
@@ -537,9 +540,6 @@
             margin-left: 4px; white-space: nowrap; font-weight: 700;
         }
 
-        /* ════════════════════════════════
-           LINKS GRID
-        ════════════════════════════════ */
         .links-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -571,14 +571,12 @@
         .link-btn.whatsapp { border-color: rgba(16,185,129,0.3); color: var(--success-green); }
         .link-btn.whatsapp:hover { background: rgba(16,185,129,0.08); }
 
-        /* ════════════════════════════════
-           JOIN SECTION
-        ════════════════════════════════ */
         .join-grid { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
         .join-tile {
             background: var(--hover-bg); border: 1px solid var(--border-color);
             border-radius: 16px; padding: 22px 18px; text-align: center;
             flex: 1; min-width: 220px; transition: all 0.22s;
+            position: relative;
         }
         .join-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(224,123,57,0.2); }
         .join-tile .join-icon {
@@ -603,9 +601,6 @@
         .join-btn.share { border-color: rgba(224,123,57,0.35); color: var(--accent); }
         .join-btn.share:hover { background: var(--accent-dim); }
 
-        /* ════════════════════════════════
-           FORM ELEMENTS
-        ════════════════════════════════ */
         .win-input {
             width: 100%; padding: 11px 14px;
             background: var(--hover-bg); border: 1px solid var(--border-color);
@@ -626,9 +621,6 @@
         }
         .win-textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
 
-        /* ════════════════════════════════
-           MODALS
-        ════════════════════════════════ */
         .win-modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.72); backdrop-filter: blur(8px);
@@ -678,9 +670,6 @@
         }
         .win-btn-secondary:hover { background: var(--hover-bg); }
 
-        /* ════════════════════════════════
-           QR MODAL
-        ════════════════════════════════ */
         .qr-modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.88); backdrop-filter: blur(12px);
@@ -720,9 +709,6 @@
         }
         .qr-modal .qr-btn.share:hover { transform: translateY(-2px); }
 
-        /* ════════════════════════════════
-           TOAST
-        ════════════════════════════════ */
         .win-toast {
             position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(8px);
@@ -742,9 +728,6 @@
         .win-toast i { color: var(--accent); }
         @media (max-width: 640px) { .win-toast { white-space: normal; bottom: 18px; } }
 
-        /* ════════════════════════════════
-           PDF OVERLAY
-        ════════════════════════════════ */
         .pdf-loading-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.88);
             backdrop-filter: blur(8px); z-index: 10000;
@@ -759,9 +742,6 @@
         }
         .pdf-loader-text { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
 
-        /* ════════════════════════════════
-           LOADING SCREEN
-        ════════════════════════════════ */
         .loading-screen {
             position: fixed; inset: 0; background: var(--bg-primary);
             display: flex; flex-direction: column;
@@ -781,9 +761,6 @@
             letter-spacing: 0.04em;
         }
 
-        /* ════════════════════════════════
-           MOBILE TWEAKS
-        ════════════════════════════════ */
         @media (max-width: 768px) {
             button, .action-btn, .join-btn, .link-btn, .pin-icon, .start-btn {
                 min-height: 44px; min-width: 44px;
@@ -804,12 +781,6 @@
             .join-btn[data-type] { font-size: 0.72rem !important; padding: 8px 6px !important; min-width: 72px !important; }
         }
 
-        /* ════════════════════════════════
-           MODE-BASED COLOR SYSTEM
-           visitor    → steel gray  (défaut)
-           subscriber → orange accent
-           admin      → danger red
-        ════════════════════════════════ */
         :root {
             --mode-color: var(--steel);
             --mode-glow:  var(--steel-glow);
@@ -818,14 +789,12 @@
         body.subscriber-mode { --mode-color: var(--accent);      --mode-glow: var(--accent-glow);    --mode-dim: var(--accent-dim); }
         body.admin-mode       { --mode-color: var(--danger-red);  --mode-glow: rgba(217,79,79,0.3);   --mode-dim: rgba(217,79,79,0.1); }
 
-        /* Floating button */
         .start-btn {
             background: linear-gradient(145deg, var(--mode-color), color-mix(in srgb, var(--mode-color) 65%, #000)) !important;
             box-shadow: 0 4px 18px var(--mode-glow), 0 1px 4px rgba(0,0,0,0.4) !important;
         }
         .start-btn:hover { box-shadow: 0 6px 24px var(--mode-glow), 0 2px 8px rgba(0,0,0,0.4) !important; }
 
-        /* Active section in menu */
         .start-menu-item.active-section-item {
             background: var(--mode-dim) !important;
             color: var(--mode-color) !important;
@@ -834,21 +803,17 @@
         }
         .start-menu-item.active-section-item i { color: var(--mode-color) !important; }
 
-        /* orange-mode spans (subscribe/admin labels) */
         .start-menu-item.orange-mode { color: var(--mode-color); }
 
-        /* Pinned cards follow mode color */
         .item-card.pinned {
             border-left: 3px solid var(--mode-color);
             background: linear-gradient(90deg, var(--mode-dim), var(--bg-card));
         }
-        /* Featured a-la-une cards always accent if subscriber, red if admin */
         body.subscriber-mode .featured-card  { border-left-color: var(--accent); }
         body.admin-mode      .featured-card  { border-left-color: var(--danger-red); }
         body.subscriber-mode .featured-header i { color: var(--accent); }
         body.admin-mode      .featured-header i { color: var(--danger-red); }
 
-        /* item title */
         body.subscriber-mode .item-title { color: var(--accent); }
         body.admin-mode      .item-title { color: var(--danger-red); }
     </style>
@@ -924,12 +889,12 @@
                                     <div class="tile-label">Fournisseurs</div>
                                 </div>
                                 <div class="live-tile">
-                                    <div class="tile-number" id="statClients2">28700</div>
-                                    <div class="tile-label">Clients</div>
+                                    <div class="tile-number" id="statDomainesCount">0</div>
+                                    <div class="tile-label">Domaines</div>
                                 </div>
                                 <div class="live-tile">
-                                    <div class="tile-number" id="statExperience2">20</div>
-                                    <div class="tile-label">Annees</div>
+                                    <div class="tile-number" id="statVillesCount">0</div>
+                                    <div class="tile-label">Villes</div>
                                 </div>
                             </div>
                         </div>
@@ -1111,6 +1076,17 @@
                             <div id="fourFeaturedItems2" class="featured-items"></div>
                         </div>
                     </div>
+                    
+                    <!-- NOUVEAU: Compteurs de recherche -->
+                    <div class="search-stats" id="fourSearchStats">
+                        <div class="search-stat-badge" id="fourCurrentCount">
+                            <i class="fas fa-list"></i> Résultats: <span class="count" id="fourResultCount">0</span>
+                        </div>
+                        <div class="search-stat-badge" id="fourOtherCount">
+                            <i class="fas fa-microchip"></i> Experts correspondants: <span class="count" id="fourMatchingAutoCount">0</span>
+                        </div>
+                    </div>
+                    
                     <div class="search-bar">
                         <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
@@ -1147,6 +1123,17 @@
                             <div id="autoFeaturedItems2" class="featured-items"></div>
                         </div>
                     </div>
+                    
+                    <!-- NOUVEAU: Compteurs de recherche -->
+                    <div class="search-stats" id="autoSearchStats">
+                        <div class="search-stat-badge" id="autoCurrentCount">
+                            <i class="fas fa-list"></i> Résultats: <span class="count" id="autoResultCount">0</span>
+                        </div>
+                        <div class="search-stat-badge" id="autoOtherCount">
+                            <i class="fas fa-building"></i> Fournisseurs correspondants: <span class="count" id="autoMatchingFourCount">0</span>
+                        </div>
+                    </div>
+                    
                     <div class="search-bar">
                         <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
@@ -1184,6 +1171,8 @@
                                 <button class="join-btn" onclick="openFormAuto()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
                                 <button class="join-btn share" onclick="shareFormAuto()"><i class="fas fa-share-alt"></i> Partager</button>
                                 <button class="join-btn qr" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform?usp=header', 'Formulaire Expert')"><i class="fas fa-qrcode"></i> QR</button>
+                                <!-- NOUVEAU: Bouton export CSV -->
+                                <button class="join-btn" onclick="exportToCSV('expert')" style="background: var(--steel-dim); border-color: var(--steel);"><i class="fas fa-file-csv"></i> Exporter CSV</button>
                             </div>
                         </div>
                         <div class="join-tile">
@@ -1194,6 +1183,8 @@
                                 <button class="join-btn" onclick="openFormFour()"><i class="fas fa-plus-circle"></i> Remplir le formulaire</button>
                                 <button class="join-btn share" onclick="shareFormFour()"><i class="fas fa-share-alt"></i> Partager</button>
                                 <button class="join-btn qr" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform?usp=header', 'Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR</button>
+                                <!-- NOUVEAU: Bouton export CSV -->
+                                <button class="join-btn" onclick="exportToCSV('fournisseur')" style="background: var(--steel-dim); border-color: var(--steel);"><i class="fas fa-file-csv"></i> Exporter CSV</button>
                             </div>
                         </div>
                     </div>
@@ -1460,9 +1451,6 @@
             const FORM_AUTO_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform?usp=header";
             const FORM_FOUR_URL = "https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform?usp=header";
 
-            const TARGET_CLIENT_COUNT = 28700;
-            const TARGET_EXP_COUNT = 20;
-
             // Professional share texts
             const SHARE_TEXT_PLATFORM = "Connect Industry Maroc - Plateforme de mise en relation des professionnels et industriels au Maroc";
             const SHARE_TEXT_FOURNISSEURS = "Connect Industry Maroc - Reseau des fournisseurs industriels au Maroc";
@@ -1507,6 +1495,216 @@
                 LAST_VISIT: 'lastVisit',
                 THEME: 'theme'
             };
+
+            // ==================== EXPORT CSV ====================
+            function exportToCSV(type) {
+                let data = [];
+                let filename = '';
+                let headers = ['Nom', 'Domaine', 'Specialite', 'Ville', 'Telephone', 'Email', 'Site Web'];
+                
+                if (type === 'expert') {
+                    data = automaticiensData;
+                    filename = 'experts_automaticiens.csv';
+                } else if (type === 'fournisseur') {
+                    data = fournisseursData;
+                    filename = 'fournisseurs_industriels.csv';
+                } else {
+                    return;
+                }
+                
+                if (!data || data.length === 0) {
+                    showToast('Aucune donnee a exporter');
+                    return;
+                }
+                
+                const csvRows = [];
+                csvRows.push(headers.join(','));
+                
+                for (const item of data) {
+                    const row = [
+                        `"${(item.name || '').replace(/"/g, '""')}"`,
+                        `"${(item.domaine || '').replace(/"/g, '""')}"`,
+                        `"${(item.specialite || '').replace(/"/g, '""')}"`,
+                        `"${(item.city || '').replace(/"/g, '""')}"`,
+                        `"${(item.phone || '').replace(/"/g, '""')}"`,
+                        `"${(item.email || '').replace(/"/g, '""')}"`,
+                        `"${(item.web || '').replace(/"/g, '""')}"`
+                    ];
+                    csvRows.push(row.join(','));
+                }
+                
+                const csvContent = csvRows.join('\n');
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                showToast(`Export CSV termine: ${data.length} enregistrements`);
+            }
+
+            // ==================== DYNAMIC STATS ====================
+            function updateDynamicStats() {
+                // Calculer le nombre de domaines uniques (tous types confondus)
+                const allDomaines = new Set();
+                const allVilles = new Set();
+                
+                for (const item of fournisseursData) {
+                    if (item.domaine && item.domaine.trim()) allDomaines.add(item.domaine.trim());
+                    if (item.city && item.city.trim()) allVilles.add(item.city.trim());
+                }
+                for (const item of automaticiensData) {
+                    if (item.domaine && item.domaine.trim()) allDomaines.add(item.domaine.trim());
+                    if (item.city && item.city.trim()) allVilles.add(item.city.trim());
+                }
+                
+                const domainesCount = document.getElementById('statDomainesCount');
+                const villesCount = document.getElementById('statVillesCount');
+                
+                if (domainesCount) domainesCount.textContent = allDomaines.size.toLocaleString();
+                if (villesCount) villesCount.textContent = allVilles.size.toLocaleString();
+            }
+
+            // ==================== FILTERED DOMAINES (basé sur la ville sélectionnée) ====================
+            function getFilteredDomainesForVille(type, selectedVille) {
+                if (!selectedVille) return null;
+                const domaines = new Set();
+                const dataSource = type === 'expert' ? automaticiensData : fournisseursData;
+                for (const item of dataSource) {
+                    if (item.city === selectedVille && item.domaine && item.domaine.trim()) {
+                        domaines.add(item.domaine.trim());
+                    }
+                }
+                return Array.from(domaines).sort();
+            }
+
+            // Modifier openAutoDomaineModal et openFourDomaineModal pour prendre en compte la ville sélectionnée
+            const originalOpenAutoDomaineModal = window.openAutoDomaineModal;
+            const originalOpenFourDomaineModal = window.openFourDomaineModal;
+            
+            window.openAutoDomaineModal = function() {
+                const container = document.getElementById('autoDomaineList');
+                if (!container) return;
+                
+                let domaines;
+                if (selectedAutoVille) {
+                    domaines = getFilteredDomainesForVille('expert', selectedAutoVille);
+                    if (!domaines || domaines.length === 0) {
+                        showToast(`Aucun domaine disponible pour la ville: ${selectedAutoVille}`);
+                        return;
+                    }
+                } else {
+                    domaines = [...new Set(automaticiensData.map(i => i.domaine).filter(d => d && d.trim() !== ''))].sort();
+                }
+                
+                container.innerHTML = '';
+                const allBtn = document.createElement('button');
+                allBtn.className = 'join-btn';
+                allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
+                allBtn.onclick = () => { selectedAutoDomaine = null; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast('Tous les domaines'); };
+                container.appendChild(allBtn);
+                
+                domaines.forEach(dom => {
+                    const btn = document.createElement('button');
+                    btn.className = 'join-btn';
+                    btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
+                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedAutoDomaine === dom ? '1' : '0'};"></i>`;
+                    btn.onclick = () => { selectedAutoDomaine = dom; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast(`${dom.substring(0,20)}`); };
+                    container.appendChild(btn);
+                });
+                document.getElementById('autoDomaineModal').classList.add('show');
+            };
+            
+            window.openFourDomaineModal = function() {
+                const container = document.getElementById('fourDomaineList');
+                if (!container) return;
+                
+                let domaines;
+                if (selectedFourVille) {
+                    domaines = getFilteredDomainesForVille('fournisseur', selectedFourVille);
+                    if (!domaines || domaines.length === 0) {
+                        showToast(`Aucun domaine disponible pour la ville: ${selectedFourVille}`);
+                        return;
+                    }
+                } else {
+                    domaines = [...new Set(fournisseursData.map(i => i.domaine).filter(d => d && d.trim() !== ''))].sort();
+                }
+                
+                container.innerHTML = '';
+                const allBtn = document.createElement('button');
+                allBtn.className = 'join-btn';
+                allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
+                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
+                allBtn.onclick = () => { selectedFourDomaine = null; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast('Tous les domaines'); };
+                container.appendChild(allBtn);
+                
+                domaines.forEach(dom => {
+                    const btn = document.createElement('button');
+                    btn.className = 'join-btn';
+                    btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
+                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedFourDomaine === dom ? '1' : '0'};"></i>`;
+                    btn.onclick = () => { selectedFourDomaine = dom; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast(`${dom.substring(0,20)}`); };
+                    container.appendChild(btn);
+                });
+                document.getElementById('fourDomaineModal').classList.add('show');
+            };
+
+            // ==================== UPDATE SEARCH STATS ====================
+            function updateSearchStats() {
+                // Pour les fournisseurs
+                const fourSearchTerm = document.getElementById('searchFourInput2')?.value.toLowerCase() || '';
+                let fourFiltered = [...fournisseursData];
+                if (fourFilterType === 'domaine' && selectedFourDomaine !== null) {
+                    fourFiltered = fourFiltered.filter(s => s.domaine === selectedFourDomaine);
+                }
+                if (selectedFourVille !== null) {
+                    fourFiltered = fourFiltered.filter(s => s.city === selectedFourVille);
+                }
+                if (fourSearchTerm) {
+                    fourFiltered = fourFiltered.filter(s => matchesSearch(s, fourSearchTerm));
+                }
+                
+                // Compter les experts correspondant au même terme de recherche
+                let autoMatchingCount = 0;
+                if (fourSearchTerm) {
+                    autoMatchingCount = automaticiensData.filter(a => matchesSearch(a, fourSearchTerm)).length;
+                }
+                
+                const fourResultSpan = document.getElementById('fourResultCount');
+                const fourMatchingSpan = document.getElementById('fourMatchingAutoCount');
+                if (fourResultSpan) fourResultSpan.textContent = fourFiltered.length;
+                if (fourMatchingSpan) fourMatchingSpan.textContent = autoMatchingCount;
+                
+                // Pour les experts
+                const autoSearchTerm = document.getElementById('searchAutoInput2')?.value.toLowerCase() || '';
+                let autoFiltered = [...automaticiensData];
+                if (autoFilterType === 'domaine' && selectedAutoDomaine !== null) {
+                    autoFiltered = autoFiltered.filter(a => a.domaine === selectedAutoDomaine);
+                }
+                if (selectedAutoVille !== null) {
+                    autoFiltered = autoFiltered.filter(a => a.city === selectedAutoVille);
+                }
+                if (autoSearchTerm) {
+                    autoFiltered = autoFiltered.filter(a => matchesSearch(a, autoSearchTerm));
+                }
+                
+                // Compter les fournisseurs correspondant au même terme de recherche
+                let fourMatchingCount = 0;
+                if (autoSearchTerm) {
+                    fourMatchingCount = fournisseursData.filter(f => matchesSearch(f, autoSearchTerm)).length;
+                }
+                
+                const autoResultSpan = document.getElementById('autoResultCount');
+                const autoMatchingSpan = document.getElementById('autoMatchingFourCount');
+                if (autoResultSpan) autoResultSpan.textContent = autoFiltered.length;
+                if (autoMatchingSpan) autoMatchingSpan.textContent = fourMatchingCount;
+            }
 
             // ==================== QR CODE FUNCTIONS ====================
             let currentQRData = null;
@@ -1608,7 +1806,7 @@
                 }
             }
 
-            // ==================== PDF GENERATION WITH QR CODE ====================
+            // ==================== PDF GENERATION ====================
             async function generatePDF(cardElement, itemName, websiteUrl) {
                 if (!cardElement) {
                     showToast("Impossible de generer le PDF");
@@ -1655,7 +1853,6 @@
                     }
                     
                     const originalWidth = cardElement.offsetWidth;
-                    const originalHeight = cardElement.offsetHeight;
                     
                     cloneCard.style.position = 'absolute';
                     cloneCard.style.top = '-9999px';
@@ -1671,8 +1868,7 @@
                         backgroundColor: getComputedStyle(document.body).getPropertyValue('--bg-card'),
                         logging: false,
                         useCORS: true,
-                        windowWidth: originalWidth,
-                        windowHeight: originalHeight
+                        windowWidth: originalWidth
                     });
                     
                     document.body.removeChild(cloneCard);
@@ -1828,7 +2024,6 @@
                     currentActiveSection = sectionId;
                     localStorage.setItem(STORAGE_KEYS.ACTIVE_SECTION, sectionId);
                 }
-                // Update floating button icon + active menu highlight
                 updateFloatingBtn(sectionId);
             }
 
@@ -2180,6 +2375,7 @@
                 const now = Date.now();
                 if (!forceRefresh && cachedItems && (now - cachedRenderTime) < CACHE_TTL) {
                     applyRender(cachedItems);
+                    updateSearchStats();
                     return;
                 }
                 
@@ -2254,6 +2450,7 @@
                 cachedItems = renderData;
                 cachedRenderTime = now;
                 applyRender(renderData);
+                updateSearchStats();
             }
             
             function applyRender(data) {
@@ -2267,11 +2464,13 @@
                 if (statAuto) statAuto.textContent = data.autoCount.toLocaleString();
                 if (statFour) statFour.textContent = data.fourCount.toLocaleString();
                 
+                updateDynamicStats();
                 updateStartMenuStatus();
             }
 
-            window.filterAutomaticiens2 = () => renderAll(true);
-            window.filterFournisseurs2 = () => renderAll(true);
+            // Override filter functions to update stats
+            window.filterAutomaticiens2 = () => { renderAll(true); };
+            window.filterFournisseurs2 = () => { renderAll(true); };
 
             // ==================== SHARE FUNCTIONS ====================
             function shareCardAuto(name, domaine, specialite, city, phone, website) {
@@ -2613,48 +2812,8 @@
             }
 
             // ==================== FILTER FUNCTIONS ====================
-            function openAutoDomaineModal() {
-                const domaines = [...new Set(automaticiensData.map(i => i.domaine).filter(d => d && d.trim() !== ''))];
-                const container = document.getElementById('autoDomaineList');
-                container.innerHTML = '';
-                const allBtn = document.createElement('button');
-                allBtn.className = 'join-btn';
-                allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
-                allBtn.onclick = () => { selectedAutoDomaine = null; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast('Tous les domaines'); };
-                container.appendChild(allBtn);
-                domaines.sort().forEach(dom => {
-                    const btn = document.createElement('button');
-                    btn.className = 'join-btn';
-                    btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedAutoDomaine === dom ? '1' : '0'};"></i>`;
-                    btn.onclick = () => { selectedAutoDomaine = dom; autoFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('autoDomaineModal'); closeModal('autoFilterModal'); showToast(`${dom.substring(0,20)}`); };
-                    container.appendChild(btn);
-                });
-                document.getElementById('autoDomaineModal').classList.add('show');
-            }
-
-            function openFourDomaineModal() {
-                const domaines = [...new Set(fournisseursData.map(i => i.domaine).filter(d => d && d.trim() !== ''))];
-                const container = document.getElementById('fourDomaineList');
-                container.innerHTML = '';
-                const allBtn = document.createElement('button');
-                allBtn.className = 'join-btn';
-                allBtn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                allBtn.innerHTML = `<span><i class="fas fa-globe"></i> Tous les domaines</span><i class="fas fa-check" style="color:var(--primary-blue);"></i>`;
-                allBtn.onclick = () => { selectedFourDomaine = null; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast('Tous les domaines'); };
-                container.appendChild(allBtn);
-                domaines.sort().forEach(dom => {
-                    const btn = document.createElement('button');
-                    btn.className = 'join-btn';
-                    btn.style.cssText = 'width:100%; margin-bottom:0.5rem; display:flex; justify-content:space-between;';
-                    btn.innerHTML = `<span><i class="fas fa-tag"></i> ${escapeHtml(dom)}</span><i class="fas fa-check" style="color:var(--primary-blue); opacity:${selectedFourDomaine === dom ? '1' : '0'};"></i>`;
-                    btn.onclick = () => { selectedFourDomaine = dom; fourFilterType = 'domaine'; renderAll(true); updateFilterBadges(); closeModal('fourDomaineModal'); closeModal('fourFilterModal'); showToast(`${dom.substring(0,20)}`); };
-                    container.appendChild(btn);
-                });
-                document.getElementById('fourDomaineModal').classList.add('show');
-            }
-
+            // Les fonctions openAutoDomaineModal et openFourDomaineModal ont été redéfinies plus haut
+            
             function openAutoVilleModal() {
                 const villes = [...new Set(automaticiensData.map(i => i.city).filter(v => v && v.trim() !== ''))];
                 const container = document.getElementById('autoVilleList');
@@ -2727,15 +2886,14 @@
                 if (!btn) return;
                 const icon = btn.querySelector('i');
                 if (icon) {
-                    // Remove all fa- classes except fas prefix
                     icon.className = 'fas ' + (SECTION_ICONS[sectionId] || 'fa-bars');
                 }
-                // Highlight active item in menu
                 document.querySelectorAll('.start-menu-item[data-section]').forEach(item => {
                     const sec = item.getAttribute('data-section');
                     item.classList.toggle('active-section-item', sec === sectionId);
                 });
             }
+            
             function toggleStartMenu() {
                 document.getElementById('startMenu').classList.toggle('open');
             }
@@ -2891,6 +3049,7 @@
             }
 
             // ==================== EXPORT GLOBAL FUNCTIONS ====================
+            window.exportToCSV = exportToCSV;
             window.shareCardAuto = shareCardAuto;
             window.shareCardFour = shareCardFour;
             window.shareToWhatsApp = shareToWhatsApp;
@@ -2927,6 +3086,8 @@
             window.closeQRModal = closeQRModal;
             window.shareQRImage = shareQRImage;
             window.goBack = goBack;
+            window.filterAutomaticiens2 = filterAutomaticiens2;
+            window.filterFournisseurs2 = filterFournisseurs2;
 
             init();
         })();
