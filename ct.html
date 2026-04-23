@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a73e8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Connect Industry Maroc | Plateforme Industrielle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --accent: #e07b39;
+            --accent-dark: #b85e20;
+            --accent-light: #f0995a;
+            --accent-glow: rgba(224, 123, 57, 0.3);
+            --accent-dim: rgba(224, 123, 57, 0.1);
+            --steel: #4a7fa5;
+            --steel-dark: #2e5f80;
+            --steel-glow: rgba(74, 127, 165, 0.25);
+            --steel-dim: rgba(74, 127, 165, 0.1);
+            --success-green: #2ea87e;
+            --success-green-glow: rgba(46, 168, 126, 0.25);
+            --success-green-dim: rgba(46, 168, 126, 0.1);
+            --danger-red: #d94f4f;
+            --danger-red-glow: rgba(217, 79, 79, 0.25);
+            --danger-red-dim: rgba(217, 79, 79, 0.1);
+            --dark-bg: #0c1017;
+            --dark-card: #131b26;
+            --dark-border: rgba(255, 255, 255, 0.07);
+            --light-bg: #eef1f5;
+            --light-card: #ffffff;
+            --light-border: #d4dae4;
+            --text-dark: #0f1923;
+            --text-light: #d8e0ea;
+            --text-secondary-dark: #8a96a8;
+            --text-secondary-light: #5a6474;
+            --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.2);
+            --shadow-md: 0 6px 28px rgba(0, 0, 0, 0.28);
+            --shadow-lg: 0 18px 54px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            --bg-primary: var(--dark-bg);
+            --bg-card: var(--dark-card);
+            --border-color: var(--dark-border);
+            --text-primary: var(--text-light);
+            --text-secondary: var(--text-secondary-dark);
+            --hover-bg: rgba(255, 255, 255, 0.05);
+            --mode-color: var(--steel);
+            --mode-glow: var(--steel-glow);
+            --mode-dim: var(--steel-dim);
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.4s, color 0.4s;
+            padding: 20px;
+        }
+
+        body.light-mode {
+            --bg-primary: var(--light-bg);
+            --bg-card: var(--light-card);
+            --border-color: var(--light-border);
+            --text-primary: var(--text-dark);
+            --text-secondary: var(--text-secondary-light);
+            --hover-bg: rgba(0, 0, 0, 0.04);
+        }
+
+        body.subscriber-mode {
+            --mode-color: var(--success-green);
+            --mode-glow: var(--success-green-glow);
+            --mode-dim: var(--success-green-dim);
+        }
+
+        body.admin-mode {
+            --mode-color: var(--danger-red);
+            --mode-glow: var(--danger-red-glow);
+            --mode-dim: var(--danger-red-dim);
+        }
+
+        /* Layout */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--mode-color), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo p {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mode-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--mode-dim);
+            color: var(--mode-color);
+            border: 1px solid var(--mode-color);
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            background: var(--bg-card);
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            background: var(--hover-bg);
+            color: var(--mode-color);
+        }
+
+        .nav-btn.active {
+            background: var(--mode-dim);
+            color: var(--mode-color);
+            border: 1px solid var(--mode-color);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--mode-color);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--mode-color);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--mode-color);
+        }
+
+        .filter-btn, .clear-btn {
+            padding: 12px 16px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--mode-color);
+            color: white;
+            border-color: var(--mode-color);
+        }
+
+        .clear-btn:hover {
+            background: var(--mode-dim);
+            color: var(--mode-color);
+        }
+
+        /* Search Stats */
+        .search-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .stat-badge .count {
+            color: var(--mode-color);
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
+        /* Items Grid */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+        }
+
+        .item-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .item-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--mode-color);
+        }
+
+        .item-card.pinned {
+            border-left: 4px solid var(--mode-color);
+        }
+
+        .item-card.current-subscriber {
+            border: 2px solid var(--success-green);
+            background: linear-gradient(135deg, var(--success-green-dim), var(--bg-card));
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .item-title {
+            font-weight: 700;
+            color: var(--mode-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pin-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .pin-btn.pinned {
+            color: var(--warning-orange);
+        }
+
+        .pin-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .badge {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-pinned {
+            background: rgba(245, 158, 11, 0.18);
+            color: var(--warning-orange);
+        }
+
+        .badge-subscriber {
+            background: var(--success-green-dim);
+            color: var(--success-green);
+        }
+
+        .badge-admin {
+            background: var(--danger-red-dim);
+            color: var(--danger-red);
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-row i {
+            width: 18px;
+            margin-top: 2px;
+        }
+
+        .detail-row .label {
+            font-weight: 600;
+            min-width: 80px;
+        }
+
+        .detail-row .value {
+            color: var(--text-primary);
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn.whatsapp {
+            border-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .action-btn.email {
+            border-color: var(--steel);
+            color: var(--steel);
+        }
+
+        .action-btn.web {
+            border-color: var(--steel);
+            color: var(--steel);
+        }
+
+        .action-btn.share {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .action-btn.pdf {
+            border-color: var(--danger-red);
+            color: var(--danger-red);
+        }
+
+        /* Featured Section */
+        .featured-section {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .featured-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .featured-scroll {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
+        }
+
+        .featured-items {
+            display: inline-flex;
+            gap: 15px;
+        }
+
+        .featured-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--mode-color);
+            border-radius: 12px;
+            padding: 14px;
+            width: 280px;
+            display: inline-block;
+            white-space: normal;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .featured-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Join Grid */
+        .join-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .join-card {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .join-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--mode-color);
+        }
+
+        .join-icon {
+            font-size: 2.5rem;
+            color: var(--mode-color);
+            margin-bottom: 15px;
+        }
+
+        .join-card h3 {
+            margin-bottom: 5px;
+        }
+
+        .join-card p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .join-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .join-btn {
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .join-btn:hover {
+            background: var(--mode-dim);
+            border-color: var(--mode-color);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mode-color), color-mix(in srgb, var(--mode-color) 70%, black));
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 20px;
+            z-index: 1100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--mode-dim);
+            border-top-color: var(--mode-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .items-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <h1><i class="fas fa-industry"></i> Connect Industry Maroc</h1>
+                <p>Plateforme Industrielle | Mise en relation B2B</p>
+            </div>
+            <div class="user-status">
+                <span class="mode-badge" id="modeBadge">👤 Visiteur</span>
+                <button class="filter-btn" id="themeToggleBtn"><i class="fas fa-moon"></i></button>
+                <button class="filter-btn" id="subscribeBtn"><i class="fas fa-user-plus"></i> S'abonner</button>
+                <button class="filter-btn" id="adminBtn"><i class="fas fa-key"></i> Admin</button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="nav-btn active" data-section="about"><i class="fas fa-building"></i> À Propos</button>
+            <button class="nav-btn" data-section="fournisseurs"><i class="fas fa-industry"></i> Fournisseurs</button>
+            <button class="nav-btn" data-section="experts"><i class="fas fa-microchip"></i> Experts</button>
+            <button class="nav-btn" data-section="join"><i class="fas fa-user-plus"></i> Rejoindre</button>
+            <button class="nav-btn" data-section="contact"><i class="fas fa-envelope"></i> Contact</button>
+        </div>
+
+        <!-- Section À Propos -->
+        <div id="aboutSection" class="section active">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-line"></i> Tableau de Bord</h2>
+                </div>
+                <div class="card-body">
+                    <div class="description-box" style="background: var(--mode-dim); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                        <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px;"><i class="fas fa-industry"></i> Fournisseurs</h3>
+                    <div class="stats-grid" id="fournisseursStats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="statFourTotal">0</div>
+                            <div class="stat-label">Total Fournisseurs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statFourDomaines">0</div>
+                            <div class="stat-label">Domaines</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statFourVilles">0</div>
+                            <div class="stat-label">Villes</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 15px; margin-top: 25px;"><i class="fas fa-microchip"></i> Experts</h3>
+                    <div class="stats-grid" id="expertsStats">
+                        <div class="stat-card">
+                            <div class="stat-number" id="statAutoTotal">0</div>
+                            <div class="stat-label">Total Experts</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statAutoDomaines">0</div>
+                            <div class="stat-label">Domaines</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="statAutoVilles">0</div>
+                            <div class="stat-label">Villes</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Fournisseurs -->
+        <div id="fournisseursSection" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-industry"></i> Fournisseurs Industriels</h2>
+                </div>
+                <div class="card-body">
+                    <div class="featured-section" id="fourFeaturedSection" style="display: none;">
+                        <div class="featured-header">
+                            <i class="fas fa-star"></i>
+                            <h3>⭐ À la une</h3>
+                        </div>
+                        <div class="featured-scroll">
+                            <div id="fourFeaturedItems" class="featured-items"></div>
+                        </div>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="fourSearchInput" class="search-input" placeholder="Rechercher...">
+                        <button class="filter-btn" id="fourDomaineFilterBtn"><i class="fas fa-folder"></i> Domaine</button>
+                        <button class="filter-btn" id="fourVilleFilterBtn"><i class="fas fa-city"></i> Ville</button>
+                        <button class="clear-btn" id="fourClearFiltersBtn"><i class="fas fa-eraser"></i> Effacer</button>
+                    </div>
+
+                    <div class="search-stats">
+                        <div class="stat-badge"><i class="fas fa-list"></i> Résultats: <span class="count" id="fourResultCount">0</span></div>
+                        <div class="stat-badge"><i class="fas fa-microchip"></i> Experts correspondants: <span class="count" id="fourMatchingCount">0</span></div>
+                    </div>
+
+                    <div id="fournisseursGrid" class="items-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Experts -->
+        <div id="expertsSection" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-microchip"></i> Experts & Automaticiens</h2>
+                </div>
+                <div class="card-body">
+                    <div class="featured-section" id="autoFeaturedSection" style="display: none;">
+                        <div class="featured-header">
+                            <i class="fas fa-star"></i>
+                            <h3>⭐ À la une</h3>
+                        </div>
+                        <div class="featured-scroll">
+                            <div id="autoFeaturedItems" class="featured-items"></div>
+                        </div>
+                    </div>
+
+                    <div class="search-bar">
+                        <input type="text" id="autoSearchInput" class="search-input" placeholder="Rechercher...">
+                        <button class="filter-btn" id="autoDomaineFilterBtn"><i class="fas fa-folder"></i> Domaine</button>
+                        <button class="filter-btn" id="autoVilleFilterBtn"><i class="fas fa-city"></i> Ville</button>
+                        <button class="clear-btn" id="autoClearFiltersBtn"><i class="fas fa-eraser"></i> Effacer</button>
+                    </div>
+
+                    <div class="search-stats">
+                        <div class="stat-badge"><i class="fas fa-list"></i> Résultats: <span class="count" id="autoResultCount">0</span></div>
+                        <div class="stat-badge"><i class="fas fa-industry"></i> Fournisseurs correspondants: <span class="count" id="autoMatchingCount">0</span></div>
+                    </div>
+
+                    <div id="automaticiensGrid" class="items-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Rejoindre -->
+        <div id="joinSection" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user-plus"></i> Rejoignez notre réseau</h2>
+                </div>
+                <div class="card-body">
+                    <div class="join-grid">
+                        <div class="join-card">
+                            <div class="join-icon"><i class="fas fa-microchip"></i></div>
+                            <h3>Experts & Automaticiens</h3>
+                            <p>Inscrivez-vous pour rejoindre notre réseau d'experts</p>
+                            <div class="join-buttons">
+                                <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire d'inscription</button>
+                                <button class="join-btn" onclick="shareForm('expert')"><i class="fas fa-share-alt"></i> Partager</button>
+                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', 'Formulaire Expert')"><i class="fas fa-qrcode"></i> QR Code</button>
+                                <button class="join-btn" onclick="exportToCSV('expert')"><i class="fas fa-file-csv"></i> Exporter CSV</button>
+                            </div>
+                        </div>
+                        <div class="join-card">
+                            <div class="join-icon"><i class="fas fa-industry"></i></div>
+                            <h3>Fournisseurs Industriels</h3>
+                            <p>Inscrivez votre entreprise dans notre annuaire</p>
+                            <div class="join-buttons">
+                                <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire d'inscription</button>
+                                <button class="join-btn" onclick="shareForm('fournisseur')"><i class="fas fa-share-alt"></i> Partager</button>
+                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', 'Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR Code</button>
+                                <button class="join-btn" onclick="exportToCSV('fournisseur')"><i class="fas fa-file-csv"></i> Exporter CSV</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Contact -->
+        <div id="contactSection" class="section">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fas fa-comment-dots"></i> Suggestions & Contact</h2>
+                </div>
+                <div class="card-body">
+                    <form id="contactForm">
+                        <input type="text" id="contactName" class="input-field" placeholder="Votre nom (optionnel)">
+                        <input type="text" id="contactInfo" class="input-field" placeholder="Email ou téléphone (optionnel)">
+                        <textarea id="contactMessage" class="input-field" rows="4" placeholder="Votre message..."></textarea>
+                        <button type="submit" class="btn-primary" style="width: 100%;"><i class="fab fa-whatsapp"></i> Envoyer via WhatsApp</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="detailTitle">Détails</h3>
+                <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+            </div>
+            <div class="modal-body" id="detailBody"></div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('detailModal')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="subscribeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Abonnement</h3>
+                <button class="modal-close" onclick="closeModal('subscribeModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Entrez votre numéro de téléphone pour activer l'abonnement</p>
+                <input type="tel" id="subscribePhone" class="input-field" placeholder="Ex: 0612345678">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="checkSubscription()">S'abonner</button>
+                <button class="btn-secondary" onclick="closeModal('subscribeModal')">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Mode Administrateur</h3>
+                <button class="modal-close" onclick="closeModal('adminModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p>Entrez le mot de passe administrateur</p>
+                <input type="password" id="adminPassword" class="input-field" placeholder="Mot de passe">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="verifyAdmin()">Confirmer</button>
+                <button class="btn-secondary" onclick="closeModal('adminModal')">Annuler</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="qrTitle">QR Code</h3>
+                <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-container" id="qrContainer"></div>
+                <button class="join-btn" onclick="shareQR()" style="width: 100%;"><i class="fas fa-share-alt"></i> Partager l'image</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="domaineModal">
+        <div class="modal" style="max-width: 350px;">
+            <div class="modal-header">
+                <h3>Sélectionner un domaine</h3>
+                <button class="modal-close" onclick="closeModal('domaineModal')">✕</button>
+            </div>
+            <div class="modal-body" id="domaineList"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="villeModal">
+        <div class="modal" style="max-width: 350px;">
+            <div class="modal-header">
+                <h3>Sélectionner une ville</h3>
+                <button class="modal-close" onclick="closeModal('villeModal')">✕</button>
+            </div>
+            <div class="modal-body" id="villeList"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const ADMIN_PASSWORD = "11111111";
+        const WHATSAPP_NUMBER = "212690292010";
+        const AUTO_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
+        const FOUR_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
+
+        // ==================== DONNÉES ====================
+        let fournisseurs = [];
+        let experts = [];
+        
+        let isAdmin = false;
+        let isSubscriber = false;
+        let subscriberPhone = null;
+        
+        let fourFilters = { domaine: null, ville: null, search: "" };
+        let autoFilters = { domaine: null, ville: null, search: "" };
+        
+        let fourSearchTimeout = null;
+        let autoSearchTimeout = null;
+        
+        let userPinnedFour = [];
+        let userPinnedAuto = [];
+        let adminPinnedFour = [];
+        let adminPinnedAuto = [];
+        
+        let currentQRData = null;
+        let currentFilterType = null;
+
+        // ==================== UTILITAIRES ====================
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        function formatPhone(phone) {
+            if (!phone) return null;
+            let clean = phone.toString().replace(/[\s\-\(\)]/g, '');
+            if (clean.startsWith('0')) return '+212' + clean.substring(1);
+            if (clean.startsWith('212')) return '+' + clean;
+            if (clean.match(/^[67]\d{8}$/)) return '+212' + clean;
+            return clean;
+        }
+
+        function phoneMatch(p1, p2) {
+            if (!p1 || !p2) return false;
+            const f1 = formatPhone(p1);
+            const f2 = formatPhone(p2);
+            return f1 && f2 && f1 === f2;
+        }
+
+        function matchesSearch(item, term) {
+            if (!term) return true;
+            const fields = [item.name, item.domaine, item.specialite, item.city, item.email, item.web, item.phone];
+            return fields.some(f => f && f.toLowerCase().includes(term));
+        }
+
+        // ==================== CHARGEMENT CSV ====================
+        async function loadCSV(url) {
+            try {
+                const resp = await fetch(url);
+                const text = await resp.text();
+                const lines = text.split(/\r?\n/);
+                if (lines.length < 2) return [];
+                const data = [];
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const parts = lines[i].split(',').map(p => p.replace(/["']/g, '').trim());
+                    if (parts.length < 5) continue;
+                    data.push({
+                        name: parts[1] || '',
+                        domaine: parts[2] || '',
+                        specialite: parts[3] || '',
+                        city: parts[4] || '',
+                        phone: formatPhone(parts[5] || ''),
+                        email: parts[6] || '',
+                        web: parts[7] || ''
+                    });
+                }
+                return data;
+            } catch (e) {
+                console.error(e);
+                return [];
+            }
+        }
+
+        // ==================== STATISTIQUES ====================
+        function updateStats() {
+            // Fournisseurs
+            document.getElementById('statFourTotal').textContent = fournisseurs.length;
+            document.getElementById('statFourDomaines').textContent = new Set(fournisseurs.map(f => f.domaine).filter(d => d)).size;
+            document.getElementById('statFourVilles').textContent = new Set(fournisseurs.map(f => f.city).filter(v => v)).size;
+            
+            // Experts
+            document.getElementById('statAutoTotal').textContent = experts.length;
+            document.getElementById('statAutoDomaines').textContent = new Set(experts.map(e => e.domaine).filter(d => d)).size;
+            document.getElementById('statAutoVilles').textContent = new Set(experts.map(e => e.city).filter(v => v)).size;
+        }
+
+        // ==================== FILTRES INTELLIGENTS ====================
+        function getDomainesForVille(data, ville) {
+            if (!ville) return null;
+            return [...new Set(data.filter(d => d.city === ville && d.domaine).map(d => d.domaine))].sort();
+        }
+
+        function getVillesForDomaine(data, domaine) {
+            if (!domaine) return null;
+            return [...new Set(data.filter(d => d.domaine === domaine && d.city).map(d => d.city))].sort();
+        }
+
+        // ==================== FILTRAGE ====================
+        function filterFournisseurs() {
+            let filtered = [...fournisseurs];
+            if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
+            if (fourFilters.ville) filtered = filtered.filter(f => f.city === fourFilters.ville);
+            if (fourFilters.search) filtered = filtered.filter(f => matchesSearch(f, fourFilters.search));
+            return filtered;
+        }
+
+        function filterExperts() {
+            let filtered = [...experts];
+            if (autoFilters.domaine) filtered = filtered.filter(e => e.domaine === autoFilters.domaine);
+            if (autoFilters.ville) filtered = filtered.filter(e => e.city === autoFilters.ville);
+            if (autoFilters.search) filtered = filtered.filter(e => matchesSearch(e, autoFilters.search));
+            return filtered;
+        }
+
+        // ==================== ÉPINGLAGES ====================
+        function loadPins() {
+            userPinnedFour = JSON.parse(localStorage.getItem('userPinnedFour') || '[]');
+            userPinnedAuto = JSON.parse(localStorage.getItem('userPinnedAuto') || '[]');
+            adminPinnedFour = JSON.parse(localStorage.getItem('adminPinnedFour') || '[]');
+            adminPinnedAuto = JSON.parse(localStorage.getItem('adminPinnedAuto') || '[]');
+        }
+
+        function savePins(type) {
+            if (type === 'four') {
+                localStorage.setItem('userPinnedFour', JSON.stringify(userPinnedFour));
+                localStorage.setItem('adminPinnedFour', JSON.stringify(adminPinnedFour));
+            } else {
+                localStorage.setItem('userPinnedAuto', JSON.stringify(userPinnedAuto));
+                localStorage.setItem('adminPinnedAuto', JSON.stringify(adminPinnedAuto));
+            }
+        }
+
+        function isPinned(item, type) {
+            const id = `${item.name}|${item.phone || ''}`;
+            if (isAdmin) {
+                return type === 'four' ? adminPinnedFour.includes(id) : adminPinnedAuto.includes(id);
+            }
+            return type === 'four' ? userPinnedFour.includes(id) : userPinnedAuto.includes(id);
+        }
+
+        function togglePin(type, id, name) {
+            if (!isSubscriber && !isAdmin) {
+                showToast("Veuillez vous abonner pour épingler");
+                return;
+            }
+            
+            if (isAdmin) {
+                if (type === 'four') {
+                    const idx = adminPinnedFour.indexOf(id);
+                    if (idx === -1) {
+                        adminPinnedFour.push(id);
+                        showToast(`⭐ ${name} ajouté À la une`);
+                    } else {
+                        adminPinnedFour.splice(idx, 1);
+                        showToast(`📌 ${name} retiré de À la une`);
+                    }
+                    savePins('four');
+                } else {
+                    const idx = adminPinnedAuto.indexOf(id);
+                    if (idx === -1) {
+                        adminPinnedAuto.push(id);
+                        showToast(`⭐ ${name} ajouté À la une`);
+                    } else {
+                        adminPinnedAuto.splice(idx, 1);
+                        showToast(`📌 ${name} retiré de À la une`);
+                    }
+                    savePins('auto');
+                }
+            } else {
+                if (type === 'four') {
+                    const idx = userPinnedFour.indexOf(id);
+                    if (idx === -1) {
+                        userPinnedFour.push(id);
+                        showToast(`📌 ${name} épinglé`);
+                    } else {
+                        userPinnedFour.splice(idx, 1);
+                        showToast(`📌 ${name} désépinglé`);
+                    }
+                    savePins('four');
+                } else {
+                    const idx = userPinnedAuto.indexOf(id);
+                    if (idx === -1) {
+                        userPinnedAuto.push(id);
+                        showToast(`📌 ${name} épinglé`);
+                    } else {
+                        userPinnedAuto.splice(idx, 1);
+                        showToast(`📌 ${name} désépinglé`);
+                    }
+                    savePins('auto');
+                }
+            }
+            renderAll();
+        }
+
+        // ==================== AFFICHAGE ====================
+        function showItemDetail(type, item) {
+            const modal = document.getElementById('detailModal');
+            const title = document.getElementById('detailTitle');
+            const body = document.getElementById('detailBody');
+            
+            title.textContent = item.name;
+            
+            const hasPhone = item.phone && item.phone !== 'null';
+            const website = item.web && item.web !== 'null' ? item.web : '';
+            
+            let actions = '';
+            if (hasPhone) actions += `<button class="join-btn" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
+            if (item.email) actions += `<button class="join-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>`;
+            if (website) actions += `<button class="join-btn" onclick="window.open('${website.startsWith('http') ? website : 'https://' + website}', '_blank')"><i class="fas fa-globe"></i> Site web</button>`;
+            
+            body.innerHTML = `
+                <div class="detail-row"><i class="fas fa-folder"></i><span class="label">Domaine:</span><span class="value">${escapeHtml(item.domaine)}</span></div>
+                <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(item.specialite)}</span></div>
+                <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(item.city)}</span></div>
+                ${hasPhone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Téléphone:</span><span class="value">${item.phone}</span></div>` : ''}
+                ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escapeHtml(item.email)}</span></div>` : ''}
+                ${website ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escapeHtml(website)}</span></div>` : ''}
+                <hr style="margin: 15px 0; border-color: var(--border-color);">
+                <div style="display: flex; flex-direction: column; gap: 8px;">${actions}</div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        function renderFeatured(containerId, items, type, isFour) {
+            const container = document.getElementById(containerId);
+            const section = container?.closest('.featured-section');
+            
+            if (!items || items.length === 0) {
+                if (section) section.style.display = 'none';
+                return;
+            }
+            if (section) section.style.display = 'block';
+            
+            let html = '';
+            for (const item of items) {
+                html += `
+                    <div class="featured-card" onclick="showItemDetail('${type}', ${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                        <div class="item-title">
+                            <i class="fas ${isFour ? 'fa-building' : 'fa-user-astronaut'}"></i>
+                            ${escapeHtml(item.name)}
+                            <span class="badge badge-admin"><i class="fas fa-star"></i> À la une</span>
+                        </div>
+                        <div class="detail-row"><i class="fas fa-folder"></i> ${escapeHtml(item.domaine)}</div>
+                        <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.city)}</div>
+                        <div class="detail-row"><i class="fas fa-microchip"></i> ${escapeHtml(item.specialite)}</div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function renderItems(gridId, items, type, isFour) {
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères de recherche</p></div>`;
+                return;
+            }
+            
+            let html = '';
+            for (const item of items) {
+                const id = `${item.name}|${item.phone || ''}`;
+                const pinned = isPinned(item, type);
+                const isCurrentSub = isSubscriber && subscriberPhone && phoneMatch(subscriberPhone, item.phone);
+                const hasPhone = item.phone && item.phone !== 'null';
+                const website = item.web && item.web !== 'null' ? item.web : '';
+                
+                let cardClass = 'item-card';
+                if (pinned) cardClass += ' pinned';
+                if (isCurrentSub) cardClass += ' current-subscriber';
+                
+                html += `
+                    <div class="${cardClass}" onclick='showItemDetail("${type}", ${JSON.stringify(item).replace(/"/g, '&quot;')})'>
+                        <div class="item-header">
+                            <span class="item-title">
+                                <i class="fas ${isFour ? 'fa-building' : 'fa-user-astronaut'}"></i>
+                                ${escapeHtml(item.name)}
+                                ${pinned ? '<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>' : ''}
+                                ${isCurrentSub ? '<span class="badge badge-subscriber"><i class="fas fa-user-check"></i> Mon profil</span>' : ''}
+                            </span>
+                            <button class="pin-btn ${pinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('${type}', '${id}', '${escapeHtml(item.name)}')">
+                                <i class="fas fa-thumbtack"></i>
+                            </button>
+                        </div>
+                        <div class="item-details">
+                            <div class="detail-row"><i class="fas fa-folder"></i><span class="label">Domaine:</span><span class="value">${escapeHtml(item.domaine)}</span></div>
+                            <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escapeHtml(item.specialite)}</span></div>
+                            <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escapeHtml(item.city)}</span></div>
+                            ${hasPhone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Téléphone:</span><span class="value">${item.phone}</span></div>` : ''}
+                        </div>
+                        <div class="action-buttons">
+                            ${hasPhone ? `<button class="action-btn whatsapp" onclick="event.stopPropagation(); window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>` : ''}
+                            ${item.email ? `<button class="action-btn email" onclick="event.stopPropagation(); window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>` : ''}
+                            ${website ? `<button class="action-btn web" onclick="event.stopPropagation(); window.open('${website.startsWith('http') ? website : 'https://' + website}', '_blank')"><i class="fas fa-globe"></i> Site</button>` : ''}
+                            <button class="action-btn share" onclick="event.stopPropagation(); shareItem('${type}', ${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-share-alt"></i> Partager</button>
+                            <button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-file-pdf"></i> PDF</button>
+                        </div>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        }
+
+        function renderAll() {
+            // Fournisseurs
+            let fourFiltered = filterFournisseurs();
+            const fourAdminPinned = fourFiltered.filter(f => adminPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+            const fourRegular = fourFiltered.filter(f => !adminPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+            const fourPinned = fourRegular.filter(f => userPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+            const fourUnpinned = fourRegular.filter(f => !userPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+            const fourFinal = [...fourPinned, ...fourUnpinned];
+            
+            renderFeatured('fourFeaturedItems', fourAdminPinned, 'four', true);
+            renderItems('fournisseursGrid', fourFinal, 'four', true);
+            
+            // Experts
+            let autoFiltered = filterExperts();
+            const autoAdminPinned = autoFiltered.filter(e => adminPinnedAuto.includes(`${e.name}|${e.phone || ''}`));
+            const autoRegular = autoFiltered.filter(e => !adminPinnedAuto.includes(`${e.name}|${e.phone || ''}`));
+            const autoPinned = autoRegular.filter(e => userPinnedAuto.includes(`${e.name}|${e.phone || ''}`));
+            const autoUnpinned = autoRegular.filter(e => !userPinnedAuto.includes(`${e.name}|${e.phone || ''}`));
+            const autoFinal = [...autoPinned, ...autoUnpinned];
+            
+            renderFeatured('autoFeaturedItems', autoAdminPinned, 'auto', false);
+            renderItems('automaticiensGrid', autoFinal, 'auto', false);
+            
+            // Stats de recherche
+            document.getElementById('fourResultCount').textContent = fourFiltered.length;
+            document.getElementById('autoResultCount').textContent = autoFiltered.length;
+            
+            let fourMatching = 0, autoMatching = 0;
+            if (fourFilters.search) autoMatching = experts.filter(e => matchesSearch(e, fourFilters.search)).length;
+            if (autoFilters.search) fourMatching = fournisseurs.filter(f => matchesSearch(f, autoFilters.search)).length;
+            document.getElementById('fourMatchingCount').textContent = autoMatching;
+            document.getElementById('autoMatchingCount').textContent = fourMatching;
+            
+            updateStats();
+        }
+
+        // ==================== PARTAGE ====================
+        function shareItem(type, item) {
+            let text = `📌 ${item.name}\n🏢 Domaine: ${item.domaine}\n🔧 Spécialité: ${item.specialite}\n📍 Ville: ${item.city}`;
+            if (item.phone) text += `\n📞 Téléphone: ${item.phone}`;
+            if (item.web && item.web !== 'null') text += `\n🌐 Site web: ${item.web}`;
+            text += `\n\n---\nConnect Industry Maroc - Plateforme Industrielle`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            showToast('Partage via WhatsApp');
+        }
+
+        function shareForm(type) {
+            const url = type === 'expert' 
+                ? 'https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform'
+                : 'https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform';
+            const text = type === 'expert' 
+                ? "Formulaire d'inscription - Experts en automatisme industriel\nRejoignez le réseau Connect Industry Maroc"
+                : "Formulaire d'inscription - Fournisseurs industriels\nRejoignez l'annuaire Connect Industry Maroc";
+            window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n\n' + url)}`, '_blank');
+        }
+
+        // ==================== PDF ====================
+        async function generatePDF(btn, item) {
+            showToast('Génération PDF...');
+            try {
+                const card = btn.closest('.item-card');
+                const clone = card.cloneNode(true);
+                const actions = clone.querySelector('.action-buttons');
+                if (actions) actions.remove();
+                
+                clone.style.position = 'absolute';
+                clone.style.top = '-9999px';
+                clone.style.left = '-9999px';
+                clone.style.width = card.offsetWidth + 'px';
+                document.body.appendChild(clone);
+                
+                const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff' });
+                document.body.removeChild(clone);
+                
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgW = 190;
+                const imgH = (canvas.height * imgW) / canvas.width;
+                pdf.addImage(imgData, 'PNG', 10, 10, imgW, imgH);
+                pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+                showToast('PDF téléchargé');
+            } catch(e) {
+                showToast('Erreur PDF');
+            }
+        }
+
+        // ==================== CSV EXPORT ====================
+        function exportToCSV(type) {
+            const data = type === 'expert' ? experts : fournisseurs;
+            const headers = ['Nom', 'Domaine', 'Spécialité', 'Ville', 'Téléphone', 'Email', 'Site Web'];
+            const rows = data.map(d => [
+                `"${(d.name || '').replace(/"/g, '""')}"`,
+                `"${(d.domaine || '').replace(/"/g, '""')}"`,
+                `"${(d.specialite || '').replace(/"/g, '""')}"`,
+                `"${(d.city || '').replace(/"/g, '""')}"`,
+                `"${(d.phone || '').replace(/"/g, '""')}"`,
+                `"${(d.email || '').replace(/"/g, '""')}"`,
+                `"${(d.web || '').replace(/"/g, '""')}"`
+            ]);
+            const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${type === 'expert' ? 'experts' : 'fournisseurs'}.csv`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast(`Export CSV: ${data.length} enregistrements`);
+        }
+
+        // ==================== QR CODE ====================
+        function showQRCode(data, title) {
+            const modal = document.getElementById('qrModal');
+            const container = document.getElementById('qrContainer');
+            document.getElementById('qrTitle').textContent = title || 'QR Code';
+            currentQRData = data;
+            container.innerHTML = '';
+            new QRCode(container, { text: data, width: 200, height: 200 });
+            modal.classList.add('show');
+        }
+
+        async function shareQR() {
+            const canvas = document.querySelector('#qrContainer canvas');
+            if (!canvas) return;
+            const blob = await new Promise(r => canvas.toBlob(r));
+            if (navigator.share) {
+                await navigator.share({ files: [new File([blob], 'qrcode.png', { type: 'image/png' })] });
+            } else {
+                const link = document.createElement('a');
+                link.download = 'qrcode.png';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            }
+        }
+
+        // ==================== ABONNEMENT ====================
+        function findMemberByPhone(phone) {
+            const norm = formatPhone(phone);
+            if (!norm) return null;
+            for (const f of fournisseurs) {
+                if (f.phone && phoneMatch(f.phone, norm)) return { type: 'fournisseur', data: f };
+            }
+            for (const e of experts) {
+                if (e.phone && phoneMatch(e.phone, norm)) return { type: 'expert', data: e };
+            }
+            return null;
+        }
+
+        function activateSubscriber(phone) {
+            isSubscriber = true;
+            subscriberPhone = phone;
+            if (isAdmin) {
+                isAdmin = false;
+                localStorage.removeItem('adminMode');
+                document.body.classList.remove('admin-mode');
+            }
+            document.body.classList.add('subscriber-mode');
+            localStorage.setItem('subscriberPhone', phone);
+            localStorage.setItem('subscriberActive', 'true');
+            document.getElementById('modeBadge').innerHTML = '<i class="fas fa-user-check"></i> Abonné';
+            renderAll();
+            showToast('Abonnement activé !');
+        }
+
+        function logoutSubscriber() {
+            isSubscriber = false;
+            subscriberPhone = null;
+            document.body.classList.remove('subscriber-mode');
+            localStorage.removeItem('subscriberPhone');
+            localStorage.removeItem('subscriberActive');
+            document.getElementById('modeBadge').innerHTML = '<i class="fas fa-user"></i> Visiteur';
+            renderAll();
+            showToast('Déconnexion');
+        }
+
+        function checkSubscription() {
+            const phone = document.getElementById('subscribePhone').value.trim();
+            if (!phone) {
+                showToast('Entrez votre numéro');
+                return;
+            }
+            const member = findMemberByPhone(phone);
+            if (member) {
+                activateSubscriber(formatPhone(phone));
+                closeModal('subscribeModal');
+            } else {
+                closeModal('subscribeModal');
+                showToast('Numéro non trouvé. Inscrivez-vous dans "Rejoindre"');
+            }
+        }
+
+        function loadSubscriber() {
+            const saved = localStorage.getItem('subscriberPhone');
+            const active = localStorage.getItem('subscriberActive') === 'true';
+            if (saved && active && findMemberByPhone(saved)) {
+                isSubscriber = true;
+                subscriberPhone = saved;
+                document.body.classList.add('subscriber-mode');
+                document.getElementById('modeBadge').innerHTML = '<i class="fas fa-user-check"></i> Abonné';
+                renderAll();
+            }
+        }
+
+        // ==================== ADMIN ====================
+        function verifyAdmin() {
+            const pwd = document.getElementById('adminPassword').value;
+            if (pwd === ADMIN_PASSWORD) {
+                if (isSubscriber) logoutSubscriber();
+                isAdmin = true;
+                document.body.classList.add('admin-mode');
+                localStorage.setItem('adminMode', 'true');
+                document.getElementById('modeBadge').innerHTML = '<i class="fas fa-key"></i> Admin';
+                renderAll();
+                closeModal('adminModal');
+                showToast('Mode Admin activé');
+            } else {
+                showToast('Mot de passe incorrect');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            document.body.classList.remove('admin-mode');
+            localStorage.removeItem('adminMode');
+            document.getElementById('modeBadge').innerHTML = isSubscriber ? '<i class="fas fa-user-check"></i> Abonné' : '<i class="fas fa-user"></i> Visiteur';
+            renderAll();
+            showToast('Mode visiteur');
+        }
+
+        function loadAdmin() {
+            if (localStorage.getItem('adminMode') === 'true') {
+                isAdmin = true;
+                document.body.classList.add('admin-mode');
+                document.getElementById('modeBadge').innerHTML = '<i class="fas fa-key"></i> Admin';
+            }
+        }
+
+        // ==================== FILTRES MODALES ====================
+        function openDomaineModal(type) {
+            currentFilterType = type;
+            const data = type === 'four' ? fournisseurs : experts;
+            const currentVille = type === 'four' ? fourFilters.ville : autoFilters.ville;
+            let domaines;
+            
+            if (currentVille) {
+                domaines = getDomainesForVille(data, currentVille);
+                if (!domaines || domaines.length === 0) {
+                    showToast(`Aucun domaine pour ${currentVille}`);
+                    return;
+                }
+            } else {
+                domaines = [...new Set(data.map(d => d.domaine).filter(d => d))].sort();
+            }
+            
+            const container = document.getElementById('domaineList');
+            container.innerHTML = '';
+            
+            const allBtn = document.createElement('button');
+            allBtn.className = 'join-btn';
+            allBtn.style.margin = '5px 0';
+            allBtn.innerHTML = '<i class="fas fa-globe"></i> Tous les domaines';
+            allBtn.onclick = () => {
+                if (type === 'four') fourFilters.domaine = null;
+                else autoFilters.domaine = null;
+                renderAll();
+                closeModal('domaineModal');
+                showToast('Filtre domaine: tous');
+            };
+            container.appendChild(allBtn);
+            
+            domaines.forEach(d => {
+                const btn = document.createElement('button');
+                btn.className = 'join-btn';
+                btn.style.margin = '5px 0';
+                btn.innerHTML = `<i class="fas fa-folder"></i> ${escapeHtml(d)}`;
+                btn.onclick = () => {
+                    if (type === 'four') fourFilters.domaine = d;
+                    else autoFilters.domaine = d;
+                    renderAll();
+                    closeModal('domaineModal');
+                    showToast(`Filtre: ${d}`);
+                };
+                container.appendChild(btn);
+            });
+            
+            document.getElementById('domaineModal').classList.add('show');
+        }
+
+        function openVilleModal(type) {
+            currentFilterType = type;
+            const data = type === 'four' ? fournisseurs : experts;
+            const currentDomaine = type === 'four' ? fourFilters.domaine : autoFilters.domaine;
+            let villes;
+            
+            if (currentDomaine) {
+                villes = getVillesForDomaine(data, currentDomaine);
+                if (!villes || villes.length === 0) {
+                    showToast(`Aucune ville pour ${currentDomaine}`);
+                    return;
+                }
+            } else {
+                villes = [...new Set(data.map(d => d.city).filter(v => v))].sort();
+            }
+            
+            const container = document.getElementById('villeList');
+            container.innerHTML = '';
+            
+            const allBtn = document.createElement('button');
+            allBtn.className = 'join-btn';
+            allBtn.style.margin = '5px 0';
+            allBtn.innerHTML = '<i class="fas fa-globe"></i> Toutes les villes';
+            allBtn.onclick = () => {
+                if (type === 'four') fourFilters.ville = null;
+                else autoFilters.ville = null;
+                renderAll();
+                closeModal('villeModal');
+                showToast('Filtre ville: toutes');
+            };
+            container.appendChild(allBtn);
+            
+            villes.forEach(v => {
+                const btn = document.createElement('button');
+                btn.className = 'join-btn';
+                btn.style.margin = '5px 0';
+                btn.innerHTML = `<i class="fas fa-city"></i> ${escapeHtml(v)}`;
+                btn.onclick = () => {
+                    if (type === 'four') fourFilters.ville = v;
+                    else autoFilters.ville = v;
+                    renderAll();
+                    closeModal('villeModal');
+                    showToast(`Filtre: ${v}`);
+                };
+                container.appendChild(btn);
+            });
+            
+            document.getElementById('villeModal').classList.add('show');
+        }
+
+        // ==================== THÈME ====================
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            const btn = document.getElementById('themeToggleBtn');
+            btn.innerHTML = isLight ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+        }
+
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-mode');
+                document.getElementById('themeToggleBtn').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+
+        // ==================== NAVIGATION ====================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`${sectionId}Section`).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.section === sectionId) btn.classList.add('active');
+            });
+        }
+
+        // ==================== CONTACT ====================
+        function setupContact() {
+            document.getElementById('contactForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('contactName').value || 'Visiteur';
+                const info = document.getElementById('contactInfo').value || 'Non spécifié';
+                const msg = document.getElementById('contactMessage').value;
+                if (!msg.trim()) {
+                    showToast('Veuillez écrire votre message');
+                    return;
+                }
+                const waMsg = `📝 Message depuis Connect Industry\n\n👤 Nom: ${name}\n📞 Contact: ${info}\n\n💬 Message:\n${msg}`;
+                window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMsg)}`, '_blank');
+                showToast('Message envoyé');
+                document.getElementById('contactName').value = '';
+                document.getElementById('contactInfo').value = '';
+                document.getElementById('contactMessage').value = '';
+            });
+        }
+
+        // ==================== INITIALISATION ====================
+        async function init() {
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            loadTheme();
+            loadPins();
+            
+            const [autoData, fourData] = await Promise.all([loadCSV(AUTO_CSV_URL), loadCSV(FOUR_CSV_URL)]);
+            experts = autoData;
+            fournisseurs = fourData;
+            
+            loadAdmin();
+            loadSubscriber();
+            
+            // Événements recherche avec debounce
+            const fourSearch = document.getElementById('fourSearchInput');
+            fourSearch.addEventListener('input', (e) => {
+                clearTimeout(fourSearchTimeout);
+                fourSearchTimeout = setTimeout(() => {
+                    fourFilters.search = e.target.value.toLowerCase();
+                    renderAll();
+                }, 500);
+            });
+            
+            const autoSearch = document.getElementById('autoSearchInput');
+            autoSearch.addEventListener('input', (e) => {
+                clearTimeout(autoSearchTimeout);
+                autoSearchTimeout = setTimeout(() => {
+                    autoFilters.search = e.target.value.toLowerCase();
+                    renderAll();
+                }, 500);
+            });
+            
+            // Boutons filtres
+            document.getElementById('fourDomaineFilterBtn').onclick = () => openDomaineModal('four');
+            document.getElementById('fourVilleFilterBtn').onclick = () => openVilleModal('four');
+            document.getElementById('autoDomaineFilterBtn').onclick = () => openDomaineModal('auto');
+            document.getElementById('autoVilleFilterBtn').onclick = () => openVilleModal('auto');
+            
+            document.getElementById('fourClearFiltersBtn').onclick = () => {
+                fourFilters = { domaine: null, ville: null, search: "" };
+                document.getElementById('fourSearchInput').value = '';
+                renderAll();
+                showToast('Filtres effacés');
+            };
+            
+            document.getElementById('autoClearFiltersBtn').onclick = () => {
+                autoFilters = { domaine: null, ville: null, search: "" };
+                document.getElementById('autoSearchInput').value = '';
+                renderAll();
+                showToast('Filtres effacés');
+            };
+            
+            // Navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => showSection(btn.dataset.section));
+            });
+            
+            document.getElementById('subscribeBtn').onclick = () => {
+                if (isSubscriber) logoutSubscriber();
+                else document.getElementById('subscribeModal').classList.add('show');
+            };
+            
+            document.getElementById('adminBtn').onclick = () => {
+                if (isAdmin) logoutAdmin();
+                else document.getElementById('adminModal').classList.add('show');
+            };
+            
+            document.getElementById('themeToggleBtn').onclick = toggleTheme;
+            
+            setupContact();
+            renderAll();
+            showSection('about');
+            
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 500);
+        }
+        
+        // Exports globaux
+        window.showItemDetail = showItemDetail;
+        window.togglePin = togglePin;
+        window.shareItem = shareItem;
+        window.shareForm = shareForm;
+        window.generatePDF = generatePDF;
+        window.exportToCSV = exportToCSV;
+        window.showQRCode = showQRCode;
+        window.shareQR = shareQR;
+        window.checkSubscription = checkSubscription;
+        window.verifyAdmin = verifyAdmin;
+        window.closeModal = closeModal;
+        
+        init();
+    </script>
+</body>
+</html>
