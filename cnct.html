@@ -27,6 +27,8 @@
             --steel-glow:    rgba(74,127,165,0.25);
             --steel-dim:     rgba(74,127,165,0.1);
             --success-green: #2ea87e;
+            --success-green-glow: rgba(46,168,126,0.25);
+            --success-green-dim: rgba(46,168,126,0.1);
             --warning-orange: #e07b39;
             --danger-red:    #d94f4f;
             --dark-bg:    #0c1017;
@@ -51,6 +53,9 @@
             --text-primary: var(--text-light);
             --text-secondary: var(--text-secondary-dark);
             --hover-bg:     rgba(255,255,255,0.05);
+            --mode-color: var(--steel);
+            --mode-glow: var(--steel-glow);
+            --mode-dim: var(--steel-dim);
             transition: background 0.4s, color 0.4s;
         }
         body.light-mode {
@@ -60,6 +65,18 @@
             --text-primary: var(--text-dark);
             --text-secondary: var(--text-secondary-light);
             --hover-bg:     rgba(0,0,0,0.04);
+        }
+
+        /* Mode couleurs selon état de connexion */
+        body.subscriber-mode {
+            --mode-color: var(--success-green);
+            --mode-glow: var(--success-green-glow);
+            --mode-dim: var(--success-green-dim);
+        }
+        body.admin-mode {
+            --mode-color: var(--danger-red);
+            --mode-glow: rgba(217,79,79,0.3);
+            --mode-dim: rgba(217,79,79,0.1);
         }
 
         body {
@@ -98,12 +115,12 @@
             transform: translateY(-50%); z-index: 1100;
         }
         .start-btn {
-            background: linear-gradient(145deg, var(--steel), var(--steel-dark));
+            background: linear-gradient(145deg, var(--mode-color), color-mix(in srgb, var(--mode-color) 65%, #000));
             border: 1px solid rgba(255,255,255,0.12);
             color: white; cursor: pointer;
             width: 42px; height: 42px;
             border-radius: 12px;
-            box-shadow: 0 4px 18px var(--steel-glow);
+            box-shadow: 0 4px 18px var(--mode-glow);
             transition: all 0.25s;
             display: flex; align-items: center; justify-content: center;
         }
@@ -127,18 +144,20 @@
         .start-header {
             padding: 16px 14px; border-bottom: 1px solid var(--border-color);
             display: flex; align-items: center; gap: 12px;
+            background: linear-gradient(135deg, var(--mode-dim), transparent);
         }
         .user-icon {
             width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            background: linear-gradient(135deg, var(--mode-color), color-mix(in srgb, var(--mode-color) 50%, #000));
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; color: white;
+            box-shadow: 0 3px 12px var(--mode-glow);
         }
         .user-info { flex: 1; }
-        .user-info h4 { font-size: 0.9rem; font-weight: 700; }
+        .user-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--mode-color); }
         .user-info p { font-size: 0.65rem; color: var(--text-secondary); margin-top: 2px; }
-        .start-time { font-size: 1rem; font-weight: 800; color: var(--accent); }
+        .start-time { font-size: 1rem; font-weight: 800; color: var(--mode-color); }
         .start-date { font-size: 0.6rem; color: var(--text-secondary); }
 
         .start-menu-items { padding: 8px 10px; }
@@ -150,8 +169,13 @@
             font-size: 0.85rem; font-weight: 500;
             transition: all 0.18s; text-align: left;
         }
-        .start-menu-item:hover { background: var(--accent-dim); color: var(--accent); }
+        .start-menu-item:hover { background: var(--mode-dim); color: var(--mode-color); }
         .start-menu-item i { width: 20px; font-size: 0.9rem; }
+        .start-menu-item.active-section-item {
+            background: var(--mode-dim);
+            color: var(--mode-color);
+            border-left: 3px solid var(--mode-color);
+        }
         .start-divider { height: 1px; background: var(--border-color); margin: 6px 4px; }
 
         main { padding: 20px 14px; max-width: 1400px; margin: 0 auto; width: 100%; }
@@ -198,18 +222,56 @@
         .stat-label { font-size: 0.75rem; color: var(--text-secondary); }
         .stat-value { font-size: 1.2rem; font-weight: 800; color: var(--accent); }
 
-        /* Links Grid */
+        /* Links Grid - Style élégant */
         .links-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
         }
-        .link-tile {
-            background: var(--hover-bg); border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 12px; transition: all 0.22s;
+        .link-card {
+            background: linear-gradient(135deg, var(--hover-bg), transparent);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            transition: all 0.22s;
+            position: relative;
+            overflow: hidden;
         }
-        .link-tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .link-tile h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; }
-        .link-tile .stat { font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; }
-        .link-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0.5;
+        }
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
+        }
+        .link-card h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--accent);
+        }
+        .link-stats {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .link-stats i {
+            font-size: 0.6rem;
+        }
+        .link-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
         /* Search & Filters */
         .search-stats { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -281,7 +343,7 @@
         }
         .item-card.current-subscriber-card {
             border: 2px solid var(--success-green);
-            background: linear-gradient(135deg, rgba(16,185,129,0.07), var(--bg-card));
+            background: linear-gradient(135deg, rgba(46,168,126,0.07), var(--bg-card));
             position: relative; overflow: hidden;
         }
         .item-card.current-subscriber-card::before {
@@ -297,9 +359,13 @@
             border-bottom: 1px solid var(--border-color); gap: 8px; flex-wrap: wrap;
         }
         .item-title {
-            font-weight: 700; color: var(--accent);
+            font-weight: 700;
             display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; font-size: 0.9rem;
         }
+        body:not(.subscriber-mode):not(.admin-mode) .item-title { color: var(--steel); }
+        body.subscriber-mode .item-title { color: var(--success-green); }
+        body.admin-mode .item-title { color: var(--danger-red); }
+        
         .item-details { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
         .detail-row {
             display: flex; align-items: flex-start; gap: 7px;
@@ -349,7 +415,7 @@
         }
         .badge-pinned { background: rgba(245,158,11,0.18); color: var(--warning-orange); border: 1px solid rgba(245,158,11,0.3); }
         .badge-admin-pinned { background: rgba(217,79,79,0.18); color: var(--danger-red); border: 1px solid rgba(217,79,79,0.3); }
-        .badge-subscriber { background: rgba(16,185,129,0.15); color: var(--success-green); border: 1px solid rgba(16,185,129,0.3); }
+        .badge-subscriber { background: rgba(46,168,126,0.15); color: var(--success-green); border: 1px solid rgba(46,168,126,0.3); }
 
         /* Featured Section - Compact */
         .featured-section {
@@ -379,24 +445,71 @@
         .featured-compact-city { font-size: 0.6rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
         .featured-compact-city i { font-size: 0.55rem; }
 
-        /* Join Section */
-        .join-grid { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-        .join-tile {
-            background: var(--hover-bg); border: 1px solid var(--border-color);
-            border-radius: 16px; padding: 22px 18px; text-align: center;
-            flex: 1; min-width: 240px; transition: all 0.22s;
+        /* Join Section - Style élégant */
+        .join-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .join-card {
+            background: linear-gradient(145deg, var(--hover-bg), transparent);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px 22px;
+            text-align: center;
+            flex: 1;
+            min-width: 260px;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
         }
-        .join-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        .join-tile .join-icon { font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; }
-        .join-tile h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 5px; }
+        .join-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--mode-color));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        .join-card:hover::after { transform: scaleX(1); }
+        .join-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+        .join-icon {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, var(--accent-dim), var(--mode-dim));
+            border-radius: 35px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px;
+        }
+        .join-icon i { font-size: 2rem; color: var(--accent); }
+        .join-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; color: var(--accent); }
+        .join-card p { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 20px; }
+        .join-buttons-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
         .join-btn {
-            background: transparent; border: 1px solid var(--border-color);
-            color: var(--text-primary); padding: 8px 12px; border-radius: 10px;
-            cursor: pointer; font-size: 0.75rem; font-weight: 500;
-            transition: all 0.18s; display: inline-flex; align-items: center;
-            justify-content: center; gap: 6px; margin: 4px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
-        .join-btn:hover { background: var(--hover-bg); transform: translateY(-1px); }
+        .join-btn:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .join-btn i { font-size: 0.75rem; }
 
         /* Modals */
         .win-modal-overlay {
@@ -425,11 +538,11 @@
         .win-modal-body { padding: 16px 18px; font-size: 0.88rem; line-height: 1.6; }
         .win-modal-footer { padding: 12px 18px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; flex-wrap: wrap; }
         .win-btn-primary {
-            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            background: linear-gradient(135deg, var(--mode-color), color-mix(in srgb, var(--mode-color) 65%, #000));
             border: none; color: white; padding: 10px 22px;
             border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.2s;
         }
-        .win-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px var(--accent-glow); }
+        .win-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px var(--mode-glow); }
         .win-btn-secondary {
             background: transparent; border: 1px solid var(--border-color);
             color: var(--text-primary); padding: 10px 22px; border-radius: 10px; cursor: pointer;
@@ -479,8 +592,6 @@
             .item-title { font-size: 0.85rem; }
             .featured-compact-card { width: 170px; }
         }
-        body.subscriber-mode .item-title { color: var(--accent); }
-        body.admin-mode .item-title { color: var(--danger-red); }
     </style>
 </head>
 <body>
@@ -560,7 +671,7 @@
                         </div>
                     </div>
 
-                    <!-- Pages Facebook -->
+                    <!-- Pages Facebook élégantes -->
                     <div class="window-card" style="margin-bottom: 1rem;">
                         <div class="window-header">
                             <i class="fab fa-facebook-f"></i>
@@ -568,27 +679,27 @@
                         </div>
                         <div class="window-content">
                             <div class="links-grid">
-                                <div class="link-tile">
-                                    <h3>Tech Industrie Maroc</h3>
-                                    <div class="stat">9,402+ followers</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')">Visiter</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc - Facebook')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-facebook-f"></i> Tech Industrie Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-chart-line"></i> 9,402+ followers</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc - Facebook')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Electricite Industrielle Du Maroc</h3>
-                                    <div class="stat">1,565+ followers</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')">Visiter</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle Du Maroc - Facebook')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-facebook-f"></i> Electricite Industrielle Du Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-chart-line"></i> 1,565+ followers</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle Du Maroc - Facebook')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Groupes Facebook -->
+                    <!-- Groupes Facebook élégants -->
                     <div class="window-card" style="margin-bottom: 1rem;">
                         <div class="window-header">
                             <i class="fas fa-users"></i>
@@ -596,27 +707,27 @@
                         </div>
                         <div class="window-content">
                             <div class="links-grid">
-                                <div class="link-tile">
-                                    <h3>Les Fournisseurs Industriels Du Maroc</h3>
-                                    <div class="stat">29,000+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/g/176XJV7sJE/', 'Les Fournisseurs Industriels Du Maroc - Groupe Facebook')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-facebook-f"></i> Les Fournisseurs Industriels Du Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 29,000+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/g/176XJV7sJE/', '_blank')"><i class="fas fa-user-plus"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/g/176XJV7sJE/', 'Les Fournisseurs Industriels Du Maroc - Groupe FB')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Vente de PLC et Equipements d'Automatisme</h3>
-                                    <div class="stat">5,900+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/g/1EaoJJuEqd/', 'Vente de PLC et Equipements d\'Automatisme - Groupe Facebook')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-facebook-f"></i> Vente de PLC et Equipements d'Automatisme</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 5,900+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn" onclick="window.open('https://www.facebook.com/share/g/1EaoJJuEqd/', '_blank')"><i class="fas fa-user-plus"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/g/1EaoJJuEqd/', 'Vente de PLC et Equipements - Groupe FB')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Groupes WhatsApp -->
+                    <!-- Groupes WhatsApp élégants -->
                     <div class="window-card" style="margin-bottom: 1rem;">
                         <div class="window-header">
                             <i class="fab fa-whatsapp"></i>
@@ -624,44 +735,44 @@
                         </div>
                         <div class="window-content">
                             <div class="links-grid">
-                                <div class="link-tile">
-                                    <h3>Stations de Dessalement Maroc</h3>
-                                    <div class="stat">120+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'Stations de Dessalement Maroc - WhatsApp')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-whatsapp"></i> Stations de Dessalement Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 120+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'Stations de Dessalement Maroc - WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Comptables & Gestionnaires Maroc</h3>
-                                    <div class="stat">200+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'Comptables & Gestionnaires Maroc - WhatsApp')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-whatsapp"></i> Comptables & Gestionnaires Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 200+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF', 'Comptables & Gestionnaires Maroc - WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Fournisseurs Industriels Du Maroc</h3>
-                                    <div class="stat">250+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'Fournisseurs Industriels Du Maroc - WhatsApp')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-whatsapp"></i> Fournisseurs Industriels Du Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 250+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'Fournisseurs Industriels Du Maroc - WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Energie Solaire Maroc</h3>
-                                    <div class="stat">750+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'Energie Solaire Maroc - WhatsApp')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-whatsapp"></i> Energie Solaire Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 750+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'Energie Solaire Maroc - WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
-                                <div class="link-tile">
-                                    <h3>Genie Electrique Industriel Maroc</h3>
-                                    <div class="stat">420+ membres</div>
-                                    <div class="link-btns">
-                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')">Rejoindre</button>
-                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'Genie Electrique Industriel Maroc - WhatsApp')">QR Code</button>
+                                <div class="link-card">
+                                    <h3><i class="fab fa-whatsapp"></i> Genie Electrique Industriel Maroc</h3>
+                                    <div class="link-stats"><i class="fas fa-users"></i> 420+ membres</div>
+                                    <div class="link-actions">
+                                        <button class="action-btn whatsapp" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+                                        <button class="action-btn" onclick="showQRCode('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu', 'Genie Electrique Industriel Maroc - WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
                                     </div>
                                 </div>
                             </div>
@@ -778,7 +889,7 @@
             </div>
         </div>
 
-        <!-- Section Rejoindre -->
+        <!-- Section Rejoindre - Style élégant -->
         <div id="rejoindreSection" class="section-item">
             <div class="window-card">
                 <div class="window-header">
@@ -787,29 +898,29 @@
                 </div>
                 <div class="window-content">
                     <div class="description-box">
-                        <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et développer votre visibilité.</p>
+                        <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et développer votre visibilité auprès de milliers de clients potentiels au Maroc.</p>
                     </div>
                     <div class="join-grid">
-                        <div class="join-tile">
+                        <div class="join-card">
                             <div class="join-icon"><i class="fas fa-microchip"></i></div>
                             <h3>Ajouter un expert</h3>
-                            <p>Formulaire pour les experts en automatisme</p>
-                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
+                            <p>Formulaire pour les experts en automatisme et maintenance industrielle</p>
+                            <div class="join-buttons-group">
                                 <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire</button>
                                 <button class="join-btn" onclick="shareFormAuto()"><i class="fas fa-share-alt"></i> Partager</button>
-                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', 'Formulaire Expert - Connect Industry')"><i class="fas fa-qrcode"></i> QR Code</button>
-                                <button class="join-btn" onclick="exportToCSV('expert')"><i class="fas fa-file-csv"></i> Export CSV</button>
+                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', 'Formulaire Expert - Connect Industry')"><i class="fas fa-qrcode"></i> QR</button>
+                                <button class="join-btn" onclick="exportToCSV('expert')"><i class="fas fa-file-csv"></i> Export</button>
                             </div>
                         </div>
-                        <div class="join-tile">
+                        <div class="join-card">
                             <div class="join-icon"><i class="fas fa-industry"></i></div>
                             <h3>Ajouter un fournisseur</h3>
-                            <p>Formulaire pour les fournisseurs industriels</p>
-                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
+                            <p>Formulaire pour les fournisseurs d'équipements et pièces industrielles</p>
+                            <div class="join-buttons-group">
                                 <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire</button>
                                 <button class="join-btn" onclick="shareFormFour()"><i class="fas fa-share-alt"></i> Partager</button>
-                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', 'Formulaire Fournisseur - Connect Industry')"><i class="fas fa-qrcode"></i> QR Code</button>
-                                <button class="join-btn" onclick="exportToCSV('fournisseur')"><i class="fas fa-file-csv"></i> Export CSV</button>
+                                <button class="join-btn" onclick="showQRCode('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', 'Formulaire Fournisseur - Connect Industry')"><i class="fas fa-qrcode"></i> QR</button>
+                                <button class="join-btn" onclick="exportToCSV('fournisseur')"><i class="fas fa-file-csv"></i> Export</button>
                             </div>
                         </div>
                     </div>
@@ -1064,6 +1175,31 @@
                 document.getElementById('statFournisseursVilles').textContent = fourVilles.size;
             }
 
+            // Functions pour obtenir les domaines/mvilles filtrés selon la sélection croisée
+            function getFilteredDomainesForVille(type, selectedVille) {
+                if (!selectedVille) return null;
+                const domaines = new Set();
+                const dataSource = type === 'expert' ? automaticiensData : fournisseursData;
+                for (const item of dataSource) {
+                    if (item.city === selectedVille && item.domaine && item.domaine.trim()) {
+                        domaines.add(item.domaine.trim());
+                    }
+                }
+                return Array.from(domaines).sort();
+            }
+
+            function getFilteredVillesForDomaine(type, selectedDomaine) {
+                if (!selectedDomaine) return null;
+                const villes = new Set();
+                const dataSource = type === 'expert' ? automaticiensData : fournisseursData;
+                for (const item of dataSource) {
+                    if (item.domaine === selectedDomaine && item.city && item.city.trim()) {
+                        villes.add(item.city.trim());
+                    }
+                }
+                return Array.from(villes).sort();
+            }
+
             // Pin functions
             function getUserPinnedItems(type) {
                 const key = type === 'fournisseur' ? STORAGE_KEYS.USER_PINNED_FOUR : STORAGE_KEYS.USER_PINNED_AUTO;
@@ -1197,7 +1333,6 @@
                 const icon = type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut';
                 const cardClass = `item-card ${isPinned && !isAdminPinnedItem ? 'pinned' : ''} ${isAdminPinnedItem ? 'admin-pinned-card' : ''} ${isCurrentSubscriber ? 'current-subscriber-card' : ''}`;
                 
-                // Pas d'événement onclick pour les cartes normales (seulement "À la une" ouvre la modale)
                 return `
                     <div class="${cardClass}">
                         <div class="item-header">
@@ -1224,17 +1359,13 @@
 
             function createFeaturedCompactCard(item, type) {
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                const adminRemoveBtn = isAdminMode ? 
-                    `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" title="Retirer de la une"><i class="fas fa-times-circle"></i></button>` : '';
-                
                 return `
                     <div class="featured-compact-card" onclick="showCardDetails('${type}', '${escapeHtml(item.name)}')">
                         <div class="featured-compact-name">
                             <span><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name).substring(0, 25)}</span>
-                            ${adminRemoveBtn}
                         </div>
                         <div class="featured-compact-specialite">
-                            <i class="fas fa-microchip"></i> ${escapeHtml(item.specialite).substring(0, 30)}
+                            <i class="fas fa-microchip"></i> ${escapeHtml(item.specialite).substring(0, 35)}
                         </div>
                         <div class="featured-compact-city">
                             <i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.city)}
@@ -1243,7 +1374,6 @@
                 `;
             }
 
-            // Card Details Modal (Seulement pour "À la une")
             function showCardDetails(type, itemName) {
                 const data = type === 'fournisseur' ? fournisseursData : automaticiensData;
                 const item = data.find(i => i.name === itemName);
@@ -1428,12 +1558,32 @@
                 }, 500);
             }
 
+            // Filtres intelligents avec dépendances
             function openFilterDomaineModal(type) {
-                const data = type === 'fournisseur' ? fournisseursData : automaticiensData;
-                let domaines = [...new Set(data.map(i => i.domaine).filter(d => d && d.trim() !== ''))].sort();
+                let domaines;
+                let selectedVille = type === 'fournisseur' ? fourSelectedVille : autoSelectedVille;
+                
+                if (selectedVille) {
+                    domaines = getFilteredDomainesForVille(type, selectedVille);
+                    if (!domaines || domaines.length === 0) {
+                        showToast(`Aucun domaine disponible pour la ville sélectionnée`, true);
+                        return;
+                    }
+                } else {
+                    const data = type === 'fournisseur' ? fournisseursData : automaticiensData;
+                    domaines = [...new Set(data.map(i => i.domaine).filter(d => d && d.trim() !== ''))].sort();
+                }
                 
                 const container = document.getElementById('domaineListContainer');
                 container.innerHTML = '';
+                
+                // Indicateur si un filtre ville est actif
+                if (selectedVille) {
+                    const info = document.createElement('div');
+                    info.style.cssText = 'text-align: center; margin-bottom: 12px; padding: 8px; background: var(--accent-dim); border-radius: 8px; font-size: 0.7rem;';
+                    info.innerHTML = `<i class="fas fa-info-circle"></i> Domaines disponibles pour: <strong>${escapeHtml(selectedVille)}</strong>`;
+                    container.appendChild(info);
+                }
                 
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
@@ -1469,11 +1619,29 @@
             }
 
             function openFilterVilleModal(type) {
-                const data = type === 'fournisseur' ? fournisseursData : automaticiensData;
-                let villes = [...new Set(data.map(i => i.city).filter(v => v && v.trim() !== ''))].sort();
+                let villes;
+                let selectedDomaine = type === 'fournisseur' ? fourSelectedDomaine : autoSelectedDomaine;
+                
+                if (selectedDomaine) {
+                    villes = getFilteredVillesForDomaine(type, selectedDomaine);
+                    if (!villes || villes.length === 0) {
+                        showToast(`Aucune ville disponible pour le domaine sélectionné`, true);
+                        return;
+                    }
+                } else {
+                    const data = type === 'fournisseur' ? fournisseursData : automaticiensData;
+                    villes = [...new Set(data.map(i => i.city).filter(v => v && v.trim() !== ''))].sort();
+                }
                 
                 const container = document.getElementById('villeListContainer');
                 container.innerHTML = '';
+                
+                if (selectedDomaine) {
+                    const info = document.createElement('div');
+                    info.style.cssText = 'text-align: center; margin-bottom: 12px; padding: 8px; background: var(--accent-dim); border-radius: 8px; font-size: 0.7rem;';
+                    info.innerHTML = `<i class="fas fa-info-circle"></i> Villes disponibles pour: <strong>${escapeHtml(selectedDomaine)}</strong>`;
+                    container.appendChild(info);
+                }
                 
                 const allBtn = document.createElement('button');
                 allBtn.className = 'join-btn';
@@ -1692,6 +1860,7 @@
                 currentSubscriberMember = member;
                 
                 document.body.classList.add('subscriber-mode');
+                document.body.classList.remove('admin-mode');
                 localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_PHONE, phone);
                 localStorage.setItem(STORAGE_KEYS.SUBSCRIBER_ACTIVE, 'true');
                 renderAll();
@@ -1700,8 +1869,10 @@
                 if (subscribeSpan) subscribeSpan.textContent = 'Abonné';
                 
                 let welcomeMessage = `Bienvenue ${member ? member.data.name.substring(0, 20) : 'Abonné'}`;
+                if (member) welcomeMessage += ` (${member.type === 'fournisseur' ? 'Fournisseur' : 'Expert'})`;
                 showToast(welcomeMessage);
                 updateStartMenuStatus();
+                updateStartButtonStyle();
             }
 
             function checkPhoneAndSubscribe() {
@@ -1732,6 +1903,7 @@
                 const subscribeSpan = document.getElementById('subscribeText');
                 if (subscribeSpan) subscribeSpan.textContent = "S'abonner";
                 updateStartMenuStatus();
+                updateStartButtonStyle();
             }
 
             function loadSubscriberMode() {
@@ -1754,6 +1926,7 @@
                     }
                 }
                 updateStartMenuStatus();
+                updateStartButtonStyle();
             }
 
             function verifyAdminPassword() {
@@ -1763,12 +1936,14 @@
                     isAdminMode = true;
                     localStorage.setItem(STORAGE_KEYS.ADMIN_MODE, 'true');
                     document.body.classList.add('admin-mode');
+                    document.body.classList.remove('subscriber-mode');
                     const adminSpan = document.getElementById('adminModeText');
                     if (adminSpan) adminSpan.textContent = 'Quitter Admin';
                     renderAll();
                     showToast('Mode Admin activé');
                     closeModal('adminPasswordModal');
                     updateStartMenuStatus();
+                    updateStartButtonStyle();
                 } else {
                     showToast('Mot de passe incorrect', true);
                 }
@@ -1783,6 +1958,7 @@
                 renderAll();
                 showToast('Mode visiteur');
                 updateStartMenuStatus();
+                updateStartButtonStyle();
             }
 
             function toggleAdminMode() {
@@ -1797,6 +1973,20 @@
                     const adminSpan = document.getElementById('adminModeText');
                     if (adminSpan) adminSpan.textContent = 'Quitter Admin';
                     updateStartMenuStatus();
+                    updateStartButtonStyle();
+                }
+            }
+
+            function updateStartButtonStyle() {
+                const btn = document.getElementById('startBtn');
+                if (btn) {
+                    if (isAdminMode) {
+                        btn.style.background = 'linear-gradient(145deg, var(--danger-red), #b33a3a)';
+                    } else if (isSubscriberMode) {
+                        btn.style.background = 'linear-gradient(145deg, var(--success-green), #1e7a5a)';
+                    } else {
+                        btn.style.background = 'linear-gradient(145deg, var(--steel), var(--steel-dark))';
+                    }
                 }
             }
 
@@ -1879,6 +2069,11 @@
                     section.classList.remove('active-section');
                 });
                 
+                document.querySelectorAll('.start-menu-item[data-section]').forEach(item => {
+                    const sec = item.getAttribute('data-section');
+                    item.classList.toggle('active-section-item', sec === sectionId);
+                });
+                
                 const targetSection = document.getElementById(`${sectionId}Section`);
                 if (targetSection) {
                     targetSection.classList.add('active-section');
@@ -1917,14 +2112,18 @@
                 const title = document.getElementById('startUserStatus');
                 const sub = document.getElementById('startUserSubStatus');
                 if (isAdminMode) {
-                    title.innerHTML = 'Mode Admin';
+                    title.innerHTML = '<i class="fas fa-shield-alt"></i> Mode Admin';
                     sub.innerHTML = 'Connect Industry Maroc (Administrateur)';
+                    title.style.color = 'var(--danger-red)';
                 } else if (isSubscriberMode && currentSubscriberMember) {
-                    title.innerHTML = `Mode Abonné - ${currentSubscriberMember.data.name.substring(0, 25)}`;
-                    sub.innerHTML = 'Abonné actif';
+                    const memberType = currentSubscriberMember.type === 'fournisseur' ? 'Fournisseur' : 'Expert';
+                    title.innerHTML = `<i class="fas fa-user-check"></i> ${currentSubscriberMember.data.name.substring(0, 25)}`;
+                    sub.innerHTML = `Abonné (${memberType}) - Connect Industry`;
+                    title.style.color = 'var(--success-green)';
                 } else {
                     title.innerHTML = 'Connect Industry';
                     sub.innerHTML = 'Plateforme Industrielle Maroc';
+                    title.style.color = 'var(--accent)';
                 }
             }
 
