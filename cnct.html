@@ -81,6 +81,34 @@
             background: linear-gradient(160deg, #e4e9f0 0%, #eef1f5 100%);
         }
 
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(224,123,57,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
         /* Taskbar */
         .taskbar {
             position: fixed;
@@ -98,7 +126,9 @@
             border-radius: 12px;
             box-shadow: 0 4px 18px var(--steel-glow);
             transition: all 0.25s;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .start-btn:hover { transform: scale(1.1); }
         .start-btn i { font-size: 1.1rem; }
@@ -218,49 +248,46 @@
             line-height: 1.6;
         }
 
-        /* Stats Grid - Version améliorée avec statistiques séparées */
-        .stats-grid {
+        /* Stats Grid - Statistiques séparées */
+        .stats-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
             margin-bottom: 16px;
         }
         @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-container { grid-template-columns: 1fr; }
         }
-
-        .stat-tile {
+        .stat-group {
             background: var(--hover-bg);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 14px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.22s;
+            border-radius: 16px;
+            padding: 14px;
         }
-        .stat-tile:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
+        .stat-group h4 {
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .stat-number {
-            font-size: 1.6rem;
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .stat-value {
+            font-size: 1.2rem;
             font-weight: 800;
             color: var(--accent);
-            line-height: 1;
-        }
-        .stat-label {
-            font-size: 0.6rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 6px;
-            font-weight: 600;
-        }
-        .stat-sub {
-            font-size: 0.55rem;
-            color: var(--text-secondary);
-            margin-top: 3px;
-            opacity: 0.7;
         }
 
         /* Search & Filters */
@@ -330,6 +357,7 @@
         .filter-buttons {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
         .filter-btn {
             background: var(--hover-bg);
@@ -377,6 +405,19 @@
         }
         @media (max-width: 700px) {
             .items-grid { grid-template-columns: 1fr; }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            background: var(--hover-bg);
+            border-radius: 16px;
+        }
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
         }
 
         /* Item Card */
@@ -464,10 +505,10 @@
         .action-btn {
             background: transparent;
             border: 1px solid var(--border-color);
-            padding: 7px 10px;
+            padding: 6px 10px;
             font-size: 0.7rem;
             cursor: pointer;
-            border-radius: 9px;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
             gap: 5px;
@@ -489,7 +530,7 @@
             color: var(--text-secondary);
             cursor: pointer;
             font-size: 0.9rem;
-            padding: 7px;
+            padding: 5px;
             border-radius: 8px;
             transition: all 0.2s;
         }
@@ -502,7 +543,7 @@
             color: var(--danger-red);
             cursor: pointer;
             font-size: 0.8rem;
-            padding: 3px 7px;
+            padding: 2px 6px;
             border-radius: 5px;
             transition: all 0.2s;
         }
@@ -532,7 +573,7 @@
             border: 1px solid rgba(16,185,129,0.3);
         }
 
-        /* Featured Section */
+        /* Featured Section - Version compacte */
         .featured-section {
             background: var(--hover-bg);
             border: 1px solid var(--border-color);
@@ -556,27 +597,52 @@
             scrollbar-width: thin;
             padding-bottom: 4px;
         }
+        .featured-scroll::-webkit-scrollbar { height: 3px; }
+        .featured-scroll::-webkit-scrollbar-thumb { background: var(--danger-red); border-radius: 3px; }
         .featured-items {
             display: inline-flex;
-            gap: 12px;
+            gap: 10px;
             padding: 2px 0;
         }
-        .featured-card {
+        /* Carte compacte pour "À la une" */
+        .featured-compact-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-left: 3px solid var(--danger-red);
-            border-radius: 12px;
-            padding: 12px;
-            width: 260px;
+            border-radius: 10px;
+            padding: 8px 12px;
+            width: 200px;
             display: inline-block;
             white-space: normal;
             cursor: pointer;
-            transition: all 0.22s;
+            transition: all 0.2s;
         }
-        .featured-card:hover {
+        .featured-compact-card:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-sm);
         }
+        .featured-compact-name {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .featured-compact-specialite {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        .featured-compact-city {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .featured-compact-city i { font-size: 0.55rem; }
 
         /* Modals */
         .win-modal-overlay {
@@ -601,7 +667,7 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             max-height: 85vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg);
@@ -673,7 +739,7 @@
         .qr-modal {
             background: var(--bg-card);
             border-radius: 24px;
-            padding: 26px;
+            padding: 24px;
             text-align: center;
             max-width: 90%;
             width: 360px;
@@ -716,7 +782,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Loading */
+        /* Loading Screen */
         .loading-screen {
             position: fixed;
             inset: 0;
@@ -734,7 +800,6 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Join Section */
         .join-grid { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
@@ -755,24 +820,25 @@
             background: transparent;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            padding: 10px 12px;
+            padding: 8px 12px;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
             transition: all 0.18s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 6px;
             margin: 4px;
         }
         .join-btn:hover { background: var(--hover-bg); transform: translateY(-1px); }
 
         /* Responsive */
         @media (max-width: 640px) {
-            .action-btn { font-size: 0.65rem; padding: 6px 8px; }
+            .action-btn { font-size: 0.6rem; padding: 5px 8px; }
             .item-title { font-size: 0.85rem; }
+            .featured-compact-card { width: 170px; }
         }
 
         body.subscriber-mode .item-title { color: var(--accent); }
@@ -781,6 +847,11 @@
 </head>
 <body>
     <div class="wallpaper"></div>
+
+    <!-- Loading Overlay for filters -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
 
     <!-- Taskbar -->
     <div class="taskbar">
@@ -830,71 +901,71 @@
                         <p>Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
                     </div>
 
-                    <!-- Statistiques séparées -->
+                    <!-- Statistiques séparées - Version améliorée -->
                     <div class="window-card" style="margin-bottom: 1rem;">
                         <div class="window-header">
                             <i class="fas fa-chart-line"></i>
                             <h2>Statistiques de la Plateforme</h2>
                         </div>
                         <div class="window-content">
-                            <h4 style="margin-bottom: 10px; color: var(--accent);"><i class="fas fa-microchip"></i> Experts en Automatisme</h4>
-                            <div class="stats-grid">
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statExpertsCount">0</div>
-                                    <div class="stat-label">Total Experts</div>
+                            <div class="stats-container">
+                                <!-- Experts Stats -->
+                                <div class="stat-group">
+                                    <h4><i class="fas fa-microchip"></i> Experts en Automatisme</h4>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-users"></i> Total Experts</span>
+                                        <span class="stat-value" id="statExpertsCount">0</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-folder"></i> Domaines d'expertise</span>
+                                        <span class="stat-value" id="statExpertsDomaines">0</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-city"></i> Villes couvertes</span>
+                                        <span class="stat-value" id="statExpertsVilles">0</span>
+                                    </div>
                                 </div>
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statExpertsDomaines">0</div>
-                                    <div class="stat-label">Domaines Experts</div>
-                                    <div class="stat-sub">spécialités uniques</div>
-                                </div>
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statExpertsVilles">0</div>
-                                    <div class="stat-label">Villes Experts</div>
-                                    <div class="stat-sub">localisations</div>
-                                </div>
-                            </div>
-                            
-                            <h4 style="margin: 15px 0 10px; color: var(--steel);"><i class="fas fa-industry"></i> Fournisseurs Industriels</h4>
-                            <div class="stats-grid">
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statFournisseursCount">0</div>
-                                    <div class="stat-label">Total Fournisseurs</div>
-                                </div>
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statFournisseursDomaines">0</div>
-                                    <div class="stat-label">Domaines Fournisseurs</div>
-                                    <div class="stat-sub">secteurs d'activité</div>
-                                </div>
-                                <div class="stat-tile">
-                                    <div class="stat-number" id="statFournisseursVilles">0</div>
-                                    <div class="stat-label">Villes Fournisseurs</div>
-                                    <div class="stat-sub">implantations</div>
+                                
+                                <!-- Fournisseurs Stats -->
+                                <div class="stat-group">
+                                    <h4><i class="fas fa-industry"></i> Fournisseurs Industriels</h4>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-building"></i> Total Fournisseurs</span>
+                                        <span class="stat-value" id="statFournisseursCount">0</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-folder"></i> Domaines d'activité</span>
+                                        <span class="stat-value" id="statFournisseursDomaines">0</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span class="stat-label"><i class="fas fa-city"></i> Villes couvertes</span>
+                                        <span class="stat-value" id="statFournisseursVilles">0</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pages et Groupes -->
+                    <!-- Pages et Groupes simplifiés -->
                     <div class="window-card" style="margin-bottom: 1rem;">
                         <div class="window-header">
                             <i class="fab fa-facebook-f"></i>
                             <h2>Nos Pages Facebook</h2>
                         </div>
                         <div class="window-content">
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px; background: var(--hover-bg); border-radius: 12px;">
-                                    <span><strong>Tech Industrie Maroc</strong> <span style="font-size: 0.7rem;">(9,402+ followers)</span></span>
-                                    <div style="display: flex; gap: 8px;">
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 12px; background: var(--hover-bg); border-radius: 12px;">
+                                    <span><strong>Tech Industrie Maroc</strong> <span style="font-size: 0.7rem;">(9,402+)</span></span>
+                                    <div style="display: flex; gap: 6px;">
                                         <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')">Visiter</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc')">QR Code</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc')">QR</button>
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 10px; background: var(--hover-bg); border-radius: 12px;">
-                                    <span><strong>Electricite Industrielle Du Maroc</strong> <span style="font-size: 0.7rem;">(1,565+ followers)</span></span>
-                                    <div style="display: flex; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 12px; background: var(--hover-bg); border-radius: 12px;">
+                                    <span><strong>Electricite Industrielle Du Maroc</strong> <span style="font-size: 0.7rem;">(1,565+)</span></span>
+                                    <div style="display: flex; gap: 6px;">
                                         <button class="action-btn" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')">Visiter</button>
-                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle Du Maroc')">QR Code</button>
+                                        <button class="action-btn" onclick="showQRCode('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle Du Maroc')">QR</button>
                                     </div>
                                 </div>
                             </div>
@@ -908,7 +979,7 @@
                             <h2>Contact</h2>
                         </div>
                         <div class="window-content" style="text-align: center;">
-                            <p style="margin-bottom: 10px;">Service disponible : Dimanche à Jeudi | 09:00 – 18:00</p>
+                            <p style="margin-bottom: 10px; font-size: 0.75rem;">Service disponible : Dimanche à Jeudi | 09:00 – 18:00</p>
                             <button class="join-btn" onclick="window.open('https://wa.me/212690292010', '_blank')" style="background: var(--success-green); border-color: var(--success-green); color: white;">
                                 <i class="fab fa-whatsapp"></i> +212 690-292010
                             </button>
@@ -932,6 +1003,7 @@
                         <p>Les plus grands fournisseurs d'équipements et pièces industrielles au Maroc. Qualité garantie et meilleurs prix.</p>
                     </div>
                     
+                    <!-- Featured Section - Version compacte -->
                     <div id="fourFeaturedSection" class="featured-section" style="display: none;">
                         <div class="featured-header">
                             <i class="fas fa-star"></i>
@@ -950,12 +1022,12 @@
                     <div class="search-bar">
                         <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="searchFourInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone, email, site web...">
+                            <input type="text" id="searchFourInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone, email...">
                         </div>
                         <div class="filter-buttons">
                             <button class="filter-btn" id="filterFourDomaineBtn" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
                             <button class="filter-btn" id="filterFourVilleBtn" title="Filtrer par ville"><i class="fas fa-city"></i></button>
-                            <button class="clear-filters-btn" id="clearFourFiltersBtn" title="Effacer tous les filtres"><i class="fas fa-eraser"></i> <span style="display: none;">Effacer</span></button>
+                            <button class="clear-filters-btn" id="clearFourFiltersBtn" title="Effacer tous les filtres"><i class="fas fa-eraser"></i> <span>Effacer</span></button>
                         </div>
                     </div>
                     
@@ -977,6 +1049,7 @@
                         <p>Réseau d'ingénieurs et techniciens en automatisme industriel au Maroc. Experts en programmation PLC, SCADA, robotique et maintenance industrielle.</p>
                     </div>
                     
+                    <!-- Featured Section - Version compacte -->
                     <div id="autoFeaturedSection" class="featured-section" style="display: none;">
                         <div class="featured-header">
                             <i class="fas fa-star"></i>
@@ -995,12 +1068,12 @@
                     <div class="search-bar">
                         <div class="search-input-wrapper">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="searchAutoInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone, email, site web...">
+                            <input type="text" id="searchAutoInput" placeholder="Rechercher par nom, domaine, spécialité, ville, téléphone, email...">
                         </div>
                         <div class="filter-buttons">
                             <button class="filter-btn" id="filterAutoDomaineBtn" title="Filtrer par domaine"><i class="fas fa-folder"></i></button>
                             <button class="filter-btn" id="filterAutoVilleBtn" title="Filtrer par ville"><i class="fas fa-city"></i></button>
-                            <button class="clear-filters-btn" id="clearAutoFiltersBtn" title="Effacer tous les filtres"><i class="fas fa-eraser"></i> <span style="display: none;">Effacer</span></button>
+                            <button class="clear-filters-btn" id="clearAutoFiltersBtn" title="Effacer tous les filtres"><i class="fas fa-eraser"></i> <span>Effacer</span></button>
                         </div>
                     </div>
                     
@@ -1020,14 +1093,14 @@
                 </div>
                 <div class="window-content">
                     <div class="description-box">
-                        <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et développer votre visibilité auprès de milliers de clients potentiels au Maroc.</p>
+                        <p>Ajoutez vos informations pour apparaître dans notre annuaire professionnel et développer votre visibilité.</p>
                     </div>
                     <div class="join-grid">
                         <div class="join-tile">
                             <div class="join-icon"><i class="fas fa-microchip"></i></div>
                             <h3>Ajouter un expert</h3>
                             <p>Formulaire pour les experts en automatisme</p>
-                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
                                 <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire</button>
                                 <button class="join-btn" onclick="shareFormAuto()"><i class="fas fa-share-alt"></i> Partager</button>
                                 <button class="join-btn" onclick="exportToCSV('expert')"><i class="fas fa-file-csv"></i> Export CSV</button>
@@ -1037,7 +1110,7 @@
                             <div class="join-icon"><i class="fas fa-industry"></i></div>
                             <h3>Ajouter un fournisseur</h3>
                             <p>Formulaire pour les fournisseurs industriels</p>
-                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;">
+                            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;">
                                 <button class="join-btn" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', '_blank')"><i class="fas fa-plus-circle"></i> Formulaire</button>
                                 <button class="join-btn" onclick="shareFormFour()"><i class="fas fa-share-alt"></i> Partager</button>
                                 <button class="join-btn" onclick="exportToCSV('fournisseur')"><i class="fas fa-file-csv"></i> Export CSV</button>
@@ -1091,9 +1164,9 @@
         </div>
     </div>
 
-    <!-- Card Details Modal (pour "À la une") -->
+    <!-- Card Details Modal -->
     <div class="win-modal-overlay" id="cardDetailsModal">
-        <div class="win-modal" style="max-width: 550px;">
+        <div class="win-modal">
             <div class="win-modal-header">
                 <h3 id="cardDetailsTitle">Détails</h3>
                 <button class="win-modal-close" onclick="closeModal('cardDetailsModal')"><i class="fas fa-times"></i></button>
@@ -1138,7 +1211,7 @@
         </div>
     </div>
 
-    <!-- Filter Domain Modals -->
+    <!-- Filter Domain Modal -->
     <div class="win-modal-overlay" id="filterDomaineModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1149,6 +1222,7 @@
         </div>
     </div>
 
+    <!-- Filter Ville Modal -->
     <div class="win-modal-overlay" id="filterVilleModal">
         <div class="win-modal">
             <div class="win-modal-header">
@@ -1190,17 +1264,16 @@
             let autoSelectedDomaine = null;
             let autoSelectedVille = null;
             
-            let currentFilterType = null; // 'four' or 'auto'
-            let currentFilterMode = null; // 'domaine' or 'ville'
+            let currentFilterType = null;
+            let currentFilterMode = null;
             
             let currentQRData = null;
             let currentQRTitle = null;
-            let pendingWhatsAppData = null;
             let currentActiveSection = 'apropos';
             let sectionHistory = ['apropos'];
             
             let searchDebounceTimer = null;
-            let pdfLoading = false;
+            let isFiltering = false;
 
             // Storage keys
             const STORAGE_KEYS = {
@@ -1221,6 +1294,15 @@
                 toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i> ${message}`;
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 2500);
+            }
+
+            function showLoading(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                if (show) {
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
             }
 
             function closeModal(modalId) {
@@ -1384,7 +1466,7 @@
                 renderAll();
             }
 
-            function isCurrentSubscriberItem(item, type) {
+            function isCurrentSubscriberItem(item) {
                 if (!isSubscriberMode || !currentSubscriberPhone) return false;
                 return phoneMatches(currentSubscriberPhone, item.phone);
             }
@@ -1404,10 +1486,10 @@
             }
 
             // ==================== CARD CREATION ====================
-            function createCard(item, type, isFeatured = false) {
+            function createCard(item, type, isModal = false) {
                 const isPinned = isUserPinned(item, type);
                 const isAdminPinnedItem = isAdminPinned(item, type);
-                const isCurrentSubscriber = isCurrentSubscriberItem(item, type);
+                const isCurrentSubscriber = isCurrentSubscriberItem(item);
                 const hasPhone = item.phone && item.phone !== 'null';
                 const websiteUrl = (item.web && item.web !== 'null' && item.web !== '') ? item.web : '';
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
@@ -1416,7 +1498,7 @@
                     `<button class="pin-icon ${isPinned || isAdminPinnedItem ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')"><i class="fas fa-thumbtack"></i></button>` : '';
                 
                 const adminUnpinButton = (isAdminMode && isAdminPinnedItem) ?
-                    `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" title="Retirer de la une"><i class="fas fa-times"></i></button>` : '';
+                    `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" title="Retirer de la une"><i class="fas fa-times-circle"></i></button>` : '';
                 
                 let badges = '';
                 if (isAdminPinnedItem) badges += `<span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>`;
@@ -1431,13 +1513,13 @@
                     buttons += `<button class="action-btn web" onclick="event.stopPropagation(); window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`;
                 }
                 buttons += `<button class="action-btn share" onclick="event.stopPropagation(); shareCard('${type}', '${escapeHtml(item.name)}', '${escapeHtml(item.domaine)}', '${escapeHtml(item.specialite)}', '${escapeHtml(item.city)}', '${hasPhone ? item.phone : ''}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`;
-                buttons += `<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.item-card, .featured-card'), '${escapeHtml(item.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`;
+                buttons += `<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.item-card, .featured-compact-card'), '${escapeHtml(item.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`;
                 
                 const icon = type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut';
                 const cardClass = `item-card ${isPinned && !isAdminPinnedItem ? 'pinned' : ''} ${isAdminPinnedItem ? 'admin-pinned-card' : ''} ${isCurrentSubscriber ? 'current-subscriber-card' : ''}`;
                 
                 return `
-                    <div class="${cardClass}" onclick="showCardDetails('${type}', ${JSON.stringify(escapeHtml(item.name)).replace(/"/g, '&quot;')})">
+                    <div class="${cardClass}" ${!isModal ? `onclick="showCardDetails('${type}', '${escapeHtml(item.name)}')"` : ''}>
                         <div class="item-header">
                             <span class="item-title">
                                 <i class="fas ${icon}"></i> 
@@ -1460,35 +1542,24 @@
                 `;
             }
 
-            function createFeaturedCard(item, type) {
-                const hasPhone = item.phone && item.phone !== 'null';
-                const websiteUrl = (item.web && item.web !== 'null' && item.web !== '') ? item.web : '';
+            // Carte compacte pour "À la une"
+            function createFeaturedCompactCard(item, type) {
                 const itemId = `${item.name}|${item.phone || ''}|${item.email || ''}`;
-                
-                let buttons = '';
-                if (hasPhone) buttons += `<button class="action-btn wa" onclick="event.stopPropagation(); window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
-                if (item.email) buttons += `<button class="action-btn email" onclick="event.stopPropagation(); window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>`;
-                if (websiteUrl) {
-                    const webUrl = websiteUrl.startsWith('http') ? websiteUrl : 'https://' + websiteUrl;
-                    buttons += `<button class="action-btn web" onclick="event.stopPropagation(); window.open('${webUrl}', '_blank')"><i class="fas fa-globe"></i> Site</button>`;
-                }
-                buttons += `<button class="action-btn share" onclick="event.stopPropagation(); shareCard('${type}', '${escapeHtml(item.name)}', '${escapeHtml(item.domaine)}', '${escapeHtml(item.specialite)}', '${escapeHtml(item.city)}', '${hasPhone ? item.phone : ''}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-share-alt"></i> Partager</button>`;
-                buttons += `<button class="action-btn pdf" onclick="event.stopPropagation(); generatePDF(this.closest('.featured-card'), '${escapeHtml(item.name)}', '${escapeHtml(websiteUrl)}')"><i class="fas fa-file-pdf"></i> PDF</button>`;
-                
-                const adminRemoveBtn = isAdminMode ? `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" style="margin-left: 8px;" title="Retirer de la une"><i class="fas fa-times-circle"></i></button>` : '';
+                const adminRemoveBtn = isAdminMode ? 
+                    `<button class="admin-unpin-icon" onclick="event.stopPropagation(); togglePin('${type}', '${escapeHtml(itemId)}', '${escapeHtml(item.name)}')" title="Retirer de la une"><i class="fas fa-times-circle"></i></button>` : '';
                 
                 return `
-                    <div class="featured-card" onclick="showCardDetails('${type}', '${escapeHtml(item.name)}')">
-                        <div class="item-title">
-                            <i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> 
-                            ${escapeHtml(item.name)} 
-                            <span class="badge-admin-pinned"><i class="fas fa-star"></i> À la une</span>
+                    <div class="featured-compact-card" onclick="showCardDetails('${type}', '${escapeHtml(item.name)}')">
+                        <div class="featured-compact-name">
+                            <span><i class="fas ${type === 'fournisseur' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escapeHtml(item.name).substring(0, 25)}</span>
                             ${adminRemoveBtn}
                         </div>
-                        <div class="detail-row"><i class="fas fa-folder"></i> ${escapeHtml(item.domaine)}</div>
-                        <div class="detail-row"><i class="fas fa-microchip"></i> ${escapeHtml(item.specialite)}</div>
-                        <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.city)}</div>
-                        <div class="action-buttons" style="margin-top: 8px;">${buttons}</div>
+                        <div class="featured-compact-specialite">
+                            <i class="fas fa-microchip"></i> ${escapeHtml(item.specialite).substring(0, 30)}
+                        </div>
+                        <div class="featured-compact-city">
+                            <i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.city)}
+                        </div>
                     </div>
                 `;
             }
@@ -1504,7 +1575,7 @@
                 const title = document.getElementById('cardDetailsTitle');
                 
                 title.textContent = `${type === 'fournisseur' ? 'Fournisseur' : 'Expert'} - ${item.name}`;
-                content.innerHTML = createCard(item, type, false);
+                content.innerHTML = createCard(item, type, true);
                 modal.classList.add('show');
             }
 
@@ -1526,12 +1597,13 @@
             }
 
             function renderAll() {
+                if (isFiltering) return;
+                
                 // Fournisseurs
                 let fourFiltered = filterItems(fournisseursData, 'fournisseur');
                 const fourAdminPinned = fourFiltered.filter(i => isAdminPinned(i, 'fournisseur'));
                 let fourRegular = fourFiltered.filter(i => !isAdminPinned(i, 'fournisseur'));
                 
-                // Trier: épinglés utilisateur d'abord, puis le reste
                 const fourUserPinnedIds = getUserPinnedItems('fournisseur');
                 const fourPinned = [];
                 const fourUnpinned = [];
@@ -1576,21 +1648,36 @@
                     }
                 }
                 
-                // Render
+                // Render grids
                 const fourGrid = document.getElementById('fournisseursGrid');
                 const autoGrid = document.getElementById('automaticiensGrid');
+                
+                if (fourGrid) {
+                    if (fourFinal.length === 0) {
+                        fourGrid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><br>Aucun fournisseur trouvé</div>`;
+                    } else {
+                        fourGrid.innerHTML = fourFinal.map(i => createCard(i, 'fournisseur')).join('');
+                    }
+                }
+                
+                if (autoGrid) {
+                    if (autoFinal.length === 0) {
+                        autoGrid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><br>Aucun expert trouvé</div>`;
+                    } else {
+                        autoGrid.innerHTML = autoFinal.map(i => createCard(i, 'expert')).join('');
+                    }
+                }
+                
+                // Render featured (compact cards)
                 const fourFeatured = document.getElementById('fourFeaturedItems');
                 const autoFeatured = document.getElementById('autoFeaturedItems');
                 const fourFeaturedSection = document.getElementById('fourFeaturedSection');
                 const autoFeaturedSection = document.getElementById('autoFeaturedSection');
                 
-                if (fourGrid) fourGrid.innerHTML = fourFinal.map(i => createCard(i, 'fournisseur')).join('') || '<div style="text-align:center;padding:2rem;">Aucun résultat trouvé</div>';
-                if (autoGrid) autoGrid.innerHTML = autoFinal.map(i => createCard(i, 'expert')).join('') || '<div style="text-align:center;padding:2rem;">Aucun résultat trouvé</div>';
-                
                 if (fourFeatured) {
                     if (fourAdminPinned.length > 0) {
                         fourFeaturedSection.style.display = 'block';
-                        fourFeatured.innerHTML = fourAdminPinned.map(i => createFeaturedCard(i, 'fournisseur')).join('');
+                        fourFeatured.innerHTML = fourAdminPinned.map(i => createFeaturedCompactCard(i, 'fournisseur')).join('');
                     } else {
                         fourFeaturedSection.style.display = 'none';
                     }
@@ -1599,7 +1686,7 @@
                 if (autoFeatured) {
                     if (autoAdminPinned.length > 0) {
                         autoFeaturedSection.style.display = 'block';
-                        autoFeatured.innerHTML = autoAdminPinned.map(i => createFeaturedCard(i, 'expert')).join('');
+                        autoFeatured.innerHTML = autoAdminPinned.map(i => createFeaturedCompactCard(i, 'expert')).join('');
                     } else {
                         autoFeaturedSection.style.display = 'none';
                     }
@@ -1663,7 +1750,7 @@
                 searchDebounceTimer = setTimeout(() => {
                     fourSearchTerm = document.getElementById('searchFourInput').value.toLowerCase();
                     renderAll();
-                }, 300);
+                }, 500);
             }
             
             function handleAutoSearch() {
@@ -1671,7 +1758,7 @@
                 searchDebounceTimer = setTimeout(() => {
                     autoSearchTerm = document.getElementById('searchAutoInput').value.toLowerCase();
                     renderAll();
-                }, 300);
+                }, 500);
             }
 
             // ==================== FILTER MODALS ====================
@@ -1761,38 +1848,36 @@
 
             // ==================== SHARE FUNCTIONS ====================
             function shareCard(type, name, domaine, specialite, city, phone, website) {
-                let shareText = `📋 FICHE PROFESSIONNELLE\n${makeSeparator()}\n🏢 ${name}\n${makeSeparator()}\n📁 Domaine: ${domaine}\n${makeSeparator()}\n🔧 Spécialité: ${specialite}\n${makeSeparator()}\n📍 Ville: ${city}\n${makeSeparator()}\n📞 Téléphone: ${phone}`;
-                if (website) shareText += `\n${makeSeparator()}\n🌐 Site web: ${website}`;
-                shareText += `\n${makeSeparator()}\n🔗 Connect Industry Maroc - Plateforme de mise en relation des professionnels industriels`;
-                currentShareData = shareText;
+                let shareText = `📋 FICHE PROFESSIONNELLE\n────────────────────────────\n🏢 ${name}\n────────────────────────────\n📁 Domaine: ${domaine}\n────────────────────────────\n🔧 Spécialité: ${specialite}\n────────────────────────────\n📍 Ville: ${city}\n────────────────────────────\n📞 Téléphone: ${phone}`;
+                if (website && website !== '') shareText += `\n────────────────────────────\n🌐 Site web: ${website}`;
+                shareText += `\n────────────────────────────\n🔗 Connect Industry Maroc - Plateforme de mise en relation des professionnels industriels`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                 showToast('Partage WhatsApp ouvert');
             }
 
             function shareFormAuto() {
-                const shareText = `📝 FORMULAIRE EXPERT EN AUTOMATISME\n${makeSeparator()}\nInscrivez-vous gratuitement pour rejoindre le plus grand réseau d'experts industriels au Maroc.\n${makeSeparator()}\n🔗 https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform`;
+                const shareText = `📝 FORMULAIRE EXPERT EN AUTOMATISME\n────────────────────────────\nInscrivez-vous gratuitement pour rejoindre le plus grand réseau d'experts industriels au Maroc.\n────────────────────────────\n🔗 https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                 showToast('Formulaire Expert partagé');
             }
 
             function shareFormFour() {
-                const shareText = `📝 FORMULAIRE FOURNISSEUR INDUSTRIEL\n${makeSeparator()}\nInscrivez votre entreprise gratuitement et augmentez votre visibilité.\n${makeSeparator()}\n🔗 https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform`;
+                const shareText = `📝 FORMULAIRE FOURNISSEUR INDUSTRIEL\n────────────────────────────\nInscrivez votre entreprise gratuitement et augmentez votre visibilité.\n────────────────────────────\n🔗 https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
                 showToast('Formulaire Fournisseur partagé');
             }
 
-            let currentShareData = null;
-            function makeSeparator() { return '─'.repeat(30); }
-
             // ==================== PDF GENERATION ====================
+            let pdfLoading = false;
+            
             async function generatePDF(cardElement, itemName, websiteUrl) {
                 if (!cardElement || pdfLoading) return;
                 pdfLoading = true;
                 showToast('Génération du PDF en cours...');
+                showLoading(true);
                 
                 try {
                     const cloneCard = cardElement.cloneNode(true);
-                    // Remove buttons for PDF
                     cloneCard.querySelectorAll('.action-buttons, .pin-icon, .admin-unpin-icon').forEach(el => el.remove());
                     
                     if (websiteUrl && websiteUrl !== '' && websiteUrl !== 'null') {
@@ -1840,6 +1925,7 @@
                     showToast('Erreur lors de la génération du PDF', true);
                 } finally {
                     pdfLoading = false;
+                    showLoading(false);
                 }
             }
 
@@ -2308,7 +2394,7 @@
                     const msg = document.getElementById('suggestMessage').value;
                     if (!msg.trim()) { showToast('Message vide', true); return; }
                     const typeMap = { suggestion: '💡 Suggestion', reclamation: '⚠️ Réclamation', demande: '❓ Demande', collaboration: '🤝 Collaboration' };
-                    const waMsg = `📨 NOUVEAU MESSAGE\n${makeSeparator()}\n👤 Nom: ${name}\n📞 Contact: ${contact}\n📌 Type: ${typeMap[type]}\n${makeSeparator()}\n💬 Message:\n${msg}\n${makeSeparator()}\n🔗 Connect Industry Maroc`;
+                    const waMsg = `📨 NOUVEAU MESSAGE\n────────────────────────────\n👤 Nom: ${name}\n📞 Contact: ${contact}\n📌 Type: ${typeMap[type]}\n────────────────────────────\n💬 Message:\n${msg}\n────────────────────────────\n🔗 Connect Industry Maroc`;
                     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waMsg)}`, '_blank');
                     showToast('Message envoyé');
                     document.getElementById('suggestName').value = '';
