@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0078d7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Connect Industry Maroc | Windows 10 Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Windows 10 Colors */
+        :root {
+            --win10-blue: #0078d7;
+            --win10-blue-dark: #005a9e;
+            --win10-blue-light: #2b88d8;
+            --win10-green: #107c10;
+            --win10-red: #d13438;
+            --win10-gray: #202020;
+            --win10-light-gray: #f3f3f3;
+            --win10-dark-gray: #2d2d2d;
+            --win10-border: #404040;
+            --accent: #0078d7;
+            --accent-dark: #005a9e;
+            --accent-glow: rgba(0,120,215,0.3);
+            --accent-dim: rgba(0,120,215,0.1);
+            --steel: #0078d7;
+            --steel-dark: #005a9e;
+            --steel-glow: rgba(0,120,215,0.25);
+            --steel-dim: rgba(0,120,215,0.1);
+            --success-green: #107c10;
+            --success-glow: rgba(16,124,16,0.25);
+            --success-dim: rgba(16,124,16,0.1);
+            --danger-red: #d13438;
+            --danger-glow: rgba(209,52,56,0.25);
+            --danger-dim: rgba(209,52,56,0.1);
+            --warning-orange: #ff8c00;
+        }
+
+        body {
+            --bg-primary: #f3f3f3;
+            --bg-card: rgba(255,255,255,0.85);
+            --border-color: #e0e0e0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --hover-bg: rgba(0,0,0,0.05);
+            --mode-color: var(--steel);
+            --mode-glow: var(--steel-glow);
+            --mode-dim: var(--steel-dim);
+            font-family: 'Segoe UI', 'Plus Jakarta Sans', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            --bg-primary: #1a1a1a;
+            --bg-card: rgba(32,32,32,0.9);
+            --border-color: #404040;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --hover-bg: rgba(255,255,255,0.05);
+        }
+
+        body.subscriber-mode { --mode-color: var(--success-green); --mode-glow: var(--success-glow); --mode-dim: var(--success-dim); }
+        body.admin-mode { --mode-color: var(--danger-red); --mode-glow: var(--danger-glow); --mode-dim: var(--danger-dim); }
+
+        /* ========== WINDOWS 10 DESKTOP ========== */
+        .win10-desktop {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: var(--bg-primary);
+        }
+
+        /* ========== WINDOWS 10 TASKBAR ========== */
+        .win10-taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(32,32,32,0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        body.dark-mode .win10-taskbar {
+            background: rgba(20,20,20,0.95);
+        }
+
+        .taskbar-start {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .win10-start-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .win10-start-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .win10-start-btn i {
+            font-size: 1.1rem;
+        }
+
+        .taskbar-tray {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .tray-icon {
+            background: transparent;
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .tray-icon:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .taskbar-time {
+            font-size: 0.75rem;
+            text-align: right;
+            line-height: 1.3;
+            color: white;
+            margin-left: 8px;
+            padding: 0 8px;
+        }
+
+        /* ========== WINDOWS 10 START MENU ========== */
+        .win10-start-menu {
+            position: fixed;
+            bottom: 52px;
+            left: 8px;
+            width: 520px;
+            max-width: calc(100vw - 16px);
+            background: rgba(32,32,32,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.25s;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .win10-start-menu.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .start-menu-header {
+            padding: 16px;
+            background: linear-gradient(135deg, var(--mode-color), var(--mode-color) + 20);
+            color: white;
+        }
+
+        .start-menu-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-status {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .start-menu-search {
+            margin-top: 12px;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .start-menu-search::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .start-menu-items {
+            display: flex;
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .start-menu-left {
+            flex: 1;
+        }
+
+        .start-menu-right {
+            width: 160px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding-left: 8px;
+        }
+
+        .start-menu-group {
+            margin-bottom: 8px;
+        }
+
+        .start-menu-group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            padding: 8px 8px 4px;
+        }
+
+        .start-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .start-menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .start-menu-item i {
+            width: 20px;
+            font-size: 1rem;
+        }
+
+        .start-menu-item.active {
+            background: rgba(0,120,215,0.3);
+        }
+
+        /* ========== MAIN CONTENT - WINDOWS ========== */
+        .windows-container {
+            padding: 16px;
+            padding-bottom: 64px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Windows 10 Style Cards */
+        .win10-window {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.25s;
+        }
+
+        .win10-window:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .window-titlebar {
+            background: linear-gradient(90deg, var(--mode-dim), transparent);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .win-btn {
+            background: transparent;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .win-btn:hover {
+            background: var(--hover-bg);
+        }
+
+        .win-btn.close:hover {
+            background: #e81123;
+            color: white;
+        }
+
+        .window-content {
+            padding: 16px;
+        }
+
+        /* ========== STATS WINDOWS STYLE ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-tile {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stat-tile:hover {
+            border-color: var(--mode-color);
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--mode-color);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* ========== SEARCH BAR ========== */
+        .search-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .win10-search {
+            flex: 1;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .win10-search i {
+            color: var(--text-secondary);
+        }
+
+        .win10-search input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .win10-filter-btn {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+
+        .win10-filter-btn.active {
+            background: var(--mode-color);
+            border-color: var(--mode-color);
+            color: white;
+        }
+
+        .search-stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--hover-bg);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-badge .count {
+            color: var(--mode-color);
+            font-weight: 700;
+        }
+
+        /* ========== FEATURED CARDS (A LA UNE) ========== */
+        .featured-section {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 16px;
+            padding: 12px;
+        }
+
+        .featured-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .featured-scroll {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 8px;
+        }
+
+        .featured-items {
+            display: inline-flex;
+            gap: 12px;
+        }
+
+        .featured-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--mode-color);
+            border-radius: 8px;
+            padding: 12px;
+            width: 260px;
+            display: inline-block;
+            white-space: normal;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .featured-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ========== ITEMS GRID ========== */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 12px;
+        }
+
+        .item-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .item-card.pinned {
+            border-left: 3px solid var(--mode-color);
+        }
+
+        .item-card.current {
+            border: 2px solid var(--success-green);
+            background: linear-gradient(135deg, var(--success-dim), var(--bg-card));
+            position: relative;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: var(--mode-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-row i {
+            width: 16px;
+            margin-top: 2px;
+        }
+
+        .detail-row .label {
+            font-weight: 600;
+            min-width: 70px;
+        }
+
+        .detail-row .value {
+            color: var(--text-primary);
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .action-btn.whatsapp { border-color: #25D366; color: #25D366; }
+        .action-btn.email { border-color: var(--steel); color: var(--steel); }
+        .action-btn.web { border-color: var(--steel); color: var(--steel); }
+        .action-btn.share { border-color: var(--warning-orange); color: var(--warning-orange); }
+        .action-btn.pdf { border-color: var(--danger-red); color: var(--danger-red); }
+
+        .pin-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .pin-btn.pinned {
+            color: var(--warning-orange);
+        }
+
+        .badge {
+            font-size: 0.55rem;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .badge-pinned { background: rgba(255,140,0,0.15); color: var(--warning-orange); }
+        .badge-subscriber { background: var(--success-dim); color: var(--success-green); }
+        .badge-admin { background: var(--danger-dim); color: var(--danger-red); }
+
+        /* ========== LINKS ========== */
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .link-card {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .link-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .link-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ========== JOIN SECTION ========== */
+        .join-grid {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .join-card {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .join-icon {
+            font-size: 2rem;
+            color: var(--mode-color);
+            margin-bottom: 12px;
+        }
+
+        .join-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .join-btn {
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .join-btn:hover {
+            background: var(--mode-dim);
+            border-color: var(--mode-color);
+        }
+
+        /* ========== MODALS ========== */
+        .win10-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .win10-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .modal-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--hover-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--mode-dim);
+            border-top-color: var(--mode-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .win10-start-menu {
+                width: 100%;
+                left: 0;
+                right: 0;
+                bottom: 52px;
+                border-radius: 8px 8px 0 0;
+            }
+            .start-menu-items {
+                flex-direction: column;
+            }
+            .start-menu-right {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                padding-top: 8px;
+                margin-top: 8px;
+            }
+            .windows-container {
+                padding-bottom: 64px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Windows 10 Desktop -->
+    <div class="win10-desktop"></div>
+
+    <!-- Windows 10 Taskbar -->
+    <div class="win10-taskbar">
+        <div class="taskbar-start">
+            <button class="win10-start-btn" id="startBtn">
+                <i class="fab fa-windows"></i>
+                <span>Démarrer</span>
+            </button>
+        </div>
+        <div class="taskbar-tray">
+            <button class="tray-icon" id="themeBtn"><i class="fas fa-moon"></i></button>
+            <button class="tray-icon" id="notifyBtn"><i class="fas fa-bell"></i></button>
+            <div class="taskbar-time" id="taskbarTime">
+                <div id="timeDisplay">--:--</div>
+                <div id="dateDisplay" style="font-size: 0.65rem;">--/--/----</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Windows 10 Start Menu -->
+    <div class="win10-start-menu" id="startMenu">
+        <div class="start-menu-header">
+            <div class="start-menu-user">
+                <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+                <div>
+                    <div class="user-name" id="startUserName">Connect Industry</div>
+                    <div class="user-status" id="startUserStatus">Plateforme Industrielle</div>
+                </div>
+            </div>
+            <input type="text" class="start-menu-search" placeholder="Rechercher..." id="startSearch">
+        </div>
+        <div class="start-menu-items">
+            <div class="start-menu-left">
+                <div class="start-menu-group">
+                    <div class="start-menu-group-title">Applications</div>
+                    <button class="start-menu-item" data-section="about"><i class="fas fa-building"></i> À Propos</button>
+                    <button class="start-menu-item" data-section="fournisseurs"><i class="fas fa-industry"></i> Fournisseurs</button>
+                    <button class="start-menu-item" data-section="experts"><i class="fas fa-microchip"></i> Experts</button>
+                    <button class="start-menu-item" data-section="join"><i class="fas fa-user-plus"></i> Rejoindre</button>
+                    <button class="start-menu-item" data-section="contact"><i class="fas fa-comment-dots"></i> Suggestions</button>
+                </div>
+            </div>
+            <div class="start-menu-right">
+                <div class="start-menu-group">
+                    <div class="start-menu-group-title">Compte</div>
+                    <button class="start-menu-item" id="subscribeMenuItem"><i class="fas fa-user-plus"></i> <span id="subscribeMenuText">S'abonner</span></button>
+                    <button class="start-menu-item" id="adminMenuItem"><i class="fas fa-key"></i> <span id="adminMenuText">Mode Admin</span></button>
+                    <button class="start-menu-item" id="unpinMenuItem"><i class="fas fa-trash-alt"></i> Annuler épinglages</button>
+                    <button class="start-menu-item" id="waMenuItem"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Windows Container -->
+    <div class="windows-container">
+        <!-- Section À Propos -->
+        <div id="aboutSection" class="section active">
+            <div class="win10-window">
+                <div class="window-titlebar">
+                    <div class="window-title"><i class="fas fa-building"></i> À Propos</div>
+                    <div class="window-controls">
+                        <button class="win-btn"><i class="fas fa-minus"></i></button>
+                        <button class="win-btn"><i class="fas fa-square"></i></button>
+                        <button class="win-btn close"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+                <div class="window-content">
+                    <div style="background: var(--mode-dim); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                        <p style="font-size: 0.85rem;">Plateforme digitale spécialisée dans la mise en relation des demandeurs de produits industriels avec le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 12px;"><i class="fas fa-industry"></i> Fournisseurs Industriels</h3>
+                        <div class="stats-grid">
+                            <div class="stat-tile" data-section="fournisseurs"><div class="stat-number" id="fourTotal">0</div><div class="stat-label">Total</div></div>
+                            <div class="stat-tile"><div class="stat-number" id="fourDomaines">0</div><div class="stat-label">Domaines</div></div>
+                            <div class="stat-tile"><div class="stat-number" id="fourVilles">0</div><div class="stat-label">Villes</div></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 12px;"><i class="fas fa-microchip"></i> Experts & Automaticiens</h3>
+                        <div class="stats-grid">
+                            <div class="stat-tile" data-section="experts"><div class="stat-number" id="autoTotal">0</div><div class="stat-label">Total</div></div>
+                            <div class="stat-tile"><div class="stat-number" id="autoDomaines">0</div><div class="stat-label">Domaines</div></div>
+                            <div class="stat-tile"><div class="stat-number" id="autoVilles">0</div><div class="stat-label">Villes</div></div>
+                        </div>
+                    </div>
+
+                    <!-- Pages Facebook -->
+                    <div class="win10-window" style="margin-bottom: 16px;">
+                        <div class="window-titlebar"><div class="window-title"><i class="fab fa-facebook-f"></i> Nos Pages Facebook</div></div>
+                        <div class="window-content">
+                            <div class="links-grid">
+                                <div class="link-card"><h4 style="margin-bottom: 4px;">Tech Industrie Maroc</h4><div style="font-size: 0.65rem; color: var(--text-secondary);">9,402+ followers</div><div class="link-buttons"><button class="link-btn" onclick="window.open('https://www.facebook.com/share/1G4zgP99qm/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn" onclick="showQR('https://www.facebook.com/share/1G4zgP99qm/', 'Tech Industrie Maroc')"><i class="fas fa-qrcode"></i> QR</button></div></div>
+                                <div class="link-card"><h4 style="margin-bottom: 4px;">Electricite Industrielle Du Maroc</h4><div style="font-size: 0.65rem; color: var(--text-secondary);">1,565+ followers</div><div class="link-buttons"><button class="link-btn" onclick="window.open('https://www.facebook.com/share/1Dg363LV39/', '_blank')"><i class="fas fa-external-link-alt"></i> Visiter</button><button class="link-btn" onclick="showQR('https://www.facebook.com/share/1Dg363LV39/', 'Electricite Industrielle')"><i class="fas fa-qrcode"></i> QR</button></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Groupes WhatsApp -->
+                    <div class="win10-window">
+                        <div class="window-titlebar"><div class="window-title"><i class="fab fa-whatsapp"></i> Nos Groupes WhatsApp</div></div>
+                        <div class="window-content">
+                            <div class="links-grid">
+                                <div class="link-card"><h4>Stations de Dessalement Maroc</h4><div style="font-size: 0.65rem;">120+ membres</div><div class="link-buttons"><button class="link-btn" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn" onclick="showQR('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu', 'WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button></div></div>
+                                <div class="link-card"><h4>Fournisseurs Industriels Du Maroc</h4><div style="font-size: 0.65rem;">250+ membres</div><div class="link-buttons"><button class="link-btn" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn" onclick="showQR('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d', 'WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button></div></div>
+                                <div class="link-card"><h4>Energie Solaire Maroc</h4><div style="font-size: 0.65rem;">750+ membres</div><div class="link-buttons"><button class="link-btn" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', '_blank')"><i class="fab fa-whatsapp"></i> Rejoindre</button><button class="link-btn" onclick="showQR('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow', 'WhatsApp Group')"><i class="fas fa-qrcode"></i> QR</button></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Fournisseurs -->
+        <div id="fournisseursSection" class="section">
+            <div class="win10-window">
+                <div class="window-titlebar"><div class="window-title"><i class="fas fa-industry"></i> Fournisseurs Industriels</div></div>
+                <div class="window-content">
+                    <div id="fourFeatured" class="featured-section" style="display: none;">
+                        <div class="featured-header"><i class="fas fa-star"></i><span style="font-weight: 600;">⭐ À la une</span></div>
+                        <div class="featured-scroll"><div id="fourFeaturedItems" class="featured-items"></div></div>
+                    </div>
+                    <div class="search-stats"><div class="stat-badge"><i class="fas fa-list"></i> Résultats: <span class="count" id="fourResultCount">0</span></div><div class="stat-badge"><i class="fas fa-microchip"></i> Experts: <span class="count" id="fourMatchCount">0</span></div></div>
+                    <div class="search-container">
+                        <div class="win10-search"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
+                        <div class="filter-group"><button class="win10-filter-btn" id="fourDomaineBtn"><i class="fas fa-folder"></i></button><button class="win10-filter-btn" id="fourVilleBtn"><i class="fas fa-city"></i></button><button class="win10-filter-btn" id="fourClearBtn"><i class="fas fa-eraser"></i></button></div>
+                    </div>
+                    <div id="fourGrid" class="items-grid"><div class="spinner" style="margin: 20px auto;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Experts -->
+        <div id="expertsSection" class="section">
+            <div class="win10-window">
+                <div class="window-titlebar"><div class="window-title"><i class="fas fa-microchip"></i> Experts & Automaticiens</div></div>
+                <div class="window-content">
+                    <div id="autoFeatured" class="featured-section" style="display: none;">
+                        <div class="featured-header"><i class="fas fa-star"></i><span style="font-weight: 600;">⭐ À la une</span></div>
+                        <div class="featured-scroll"><div id="autoFeaturedItems" class="featured-items"></div></div>
+                    </div>
+                    <div class="search-stats"><div class="stat-badge"><i class="fas fa-list"></i> Résultats: <span class="count" id="autoResultCount">0</span></div><div class="stat-badge"><i class="fas fa-industry"></i> Fournisseurs: <span class="count" id="autoMatchCount">0</span></div></div>
+                    <div class="search-container">
+                        <div class="win10-search"><i class="fas fa-search"></i><input type="text" id="autoSearch" placeholder="Rechercher..."></div>
+                        <div class="filter-group"><button class="win10-filter-btn" id="autoDomaineBtn"><i class="fas fa-folder"></i></button><button class="win10-filter-btn" id="autoVilleBtn"><i class="fas fa-city"></i></button><button class="win10-filter-btn" id="autoClearBtn"><i class="fas fa-eraser"></i></button></div>
+                    </div>
+                    <div id="autoGrid" class="items-grid"><div class="spinner" style="margin: 20px auto;"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Rejoindre -->
+        <div id="joinSection" class="section">
+            <div class="win10-window">
+                <div class="window-titlebar"><div class="window-title"><i class="fas fa-user-plus"></i> Rejoignez notre réseau</div></div>
+                <div class="window-content">
+                    <div class="join-grid">
+                        <div class="join-card"><div class="join-icon"><i class="fas fa-microchip"></i></div><h3>Ajouter un expert</h3><p style="font-size: 0.75rem;">Formulaire pour les experts</p><div class="join-buttons"><button class="join-btn" onclick="openForm('expert')"><i class="fas fa-plus-circle"></i> Formulaire</button><button class="join-btn" onclick="shareForm('expert')"><i class="fas fa-share-alt"></i> Partager</button><button class="join-btn" onclick="showQR('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform', 'Formulaire Expert')"><i class="fas fa-qrcode"></i> QR</button><button class="join-btn" onclick="exportCSV('expert')"><i class="fas fa-file-csv"></i> CSV</button></div></div>
+                        <div class="join-card"><div class="join-icon"><i class="fas fa-industry"></i></div><h3>Ajouter un fournisseur</h3><p style="font-size: 0.75rem;">Formulaire pour les fournisseurs</p><div class="join-buttons"><button class="join-btn" onclick="openForm('four')"><i class="fas fa-plus-circle"></i> Formulaire</button><button class="join-btn" onclick="shareForm('four')"><i class="fas fa-share-alt"></i> Partager</button><button class="join-btn" onclick="showQR('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform', 'Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR</button><button class="join-btn" onclick="exportCSV('four')"><i class="fas fa-file-csv"></i> CSV</button></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Suggestions -->
+        <div id="contactSection" class="section">
+            <div class="win10-window">
+                <div class="window-titlebar"><div class="window-title"><i class="fas fa-comment-dots"></i> Suggestions et Contact</div></div>
+                <div class="window-content">
+                    <form id="contactForm">
+                        <input type="text" id="contactName" class="input-field" placeholder="Nom (optionnel)">
+                        <input type="text" id="contactInfo" class="input-field" placeholder="Email ou Téléphone (optionnel)">
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                            <button type="button" class="join-btn" data-type="suggestion" style="flex:1;"><i class="fas fa-lightbulb"></i> Suggestion</button>
+                            <button type="button" class="join-btn" data-type="reclamation" style="flex:1;"><i class="fas fa-exclamation-triangle"></i> Réclamation</button>
+                            <button type="button" class="join-btn" data-type="demande" style="flex:1;"><i class="fas fa-question-circle"></i> Demande</button>
+                            <button type="button" class="join-btn" data-type="collaboration" style="flex:1;"><i class="fas fa-handshake"></i> Collaboration</button>
+                        </div>
+                        <input type="hidden" id="contactType" value="suggestion">
+                        <textarea id="contactMessage" class="input-field" rows="4" placeholder="Votre message..."></textarea>
+                        <button type="submit" class="join-btn" style="width:100%; background:var(--success-green); color:white;"><i class="fab fa-whatsapp"></i> Envoyer via WhatsApp</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="win10-modal" id="qrModal"><div class="modal-content"><div class="modal-header"><h3 id="qrTitle">QR Code</h3><button class="win-btn close" onclick="closeModal('qrModal')">✕</button></div><div class="modal-body"><div class="qr-container" id="qrContainer"></div><button class="join-btn" onclick="shareQR()" style="width:100%"><i class="fas fa-share-alt"></i> Partager</button></div></div></div>
+    <div class="win10-modal" id="subscribeModal"><div class="modal-content"><div class="modal-header"><h3>Abonnement</h3><button class="win-btn close" onclick="closeModal('subscribeModal')">✕</button></div><div class="modal-body"><p>Entrez votre numéro de téléphone</p><input type="tel" id="subscribePhone" class="input-field" placeholder="Ex: 0612345678"></div><div class="modal-footer"><button class="join-btn" onclick="checkSubscribe()">S'abonner</button><button class="join-btn" onclick="closeModal('subscribeModal')">Annuler</button></div></div></div>
+    <div class="win10-modal" id="adminModal"><div class="modal-content"><div class="modal-header"><h3>Mode Admin</h3><button class="win-btn close" onclick="closeModal('adminModal')">✕</button></div><div class="modal-body"><p>Entrez le mot de passe</p><input type="password" id="adminPassword" class="input-field" placeholder="Mot de passe"></div><div class="modal-footer"><button class="join-btn" onclick="verifyAdmin()">Confirmer</button><button class="join-btn" onclick="closeModal('adminModal')">Annuler</button></div></div></div>
+    <div class="win10-modal" id="detailModal"><div class="modal-content"><div class="modal-header"><h3 id="detailTitle">Détails</h3><button class="win-btn close" onclick="closeModal('detailModal')">✕</button></div><div class="modal-body" id="detailBody"></div><div class="modal-footer"><button class="join-btn" onclick="closeModal('detailModal')">Fermer</button></div></div></div>
+    <div class="win10-modal" id="shareModal"><div class="modal-content"><div class="modal-header"><h3>Partager</h3><button class="win-btn close" onclick="closeModal('shareModal')">✕</button></div><div class="modal-body"><p id="shareMsg">...</p></div><div class="modal-footer"><button class="join-btn" onclick="sendShare()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="join-btn" onclick="closeModal('shareModal')">Annuler</button></div></div></div>
+
+    <div class="toast" id="toast"></div>
+    <div class="loading" id="loading"><div class="spinner"></div></div>
+
+    <script>
+        (function() {
+            // ==================== CONFIGURATION ====================
+            const CONFIG = {
+                ADMIN_PASSWORD: "11111111",
+                WHATSAPP_NUMBER: "212690292010",
+                SESSION_HOURS: 24,
+                AUTO_CSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv",
+                FOUR_CSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv",
+                FORM_AUTO: "https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform",
+                FORM_FOUR: "https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform"
+            };
+
+            // ==================== STORES ====================
+            let experts = [], suppliers = [];
+            let isAdmin = false, isSubscriber = false;
+            let subscriberPhone = null, subscriberMember = null;
+            
+            let fourFilters = { domaine: null, ville: null, search: "" };
+            let autoFilters = { domaine: null, ville: null, search: "" };
+            let fourTimeout = null, autoTimeout = null;
+            
+            let userPinnedFour = [], userPinnedAuto = [], adminPinnedFour = [], adminPinnedAuto = [];
+            let currentShare = null, currentQR = null;
+            let sectionHistory = ['about'];
+
+            const STORAGE = {
+                ADMIN_PINNED_FOUR: 'adminPinnedFour',
+                ADMIN_PINNED_AUTO: 'adminPinnedAuto',
+                USER_PINNED_FOUR: 'userPinnedFour',
+                USER_PINNED_AUTO: 'userPinnedAuto',
+                ADMIN_MODE: 'adminMode',
+                SUBSCRIBER_PHONE: 'subscriberPhone',
+                SUBSCRIBER_ACTIVE: 'subscriberActive',
+                THEME: 'theme',
+                LAST_VISIT: 'lastVisit'
+            };
+
+            // ==================== UTILITIES ====================
+            function toast(msg) {
+                const t = document.getElementById('toast');
+                t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2500);
+            }
+
+            function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+            function escape(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+            function formatPhone(p) {
+                if (!p) return null;
+                let c = p.toString().replace(/[\s\-\(\)]/g, '');
+                if (c.startsWith('0')) return '+212' + c.substring(1);
+                if (c.startsWith('212')) return '+' + c;
+                if (c.match(/^[67]\d{8}$/)) return '+212' + c;
+                return c;
+            }
+
+            function matchPhone(p1, p2) {
+                if (!p1 || !p2) return false;
+                const f1 = formatPhone(p1), f2 = formatPhone(p2);
+                return f1 && f2 && f1 === f2;
+            }
+
+            function matchSearch(item, term) {
+                if (!term) return true;
+                const fields = [item.name, item.domaine, item.specialite, item.city, item.email, item.web, item.phone];
+                return fields.some(f => f && f.toLowerCase().includes(term));
+            }
+
+            // ==================== CSV LOADING ====================
+            async function loadCSV(url) {
+                try {
+                    const resp = await fetch(url);
+                    const text = await resp.text();
+                    const lines = text.split(/\r?\n/);
+                    if (lines.length < 2) return [];
+                    const data = [];
+                    for (let i = 1; i < lines.length; i++) {
+                        if (!lines[i].trim()) continue;
+                        const parts = lines[i].split(',').map(p => p.replace(/["']/g, '').trim());
+                        if (parts.length < 5) continue;
+                        data.push({
+                            name: parts[1] || '',
+                            domaine: parts[2] || '',
+                            specialite: parts[3] || '',
+                            city: parts[4] || '',
+                            phone: formatPhone(parts[5] || ''),
+                            email: parts[6] || '',
+                            web: parts[7] || ''
+                        });
+                    }
+                    return data;
+                } catch(e) { console.error(e); return []; }
+            }
+
+            // ==================== STATS ====================
+            function updateStats() {
+                const fourDomaines = new Set(suppliers.map(s => s.domaine).filter(d => d));
+                const fourVilles = new Set(suppliers.map(s => s.city).filter(v => v));
+                document.getElementById('fourTotal').textContent = suppliers.length;
+                document.getElementById('fourDomaines').textContent = fourDomaines.size;
+                document.getElementById('fourVilles').textContent = fourVilles.size;
+
+                const autoDomaines = new Set(experts.map(e => e.domaine).filter(d => d));
+                const autoVilles = new Set(experts.map(e => e.city).filter(v => v));
+                document.getElementById('autoTotal').textContent = experts.length;
+                document.getElementById('autoDomaines').textContent = autoDomaines.size;
+                document.getElementById('autoVilles').textContent = autoVilles.size;
+            }
+
+            // ==================== FILTERS ====================
+            function filterSuppliers() {
+                let f = [...suppliers];
+                if (fourFilters.domaine) f = f.filter(s => s.domaine === fourFilters.domaine);
+                if (fourFilters.ville) f = f.filter(s => s.city === fourFilters.ville);
+                if (fourFilters.search) f = f.filter(s => matchSearch(s, fourFilters.search));
+                return f;
+            }
+
+            function filterExperts() {
+                let f = [...experts];
+                if (autoFilters.domaine) f = f.filter(e => e.domaine === autoFilters.domaine);
+                if (autoFilters.ville) f = f.filter(e => e.city === autoFilters.ville);
+                if (autoFilters.search) f = f.filter(e => matchSearch(e, autoFilters.search));
+                return f;
+            }
+
+            function getDomainesForVille(data, ville) {
+                if (!ville) return null;
+                return [...new Set(data.filter(d => d.city === ville && d.domaine).map(d => d.domaine))].sort();
+            }
+
+            function getVillesForDomaine(data, domaine) {
+                if (!domaine) return null;
+                return [...new Set(data.filter(d => d.domaine === domaine && d.city).map(d => d.city))].sort();
+            }
+
+            // ==================== PINS ====================
+            function loadPins() {
+                userPinnedFour = JSON.parse(localStorage.getItem(STORAGE.USER_PINNED_FOUR) || '[]');
+                userPinnedAuto = JSON.parse(localStorage.getItem(STORAGE.USER_PINNED_AUTO) || '[]');
+                adminPinnedFour = JSON.parse(localStorage.getItem(STORAGE.ADMIN_PINNED_FOUR) || '[]');
+                adminPinnedAuto = JSON.parse(localStorage.getItem(STORAGE.ADMIN_PINNED_AUTO) || '[]');
+            }
+
+            function savePins(type) {
+                if (type === 'four') {
+                    localStorage.setItem(STORAGE.USER_PINNED_FOUR, JSON.stringify(userPinnedFour));
+                    localStorage.setItem(STORAGE.ADMIN_PINNED_FOUR, JSON.stringify(adminPinnedFour));
+                } else {
+                    localStorage.setItem(STORAGE.USER_PINNED_AUTO, JSON.stringify(userPinnedAuto));
+                    localStorage.setItem(STORAGE.ADMIN_PINNED_AUTO, JSON.stringify(adminPinnedAuto));
+                }
+            }
+
+            function isPinned(item, type) {
+                const id = `${item.name}|${item.phone || ''}`;
+                if (isAdmin) return type === 'four' ? adminPinnedFour.includes(id) : adminPinnedAuto.includes(id);
+                return type === 'four' ? userPinnedFour.includes(id) : userPinnedAuto.includes(id);
+            }
+
+            function togglePin(type, id, name) {
+                if (!isSubscriber && !isAdmin) { toast("Veuillez vous abonner pour épingler"); return; }
+                if (isAdmin) {
+                    if (type === 'four') {
+                        const idx = adminPinnedFour.indexOf(id);
+                        if (idx === -1) { adminPinnedFour.push(id); toast(`⭐ ${name} ajouté À la une`); }
+                        else { adminPinnedFour.splice(idx, 1); toast(`📌 ${name} retiré de À la une`); }
+                        savePins('four');
+                    } else {
+                        const idx = adminPinnedAuto.indexOf(id);
+                        if (idx === -1) { adminPinnedAuto.push(id); toast(`⭐ ${name} ajouté À la une`); }
+                        else { adminPinnedAuto.splice(idx, 1); toast(`📌 ${name} retiré de À la une`); }
+                        savePins('auto');
+                    }
+                } else {
+                    if (type === 'four') {
+                        const idx = userPinnedFour.indexOf(id);
+                        if (idx === -1) { userPinnedFour.push(id); toast(`📌 ${name} épinglé`); }
+                        else { userPinnedFour.splice(idx, 1); toast(`📌 ${name} désépinglé`); }
+                        savePins('four');
+                    } else {
+                        const idx = userPinnedAuto.indexOf(id);
+                        if (idx === -1) { userPinnedAuto.push(id); toast(`📌 ${name} épinglé`); }
+                        else { userPinnedAuto.splice(idx, 1); toast(`📌 ${name} désépinglé`); }
+                        savePins('auto');
+                    }
+                }
+                renderAll();
+            }
+
+            function unpinAll() {
+                if (isAdmin) { adminPinnedFour = []; adminPinnedAuto = []; savePins('four'); savePins('auto'); toast('Tous les éléments À la une ont été retirés'); }
+                else if (isSubscriber) { userPinnedFour = []; userPinnedAuto = []; savePins('four'); savePins('auto'); toast('Tous les épinglages annulés'); }
+                else { toast('Veuillez vous abonner'); return; }
+                renderAll();
+            }
+
+            // ==================== RENDER ====================
+            function showDetail(item, type) {
+                const modal = document.getElementById('detailModal');
+                document.getElementById('detailTitle').textContent = item.name;
+                const hasPhone = item.phone && item.phone !== 'null';
+                const website = item.web && item.web !== 'null' ? item.web : '';
+                let actions = '';
+                if (hasPhone) actions += `<button class="join-btn" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>`;
+                if (item.email) actions += `<button class="join-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>`;
+                if (website) actions += `<button class="join-btn" onclick="window.open('${website}', '_blank')"><i class="fas fa-globe"></i> Site web</button>`;
+                document.getElementById('detailBody').innerHTML = `
+                    <div class="detail-row"><i class="fas fa-folder"></i><strong>Domaine:</strong> ${escape(item.domaine)}</div>
+                    <div class="detail-row"><i class="fas fa-microchip"></i><strong>Spécialité:</strong> ${escape(item.specialite)}</div>
+                    <div class="detail-row"><i class="fas fa-map-marker-alt"></i><strong>Ville:</strong> ${escape(item.city)}</div>
+                    ${hasPhone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><strong>Téléphone:</strong> ${item.phone}</div>` : ''}
+                    ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><strong>Email:</strong> ${escape(item.email)}</div>` : ''}
+                    ${website ? `<div class="detail-row"><i class="fas fa-globe"></i><strong>Site web:</strong> ${escape(website)}</div>` : ''}
+                    <hr style="margin: 15px 0;">
+                    <div style="display: flex; flex-direction: column; gap: 8px;">${actions}</div>
+                    <button class="join-btn" onclick="shareItem(${JSON.stringify(item).replace(/"/g, '&quot;')})" style="margin-top:10px;"><i class="fas fa-share-alt"></i> Partager</button>
+                `;
+                modal.classList.add('show');
+            }
+
+            function shareItem(item) {
+                let text = `📌 ${item.name}\n🏢 Domaine: ${item.domaine}\n🔧 Spécialité: ${item.specialite}\n📍 Ville: ${item.city}`;
+                if (item.phone) text += `\n📞 Téléphone: ${item.phone}`;
+                if (item.web && item.web !== 'null') text += `\n🌐 Site web: ${item.web}`;
+                text += `\n\n---\nConnect Industry Maroc`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            }
+
+            function renderFeatured(containerId, items, isFour) {
+                const container = document.getElementById(containerId);
+                const section = container?.closest('.featured-section');
+                if (!items || items.length === 0) { if (section) section.style.display = 'none'; return; }
+                if (section) section.style.display = 'block';
+                let html = '';
+                for (const item of items) {
+                    html += `<div class="featured-card" onclick='showDetail(${JSON.stringify(item).replace(/"/g, '&quot;')}, "${isFour ? 'four' : 'auto'}")'>
+                        <div class="item-title"><i class="fas ${isFour ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escape(item.name)}<span class="badge badge-admin"><i class="fas fa-star"></i> À la une</span></div>
+                        <div class="detail-row"><i class="fas fa-folder"></i> ${escape(item.domaine)}</div>
+                        <div class="detail-row"><i class="fas fa-map-marker-alt"></i> ${escape(item.city)}</div>
+                        <div class="detail-row"><i class="fas fa-microchip"></i> ${escape(item.specialite)}</div>
+                    </div>`;
+                }
+                container.innerHTML = html;
+            }
+
+            function renderItems(gridId, items, type, isFour) {
+                const grid = document.getElementById(gridId);
+                if (!grid) return;
+                if (items.length === 0) { grid.innerHTML = `<div class="no-results"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères</p></div>`; return; }
+                let html = '';
+                for (const item of items) {
+                    const id = `${item.name}|${item.phone || ''}`;
+                    const pinned = isPinned(item, type);
+                    const isCurrent = isSubscriber && subscriberPhone && matchPhone(subscriberPhone, item.phone);
+                    const hasPhone = item.phone && item.phone !== 'null';
+                    const website = item.web && item.web !== 'null' ? item.web : '';
+                    let cardClass = 'item-card';
+                    if (pinned) cardClass += ' pinned';
+                    if (isCurrent) cardClass += ' current';
+                    html += `<div class="${cardClass}">
+                        <div class="item-header">
+                            <span class="item-title"><i class="fas ${isFour ? 'fa-building' : 'fa-user-astronaut'}"></i> ${escape(item.name)}${pinned ? '<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i> Épinglé</span>' : ''}${isCurrent ? '<span class="badge badge-subscriber"><i class="fas fa-user-check"></i> Mon profil</span>' : ''}</span>
+                            <button class="pin-btn ${pinned ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePin('${type}', '${id}', '${escape(item.name)}')"><i class="fas fa-thumbtack"></i></button>
+                        </div>
+                        <div class="item-details">
+                            <div class="detail-row"><i class="fas fa-folder"></i><span class="label">Domaine:</span><span class="value">${escape(item.domaine)}</span></div>
+                            <div class="detail-row"><i class="fas fa-microchip"></i><span class="label">Spécialité:</span><span class="value">${escape(item.specialite)}</span></div>
+                            <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="label">Ville:</span><span class="value">${escape(item.city)}</span></div>
+                            ${hasPhone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="label">Téléphone:</span><span class="value">${item.phone}</span></div>` : ''}
+                            ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="label">Email:</span><span class="value">${escape(item.email)}</span></div>` : ''}
+                            ${website ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="label">Site web:</span><span class="value">${escape(website)}</span></div>` : ''}
+                        </div>
+                        <div class="action-buttons">
+                            ${hasPhone ? `<button class="action-btn whatsapp" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}', '_blank')"><i class="fab fa-whatsapp"></i> WhatsApp</button>` : ''}
+                            ${item.email ? `<button class="action-btn email" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i> Email</button>` : ''}
+                            ${website ? `<button class="action-btn web" onclick="window.open('${website}', '_blank')"><i class="fas fa-globe"></i> Site</button>` : ''}
+                            <button class="action-btn share" onclick="shareItem(${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-share-alt"></i> Partager</button>
+                            <button class="action-btn pdf" onclick="generatePDF(this, ${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-file-pdf"></i> PDF</button>
+                        </div>
+                    </div>`;
+                }
+                grid.innerHTML = html;
+            }
+
+            function updateSearchStats() {
+                const fourFiltered = filterSuppliers();
+                document.getElementById('fourResultCount').textContent = fourFiltered.length;
+                document.getElementById('fourMatchCount').textContent = experts.filter(e => matchSearch(e, fourFilters.search)).length;
+                const autoFiltered = filterExperts();
+                document.getElementById('autoResultCount').textContent = autoFiltered.length;
+                document.getElementById('autoMatchCount').textContent = suppliers.filter(s => matchSearch(s, autoFilters.search)).length;
+            }
+
+            function renderAll() {
+                let fourFiltered = filterSuppliers();
+                const fourAdmin = fourFiltered.filter(f => adminPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+                const fourRegular = fourFiltered.filter(f => !adminPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+                const fourPinned = fourRegular.filter(f => userPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+                const fourUnpinned = fourRegular.filter(f => !userPinnedFour.includes(`${f.name}|${f.phone || ''}`));
+                renderFeatured('fourFeaturedItems', fourAdmin, true);
+                renderItems('fourGrid', [...fourPinned, ...fourUnpinned], 'four', true);
+
+                let autoFiltered = filterExperts();
+                const autoAdmin = autoFiltered.filter(a => adminPinnedAuto.includes(`${a.name}|${a.phone || ''}`));
+                const autoRegular = autoFiltered.filter(a => !adminPinnedAuto.includes(`${a.name}|${a.phone || ''}`));
+                const autoPinned = autoRegular.filter(a => userPinnedAuto.includes(`${a.name}|${a.phone || ''}`));
+                const autoUnpinned = autoRegular.filter(a => !userPinnedAuto.includes(`${a.name}|${a.phone || ''}`));
+                renderFeatured('autoFeaturedItems', autoAdmin, false);
+                renderItems('autoGrid', [...autoPinned, ...autoUnpinned], 'auto', false);
+
+                updateSearchStats();
+                updateStats();
+            }
+
+            // ==================== PDF ====================
+            async function generatePDF(btn, item) {
+                toast('Génération PDF...');
+                try {
+                    const card = btn.closest('.item-card');
+                    const clone = card.cloneNode(true);
+                    const actions = clone.querySelector('.action-buttons');
+                    if (actions) actions.remove();
+                    clone.style.position = 'absolute';
+                    clone.style.top = '-9999px';
+                    clone.style.width = card.offsetWidth + 'px';
+                    document.body.appendChild(clone);
+                    const canvas = await html2canvas(clone, { scale: 2, backgroundColor: '#ffffff' });
+                    document.body.removeChild(clone);
+                    const { jsPDF } = window.jspdf;
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const imgW = 190, imgH = (canvas.height * imgW) / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 10, 10, imgW, imgH);
+                    pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+                    toast('PDF téléchargé');
+                } catch(e) { toast('Erreur PDF'); }
+            }
+
+            // ==================== QR CODE ====================
+            function showQR(data, title) {
+                const modal = document.getElementById('qrModal');
+                document.getElementById('qrTitle').textContent = title || 'QR Code';
+                currentQR = data;
+                const container = document.getElementById('qrContainer');
+                container.innerHTML = '';
+                new QRCode(container, { text: data, width: 200, height: 200 });
+                modal.classList.add('show');
+            }
+
+            async function shareQR() {
+                const canvas = document.querySelector('#qrContainer canvas');
+                if (!canvas) return;
+                const blob = await new Promise(r => canvas.toBlob(r));
+                if (navigator.share) await navigator.share({ files: [new File([blob], 'qrcode.png', { type: 'image/png' })] });
+                else { const a = document.createElement('a'); a.download = 'qrcode.png'; a.href = URL.createObjectURL(blob); a.click(); }
+            }
+
+            // ==================== EXPORT CSV ====================
+            function exportCSV(type) {
+                const data = type === 'expert' ? experts : suppliers;
+                const headers = ['Nom', 'Domaine', 'Spécialité', 'Ville', 'Téléphone', 'Email', 'Site Web'];
+                const rows = data.map(d => [`"${(d.name || '').replace(/"/g, '""')}"`, `"${(d.domaine || '').replace(/"/g, '""')}"`, `"${(d.specialite || '').replace(/"/g, '""')}"`, `"${(d.city || '').replace(/"/g, '""')}"`, `"${(d.phone || '').replace(/"/g, '""')}"`, `"${(d.email || '').replace(/"/g, '""')}"`, `"${(d.web || '').replace(/"/g, '""')}"`]);
+                const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${type === 'expert' ? 'experts' : 'fournisseurs'}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                toast(`Export CSV: ${data.length} enregistrements`);
+            }
+
+            // ==================== SHARE FORM ====================
+            function shareForm(type) {
+                const url = type === 'expert' ? CONFIG.FORM_AUTO : CONFIG.FORM_FOUR;
+                const text = `Formulaire ${type === 'expert' ? 'Expert' : 'Fournisseur'} - Connect Industry Maroc\n\n${url}`;
+                currentShare = text;
+                document.getElementById('shareMsg').innerHTML = 'Partager le formulaire ?';
+                document.getElementById('shareModal').classList.add('show');
+            }
+
+            function sendShare() {
+                if (currentShare) { window.open(`https://wa.me/?text=${encodeURIComponent(currentShare)}`, '_blank'); closeModal('shareModal'); }
+            }
+
+            // ==================== SUBSCRIPTION ====================
+            function findMember(phone) {
+                const norm = formatPhone(phone);
+                if (!norm) return null;
+                for (const s of suppliers) if (s.phone && matchPhone(s.phone, norm)) return { type: 'supplier', data: s };
+                for (const e of experts) if (e.phone && matchPhone(e.phone, norm)) return { type: 'expert', data: e };
+                return null;
+            }
+
+            function activateSubscriber(phone, member) {
+                if (isAdmin) logoutAdmin();
+                isSubscriber = true;
+                subscriberPhone = phone;
+                subscriberMember = member;
+                document.body.classList.add('subscriber-mode');
+                localStorage.setItem(STORAGE.SUBSCRIBER_PHONE, phone);
+                localStorage.setItem(STORAGE.SUBSCRIBER_ACTIVE, 'true');
+                document.getElementById('subscribeMenuText').innerHTML = '<i class="fas fa-user-check"></i> Abonné';
+                document.getElementById('subscribeText') ? document.getElementById('subscribeText').innerHTML = 'Abonné' : null;
+                renderAll();
+                toast(`Bienvenue ${member ? member.data.name : 'abonné'} !`);
+                updateMenuStatus();
+            }
+
+            function logoutSubscriber() {
+                isSubscriber = false;
+                subscriberPhone = null;
+                subscriberMember = null;
+                document.body.classList.remove('subscriber-mode');
+                localStorage.removeItem(STORAGE.SUBSCRIBER_PHONE);
+                localStorage.removeItem(STORAGE.SUBSCRIBER_ACTIVE);
+                document.getElementById('subscribeMenuText').innerHTML = '<i class="fas fa-user-plus"></i> S\'abonner';
+                renderAll();
+                toast('Déconnexion');
+                updateMenuStatus();
+            }
+
+            function checkSubscribe() {
+                const phone = document.getElementById('subscribePhone').value.trim();
+                if (!phone) { toast('Entrez votre numéro'); return; }
+                const norm = formatPhone(phone);
+                if (!norm) { toast('Numéro invalide'); return; }
+                const member = findMember(norm);
+                if (member) { activateSubscriber(norm, member); closeModal('subscribeModal'); }
+                else { closeModal('subscribeModal'); toast('Numéro non trouvé. Inscrivez-vous dans "Rejoindre"'); }
+            }
+
+            function loadSubscriber() {
+                const saved = localStorage.getItem(STORAGE.SUBSCRIBER_PHONE);
+                const active = localStorage.getItem(STORAGE.SUBSCRIBER_ACTIVE) === 'true';
+                if (saved && active && findMember(saved)) {
+                    isSubscriber = true;
+                    subscriberPhone = saved;
+                    document.body.classList.add('subscriber-mode');
+                    document.getElementById('subscribeMenuText').innerHTML = '<i class="fas fa-user-check"></i> Abonné';
+                    renderAll();
+                    updateMenuStatus();
+                }
+            }
+
+            // ==================== ADMIN ====================
+            function verifyAdmin() {
+                const pwd = document.getElementById('adminPassword').value;
+                if (pwd === CONFIG.ADMIN_PASSWORD) {
+                    if (isSubscriber) logoutSubscriber();
+                    isAdmin = true;
+                    document.body.classList.add('admin-mode');
+                    localStorage.setItem(STORAGE.ADMIN_MODE, 'true');
+                    document.getElementById('adminMenuText').innerHTML = '<i class="fas fa-key"></i> Quitter Admin';
+                    renderAll();
+                    closeModal('adminModal');
+                    toast('Mode Admin activé');
+                    updateMenuStatus();
+                } else { toast('Mot de passe incorrect'); }
+            }
+
+            function logoutAdmin() {
+                isAdmin = false;
+                document.body.classList.remove('admin-mode');
+                localStorage.removeItem(STORAGE.ADMIN_MODE);
+                document.getElementById('adminMenuText').innerHTML = '<i class="fas fa-key"></i> Mode Admin';
+                renderAll();
+                toast('Mode visiteur');
+                updateMenuStatus();
+            }
+
+            function loadAdmin() {
+                if (localStorage.getItem(STORAGE.ADMIN_MODE) === 'true') {
+                    isAdmin = true;
+                    document.body.classList.add('admin-mode');
+                    document.getElementById('adminMenuText').innerHTML = '<i class="fas fa-key"></i> Quitter Admin';
+                    updateMenuStatus();
+                }
+            }
+
+            // ==================== THEME ====================
+            let darkMode = localStorage.getItem(STORAGE.THEME) === 'dark';
+            function toggleTheme() {
+                darkMode = !darkMode;
+                if (darkMode) document.body.classList.add('dark-mode');
+                else document.body.classList.remove('dark-mode');
+                localStorage.setItem(STORAGE.THEME, darkMode ? 'dark' : 'light');
+                const icon = document.querySelector('#themeBtn i');
+                if (icon) icon.className = darkMode ? 'fas fa-sun' : 'fas fa-moon';
+            }
+
+            function loadTheme() {
+                if (localStorage.getItem(STORAGE.THEME) === 'dark') {
+                    darkMode = true;
+                    document.body.classList.add('dark-mode');
+                    document.querySelector('#themeBtn i').className = 'fas fa-sun';
+                }
+            }
+
+            // ==================== NAVIGATION ====================
+            function updateMenuStatus() {
+                const userName = document.getElementById('startUserName');
+                const userStatus = document.getElementById('startUserStatus');
+                if (isAdmin) {
+                    userName.innerHTML = '<i class="fas fa-key"></i> Mode Admin';
+                    userStatus.innerHTML = 'Administrateur';
+                } else if (isSubscriber && subscriberMember) {
+                    userName.innerHTML = '<i class="fas fa-user-check"></i> Mode Abonné';
+                    userStatus.innerHTML = subscriberMember.data.name.substring(0, 30);
+                } else {
+                    userName.innerHTML = '<i class="fas fa-user"></i> Visiteur';
+                    userStatus.innerHTML = 'Connect Industry Maroc';
+                }
+            }
+
+            function showSection(sectionId, reset = false) {
+                if (sectionHistory[sectionHistory.length - 1] !== sectionId) sectionHistory.push(sectionId);
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`${sectionId}Section`).classList.add('active');
+                
+                document.querySelectorAll('.start-menu-item[data-section]').forEach(item => {
+                    item.classList.toggle('active', item.dataset.section === sectionId);
+                });
+                
+                if (reset && ['fournisseurs', 'experts'].includes(sectionId)) {
+                    if (sectionId === 'fournisseurs') { fourFilters = { domaine: null, ville: null, search: "" }; document.getElementById('fourSearch').value = ''; }
+                    else { autoFilters = { domaine: null, ville: null, search: "" }; document.getElementById('autoSearch').value = ''; }
+                    renderAll();
+                }
+            }
+
+            function updateDateTime() {
+                const now = new Date();
+                document.getElementById('timeDisplay').innerHTML = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('dateDisplay').innerHTML = now.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+            }
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+
+            // ==================== FILTER MODALS ====================
+            function openDomaineModal(type) {
+                const data = type === 'four' ? suppliers : experts;
+                const currentVille = type === 'four' ? fourFilters.ville : autoFilters.ville;
+                let domaines = currentVille ? getDomainesForVille(data, currentVille) : [...new Set(data.map(d => d.domaine).filter(d => d))].sort();
+                if (!domaines || domaines.length === 0) { toast('Aucun domaine disponible'); return; }
+                const modal = document.createElement('div');
+                modal.className = 'win10-modal show';
+                modal.innerHTML = `<div class="modal-content" style="max-width:350px;"><div class="modal-header"><h3>Choisir un domaine</h3><button class="win-btn close" onclick="this.closest('.win10-modal').remove()">✕</button></div><div class="modal-body" style="max-height:300px; overflow-y:auto;"></div></div>`;
+                document.body.appendChild(modal);
+                const body = modal.querySelector('.modal-body');
+                const all = document.createElement('button'); all.className = 'join-btn'; all.style.margin = '5px 0'; all.innerHTML = '<i class="fas fa-globe"></i> Tous';
+                all.onclick = () => { if (type === 'four') fourFilters.domaine = null; else autoFilters.domaine = null; renderAll(); modal.remove(); toast('Tous les domaines'); };
+                body.appendChild(all);
+                domaines.forEach(d => {
+                    const btn = document.createElement('button'); btn.className = 'join-btn'; btn.style.margin = '5px 0'; btn.innerHTML = `<i class="fas fa-folder"></i> ${d}`;
+                    btn.onclick = () => { if (type === 'four') fourFilters.domaine = d; else autoFilters.domaine = d; renderAll(); modal.remove(); toast(`Filtre: ${d}`); };
+                    body.appendChild(btn);
+                });
+            }
+
+            function openVilleModal(type) {
+                const data = type === 'four' ? suppliers : experts;
+                const currentDomaine = type === 'four' ? fourFilters.domaine : autoFilters.domaine;
+                let villes = currentDomaine ? getVillesForDomaine(data, currentDomaine) : [...new Set(data.map(d => d.city).filter(v => v))].sort();
+                if (!villes || villes.length === 0) { toast('Aucune ville disponible'); return; }
+                const modal = document.createElement('div');
+                modal.className = 'win10-modal show';
+                modal.innerHTML = `<div class="modal-content" style="max-width:350px;"><div class="modal-header"><h3>Choisir une ville</h3><button class="win-btn close" onclick="this.closest('.win10-modal').remove()">✕</button></div><div class="modal-body" style="max-height:300px; overflow-y:auto;"></div></div>`;
+                document.body.appendChild(modal);
+                const body = modal.querySelector('.modal-body');
+                const all = document.createElement('button'); all.className = 'join-btn'; all.style.margin = '5px 0'; all.innerHTML = '<i class="fas fa-globe"></i> Toutes';
+                all.onclick = () => { if (type === 'four') fourFilters.ville = null; else autoFilters.ville = null; renderAll(); modal.remove(); toast('Toutes les villes'); };
+                body.appendChild(all);
+                villes.forEach(v => {
+                    const btn = document.createElement('button'); btn.className = 'join-btn'; btn.style.margin = '5px 0'; btn.innerHTML = `<i class="fas fa-city"></i> ${v}`;
+                    btn.onclick = () => { if (type === 'four') fourFilters.ville = v; else autoFilters.ville = v; renderAll(); modal.remove(); toast(`Filtre: ${v}`); };
+                    body.appendChild(btn);
+                });
+            }
+
+            function clearFourFilters() { fourFilters = { domaine: null, ville: null, search: "" }; document.getElementById('fourSearch').value = ''; renderAll(); toast('Filtres effacés'); }
+            function clearAutoFilters() { autoFilters = { domaine: null, ville: null, search: "" }; document.getElementById('autoSearch').value = ''; renderAll(); toast('Filtres effacés'); }
+            function openForm(type) { window.open(type === 'expert' ? CONFIG.FORM_AUTO : CONFIG.FORM_FOUR, '_blank'); }
+
+            // ==================== SESSION ====================
+            function checkSession() {
+                const last = localStorage.getItem(STORAGE.LAST_VISIT);
+                if (last && (new Date() - new Date(last)) / (1000 * 60 * 60) > CONFIG.SESSION_HOURS) {
+                    localStorage.removeItem(STORAGE.ADMIN_MODE);
+                    localStorage.removeItem(STORAGE.SUBSCRIBER_ACTIVE);
+                    localStorage.removeItem(STORAGE.SUBSCRIBER_PHONE);
+                    toast('Session expirée');
+                    return true;
+                }
+                localStorage.setItem(STORAGE.LAST_VISIT, new Date().toISOString());
+                return false;
+            }
+
+            // ==================== INIT ====================
+            async function init() {
+                document.getElementById('loading').style.display = 'flex';
+                checkSession();
+                loadTheme();
+                loadPins();
+                
+                const [exp, sup] = await Promise.all([loadCSV(CONFIG.AUTO_CSV), loadCSV(CONFIG.FOUR_CSV)]);
+                experts = exp;
+                suppliers = sup;
+                
+                loadAdmin();
+                loadSubscriber();
+                updateMenuStatus();
+                
+                // Search debounce
+                document.getElementById('fourSearch').addEventListener('input', (e) => { clearTimeout(fourTimeout); fourTimeout = setTimeout(() => { fourFilters.search = e.target.value.toLowerCase(); renderAll(); }, 500); });
+                document.getElementById('autoSearch').addEventListener('input', (e) => { clearTimeout(autoTimeout); autoTimeout = setTimeout(() => { autoFilters.search = e.target.value.toLowerCase(); renderAll(); }, 500); });
+                
+                // Filter buttons
+                document.getElementById('fourDomaineBtn').onclick = () => openDomaineModal('four');
+                document.getElementById('fourVilleBtn').onclick = () => openVilleModal('four');
+                document.getElementById('autoDomaineBtn').onclick = () => openDomaineModal('auto');
+                document.getElementById('autoVilleBtn').onclick = () => openVilleModal('auto');
+                document.getElementById('fourClearBtn').onclick = clearFourFilters;
+                document.getElementById('autoClearBtn').onclick = clearAutoFilters;
+                
+                // Menu
+                document.getElementById('startBtn').addEventListener('click', () => document.getElementById('startMenu').classList.toggle('open'));
+                document.addEventListener('click', (e) => { const menu = document.getElementById('startMenu'); const btn = document.getElementById('startBtn'); if (menu && !menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('open'); });
+                
+                document.querySelectorAll('.start-menu-item[data-section]').forEach(item => {
+                    item.addEventListener('click', () => { document.getElementById('startMenu').classList.remove('open'); showSection(item.dataset.section, true); });
+                });
+                document.getElementById('subscribeMenuItem').onclick = () => { document.getElementById('startMenu').classList.remove('open'); if (isSubscriber) logoutSubscriber(); else document.getElementById('subscribeModal').classList.add('show'); };
+                document.getElementById('adminMenuItem').onclick = () => { document.getElementById('startMenu').classList.remove('open'); if (isAdmin) logoutAdmin(); else document.getElementById('adminModal').classList.add('show'); };
+                document.getElementById('themeBtn').onclick = () => toggleTheme();
+                document.getElementById('waMenuItem').onclick = () => { document.getElementById('startMenu').classList.remove('open'); window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent('Bonjour')}`, '_blank'); };
+                document.getElementById('unpinMenuItem').onclick = () => { document.getElementById('startMenu').classList.remove('open'); unpinAll(); };
+                
+                // Contact form
+                document.getElementById('contactForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('contactName').value || 'Visiteur';
+                    const contact = document.getElementById('contactInfo').value || 'Non spécifié';
+                    const type = document.getElementById('contactType').value;
+                    const msg = document.getElementById('contactMessage').value;
+                    if (!msg.trim()) { toast('Message vide'); return; }
+                    const types = { suggestion: 'Suggestion', reclamation: 'Réclamation', demande: 'Demande', collaboration: 'Collaboration' };
+                    window.open(`https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(`📝 Message\n\nNom: ${name}\nContact: ${contact}\nType: ${types[type]}\n\nMessage:\n${msg}`)}`, '_blank');
+                    toast('Message envoyé');
+                    document.getElementById('contactName').value = '';
+                    document.getElementById('contactInfo').value = '';
+                    document.getElementById('contactMessage').value = '';
+                });
+                
+                document.querySelectorAll('[data-type]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.getElementById('contactType').value = btn.dataset.type;
+                        document.querySelectorAll('[data-type]').forEach(b => b.style.borderColor = '');
+                        btn.style.borderColor = 'var(--mode-color)';
+                    });
+                });
+                
+                document.querySelectorAll('.stat-tile[data-section]').forEach(card => {
+                    card.addEventListener('click', () => showSection(card.dataset.section));
+                });
+                
+                renderAll();
+                showSection('about');
+                
+                setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 800);
+            }
+            
+            // Exports
+            window.showQR = showQR;
+            window.shareQR = shareQR;
+            window.closeModal = closeModal;
+            window.exportCSV = exportCSV;
+            window.shareForm = shareForm;
+            window.sendShare = sendShare;
+            window.togglePin = togglePin;
+            window.generatePDF = generatePDF;
+            window.shareItem = shareItem;
+            window.showDetail = showDetail;
+            window.checkSubscribe = checkSubscribe;
+            window.verifyAdmin = verifyAdmin;
+            window.openForm = openForm;
+            
+            init();
+        })();
+    </script>
+</body>
+</html>
