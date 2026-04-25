@@ -587,7 +587,8 @@ textarea.input-field{resize:vertical;}
 }
 .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
 
-.loading{position:fixed;inset:0;background:var(--bg0);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.loading{position:fixed;inset:0;background:var(--bg0);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity 0.3s;}
+.loading.hide{opacity:0;visibility:hidden;pointer-events:none;}
 .loading-text{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;animation:flicker 1.4s ease infinite;}
 @keyframes flicker{0%,100%{opacity:1}45%{opacity:1}50%{opacity:0.3}55%{opacity:1}}
 .loading-line{width:140px;height:1px;background:var(--line2);border-radius:1px;overflow:hidden;}
@@ -846,9 +847,7 @@ textarea.input-field{resize:vertical;}
           <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="fourFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
           <div class="featured-scroll"><div id="fourFeaturedItems" class="featured-items"></div></div>
         </div>
-        <div id="fourGrid" class="items-grid">
-          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
-        </div>
+        <div id="fourGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
@@ -874,9 +873,7 @@ textarea.input-field{resize:vertical;}
           <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="autoFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
           <div class="featured-scroll"><div id="autoFeaturedItems" class="featured-items"></div></div>
         </div>
-        <div id="autoGrid" class="items-grid">
-          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
-        </div>
+        <div id="autoGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
@@ -887,24 +884,23 @@ textarea.input-field{resize:vertical;}
       <div class="panel-head"><i class="fas fa-database"></i> Gestionnaire Firebase</div>
       <div class="panel-body">
         
-        <!-- First row: Stats buttons (Fournisseurs, Experts, Firebase status) and Refresh -->
-        <div class="db-stats-row">
-          <div class="db-stats-group">
-            <div class="s-badge db-stat-item" id="dbStatsFirebase" style="flex: none; gap: 6px; background: var(--steel-dim);">
-              <i class="fab fa-firebase"></i> 
-              <span id="dbFirebaseStatus"><i class="fas fa-circle" style="font-size: 0.5rem; color: var(--green);"></i></span>
-            </div>
-            <div class="s-badge db-stat-item" id="dbStatsFourBtn" style="flex: none; cursor: pointer;">
-              <i class="fas fa-industry"></i> <span class="cnt" id="dbFourCount">0</span>
-            </div>
-            <div class="s-badge db-stat-item" id="dbStatsExpertBtn" style="flex: none; cursor: pointer;">
-              <i class="fas fa-microchip"></i> <span class="cnt" id="dbExpertCount">0</span>
-            </div>
+        <!-- Stats row: Fournisseurs count, Experts count, Results count -->
+        <div class="search-stats" style="margin-bottom: 15px;">
+          <div class="s-badge" id="dbStatsFourBtn" style="cursor: pointer;">
+            <i class="fas fa-industry"></i> <span class="cnt" id="dbFourCount">0</span>
           </div>
-          <button class="cl-btn" id="dbRefreshBtn" title="Actualiser" style="width: 40px; background: var(--steel-dim);"><i class="fas fa-sync-alt"></i></button>
+          <div class="s-badge" id="dbStatsExpertBtn" style="cursor: pointer;">
+            <i class="fas fa-microchip"></i> <span class="cnt" id="dbExpertCount">0</span>
+          </div>
+          <div class="s-badge" id="dbResultsBadge">
+            <i class="fas fa-list"></i> <span class="cnt" id="dbResultCount">0</span> résultats
+          </div>
+          <div class="s-badge" id="dbFilteredBadge" style="display: none;">
+            <i class="fas fa-filter"></i> <span class="cnt" id="dbFilteredCount">0</span> affichés
+          </div>
         </div>
         
-        <!-- Second row: Search bar with filter buttons -->
+        <!-- Search row with filter buttons -->
         <div class="db-search-row">
           <div class="search-box db-search-box">
             <i class="fas fa-search"></i>
@@ -919,12 +915,10 @@ textarea.input-field{resize:vertical;}
         <!-- Active filters display -->
         <div id="dbActiveFilters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 32px;"></div>
         
-        <!-- Items list (same design as fournisseurs/experts) -->
-        <div id="dbItemsList" class="items-grid">
-          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
-        </div>
+        <!-- Items list -->
+        <div id="dbItemsList" class="items-grid"></div>
         
-        <!-- Form Section (integrated in page, not modal) -->
+        <!-- Form Section (integrated in page) -->
         <div id="dbFormSection" style="display: none; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 20px;">
           <div class="form-section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -1082,7 +1076,6 @@ async function loadFromCSV() {
         updStats();
         updateTypeCounts();
         console.log(`✅ Données chargées: ${experts.length} experts, ${suppliers.length} fournisseurs`);
-        toast(`📊 ${suppliers.length} fournisseurs, ${experts.length} experts`);
     } catch (error) {
         console.error('CSV load error:', error);
         toast('❌ Erreur chargement des données');
@@ -1153,7 +1146,6 @@ async function loadDBData() {
         toast('🔑 Mode admin requis pour gérer la base de données');
         return;
     }
-    toast('📥 Chargement depuis Firebase...');
     try {
         const ref = database.ref(dbCurrentType);
         const snapshot = await ref.once('value');
@@ -1171,7 +1163,6 @@ async function loadDBData() {
         renderDBItems();
         updateDBStats();
         updateActiveFiltersDisplay();
-        toast(`✅ ${dbData.length} éléments chargés depuis Firebase`);
     } catch (error) {
         console.error('Load error:', error);
         toast('❌ Erreur lors du chargement depuis Firebase');
@@ -1286,7 +1277,7 @@ function updateActiveFiltersDisplay() {
         filtersHtml += `<span class="s-badge" style="background: var(--accent-dim); border-color: var(--accent); padding: 4px 8px; font-size: 0.7rem;"><i class="fas fa-search"></i> Recherche: ${esc(dbSearchTerm)} <button onclick="dbSearchTerm=''; document.getElementById('dbSearch').value=''; renderDBItems(); updateActiveFiltersDisplay(); updateDBStats();" style="background: none; border: none; color: inherit; cursor: pointer; margin-left: 5px;">✕</button></span>`;
     }
     if (!dbDomaineFilter && !dbVilleFilter && !dbSearchTerm) {
-        filtersHtml = '<span class="s-badge" style="opacity: 0.5;"><i class="fas fa-info-circle"></i> Aucun filtre actif</span>';
+        filtersHtml = '';
     }
     container.innerHTML = filtersHtml;
 }
@@ -1344,9 +1335,20 @@ function renderDBItems() {
     if (!container) return;
     const filtered = getFilteredDBItems();
     const filteredCountSpan = document.getElementById('dbFilteredCount');
-    if (filteredCountSpan) filteredCountSpan.textContent = filtered.length;
+    const resultCountSpan = document.getElementById('dbResultCount');
+    const filteredBadge = document.getElementById('dbFilteredBadge');
+    
+    if (resultCountSpan) resultCountSpan.textContent = filtered.length;
+    
+    if (filtered.length !== dbData.length && filtered.length > 0) {
+        if (filteredCountSpan) filteredCountSpan.textContent = filtered.length;
+        if (filteredBadge) filteredBadge.style.display = 'flex';
+    } else {
+        if (filteredBadge) filteredBadge.style.display = 'none';
+    }
+    
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="no-results" style="grid-column:1/-1"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Cliquez sur Actualiser pour charger les données depuis Firebase</p></div>`;
+        container.innerHTML = `<div class="no-results" style="grid-column:1/-1"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Cliquez sur Fournisseurs ou Experts pour charger les données</p></div>`;
         return;
     }
     const cu = canEx();
@@ -1391,23 +1393,17 @@ function renderDBItems() {
 }
 
 function updateDBStats() {
-    const countSpan = document.getElementById('dbCount');
-    if (countSpan) countSpan.textContent = dbData.length;
+    const resultCountSpan = document.getElementById('dbResultCount');
+    if (resultCountSpan) resultCountSpan.textContent = dbData.length;
+    const filtered = getFilteredDBItems();
     const filteredCountSpan = document.getElementById('dbFilteredCount');
-    if (filteredCountSpan && dbData.length > 0) {
-        const filtered = getFilteredDBItems();
-        filteredCountSpan.textContent = filtered.length;
-    }
-    const statusSpan = document.getElementById('dbFirebaseStatus');
-    if (statusSpan) {
-        const connectedRef = database.ref('.info/connected');
-        connectedRef.once('value', (snap) => {
-            if (snap.val() === true) {
-                statusSpan.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem; color: var(--green);"></i>';
-            } else {
-                statusSpan.innerHTML = '<i class="fas fa-circle" style="font-size: 0.5rem; color: var(--red);"></i>';
-            }
-        });
+    const filteredBadge = document.getElementById('dbFilteredBadge');
+    
+    if (filtered.length !== dbData.length && filtered.length > 0) {
+        if (filteredCountSpan) filteredCountSpan.textContent = filtered.length;
+        if (filteredBadge) filteredBadge.style.display = 'flex';
+    } else {
+        if (filteredBadge) filteredBadge.style.display = 'none';
     }
 }
 
@@ -1512,7 +1508,6 @@ function showAddDBItem() {
 function initDatabaseManager() {
     const fourStatsBtn = document.getElementById('dbStatsFourBtn');
     const expertStatsBtn = document.getElementById('dbStatsExpertBtn');
-    const refreshBtn = document.getElementById('dbRefreshBtn');
     const addBtn = document.getElementById('dbAddNewBtn');
     const searchInput = document.getElementById('dbSearch');
     const domaineBtn = document.getElementById('dbDomaineBtn');
@@ -1550,7 +1545,6 @@ function initDatabaseManager() {
         });
     }
     
-    if (refreshBtn) refreshBtn.addEventListener('click', async () => { await loadDBData(); });
     if (addBtn) addBtn.addEventListener('click', () => { if (isAdmin) showAddDBItem(); else toast('🔑 Mode admin requis'); });
     if (searchInput) searchInput.addEventListener('input', (e) => { dbSearchTerm = e.target.value.toLowerCase(); renderDBItems(); updateActiveFiltersDisplay(); updateDBStats(); });
     if (domaineBtn) domaineBtn.addEventListener('click', () => { if (dbData.length > 0) openDBDomaineModal(); else toast('Chargez les données d\'abord'); });
@@ -2030,6 +2024,13 @@ function showSec(id, reset = false) {
 }
 function handleBack() {
     if ($('drawer').classList.contains('open')) { closeDrawer(); return; }
+    if (curSec === 'dbmanager') {
+        const formSection = document.getElementById('dbFormSection');
+        if (formSection && formSection.style.display === 'block') {
+            hideDBFormSection();
+            return;
+        }
+    }
     if (secHist.length > 1) { secHist.pop(); showSec(secHist[secHist.length - 1]); scrollTop(); }
     else if (curSec !== 'about') { showSec('about'); scrollTop(); }
     else { if (confirm('Voulez-vous quitter ?')) { window.close(); } }
@@ -2099,7 +2100,9 @@ function setupStats() {
 
 // Initialization
 async function init() {
-    $('loading').style.display = 'flex';
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.classList.remove('hide');
+    
     loadTheme();
     loadPins();
     await loadFromCSV();
@@ -2165,7 +2168,13 @@ async function init() {
     updBtns();
     window.addEventListener('popstate', e => { e.preventDefault(); handleBack(); });
     history.pushState(null, null, location.href);
-    setTimeout(() => { $('loading').style.display = 'none'; }, 900);
+    
+    // Hide loading after everything is ready
+    if (loadingEl) {
+        setTimeout(() => {
+            loadingEl.classList.add('hide');
+        }, 500);
+    }
 }
 
 // Expose globals
