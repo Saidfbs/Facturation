@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e14">
+<title>Connect Industry Maroc - Firebase Edition</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --gold: #c8992a;
+  --gold-lt: #f0c040;
+  --gold-dim: rgba(200,153,42,0.12);
+  --gold-glow: rgba(200,153,42,0.3);
+  --steel: #4a9eca;
+  --steel-dim: rgba(74,158,202,0.12);
+  --steel-glow: rgba(74,158,202,0.3);
+  --green: #2eb87e;
+  --green-dim: rgba(46,184,126,0.12);
+  --green-glow: rgba(46,184,126,0.3);
+  --red: #e05252;
+  --red-dim: rgba(224,82,82,0.12);
+  --red-glow: rgba(224,82,82,0.3);
+  --wa: #25D366;
+  --bg0: #070a10;
+  --bg1: #0b0e17;
+  --bg2: #111520;
+  --bg3: #161b28;
+  --bg4: #1c2235;
+  --line: rgba(255,255,255,0.06);
+  --line2: rgba(255,255,255,0.1);
+  --txt: #dde4f0;
+  --txt2: #7a8ba8;
+  --txt3: #404e65;
+  --accent: var(--gold);
+  --accent-dim: var(--gold-dim);
+  --accent-glow: var(--gold-glow);
+}
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg0);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content:'';
+  position:fixed;inset:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  pointer-events:none;z-index:0;
+}
+
+.corner-tl,.corner-br{position:fixed;width:80px;height:80px;pointer-events:none;z-index:1;}
+.corner-tl{top:0;left:0;border-top:2px solid var(--gold);border-left:2px solid var(--gold);opacity:0.25;}
+.corner-br{bottom:0;right:0;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);opacity:0.25;}
+
+.app-bar {
+  position:fixed;top:0;left:0;right:0;
+  height:58px;
+  background: linear-gradient(90deg, var(--bg1) 0%, rgba(11,14,23,0.96) 100%);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;z-index:100;
+  backdrop-filter:blur(20px);
+}
+.app-bar::after {
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--steel), var(--gold), transparent);
+  opacity:0.6;
+}
+.menu-icon {
+  background:transparent;border:1px solid var(--line2);
+  color:var(--gold);cursor:pointer;
+  width:38px;height:38px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.95rem;transition:all 0.2s;
+}
+.menu-icon:hover{background:var(--gold-dim);border-color:var(--gold);box-shadow:0 0 12px var(--gold-glow);}
+
+.app-bar-logo {
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;font-size:1.15rem;
+  letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--txt);
+}
+.app-bar-logo .hi { color:var(--gold); }
+
+.app-bar-clock {
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.72rem;text-align:right;
+  color:var(--txt2);letter-spacing:0.05em;
+}
+.app-bar-clock .time{color:var(--gold);font-size:0.82rem;}
+
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;opacity:0;visibility:hidden;transition:all 0.3s;backdrop-filter:blur(3px);}
+.drawer-overlay.open{opacity:1;visibility:visible;}
+.drawer {
+  position:fixed;top:0;left:0;bottom:0;width:290px;max-width:85vw;
+  background: var(--bg1);
+  border-right:1px solid var(--line);
+  z-index:1001;transform:translateX(-100%);
+  transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.drawer::after{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--gold),transparent);opacity:0.4;}
+.drawer.open{transform:translateX(0);}
+
+.drawer-header {
+  padding:24px 18px 18px;
+  background: linear-gradient(160deg, var(--bg2) 0%, var(--bg1) 100%);
+  border-bottom:1px solid var(--line);
+  position:relative;overflow:hidden;
+}
+.drawer-header::before {
+  content:'CI';position:absolute;right:-12px;bottom:-18px;
+  font-family:'Barlow Condensed',sans-serif;font-size:6rem;font-weight:800;
+  color:var(--gold);opacity:0.04;pointer-events:none;line-height:1;
+}
+.drawer-header-accent {
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg, var(--gold), transparent);
+}
+
+.drawer-logo-row {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.2rem;font-weight:800;
+  letter-spacing:0.05em;text-transform:uppercase;
+  color:var(--txt);margin-bottom:3px;
+}
+.drawer-logo-row span{color:var(--gold);}
+.drawer-sub{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);letter-spacing:0.1em;margin-bottom:14px;}
+
+.drawer-user-card {
+  background:var(--bg3);
+  border:1px solid var(--line);
+  border-radius:8px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:12px;
+}
+.drawer-avatar {
+  width:36px;height:36px;border-radius:6px;
+  background:var(--bg4);
+  border:1px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-size:1rem;flex-shrink:0;
+  box-shadow:0 0 8px var(--gold-glow);
+}
+.drawer-uname{font-weight:600;font-size:0.83rem;color:var(--txt);}
+.drawer-ustatus{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);}
+
+.drawer-time-row{display:flex;justify-content:space-between;align-items:center;}
+.drawer-time{font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--gold);}
+.drawer-date{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);}
+.drawer-buttons-group{display:flex;gap:5px;}
+.drawer-theme-btn {
+  background:var(--bg3);border:1px solid var(--line2);
+  color:var(--txt2);padding:4px 9px;border-radius:5px;
+  cursor:pointer;font-size:0.62rem;
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;
+  transition:all 0.2s;
+}
+.drawer-theme-btn:hover{border-color:var(--gold);color:var(--gold);}
+.drawer-firebase-btn {
+  background:var(--steel-dim);border:1px solid var(--steel);
+  color:var(--steel);padding:4px 9px;border-radius:5px;
+  cursor:pointer;font-size:0.62rem;
+  display:flex;align-items:center;gap:5px;
+  font-family:'Share Tech Mono',monospace;
+  transition:all 0.2s;
+  position:relative;
+}
+.drawer-firebase-btn:hover{background:var(--steel);color:#fff;border-color:var(--steel);transform:scale(1.05);}
+.drawer-firebase-btn.connected{background:var(--green-dim);border-color:var(--green);color:var(--green);animation:pulse 2s infinite;}
+.drawer-firebase-btn.connected::after{content:'';position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 5px var(--green);}
+@keyframes pulse{0%{opacity:0.7}50%{opacity:1}100%{opacity:0.7}}
+
+.drawer-menu{flex:1;padding:10px;}
+.drawer-section-title {
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--txt3);padding:10px 8px 5px;
+}
+.drawer-item {
+  display:flex;align-items:center;gap:12px;
+  padding:9px 12px;background:transparent;
+  border:1px solid transparent;width:100%;text-align:left;
+  color:var(--txt2);cursor:pointer;border-radius:6px;
+  font-size:0.84rem;font-family:'Barlow',sans-serif;
+  transition:all 0.18s;
+}
+.drawer-item:hover{background:var(--bg3);color:var(--txt);border-color:var(--line2);}
+.drawer-item i{width:18px;font-size:0.85rem;color:var(--gold);opacity:0.7;}
+.drawer-item.active{background:var(--gold-dim);color:var(--gold);border-color:rgba(200,153,42,0.3);}
+.drawer-item.active i{opacity:1;}
+.drawer-divider{height:1px;background:var(--line);margin:6px 8px;}
+.drawer-item.subscriber-active{background:var(--green-dim);color:var(--green);border-color:rgba(46,184,126,0.3);}
+.drawer-item.subscriber-active i{color:var(--green);}
+.drawer-item.admin-active{background:var(--red-dim);color:var(--red);border-color:rgba(224,82,82,0.3);}
+.drawer-item.admin-active i{color:var(--red);}
+
+body.subscriber-mode { --accent:var(--green); --accent-dim:var(--green-dim); --accent-glow:var(--green-glow); }
+body.light-mode { --bg0:#f0f2f7; --bg1:#ffffff; --bg2:#f4f6fb; --bg3:#eaecf3; --bg4:#dde0ea; --line:rgba(0,0,0,0.07); --line2:rgba(0,0,0,0.12); --txt:#1a2035; --txt2:#4a5575; --txt3:#9aa0b5; }
+body.admin-mode { --accent:var(--red); --accent-dim:var(--red-dim); --accent-glow:var(--red-glow); }
+
+.main-content {
+  padding:72px 14px 28px;
+  max-width:1100px;margin:0 auto;
+  position:relative;z-index:1;
+}
+.section{display:none;animation:fadeUp 0.32s ease both;}
+.section.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.panel {
+  background:var(--bg1);
+  border:1px solid var(--line);
+  border-radius:10px;
+  margin-bottom:16px;
+  overflow:hidden;
+  position:relative;
+}
+.panel::before {
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg, var(--accent), transparent 60%);
+  opacity:0.8;
+}
+.panel-head {
+  background:var(--bg2);
+  padding:12px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:0.95rem;
+  letter-spacing:0.04em;text-transform:uppercase;
+  color:var(--txt);
+}
+.panel-head i{color:var(--accent);font-size:0.9rem;}
+.panel-body{padding:16px;}
+
+.hero {
+  background:var(--bg1);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:22px 18px;
+  margin-bottom:16px;
+  position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--steel),var(--gold));opacity:0.7;}
+.hero-badge {
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--gold-dim);border:1px solid rgba(200,153,42,0.35);
+  color:var(--gold);padding:3px 10px;border-radius:3px;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;
+}
+.hero h1 {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:1.6rem;font-weight:800;
+  letter-spacing:-0.01em;text-transform:uppercase;
+  color:var(--txt);line-height:1.15;margin-bottom:8px;
+}
+.hero h1 span{color:var(--gold);}
+.hero p{font-size:0.82rem;color:var(--txt2);line-height:1.6;max-width:520px;}
+.hero-geo {
+  position:absolute;right:14px;top:14px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:3.5rem;font-weight:800;
+  color:var(--gold);opacity:0.05;
+  pointer-events:none;line-height:1;
+}
+
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.stat-card {
+  background:var(--bg2);
+  border:1px solid var(--line);
+  border-radius:8px;padding:12px 8px;
+  text-align:center;cursor:pointer;
+  transition:all 0.2s;position:relative;overflow:hidden;
+}
+.stat-card::after{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:opacity 0.2s;}
+.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px var(--accent-glow);}
+.stat-card:hover::after{opacity:0.04;}
+.stat-num {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2rem;font-weight:800;
+  color:var(--accent);line-height:1;
+  text-shadow:0 0 20px var(--accent-glow);
+}
+.stat-lbl {
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.58rem;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;
+}
+
+.sec-label {
+  display:flex;align-items:center;gap:8px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:0.6rem;text-transform:uppercase;
+  letter-spacing:0.12em;color:var(--txt3);
+  margin-bottom:10px;
+}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--line);}
+
+.search-wrap{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.search-box {
+  flex:2;background:var(--bg2);
+  border:1px solid var(--line);border-radius:7px;
+  padding:9px 12px;display:flex;align-items:center;gap:8px;
+  transition:border-color 0.2s;
+}
+.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+.search-box i{color:var(--accent);font-size:0.8rem;}
+.search-box input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font-size:0.83rem;font-family:'Barlow',sans-serif;}
+.search-box input::placeholder{color:var(--txt3);}
+.filter-grp{display:flex;gap:6px;flex:1;}
+.f-btn {
+  flex:1;background:var(--bg2);border:1px solid var(--line);
+  border-radius:7px;padding:9px;cursor:pointer;
+  color:var(--txt3);display:flex;align-items:center;justify-content:center;
+  font-size:0.85rem;transition:all 0.2s;
+}
+.f-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.f-btn.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.cl-btn{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:9px;cursor:pointer;color:var(--txt3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all 0.2s;}
+.cl-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-dim);}
+
+.search-stats{display:flex;gap:8px;margin-bottom:12px;}
+.s-badge {
+  background:var(--bg2);border:1px solid var(--line);
+  padding:7px 12px;border-radius:6px;
+  font-size:0.78rem;cursor:pointer;
+  transition:all 0.2s;flex:1;
+  text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;
+  font-family:'Barlow',sans-serif;
+}
+.s-badge:hover{border-color:var(--accent);background:var(--accent-dim);}
+.s-badge .cnt{color:var(--accent);font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:1rem;}
+
+.featured-section{
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:8px;margin-bottom:12px;padding:10px;
+}
+.featured-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:0.85rem;
+  letter-spacing:0.05em;text-transform:uppercase;
+  color:var(--gold);
+}
+.featured-scroll{overflow-x:auto;padding-bottom:5px;}
+.featured-scroll::-webkit-scrollbar{height:3px;}
+.featured-scroll::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
+.featured-items{display:inline-flex;gap:8px;}
+.featured-card {
+  background:var(--bg1);
+  border:1px solid var(--line);
+  border-top:2px solid var(--gold);
+  border-radius:8px;padding:12px;
+  width:230px;display:inline-block;
+  white-space:normal;cursor:pointer;
+  transition:all 0.2s;position:relative;
+}
+.featured-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--gold-glow);border-color:var(--gold);}
+.unpin-featured-btn{position:absolute;top:5px;right:5px;background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:0.75rem;padding:4px;transition:all 0.2s;}
+.unpin-featured-btn:hover{color:var(--red);}
+
+.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
+.item-card {
+  background:var(--bg1);border:1px solid var(--line);
+  border-radius:9px;padding:14px;
+  transition:all 0.22s;position:relative;overflow:hidden;
+}
+.item-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:var(--line);transition:background 0.2s;
+}
+.item-card:hover{border-color:var(--line2);box-shadow:0 4px 20px rgba(0,0,0,0.3);transform:translateY(-1px);}
+.item-card:hover::before{background:var(--accent);}
+.item-card.pinned{border-color:rgba(200,153,42,0.25);}
+.item-card.pinned::before{background:var(--gold);}
+.item-card.current{border-color:rgba(46,184,126,0.3);background:linear-gradient(135deg,rgba(46,184,126,0.05),var(--bg1));}
+.item-card.current::before{background:var(--green);}
+.item-card.current::after{
+  content:'MON PROFIL';
+  position:absolute;top:9px;right:-28px;
+  background:var(--green);color:#000;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.5rem;font-weight:800;
+  padding:3px 28px;transform:rotate(45deg);
+  letter-spacing:0.08em;
+}
+
+.item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--line);}
+.item-title{
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;font-size:0.92rem;
+  color:var(--accent);display:flex;
+  align-items:center;gap:6px;flex-wrap:wrap;
+  letter-spacing:0.02em;text-transform:uppercase;
+}
+.item-details{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
+.detail-row{display:flex;align-items:flex-start;gap:8px;font-size:0.74rem;color:var(--txt2);}
+.detail-row i{width:13px;margin-top:2px;color:var(--accent);opacity:0.5;flex-shrink:0;font-size:0.7rem;}
+.detail-row .lbl{font-family:'Share Tech Mono',monospace;font-size:0.62rem;min-width:62px;color:var(--txt3);letter-spacing:0.03em;}
+.detail-row .val{color:var(--txt);flex:1;word-break:break-word;}
+
+.action-row{display:flex;gap:5px;padding-top:9px;border-top:1px solid var(--line);justify-content:space-around;}
+.a-btn {
+  background:var(--bg2);border:1px solid var(--line);
+  padding:7px;cursor:pointer;font-size:0.88rem;
+  transition:all 0.2s;border-radius:6px;
+  color:var(--txt3);
+  display:flex;align-items:center;justify-content:center;
+  width:34px;height:34px;
+}
+.a-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+.a-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
+.a-btn.wa{color:var(--wa);}
+.a-btn.wa:hover{background:var(--wa);color:#fff;border-color:var(--wa);}
+.a-btn.em:hover{background:var(--steel-dim);color:var(--steel);border-color:var(--steel);}
+.a-btn.wb:hover{background:rgba(6,182,212,0.12);color:#06b6d4;border-color:#06b6d4;}
+.a-btn.sh:hover{background:var(--gold-dim);color:var(--gold);border-color:var(--gold);}
+.a-btn.pd:hover{background:var(--red-dim);color:var(--red);border-color:var(--red);}
+
+.pin-btn{background:transparent;border:none;cursor:pointer;padding:5px;color:var(--txt3);font-size:0.85rem;transition:all 0.2s;border-radius:5px;flex-shrink:0;}
+.pin-btn:hover{color:var(--gold);}
+.pin-btn.pinned{color:var(--gold);text-shadow:0 0 8px var(--gold-glow);}
+.pin-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
+
+.badge{font-size:0.5rem;padding:2px 6px;border-radius:3px;font-weight:700;font-family:'Share Tech Mono',monospace;letter-spacing:0.05em;}
+.badge-pinned{background:rgba(200,153,42,0.15);color:var(--gold);border:1px solid rgba(200,153,42,0.3);}
+.badge-subscriber{background:rgba(46,184,126,0.15);color:var(--green);border:1px solid rgba(46,184,126,0.3);}
+.badge-admin{background:rgba(200,153,42,0.15);color:var(--gold);}
+
+.wa-section{background:var(--bg1);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;position:relative;}
+.wa-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--wa),transparent);opacity:0.7;}
+.wa-head{background:var(--bg2);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;}
+.wa-head i{color:var(--wa);}
+.wa-grid{display:flex;flex-direction:column;gap:8px;padding:14px;}
+.wa-item {
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:8px;padding:11px 14px;
+  transition:all 0.22s;gap:12px;
+}
+.wa-item:hover{border-color:rgba(37,211,102,0.4);box-shadow:inset 3px 0 0 var(--wa);}
+.wa-info{display:flex;align-items:center;gap:11px;flex:1;min-width:0;}
+.wa-icon{
+  width:36px;height:36px;border-radius:7px;
+  background:rgba(37,211,102,0.1);
+  border:1px solid rgba(37,211,102,0.25);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--wa);font-size:1rem;flex-shrink:0;
+}
+.wa-details h4{font-size:0.84rem;font-weight:600;color:var(--txt);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wa-details .st{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);}
+.wa-acts{display:flex;gap:6px;flex-shrink:0;}
+.wa-btn{
+  width:34px;height:34px;border-radius:7px;
+  background:var(--bg1);border:1px solid var(--line);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;color:var(--txt3);font-size:0.88rem;
+}
+.wa-btn.join{color:var(--wa);border-color:rgba(37,211,102,0.3);}
+.wa-btn.join:hover{background:var(--wa);color:#000;border-color:var(--wa);transform:scale(1.05);}
+.wa-btn.qr:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
+
+.ac-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.ac-grid{grid-template-columns:1fr;}}
+.ac-card{background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:16px;text-align:center;position:relative;overflow:hidden;}
+.ac-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.ac-icon{font-size:1.7rem;color:var(--accent);margin-bottom:8px;text-shadow:0 0 20px var(--accent-glow);}
+.ac-card h3{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;color:var(--txt);}
+.ac-card p{font-size:0.71rem;color:var(--txt3);margin-bottom:12px;}
+.ac-btns{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
+.mini-btn {
+  background:var(--bg1);border:1px solid var(--line);
+  padding:5px 10px;border-radius:5px;cursor:pointer;
+  font-size:0.72rem;transition:all 0.2s;
+  color:var(--txt2);display:inline-flex;
+  align-items:center;gap:5px;font-family:'Barlow',sans-serif;
+}
+.mini-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+.mini-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
+
+.contact-form{display:flex;flex-direction:column;gap:9px;}
+.input-field{
+  width:100%;padding:9px 13px;
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:7px;color:var(--txt);
+  font-size:0.82rem;font-family:'Barlow',sans-serif;
+  outline:none;transition:all 0.2s;
+}
+.input-field:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
+textarea.input-field{resize:vertical;}
+.msg-types{display:flex;gap:5px;flex-wrap:wrap;}
+.type-btn{
+  flex:1;background:var(--bg2);border:1px solid var(--line);
+  padding:6px;border-radius:6px;cursor:pointer;
+  font-size:0.7rem;transition:all 0.2s;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  color:var(--txt3);font-family:'Barlow',sans-serif;
+}
+.type-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.send-btn{
+  width:100%;background:var(--wa);
+  border:none;padding:11px;border-radius:7px;
+  cursor:pointer;color:#000;
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:0.9rem;font-weight:700;
+  letter-spacing:0.04em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all 0.2s;
+}
+.send-btn:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 8px 24px rgba(37,211,102,0.3);}
+
+.wa-contact-row{
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:8px;padding:14px;text-align:center;
+  margin-bottom:12px;position:relative;
+}
+.wa-contact-row::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--wa),transparent);opacity:0.5;}
+.wa-num{font-family:'Share Tech Mono',monospace;font-size:0.95rem;color:var(--wa);margin:6px 0;letter-spacing:0.05em;}
+.wa-row-btns{display:flex;gap:8px;justify-content:center;}
+
+.list-items{max-height:360px;overflow-y:auto;}
+.list-items::-webkit-scrollbar{width:3px;}
+.list-items::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
+.list-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 15px;border-bottom:1px solid var(--line);
+  cursor:pointer;transition:all 0.18s;
+}
+.list-item:hover{background:var(--accent-dim);}
+.list-item:last-child{border-bottom:none;}
+.list-item-name{font-size:0.82rem;color:var(--txt);}
+.list-item-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--accent);}
+
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(6px);z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;visibility:hidden;transition:all 0.28s;
+}
+.modal-overlay.show{opacity:1;visibility:visible;}
+.modal-content{
+  background:var(--bg1);
+  border:1px solid var(--line);
+  border-radius:12px;width:92%;max-width:460px;
+  max-height:86vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1);
+  position:relative;
+}
+.modal-content::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+@keyframes modalIn{from{transform:scale(0.93) translateY(18px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.modal-header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;}
+.modal-close{
+  background:var(--bg2);border:1px solid var(--line);
+  font-size:0.9rem;cursor:pointer;color:var(--txt3);
+  width:30px;height:30px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.modal-close:hover{background:var(--red-dim);color:var(--red);border-color:var(--red);}
+.modal-body{padding:15px;}
+.modal-body p{font-size:0.82rem;color:var(--txt2);margin-bottom:10px;}
+.modal-footer{display:flex;padding:11px 15px;border-top:1px solid var(--line);gap:8px;}
+.modal-footer .mini-btn{flex:1;justify-content:center;}
+.qr-container{display:flex;justify-content:center;margin:14px 0;padding:14px;background:#fff;border-radius:8px;}
+
+.no-results{text-align:center;padding:44px 20px;color:var(--txt3);}
+.no-results i{font-size:2.2rem;margin-bottom:10px;display:block;opacity:0.3;}
+.no-results h3{font-family:'Barlow Condensed',sans-serif;font-size:1rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--txt2);margin-bottom:5px;}
+.no-results p{font-size:0.78rem;}
+
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--bg1);
+  border:1px solid var(--accent);
+  color:var(--txt);padding:8px 18px;
+  border-radius:100px;font-size:0.76rem;
+  font-family:'Barlow',sans-serif;
+  z-index:3000;opacity:0;visibility:hidden;
+  transition:all 0.28s cubic-bezier(0.16,1,0.3,1);
+  white-space:nowrap;
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+.toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+
+.loading{position:fixed;inset:0;background:var(--bg0);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
+.loading-text{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;animation:flicker 1.4s ease infinite;}
+@keyframes flicker{0%,100%{opacity:1}45%{opacity:1}50%{opacity:0.3}55%{opacity:1}}
+.loading-line{width:140px;height:1px;background:var(--line2);border-radius:1px;overflow:hidden;}
+.loading-progress{height:100%;background:linear-gradient(90deg,var(--gold),var(--steel));border-radius:1px;animation:prog 1.2s ease infinite;}
+@keyframes prog{0%{width:0;margin-left:0}50%{width:70%;margin-left:0}100%{width:0;margin-left:100%}}
+
+@media(max-width:768px){
+  .main-content{padding-top:68px;padding-left:10px;padding-right:10px;}
+  .items-grid{grid-template-columns:1fr;}
+  .wa-item{flex-direction:column;gap:9px;text-align:center;}
+  .wa-info{flex-direction:column;text-align:center;}
+  .wa-acts{width:100%;justify-content:center;}
+  .toast{white-space:normal;max-width:88%;text-align:center;}
+  .hero h1{font-size:1.3rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="corner-tl"></div>
+<div class="corner-br"></div>
+
+<!-- APP BAR -->
+<div class="app-bar">
+  <button class="menu-icon" id="menuIcon"><i class="fas fa-bars"></i></button>
+  <div class="app-bar-logo">Connect <span class="hi">Industry</span> <span style="color:var(--txt3);font-size:0.7rem;">// Maroc</span></div>
+  <div class="app-bar-clock">
+    <div class="time" id="appTime">--:--</div>
+    <div id="appDate">--/--/----</div>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay">
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <div class="drawer-header-accent"></div>
+      <div class="drawer-logo-row">Connect <span>Industry</span></div>
+      <div class="drawer-sub">// plateforme_industrielle.ma</div>
+      <div class="drawer-user-card">
+        <div class="drawer-avatar"><i class="fas fa-user"></i></div>
+        <div>
+          <div class="drawer-uname" id="drawerUserName">Visiteur</div>
+          <div class="drawer-ustatus" id="drawerUserStatus">guest_mode</div>
+        </div>
+      </div>
+      <div class="drawer-time-row">
+        <div>
+          <div class="drawer-time" id="drawerTime">--:--</div>
+          <div class="drawer-date" id="drawerDate">--/--/----</div>
+        </div>
+        <div class="drawer-buttons-group">
+          <button class="drawer-firebase-btn" id="drawerFirebaseBtn" title="Upload to Firebase">
+            <i class="fas fa-cloud-upload-alt"></i> Firebase
+          </button>
+          <button class="drawer-theme-btn" id="drawerThemeBtn">
+            <i class="fas fa-moon"></i> theme
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-menu">
+      <div class="drawer-section-title">// navigation</div>
+      <button class="drawer-item" data-section="about"><i class="fas fa-building"></i> À Propos</button>
+      <button class="drawer-item" data-section="fournisseurs"><i class="fas fa-industry"></i> Fournisseurs</button>
+      <button class="drawer-item" data-section="experts"><i class="fas fa-microchip"></i> Experts</button>
+      <button class="drawer-item" data-section="groups"><i class="fab fa-whatsapp"></i> Groupes WhatsApp</button>
+      <button class="drawer-item" data-section="dbmanager"><i class="fas fa-database"></i> Base de données</button>
+      <div class="drawer-divider"></div>
+      <div class="drawer-section-title">// compte</div>
+      <button class="drawer-item" id="drawerSubscribeBtn"><i class="fas fa-user-plus"></i><span id="drawerSubscribeText">S'abonner</span></button>
+      <button class="drawer-item" id="drawerAdminBtn"><i class="fas fa-key"></i><span id="drawerAdminText">Mode Admin</span></button>
+      <button class="drawer-item" id="drawerUnpinBtn"><i class="fas fa-trash-alt"></i> Annuler épinglages</button>
+      <div class="drawer-divider"></div>
+      <div class="drawer-section-title">// liens</div>
+      <button class="drawer-item" id="drawerWaBtn"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+  <!-- ABOUT -->
+  <div id="aboutSection" class="section active">
+    <div class="hero">
+      <div class="hero-geo">MA</div>
+      <div class="hero-badge"><i class="fas fa-globe-africa"></i> Maroc Industrial Network</div>
+      <h1>Connect<br><span>Industry</span></h1>
+      <p>Plateforme digitale de mise en relation entre demandeurs de produits industriels et le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-industry"></i> Fournisseurs Industriels</div>
+      <div class="panel-body">
+        <div class="stats-grid">
+          <div class="stat-card" data-section="fournisseurs" data-type="total"><div class="stat-num" id="fourTotal">0</div><div class="stat-lbl">Total</div></div>
+          <div class="stat-card" data-section="fournisseurs" data-type="domaines"><div class="stat-num" id="fourDomaines">0</div><div class="stat-lbl">Domaines</div></div>
+          <div class="stat-card" data-section="fournisseurs" data-type="villes"><div class="stat-num" id="fourVilles">0</div><div class="stat-lbl">Villes</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-microchip"></i> Experts & Automaticiens</div>
+      <div class="panel-body">
+        <div class="stats-grid">
+          <div class="stat-card" data-section="experts" data-type="total"><div class="stat-num" id="autoTotal">0</div><div class="stat-lbl">Total</div></div>
+          <div class="stat-card" data-section="experts" data-type="domaines"><div class="stat-num" id="autoDomaines">0</div><div class="stat-lbl">Domaines</div></div>
+          <div class="stat-card" data-section="experts" data-type="villes"><div class="stat-num" id="autoVilles">0</div><div class="stat-lbl">Villes</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-user-plus"></i> Rejoignez notre réseau</div>
+      <div class="panel-body">
+        <div class="ac-grid">
+          <div class="ac-card">
+            <div class="ac-icon"><i class="fas fa-microchip"></i></div>
+            <h3>Ajouter un expert</h3>
+            <p>Formulaire pour les experts en automatisme</p>
+            <div class="ac-btns">
+              <button class="mini-btn" onclick="openForm('expert')"><i class="fas fa-plus-circle"></i> Formulaire</button>
+              <button class="mini-btn" onclick="shareForm('expert')"><i class="fas fa-share-alt"></i> Partager</button>
+              <button class="mini-btn" onclick="showQRWithShare('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform','Formulaire Expert')"><i class="fas fa-qrcode"></i> QR</button>
+              <button class="mini-btn" id="exportExpertBtn" onclick="exportCSV('expert')"><i class="fas fa-file-csv"></i> CSV</button>
+            </div>
+          </div>
+          <div class="ac-card">
+            <div class="ac-icon"><i class="fas fa-industry"></i></div>
+            <h3>Ajouter un fournisseur</h3>
+            <p>Formulaire pour les fournisseurs industriels</p>
+            <div class="ac-btns">
+              <button class="mini-btn" onclick="openForm('four')"><i class="fas fa-plus-circle"></i> Formulaire</button>
+              <button class="mini-btn" onclick="shareForm('four')"><i class="fas fa-share-alt"></i> Partager</button>
+              <button class="mini-btn" onclick="showQRWithShare('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform','Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR</button>
+              <button class="mini-btn" id="exportFourBtn" onclick="exportCSV('four')"><i class="fas fa-file-csv"></i> CSV</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-comment-dots"></i> Suggestions et Contact</div>
+      <div class="panel-body">
+        <div class="wa-contact-row">
+          <p style="font-size:0.78rem;color:var(--txt3);margin-bottom:5px;">Pour toute question ou assistance rapide</p>
+          <div class="wa-num"><i class="fab fa-whatsapp"></i> +212 690-292010</div>
+          <div class="wa-row-btns">
+            <button class="mini-btn" onclick="window.open('https://wa.me/212690292010','_blank')"><i class="fab fa-whatsapp"></i> Contacter</button>
+            <button class="mini-btn" onclick="showQRWithShare('https://wa.me/212690292010','Contact WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
+          </div>
+        </div>
+        <form id="contactForm" class="contact-form">
+          <input type="text" id="contactName" class="input-field" placeholder="Nom (optionnel)">
+          <input type="text" id="contactInfo" class="input-field" placeholder="Email ou Téléphone (optionnel)">
+          <div class="msg-types">
+            <button type="button" class="type-btn" data-type="suggestion"><i class="fas fa-lightbulb"></i> Suggestion</button>
+            <button type="button" class="type-btn" data-type="reclamation"><i class="fas fa-exclamation-triangle"></i> Réclamation</button>
+            <button type="button" class="type-btn" data-type="demande"><i class="fas fa-question-circle"></i> Demande</button>
+            <button type="button" class="type-btn" data-type="collaboration"><i class="fas fa-handshake"></i> Collaboration</button>
+          </div>
+          <input type="hidden" id="contactType" value="suggestion">
+          <textarea id="contactMessage" class="input-field" rows="4" placeholder="Votre message..."></textarea>
+          <button type="submit" class="send-btn"><i class="fab fa-whatsapp"></i> Envoyer via WhatsApp</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- GROUPS -->
+  <div id="groupsSection" class="section">
+    <div class="wa-section">
+      <div class="wa-head"><i class="fab fa-whatsapp"></i> Groupes WhatsApp Industriels</div>
+      <div class="wa-grid">
+        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Stations de Dessalement Maroc</h4><div class="st">120+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu','Stations de Dessalement Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
+        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Comptables & Gestionnaires Maroc</h4><div class="st">200+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF','Comptables & Gestionnaires Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
+        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Fournisseurs Industriels Du Maroc</h4><div class="st">250+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d','Fournisseurs Industriels Du Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
+        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Energie Solaire Maroc</h4><div class="st">750+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow','Energie Solaire Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
+        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Genie Electrique Industriel Maroc</h4><div class="st">420+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu','Genie Electrique Industriel Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOURNISSEURS -->
+  <div id="fournisseursSection" class="section">
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-industry"></i> Fournisseurs Industriels</div>
+      <div class="panel-body">
+        <div class="search-stats">
+          <div class="s-badge" id="fourResultsBadge"><i class="fas fa-list"></i> <span class="cnt" id="fourResultCount">0</span> résultats</div>
+          <div class="s-badge" id="fourExpertsBadge"><i class="fas fa-microchip"></i> <span class="cnt" id="fourMatchCount">0</span> experts</div>
+        </div>
+        <div class="search-wrap">
+          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
+          <div class="filter-grp">
+            <button class="f-btn" id="fourDomaineBtn" title="Domaine"><i class="fas fa-folder"></i></button>
+            <button class="f-btn" id="fourVilleBtn" title="Ville"><i class="fas fa-city"></i></button>
+            <button class="cl-btn" id="fourClearBtn" title="Effacer"><i class="fas fa-eraser"></i></button>
+          </div>
+        </div>
+        <div id="fourFeatured" class="featured-section" style="display:none;">
+          <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="fourFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
+          <div class="featured-scroll"><div id="fourFeaturedItems" class="featured-items"></div></div>
+        </div>
+        <div id="fourGrid" class="items-grid">
+          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPERTS -->
+  <div id="expertsSection" class="section">
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-microchip"></i> Experts & Automaticiens</div>
+      <div class="panel-body">
+        <div class="search-stats">
+          <div class="s-badge" id="autoResultsBadge"><i class="fas fa-list"></i> <span class="cnt" id="autoResultCount">0</span> résultats</div>
+          <div class="s-badge" id="autoFourBadge"><i class="fas fa-industry"></i> <span class="cnt" id="autoMatchCount">0</span> fournisseurs</div>
+        </div>
+        <div class="search-wrap">
+          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="autoSearch" placeholder="Rechercher..."></div>
+          <div class="filter-grp">
+            <button class="f-btn" id="autoDomaineBtn" title="Domaine"><i class="fas fa-folder"></i></button>
+            <button class="f-btn" id="autoVilleBtn" title="Ville"><i class="fas fa-city"></i></button>
+            <button class="cl-btn" id="autoClearBtn" title="Effacer"><i class="fas fa-eraser"></i></button>
+          </div>
+        </div>
+        <div id="autoFeatured" class="featured-section" style="display:none;">
+          <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="autoFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
+          <div class="featured-scroll"><div id="autoFeaturedItems" class="featured-items"></div></div>
+        </div>
+        <div id="autoGrid" class="items-grid">
+          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATABASE MANAGER SECTION -->
+  <div id="dbmanagerSection" class="section">
+    <div class="panel">
+      <div class="panel-head"><i class="fas fa-database"></i> Gestionnaire Firebase</div>
+      <div class="panel-body">
+        <div class="search-stats" style="margin-bottom: 15px;">
+          <div class="s-badge" id="dbStatsFirebase"><i class="fab fa-firebase"></i> <span id="dbFirebaseStatus">Vérification...</span></div>
+          <div class="s-badge" id="dbStatsCount"><i class="fas fa-chart-line"></i> <span id="dbCount">0</span> éléments</div>
+          <div class="s-badge" id="dbRefreshBtn"><i class="fas fa-sync-alt"></i> Actualiser</div>
+        </div>
+        <div class="search-wrap" style="margin-bottom: 15px;">
+          <div class="filter-grp" style="flex: 1;">
+            <button class="f-btn" id="dbTypeFourBtn" style="flex:1;"><i class="fas fa-industry"></i> Fournisseurs</button>
+            <button class="f-btn" id="dbTypeExpertBtn" style="flex:1;"><i class="fas fa-microchip"></i> Experts</button>
+          </div>
+          <button class="cl-btn" id="dbAddNewBtn" style="background: var(--green-dim); color: var(--green);"><i class="fas fa-plus"></i> Ajouter</button>
+        </div>
+        <div class="search-box" style="margin-bottom: 15px;">
+          <i class="fas fa-search"></i>
+          <input type="text" id="dbSearch" placeholder="Rechercher par nom, domaine, ville...">
+        </div>
+        <div id="dbItemsList" class="items-grid" style="max-height: 500px; overflow-y: auto;">
+          <div style="text-align:center;padding:36px;"><div class="loading-line"><div class="loading-progress"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="listModal"><div class="modal-content" style="max-width:360px;"><div class="modal-header"><h3 id="listModalTitle">Liste</h3><button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" style="padding:0;"><div id="listItems" class="list-items"></div></div></div></div>
+<div class="modal-overlay" id="qrModal"><div class="modal-content"><div class="modal-header"><h3 id="qrTitle">QR Code</h3><button class="modal-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="qr-container" id="qrContainer"></div><button class="mini-btn" onclick="shareQRWithData()" style="width:100%;justify-content:center"><i class="fas fa-share-alt"></i> Partager</button></div></div></div>
+<div class="modal-overlay" id="subscribeModal"><div class="modal-content"><div class="modal-header"><h3>Abonnement</h3><button class="modal-close" onclick="closeModal('subscribeModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p>Entrez votre numéro de téléphone</p><input type="tel" id="subscribePhone" class="input-field" placeholder="Ex: 0612345678"></div><div class="modal-footer"><button class="mini-btn" onclick="checkSubscribe()">S'abonner</button><button class="mini-btn" onclick="closeModal('subscribeModal')">Annuler</button></div></div></div>
+<div class="modal-overlay" id="adminModal"><div class="modal-content"><div class="modal-header"><h3>Mode Admin</h3><button class="modal-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p>Entrez le mot de passe</p><input type="password" id="adminPassword" class="input-field" placeholder="Mot de passe"></div><div class="modal-footer"><button class="mini-btn" onclick="verifyAdmin()">Confirmer</button><button class="mini-btn" onclick="closeModal('adminModal')">Annuler</button></div></div></div>
+<div class="modal-overlay" id="detailModal"><div class="modal-content"><div class="modal-header"><h3 id="detailTitle">Détails</h3><button class="modal-close" onclick="closeModal('detailModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="detailBody"></div></div></div>
+<div class="modal-overlay" id="shareModal"><div class="modal-content"><div class="modal-header"><h3>Partager</h3><button class="modal-close" onclick="closeModal('shareModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p id="shareMsg">...</p></div><div class="modal-footer"><button class="mini-btn" onclick="sendShare()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="mini-btn" onclick="closeModal('shareModal')">Annuler</button></div></div></div>
+<div class="modal-overlay filter-modal" id="domaineModal"><div class="modal-content"><div class="modal-header"><h3>Choisir un domaine</h3><button class="modal-close" onclick="closeModal('domaineModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="domaineList" style="max-height:280px;overflow-y:auto;"></div></div></div>
+<div class="modal-overlay filter-modal" id="villeModal"><div class="modal-content"><div class="modal-header"><h3>Choisir une ville</h3><button class="modal-close" onclick="closeModal('villeModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="villeList" style="max-height:280px;overflow-y:auto;"></div></div></div>
+
+<!-- Edit Modal for Database Manager -->
+<div class="modal-overlay" id="editItemModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3 id="editModalTitle">Modifier l'élément</h3>
+      <button class="modal-close" onclick="closeModal('editItemModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="editId" style="display:none;">
+      <input type="text" id="editName" class="input-field" placeholder="Nom" style="margin-bottom: 10px;">
+      <input type="text" id="editDomaine" class="input-field" placeholder="Domaine" style="margin-bottom: 10px;">
+      <input type="text" id="editSpecialite" class="input-field" placeholder="Spécialité" style="margin-bottom: 10px;">
+      <input type="text" id="editCity" class="input-field" placeholder="Ville" style="margin-bottom: 10px;">
+      <input type="tel" id="editPhone" class="input-field" placeholder="Téléphone" style="margin-bottom: 10px;">
+      <input type="email" id="editEmail" class="input-field" placeholder="Email" style="margin-bottom: 10px;">
+      <input type="url" id="editWeb" class="input-field" placeholder="Site web">
+    </div>
+    <div class="modal-footer">
+      <button class="mini-btn" onclick="saveEditItem()" style="background: var(--green-dim);"><i class="fas fa-save"></i> Enregistrer</button>
+      <button class="mini-btn" onclick="closeModal('editItemModal')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="loading" id="loading">
+  <div class="loading-text">CI.MAROC</div>
+  <div class="loading-line"><div class="loading-progress"></div></div>
+</div>
+
+<script>
+(function(){
+// Configuration
+const CFG = {
+    ADMIN_PASSWORD: "11111111",
+    WA_NUM: "212690292010",
+    AUTO_CSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv",
+    FOUR_CSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv",
+    FORM_AUTO: "https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform",
+    FORM_FOUR: "https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform"
+};
+
+// Firebase Configuration
+const FIREBASE_URL = "https://said-rahil-default-rtdb.firebaseio.com/";
+
+// Initialize Firebase
+firebase.initializeApp({
+    databaseURL: FIREBASE_URL
+});
+const database = firebase.database();
+
+// Global variables
+let experts = [], suppliers = [], isAdmin = false, isSubscriber = false, subPhone = null, subMember = null;
+let fF = { domaine: null, ville: null, search: "" }, aF = { domaine: null, ville: null, search: "" };
+let fT = null, aT = null, upF = [], upA = [], apF = [], apA = [];
+let curShare = null, curQR = { url: "", title: "" }, curSec = 'about', secHist = ['about'];
+const ST = {
+    APF: 'adminPinnedFour', APA: 'adminPinnedAuto', UPF: 'userPinnedFour', UPA: 'userPinnedAuto',
+    ADM: 'adminMode', SPH: 'subscriberPhone', SAC: 'subscriberActive', THM: 'theme'
+};
+const STIT = { about: 'Connect Industry', fournisseurs: 'Fournisseurs', experts: 'Experts', groups: 'Groupes WhatsApp', dbmanager: 'Base de données' };
+
+// Database Manager variables
+let dbCurrentType = 'fournisseurs';
+let dbData = [];
+let dbSearchTerm = '';
+
+// Helper functions
+const $ = id => document.getElementById(id);
+function toast(m) { const t = $('toast'); t.innerHTML = m; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+function closeModal(id) { const m = $(id); if (m) m.classList.remove('show'); }
+function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function esc(s) { if (!s) return ''; return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function fmtPhone(p) { if (!p) return null; let c = p.toString().replace(/[\s\-\(\)]/g, ''); if (c.startsWith('0')) return '+212' + c.substring(1); if (c.startsWith('212')) return '+' + c; if (c.match(/^[67]\d{8}$/)) return '+212' + c; return c; }
+function matchP(a, b) { const f1 = fmtPhone(a), f2 = fmtPhone(b); return f1 && f2 && f1 === f2; }
+function matchS(item, t) { if (!t) return true; return [item.name, item.domaine, item.specialite, item.city, item.email, item.web, item.phone].some(f => f && f.toLowerCase().includes(t)); }
+function canEx() { return isSubscriber || isAdmin; }
+function copyToClipboard(text, label) { if (!text) { toast(`⚠️ Pas de ${label} à copier`); return; } navigator.clipboard.writeText(text); toast(`📋 ${label} copié: ${text}`); }
+
+// Drawer functions
+function openDrawer() { $('drawerOverlay').classList.add('open'); $('drawer').classList.add('open'); }
+function closeDrawer() { $('drawerOverlay').classList.remove('open'); $('drawer').classList.remove('open'); }
+
+// Load CSV data
+async function loadCSV(url) {
+    try {
+        const r = await fetch(url);
+        const t = await r.text();
+        const L = t.split(/\r?\n/);
+        if (L.length < 2) return [];
+        const D = [];
+        for (let i = 1; i < L.length; i++) {
+            if (!L[i].trim()) continue;
+            const p = L[i].split(',').map(x => x.replace(/["']/g, '').trim());
+            if (p.length < 5) continue;
+            D.push({
+                name: p[1] || '',
+                domaine: p[2] || '',
+                specialite: p[3] || '',
+                city: p[4] || '',
+                phone: fmtPhone(p[5] || ''),
+                email: p[6] || '',
+                web: p[7] || ''
+            });
+        }
+        return D;
+    } catch (e) { return []; }
+}
+
+// Load data from CSV only
+async function loadFromCSV() {
+    try {
+        const [loadedExperts, loadedSuppliers] = await Promise.all([
+            loadCSV(CFG.AUTO_CSV),
+            loadCSV(CFG.FOUR_CSV)
+        ]);
+        experts = loadedExperts;
+        suppliers = loadedSuppliers;
+        renderAll();
+        updStats();
+        console.log(`✅ Données chargées: ${experts.length} experts, ${suppliers.length} fournisseurs`);
+        toast(`📊 ${suppliers.length} fournisseurs, ${experts.length} experts`);
+    } catch (error) {
+        console.error('CSV load error:', error);
+        toast('❌ Erreur chargement des données');
+    }
+}
+
+// Firebase functions - Upload only
+async function uploadToFirebase() {
+    if (!isAdmin) {
+        toast('🔒 Seul l\'administrateur peut envoyer vers Firebase');
+        return;
+    }
+    toast('📤 Envoi vers Firebase...');
+    try {
+        const suppliersRef = database.ref('suppliers');
+        await suppliersRef.remove();
+        for (const supplier of suppliers) {
+            await suppliersRef.push(supplier);
+        }
+        const expertsRef = database.ref('experts');
+        await expertsRef.remove();
+        for (const expert of experts) {
+            await expertsRef.push(expert);
+        }
+        const logsRef = database.ref('logs');
+        await logsRef.push({
+            action: 'upload',
+            timestamp: new Date().toISOString(),
+            suppliersCount: suppliers.length,
+            expertsCount: experts.length
+        });
+        toast(`✅ Envoi terminé! ${suppliers.length} fournisseurs + ${experts.length} experts`);
+        const firebaseBtn = document.getElementById('drawerFirebaseBtn');
+        if (firebaseBtn) firebaseBtn.classList.add('connected');
+    } catch (error) {
+        console.error('Upload error:', error);
+        toast('❌ Erreur lors de l\'envoi vers Firebase');
+    }
+}
+
+// Check Firebase connection
+function checkFirebaseConnection() {
+    const connectedRef = database.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+        const firebaseBtn = document.getElementById('drawerFirebaseBtn');
+        if (snap.val() === true) {
+            console.log('✅ Firebase connecté');
+            if (firebaseBtn) firebaseBtn.classList.add('connected');
+        } else {
+            console.log('❌ Firebase déconnecté');
+            if (firebaseBtn) firebaseBtn.classList.remove('connected');
+        }
+    });
+}
+
+// Database Manager Functions
+async function loadDBData() {
+    if (!isAdmin) {
+        toast('🔑 Mode admin requis pour gérer la base de données');
+        return;
+    }
+    toast('📥 Chargement depuis Firebase...');
+    const ref = database.ref(dbCurrentType);
+    const snapshot = await ref.once('value');
+    const data = snapshot.val();
+    if (data) {
+        dbData = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    } else {
+        dbData = [];
+    }
+    renderDBItems();
+    updateDBStats();
+    toast(`✅ ${dbData.length} éléments chargés`);
+}
+
+function renderDBItems() {
+    const container = document.getElementById('dbItemsList');
+    if (!container) return;
+    let filtered = dbData;
+    if (dbSearchTerm) {
+        filtered = dbData.filter(item => 
+            (item.name && item.name.toLowerCase().includes(dbSearchTerm)) ||
+            (item.domaine && item.domaine.toLowerCase().includes(dbSearchTerm)) ||
+            (item.city && item.city.toLowerCase().includes(dbSearchTerm)) ||
+            (item.specialite && item.specialite.toLowerCase().includes(dbSearchTerm))
+        );
+    }
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="no-results"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Cliquez sur Actualiser pour charger</p></div>`;
+        return;
+    }
+    let html = '';
+    for (const item of filtered) {
+        html += `
+            <div class="item-card" style="border-left: 3px solid var(--accent);">
+                <div class="item-header">
+                    <span class="item-title"><i class="fas ${dbCurrentType === 'fournisseurs' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${esc(item.name)}</span>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="pin-btn" onclick="editDBItem('${item.id}')" title="Modifier"><i class="fas fa-edit"></i></button>
+                        <button class="pin-btn" onclick="deleteDBItem('${item.id}')" title="Supprimer" style="color: var(--red);"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="item-details">
+                    <div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div>
+                    <div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div>
+                    <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>
+                    ${item.phone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${esc(item.phone)}</span></div>` : ''}
+                    ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>` : ''}
+                    ${item.web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(item.web)}</span></div>` : ''}
+                </div>
+                <div class="action-row" style="justify-content: flex-end; gap: 10px;">
+                    <button class="mini-btn" onclick="copyToClipboard('${item.phone || ''}', 'Téléphone')"><i class="fas fa-copy"></i> Tél</button>
+                    <button class="mini-btn" onclick="copyToClipboard('${item.email || ''}', 'Email')"><i class="fas fa-copy"></i> Email</button>
+                </div>
+            </div>
+        `;
+    }
+    container.innerHTML = html;
+}
+
+function updateDBStats() {
+    const countSpan = document.getElementById('dbCount');
+    if (countSpan) countSpan.textContent = dbData.length;
+    const statusSpan = document.getElementById('dbFirebaseStatus');
+    if (statusSpan) {
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.once('value', (snap) => {
+            if (snap.val() === true) {
+                statusSpan.innerHTML = '<i class="fas fa-check-circle"></i> Connecté';
+                statusSpan.style.color = 'var(--green)';
+            } else {
+                statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Déconnecté';
+                statusSpan.style.color = 'var(--red)';
+            }
+        });
+    }
+}
+
+function editDBItem(id) {
+    const item = dbData.find(i => i.id === id);
+    if (!item) return;
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = item.name || '';
+    document.getElementById('editDomaine').value = item.domaine || '';
+    document.getElementById('editSpecialite').value = item.specialite || '';
+    document.getElementById('editCity').value = item.city || '';
+    document.getElementById('editPhone').value = item.phone || '';
+    document.getElementById('editEmail').value = item.email || '';
+    document.getElementById('editWeb').value = item.web || '';
+    document.getElementById('editModalTitle').textContent = `Modifier: ${item.name}`;
+    document.getElementById('editItemModal').classList.add('show');
+}
+
+async function saveEditItem() {
+    const id = document.getElementById('editId').value;
+    const updatedItem = {
+        name: document.getElementById('editName').value,
+        domaine: document.getElementById('editDomaine').value,
+        specialite: document.getElementById('editSpecialite').value,
+        city: document.getElementById('editCity').value,
+        phone: document.getElementById('editPhone').value,
+        email: document.getElementById('editEmail').value,
+        web: document.getElementById('editWeb').value,
+        updatedAt: new Date().toISOString()
+    };
+    if (!updatedItem.name) { toast('Le nom est requis'); return; }
+    try {
+        await database.ref(`${dbCurrentType}/${id}`).update(updatedItem);
+        toast('✅ Élément mis à jour');
+        closeModal('editItemModal');
+        await loadDBData();
+    } catch (error) {
+        console.error('Update error:', error);
+        toast('❌ Erreur lors de la mise à jour');
+    }
+}
+
+async function deleteDBItem(id) {
+    const item = dbData.find(i => i.id === id);
+    if (!confirm(`Supprimer définitivement "${item?.name}" ?`)) return;
+    try {
+        await database.ref(`${dbCurrentType}/${id}`).remove();
+        toast('🗑️ Élément supprimé');
+        await loadDBData();
+    } catch (error) {
+        console.error('Delete error:', error);
+        toast('❌ Erreur lors de la suppression');
+    }
+}
+
+function showAddDBItem() {
+    document.getElementById('editId').value = '';
+    document.getElementById('editName').value = '';
+    document.getElementById('editDomaine').value = '';
+    document.getElementById('editSpecialite').value = '';
+    document.getElementById('editCity').value = '';
+    document.getElementById('editPhone').value = '';
+    document.getElementById('editEmail').value = '';
+    document.getElementById('editWeb').value = '';
+    document.getElementById('editModalTitle').textContent = `Ajouter un ${dbCurrentType === 'fournisseurs' ? 'Fournisseur' : 'Expert'}`;
+    document.getElementById('editItemModal').classList.add('show');
+}
+
+async function saveNewItem() {
+    const newItem = {
+        name: document.getElementById('editName').value,
+        domaine: document.getElementById('editDomaine').value,
+        specialite: document.getElementById('editSpecialite').value,
+        city: document.getElementById('editCity').value,
+        phone: document.getElementById('editPhone').value,
+        email: document.getElementById('editEmail').value,
+        web: document.getElementById('editWeb').value,
+        createdAt: new Date().toISOString()
+    };
+    if (!newItem.name) { toast('Le nom est requis'); return; }
+    try {
+        await database.ref(dbCurrentType).push(newItem);
+        toast('✅ Nouvel élément ajouté');
+        closeModal('editItemModal');
+        await loadDBData();
+    } catch (error) {
+        console.error('Add error:', error);
+        toast('❌ Erreur lors de l\'ajout');
+    }
+}
+
+window.saveEditItem = function() {
+    const id = document.getElementById('editId').value;
+    if (id) { saveEditItem(); } else { saveNewItem(); }
+};
+
+function initDatabaseManager() {
+    const typeFourBtn = document.getElementById('dbTypeFourBtn');
+    const typeExpertBtn = document.getElementById('dbTypeExpertBtn');
+    const refreshBtn = document.getElementById('dbRefreshBtn');
+    const addBtn = document.getElementById('dbAddNewBtn');
+    const searchInput = document.getElementById('dbSearch');
+    if (typeFourBtn) {
+        typeFourBtn.addEventListener('click', async () => {
+            dbCurrentType = 'fournisseurs';
+            typeFourBtn.classList.add('active');
+            typeExpertBtn.classList.remove('active');
+            await loadDBData();
+        });
+    }
+    if (typeExpertBtn) {
+        typeExpertBtn.addEventListener('click', async () => {
+            dbCurrentType = 'experts';
+            typeExpertBtn.classList.add('active');
+            typeFourBtn.classList.remove('active');
+            await loadDBData();
+        });
+    }
+    if (refreshBtn) refreshBtn.addEventListener('click', async () => { await loadDBData(); });
+    if (addBtn) addBtn.addEventListener('click', () => { if (isAdmin) showAddDBItem(); else toast('🔑 Mode admin requis'); });
+    if (searchInput) searchInput.addEventListener('input', (e) => { dbSearchTerm = e.target.value.toLowerCase(); renderDBItems(); });
+    if (typeFourBtn) typeFourBtn.classList.add('active');
+}
+
+// Stats functions
+function updStats() {
+    const fd = new Set(suppliers.map(s => s.domaine).filter(d => d));
+    const fv = new Set(suppliers.map(s => s.city).filter(v => v));
+    $('fourTotal').textContent = suppliers.length;
+    $('fourDomaines').textContent = fd.size;
+    $('fourVilles').textContent = fv.size;
+    const ad = new Set(experts.map(e => e.domaine).filter(d => d));
+    const av = new Set(experts.map(e => e.city).filter(v => v));
+    $('autoTotal').textContent = experts.length;
+    $('autoDomaines').textContent = ad.size;
+    $('autoVilles').textContent = av.size;
+}
+
+// Filter functions
+function filtS() {
+    let f = [...suppliers];
+    if (fF.domaine) f = f.filter(s => s.domaine === fF.domaine);
+    if (fF.ville) f = f.filter(s => s.city === fF.ville);
+    if (fF.search) f = f.filter(s => matchS(s, fF.search));
+    return f;
+}
+function filtE() {
+    let f = [...experts];
+    if (aF.domaine) f = f.filter(e => e.domaine === aF.domaine);
+    if (aF.ville) f = f.filter(e => e.city === aF.ville);
+    if (aF.search) f = f.filter(e => matchS(e, aF.search));
+    return f;
+}
+
+function showList(title, items, onSel) {
+    $('listModalTitle').textContent = title;
+    const c = $('listItems');
+    c.innerHTML = '';
+    if (!items || !items.length) {
+        c.innerHTML = '<div class="list-item"><span class="list-item-name">Aucun élément</span></div>';
+    } else {
+        items.forEach(item => {
+            const d = document.createElement('div');
+            d.className = 'list-item';
+            d.innerHTML = `<span class="list-item-name">${esc(item)}</span><span class="list-item-arrow">→</span>`;
+            d.onclick = () => { onSel(item); closeModal('listModal'); };
+            c.appendChild(d);
+        });
+    }
+    $('listModal').classList.add('show');
+}
+
+// Pin functions
+function loadPins() {
+    upF = JSON.parse(localStorage.getItem(ST.UPF) || '[]');
+    upA = JSON.parse(localStorage.getItem(ST.UPA) || '[]');
+    apF = JSON.parse(localStorage.getItem(ST.APF) || '[]');
+    apA = JSON.parse(localStorage.getItem(ST.APA) || '[]');
+}
+function savePins(t) {
+    if (t === 'four') {
+        localStorage.setItem(ST.UPF, JSON.stringify(upF));
+        localStorage.setItem(ST.APF, JSON.stringify(apF));
+    } else {
+        localStorage.setItem(ST.UPA, JSON.stringify(upA));
+        localStorage.setItem(ST.APA, JSON.stringify(apA));
+    }
+}
+function isPinned(item, t) {
+    const id = `${item.name}|${item.phone || ''}`;
+    if (isAdmin) return t === 'four' ? apF.includes(id) : apA.includes(id);
+    return t === 'four' ? upF.includes(id) : upA.includes(id);
+}
+function togglePin(t, id, name) {
+    if (!isSubscriber && !isAdmin) { toast('Abonnez-vous pour épingler'); return; }
+    if (isAdmin) {
+        if (t === 'four') {
+            const i = apF.indexOf(id);
+            if (i < 0) { apF.push(id); toast(`⭐ ${name} → À la une`); }
+            else { apF.splice(i, 1); toast(`${name} retiré`); }
+            savePins('four');
+        } else {
+            const i = apA.indexOf(id);
+            if (i < 0) { apA.push(id); toast(`⭐ ${name} → À la une`); }
+            else { apA.splice(i, 1); toast(`${name} retiré`); }
+            savePins('auto');
+        }
+    } else {
+        if (t === 'four') {
+            const i = upF.indexOf(id);
+            if (i < 0) { upF.push(id); toast(`📌 ${name} épinglé`); }
+            else { upF.splice(i, 1); toast(`${name} désépinglé`); }
+            savePins('four');
+        } else {
+            const i = upA.indexOf(id);
+            if (i < 0) { upA.push(id); toast(`📌 ${name} épinglé`); }
+            else { upA.splice(i, 1); toast(`${name} désépinglé`); }
+            savePins('auto');
+        }
+    }
+    renderAll();
+}
+function unpinAll() {
+    if (isAdmin) { apF = []; apA = []; savePins('four'); savePins('auto'); toast('À la une effacé'); }
+    else if (isSubscriber) { upF = []; upA = []; savePins('four'); savePins('auto'); toast('Épinglages annulés'); }
+    else { toast('Abonnez-vous'); return; }
+    renderAll();
+}
+
+// PDF functions
+async function genPDF(card, item) {
+    if (!canEx()) { toast('Abonnez-vous pour PDF'); return; }
+    toast('Génération PDF...');
+    try {
+        const cl = card.cloneNode(true);
+        const a = cl.querySelector('.action-row');
+        if (a) a.remove();
+        const web = item.web && item.web !== 'null' ? item.web : '';
+        if (web) {
+            const qs = document.createElement('div');
+            qs.style.cssText = 'text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ccc;';
+            qs.innerHTML = '<div style="font-size:10px;margin-bottom:5px;color:#666;">QR Code</div><div id="pdfQR"></div>';
+            cl.appendChild(qs);
+            document.body.appendChild(cl);
+            new QRCode(cl.querySelector('#pdfQR'), { text: web, width: 90, height: 90 });
+            await new Promise(r => setTimeout(r, 300));
+        }
+        cl.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${card.offsetWidth}px;background:#fff;color:#000;padding:12px;`;
+        if (!web) document.body.appendChild(cl);
+        const cv = await html2canvas(cl, { scale: 2, backgroundColor: '#ffffff' });
+        document.body.removeChild(cl);
+        const { jsPDF: J } = window.jspdf;
+        const pdf = new J('p', 'mm', 'a4');
+        const iw = 190, ih = (cv.height * iw) / cv.width;
+        pdf.addImage(cv.toDataURL('image/png'), 'PNG', 10, 10, iw, ih);
+        pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+        toast('PDF téléchargé');
+    } catch (e) { toast('Erreur PDF'); }
+}
+async function genPDFDetail(item) {
+    if (!canEx()) { toast('Abonnez-vous'); return; }
+    toast('Génération PDF...');
+    try {
+        const card = $('detailCard');
+        if (!card) { toast('Erreur'); return; }
+        const cl = card.cloneNode(true);
+        const a = cl.querySelector('.action-row');
+        if (a) a.remove();
+        const web = item.web && item.web !== 'null' ? item.web : '';
+        if (web) {
+            const qs = document.createElement('div');
+            qs.style.cssText = 'text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ccc;';
+            qs.innerHTML = '<div style="font-size:10px;margin-bottom:5px;color:#666;">QR Code</div><div id="pdfQR"></div>';
+            cl.appendChild(qs);
+            document.body.appendChild(cl);
+            new QRCode(cl.querySelector('#pdfQR'), { text: web, width: 90, height: 90 });
+            await new Promise(r => setTimeout(r, 300));
+        }
+        cl.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:${card.offsetWidth || 400}px;background:#fff;color:#000;padding:12px;`;
+        if (!web) document.body.appendChild(cl);
+        const cv = await html2canvas(cl, { scale: 2, backgroundColor: '#ffffff' });
+        document.body.removeChild(cl);
+        const { jsPDF: J } = window.jspdf;
+        const pdf = new J('p', 'mm', 'a4');
+        const iw = 190, ih = (cv.height * iw) / cv.width;
+        pdf.addImage(cv.toDataURL('image/png'), 'PNG', 10, 10, iw, ih);
+        pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+        toast('PDF téléchargé');
+    } catch (e) { toast('Erreur PDF'); }
+}
+
+// Share functions
+function shareItem(item) {
+    let t = `📌 ${item.name}\n🏭 Domaine: ${item.domaine}\n⚙️ Spécialité: ${item.specialite}\n📍 Ville: ${item.city}`;
+    if (item.phone) t += `\n📞 Tél: ${item.phone}`;
+    if (item.web && item.web !== 'null') t += `\n🌐 Web: ${item.web}`;
+    t += `\n\n— Connect Industry Maroc`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(t)}`, '_blank');
+}
+function shareForm(t) {
+    const url = t === 'expert' ? CFG.FORM_AUTO : CFG.FORM_FOUR;
+    curShare = `Formulaire ${t === 'expert' ? 'Expert' : 'Fournisseur'} - Connect Industry Maroc\n\n${url}`;
+    $('shareMsg').innerHTML = 'Partager le formulaire ?';
+    $('shareModal').classList.add('show');
+}
+function sendShare() { if (curShare) { window.open(`https://wa.me/?text=${encodeURIComponent(curShare)}`, '_blank'); closeModal('shareModal'); } }
+
+// QR functions
+function showQRWithShare(url, title) {
+    $('qrTitle').textContent = title || 'QR Code';
+    curQR = { url, title };
+    const c = $('qrContainer');
+    c.innerHTML = '';
+    new QRCode(c, { text: url, width: 180, height: 180 });
+    $('qrModal').classList.add('show');
+}
+function shareQRWithData() { window.open(`https://wa.me/?text=${encodeURIComponent(`${curQR.title}\n\n${curQR.url}`)}`, '_blank'); toast('Partagé!'); }
+
+// Export functions
+function exportCSV(t) {
+    if (!canEx()) { toast('Abonnez-vous'); return; }
+    const data = t === 'expert' ? experts : suppliers;
+    const headers = ['Nom', 'Domaine', 'Spécialité', 'Ville', 'Téléphone', 'Email', 'Site Web'];
+    const rows = data.map(x => [
+        `"${(x.name || '').replace(/"/g, '""')}"`,
+        `"${(x.domaine || '').replace(/"/g, '""')}"`,
+        `"${(x.specialite || '').replace(/"/g, '""')}"`,
+        `"${(x.city || '').replace(/"/g, '""')}"`,
+        `"${(x.phone || '').replace(/"/g, '""')}"`,
+        `"${(x.email || '').replace(/"/g, '""')}"`,
+        `"${(x.web || '').replace(/"/g, '""')}"`
+    ]);
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${t === 'expert' ? 'experts' : 'fournisseurs'}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+    toast(`CSV: ${data.length} enregistrements`);
+}
+
+// Render functions
+function renderFeatured(cid, items, t, iF) {
+    const c = $(cid);
+    const sec = c?.closest('.featured-section');
+    if (!items || !items.length) { if (sec) sec.style.display = 'none'; return; }
+    if (sec) sec.style.display = 'block';
+    const cs = $(`${iF ? 'four' : 'auto'}FeaturedCount`);
+    if (cs) cs.textContent = `(${items.length})`;
+    let h = '';
+    for (const item of items) {
+        const id = `${item.name}|${item.phone || ''}`;
+        const ub = (isAdmin && (t === 'four' ? apF.includes(id) : apA.includes(id))) ?
+            `<button class="unpin-featured-btn" onclick="event.stopPropagation();togglePin('${t}','${id}','${esc(item.name)}')" title="Retirer"><i class="fas fa-thumbtack"></i></button>` : '';
+        h += `<div class="featured-card" onclick='showDetail(${JSON.stringify(item).replace(/"/g, '&quot;')},"${t}")'>${ub}<div class="item-title" style="margin-bottom:8px"><i class="fas ${iF ? 'fa-building' : 'fa-user-astronaut'}"></i> ${esc(item.name)} <span class="badge badge-admin"><i class="fas fa-star"></i></span></div><div class="detail-row"><i class="fas fa-folder"></i>${esc(item.domaine)}</div><div class="detail-row"><i class="fas fa-map-marker-alt"></i>${esc(item.city)}</div><div class="detail-row"><i class="fas fa-microchip"></i>${esc(item.specialite)}</div></div>`;
+    }
+    c.innerHTML = h;
+}
+function renderItems(gid, items, t, iF) {
+    const g = $(gid);
+    if (!g) return;
+    if (!items.length) {
+        g.innerHTML = `<div class="no-results" style="grid-column:1/-1"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères</p></div>`;
+        return;
+    }
+    const cu = canEx();
+    let h = '';
+    for (const item of items) {
+        const id = `${item.name}|${item.phone || ''}`;
+        const pin = isPinned(item, t);
+        const cur = isSubscriber && subPhone && matchP(subPhone, item.phone);
+        const hp = item.phone && item.phone !== 'null';
+        const web = item.web && item.web !== 'null' ? item.web : '';
+        let cc = 'item-card';
+        if (pin) cc += ' pinned';
+        if (cur) cc += ' current';
+        let ab = '';
+        if (hp) ab += `<button class="a-btn wa" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}','_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
+        if (item.email) ab += `<button class="a-btn em" onclick="window.location.href='mailto:${item.email}'" title="Email"><i class="fas fa-envelope"></i></button>`;
+        if (web) ab += `<button class="a-btn wb" onclick="window.open('${web}','_blank')" title="Site web"><i class="fas fa-globe"></i></button>`;
+        ab += `<button class="a-btn sh" onclick="shareItem(${JSON.stringify(item).replace(/"/g, '&quot;')})" title="Partager"><i class="fas fa-share-alt"></i></button>`;
+        ab += `<button class="a-btn pd ${!cu ? 'disabled' : ''}" onclick="${cu ? `genPDF(this.closest('.item-card'), ${JSON.stringify(item).replace(/"/g, '&quot;')})` : `toast('Abonnez-vous')`}" title="PDF"><i class="fas fa-file-pdf"></i></button>`;
+        h += `<div class="${cc}"><div class="item-header"><span class="item-title"><i class="fas ${iF ? 'fa-building' : 'fa-user-astronaut'}"></i> ${esc(item.name)}${pin ? '<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i></span>' : ''}${cur ? '<span class="badge badge-subscriber"><i class="fas fa-user-check"></i></span>' : ''}</span><button class="pin-btn ${pin ? 'pinned' : ''} ${!cu ? 'disabled' : ''}" onclick="${cu ? `togglePin('${t}','${id}','${esc(item.name)}')` : `toast('Abonnez-vous')`}"><i class="fas fa-thumbtack"></i></button></div><div class="item-details"><div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div><div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div><div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>${hp ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${item.phone}</span></div>` : ''}${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>` : ''}${web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(web)}</span></div>` : ''}</div><div class="action-row">${ab}</div></div>`;
+    }
+    g.innerHTML = h;
+}
+function updSS() {
+    const ff = filtS();
+    $('fourResultCount').textContent = ff.length;
+    $('fourMatchCount').textContent = experts.filter(e => matchS(e, fF.search)).length;
+    const af = filtE();
+    $('autoResultCount').textContent = af.length;
+    $('autoMatchCount').textContent = suppliers.filter(s => matchS(s, aF.search)).length;
+}
+function renderAll() {
+    let ff = filtS(), fuc = null;
+    if (isSubscriber && subPhone) {
+        for (let i = 0; i < ff.length; i++) {
+            if (matchP(subPhone, ff[i].phone)) { fuc = ff[i]; ff.splice(i, 1); break; }
+        }
+    }
+    const fa = ff.filter(f => apF.includes(`${f.name}|${f.phone || ''}`));
+    const fr = ff.filter(f => !apF.includes(`${f.name}|${f.phone || ''}`));
+    const fp = fr.filter(f => upF.includes(`${f.name}|${f.phone || ''}`));
+    const fu = fr.filter(f => !upF.includes(`${f.name}|${f.phone || ''}`));
+    let ffin = []; if (fuc) ffin.push(fuc); ffin.push(...fp, ...fu);
+    renderFeatured('fourFeaturedItems', fa, 'four', true);
+    renderItems('fourGrid', ffin, 'four', true);
+    let af = filtE(), auc = null;
+    if (isSubscriber && subPhone) {
+        for (let i = 0; i < af.length; i++) {
+            if (matchP(subPhone, af[i].phone)) { auc = af[i]; af.splice(i, 1); break; }
+        }
+    }
+    const aa = af.filter(a => apA.includes(`${a.name}|${a.phone || ''}`));
+    const ar = af.filter(a => !apA.includes(`${a.name}|${a.phone || ''}`));
+    const ap = ar.filter(a => upA.includes(`${a.name}|${a.phone || ''}`));
+    const au = ar.filter(a => !upA.includes(`${a.name}|${a.phone || ''}`));
+    let afin = []; if (auc) afin.push(auc); afin.push(...ap, ...au);
+    renderFeatured('autoFeaturedItems', aa, 'auto', false);
+    renderItems('autoGrid', afin, 'auto', false);
+    updSS();
+    updStats();
+}
+function showDetail(item, type) {
+    $('detailTitle').textContent = item.name;
+    const hp = item.phone && item.phone !== 'null';
+    const web = item.web && item.web !== 'null' ? item.web : '';
+    const iF = type === 'four';
+    const cu = canEx();
+    let ab = '';
+    if (hp) ab += `<button class="a-btn wa" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}','_blank')"><i class="fab fa-whatsapp"></i></button>`;
+    if (item.email) ab += `<button class="a-btn em" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
+    if (web) ab += `<button class="a-btn wb" onclick="window.open('${web}','_blank')"><i class="fas fa-globe"></i></button>`;
+    ab += `<button class="a-btn sh" onclick="shareItem(${JSON.stringify(item).replace(/"/g, '&quot;')})"><i class="fas fa-share-alt"></i></button>`;
+    ab += `<button class="a-btn pd ${!cu ? 'disabled' : ''}" onclick="${cu ? `genPDFDetail(${JSON.stringify(item).replace(/"/g, '&quot;')})` : `toast('Abonnez-vous')`}"><i class="fas fa-file-pdf"></i></button>`;
+    $('detailBody').innerHTML = `<div class="item-card" style="width:100%" id="detailCard"><div class="item-header"><span class="item-title"><i class="fas ${iF ? 'fa-building' : 'fa-user-astronaut'}"></i> ${esc(item.name)}</span></div><div class="item-details"><div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div><div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div><div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>${hp ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${item.phone}</span></div>` : ''}${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>` : ''}${web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(web)}</span></div>` : ''}</div><div class="action-row">${ab}</div></div>`;
+    $('detailModal').classList.add('show');
+}
+
+// Subscription functions
+function findMember(phone) {
+    const n = fmtPhone(phone);
+    if (!n) return null;
+    for (const s of suppliers) if (s.phone && matchP(s.phone, n)) return { type: 'supplier', data: s };
+    for (const e of experts) if (e.phone && matchP(e.phone, n)) return { type: 'expert', data: e };
+    return null;
+}
+function activateSub(p, m) {
+    if (isAdmin) logoutAdmin();
+    isSubscriber = true;
+    subPhone = p;
+    subMember = m;
+    document.body.classList.add('subscriber-mode');
+    localStorage.setItem(ST.SPH, p);
+    localStorage.setItem(ST.SAC, 'true');
+    renderAll();
+    toast(`Bienvenue ${m ? m.data.name : '!'}`);
+    updMenu();
+    updBtns();
+}
+function logoutSub() {
+    isSubscriber = false;
+    subPhone = null;
+    subMember = null;
+    document.body.classList.remove('subscriber-mode');
+    localStorage.removeItem(ST.SPH);
+    localStorage.removeItem(ST.SAC);
+    renderAll();
+    toast('Déconnecté');
+    updMenu();
+    updBtns();
+}
+function checkSubscribe() {
+    const p = $('subscribePhone').value.trim();
+    if (!p) { toast('Entrez votre numéro'); return; }
+    const n = fmtPhone(p);
+    if (!n) { toast('Numéro invalide'); return; }
+    const m = findMember(n);
+    if (m) { activateSub(n, m); closeModal('subscribeModal'); }
+    else { closeModal('subscribeModal'); toast('Numéro non trouvé'); }
+}
+function loadSub() {
+    const s = localStorage.getItem(ST.SPH), a = localStorage.getItem(ST.SAC) === 'true';
+    if (s && a && findMember(s)) {
+        isSubscriber = true;
+        subPhone = s;
+        document.body.classList.add('subscriber-mode');
+        renderAll();
+        updMenu();
+        updBtns();
+    }
+}
+
+// Admin functions
+function verifyAdmin() {
+    const p = $('adminPassword').value;
+    if (p === CFG.ADMIN_PASSWORD) {
+        if (isSubscriber) logoutSub();
+        isAdmin = true;
+        document.body.classList.add('admin-mode');
+        localStorage.setItem(ST.ADM, 'true');
+        renderAll();
+        closeModal('adminModal');
+        toast('Mode Admin activé');
+        updMenu();
+        updBtns();
+        const dbMenuItem = document.querySelector('.drawer-item[data-section="dbmanager"]');
+        if (dbMenuItem) dbMenuItem.style.display = 'flex';
+    } else { toast('Mot de passe incorrect'); }
+}
+function logoutAdmin() {
+    isAdmin = false;
+    document.body.classList.remove('admin-mode');
+    localStorage.removeItem(ST.ADM);
+    renderAll();
+    toast('Mode visiteur');
+    updMenu();
+    updBtns();
+    const dbMenuItem = document.querySelector('.drawer-item[data-section="dbmanager"]');
+    if (dbMenuItem) dbMenuItem.style.display = 'none';
+}
+function loadAdmin() {
+    if (localStorage.getItem(ST.ADM) === 'true') {
+        isAdmin = true;
+        document.body.classList.add('admin-mode');
+        updMenu();
+        updBtns();
+        const dbMenuItem = document.querySelector('.drawer-item[data-section="dbmanager"]');
+        if (dbMenuItem) dbMenuItem.style.display = 'flex';
+    } else {
+        const dbMenuItem = document.querySelector('.drawer-item[data-section="dbmanager"]');
+        if (dbMenuItem) dbMenuItem.style.display = 'none';
+    }
+}
+function updBtns() {
+    const sb = $('drawerSubscribeBtn'), ab = $('drawerAdminBtn');
+    if (isSubscriber) { sb.classList.add('subscriber-active'); $('drawerSubscribeText').textContent = 'Abonné ✓'; }
+    else { sb.classList.remove('subscriber-active'); $('drawerSubscribeText').textContent = "S'abonner"; }
+    if (isAdmin) { ab.classList.add('admin-active'); $('drawerAdminText').textContent = 'Quitter Admin'; }
+    else { ab.classList.remove('admin-active'); $('drawerAdminText').textContent = 'Mode Admin'; }
+    const cu = canEx();
+    ['exportExpertBtn', 'exportFourBtn'].forEach(id => { const e = $(id); if (e) { if (!cu) e.classList.add('disabled'); else e.classList.remove('disabled'); } });
+}
+function updMenu() {
+    const n = $('drawerUserName'), s = $('drawerUserStatus'), av = document.querySelector('.drawer-avatar');
+    if (isAdmin) { n.textContent = 'Admin'; s.textContent = 'admin_mode'; if (av) av.style.borderColor = 'var(--red)'; }
+    else if (isSubscriber && subMember) { n.textContent = 'Abonné'; s.textContent = subMember.data.name.substring(0, 22); if (av) av.style.borderColor = 'var(--green)'; }
+    else { n.textContent = 'Visiteur'; s.textContent = 'guest_mode'; if (av) av.style.borderColor = 'var(--gold)'; }
+}
+
+// Theme functions
+let dark = localStorage.getItem(ST.THM) !== 'light';
+function toggleTheme() {
+    dark = !dark;
+    if (dark) { document.body.classList.remove('light-mode'); }
+    else { document.body.classList.add('light-mode'); }
+    localStorage.setItem(ST.THM, dark ? 'dark' : 'light');
+    const i = document.querySelector('#drawerThemeBtn i');
+    if (i) i.className = dark ? 'fas fa-moon' : 'fas fa-sun';
+}
+function loadTheme() {
+    if (localStorage.getItem(ST.THM) === 'light') {
+        dark = false;
+        document.body.classList.add('light-mode');
+        const i = document.querySelector('#drawerThemeBtn i');
+        if (i) i.className = 'fas fa-sun';
+    }
+}
+
+// Navigation
+function showSec(id, reset = false) {
+    if (secHist[secHist.length - 1] !== id) secHist.push(id);
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    $(`${id}Section`).classList.add('active');
+    curSec = id;
+    const logo = document.querySelector('.app-bar-logo');
+    if (logo) logo.innerHTML = `Connect <span class="hi">${STIT[id] || 'Industry'}</span>`;
+    scrollTop();
+    closeDrawer();
+    document.querySelectorAll('.drawer-item[data-section]').forEach(x => {
+        if (x.dataset.section === id) x.classList.add('active');
+        else x.classList.remove('active');
+    });
+    if (reset && ['fournisseurs', 'experts'].includes(id)) {
+        if (id === 'fournisseurs') { fF = { domaine: null, ville: null, search: "" }; $('fourSearch').value = ''; }
+        else { aF = { domaine: null, ville: null, search: "" }; $('autoSearch').value = ''; }
+        renderAll();
+    }
+}
+function handleBack() {
+    if ($('drawer').classList.contains('open')) { closeDrawer(); return; }
+    if (secHist.length > 1) { secHist.pop(); showSec(secHist[secHist.length - 1]); scrollTop(); }
+    else if (curSec !== 'about') { showSec('about'); scrollTop(); }
+    else { if (confirm('Voulez-vous quitter ?')) { window.close(); } }
+}
+
+// Clock
+function updClock() {
+    const n = new Date();
+    const ts = n.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const ds = n.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    $('appTime').textContent = ts;
+    $('appDate').textContent = ds;
+    $('drawerTime').textContent = ts;
+    $('drawerDate').textContent = ds;
+}
+setInterval(updClock, 1000);
+updClock();
+
+// Filter functions
+function openDomaineModal(t) {
+    const d = t === 'four' ? suppliers : experts;
+    const cv = t === 'four' ? fF.ville : aF.ville;
+    let doms = cv ? [...new Set(d.filter(x => x.city === cv && x.domaine).map(x => x.domaine))].sort() : [...new Set(d.map(x => x.domaine).filter(x => x))].sort();
+    if (!doms || !doms.length) { toast('Aucun domaine'); return; }
+    showList('Domaine', doms, s => { if (t === 'four') fF.domaine = s; else aF.domaine = s; renderAll(); toast(`Filtre: ${s.substring(0, 25)}`); });
+}
+function openVilleModal(t) {
+    const d = t === 'four' ? suppliers : experts;
+    const cd = t === 'four' ? fF.domaine : aF.domaine;
+    let villes = cd ? [...new Set(d.filter(x => x.domaine === cd && x.city).map(x => x.city))].sort() : [...new Set(d.map(x => x.city).filter(x => x))].sort();
+    if (!villes || !villes.length) { toast('Aucune ville'); return; }
+    showList('Ville', villes, s => { if (t === 'four') fF.ville = s; else aF.ville = s; renderAll(); toast(`Filtre: ${s.substring(0, 25)}`); });
+}
+function clearFour() { fF = { domaine: null, ville: null, search: "" }; $('fourSearch').value = ''; renderAll(); toast('Filtres effacés'); }
+function clearAuto() { aF = { domaine: null, ville: null, search: "" }; $('autoSearch').value = ''; renderAll(); toast('Filtres effacés'); }
+function openForm(t) { window.open(t === 'expert' ? CFG.FORM_AUTO : CFG.FORM_FOUR, '_blank'); }
+
+// Setup stats click handlers
+function setupStats() {
+    document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="domaines"]').forEach(c => c.addEventListener('click', () => {
+        const d = [...new Set(suppliers.map(s => s.domaine).filter(x => x))].sort();
+        if (!d.length) { toast('Aucun'); return; }
+        showList('Domaines — Fournisseurs', d, s => { showSec('fournisseurs'); fF.domaine = s; fF.ville = null; renderAll(); });
+    }));
+    document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="villes"]').forEach(c => c.addEventListener('click', () => {
+        const v = [...new Set(suppliers.map(s => s.city).filter(x => x))].sort();
+        if (!v.length) { toast('Aucune'); return; }
+        showList('Villes — Fournisseurs', v, s => { showSec('fournisseurs'); fF.ville = s; fF.domaine = null; renderAll(); });
+    }));
+    document.querySelectorAll('.stat-card[data-section="experts"][data-type="domaines"]').forEach(c => c.addEventListener('click', () => {
+        const d = [...new Set(experts.map(e => e.domaine).filter(x => x))].sort();
+        if (!d.length) { toast('Aucun'); return; }
+        showList('Domaines — Experts', d, s => { showSec('experts'); aF.domaine = s; aF.ville = null; renderAll(); });
+    }));
+    document.querySelectorAll('.stat-card[data-section="experts"][data-type="villes"]').forEach(c => c.addEventListener('click', () => {
+        const v = [...new Set(experts.map(e => e.city).filter(x => x))].sort();
+        if (!v.length) { toast('Aucune'); return; }
+        showList('Villes — Experts', v, s => { showSec('experts'); aF.ville = s; aF.domaine = null; renderAll(); });
+    }));
+    document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="total"]').forEach(c => c.addEventListener('click', () => showSec('fournisseurs')));
+    document.querySelectorAll('.stat-card[data-section="experts"][data-type="total"]').forEach(c => c.addEventListener('click', () => showSec('experts')));
+    $('fourResultsBadge').addEventListener('click', () => showSec('fournisseurs'));
+    $('fourExpertsBadge').addEventListener('click', () => showSec('experts'));
+    $('autoResultsBadge').addEventListener('click', () => showSec('experts'));
+    $('autoFourBadge').addEventListener('click', () => showSec('fournisseurs'));
+}
+
+// Initialization
+async function init() {
+    $('loading').style.display = 'flex';
+    loadTheme();
+    loadPins();
+    await loadFromCSV();
+    loadAdmin();
+    loadSub();
+    updMenu();
+    checkFirebaseConnection();
+
+    $('fourSearch').addEventListener('input', e => { clearTimeout(fT); fT = setTimeout(() => { fF.search = e.target.value.toLowerCase(); renderAll(); }, 500); });
+    $('autoSearch').addEventListener('input', e => { clearTimeout(aT); aT = setTimeout(() => { aF.search = e.target.value.toLowerCase(); renderAll(); }, 500); });
+    $('fourDomaineBtn').onclick = () => openDomaineModal('four');
+    $('fourVilleBtn').onclick = () => openVilleModal('four');
+    $('autoDomaineBtn').onclick = () => openDomaineModal('auto');
+    $('autoVilleBtn').onclick = () => openVilleModal('auto');
+    $('fourClearBtn').onclick = clearFour;
+    $('autoClearBtn').onclick = clearAuto;
+    $('menuIcon').addEventListener('click', () => openDrawer());
+    $('drawerOverlay').addEventListener('click', () => closeDrawer());
+    document.querySelectorAll('.drawer-item[data-section]').forEach(x => x.addEventListener('click', () => showSec(x.dataset.section, true)));
+    $('drawerSubscribeBtn').onclick = () => { closeDrawer(); if (isSubscriber) logoutSub(); else $('subscribeModal').classList.add('show'); };
+    $('drawerAdminBtn').onclick = () => { closeDrawer(); if (isAdmin) logoutAdmin(); else $('adminModal').classList.add('show'); };
+    $('drawerThemeBtn').onclick = () => toggleTheme();
+    $('drawerWaBtn').onclick = () => { closeDrawer(); window.open(`https://wa.me/${CFG.WA_NUM}?text=${encodeURIComponent('Bonjour')}`, '_blank'); };
+    $('drawerUnpinBtn').onclick = () => { closeDrawer(); unpinAll(); };
+    
+    const firebaseBtn = document.getElementById('drawerFirebaseBtn');
+    if (firebaseBtn) {
+        firebaseBtn.addEventListener('click', async () => {
+            if (isAdmin) {
+                if (confirm('⚠️ Envoyer toutes les données vers Firebase?\nCela synchronisera les données actuelles vers la base de données.')) {
+                    await uploadToFirebase();
+                }
+            } else {
+                toast('🔑 Mode admin requis pour envoyer à Firebase');
+            }
+        });
+    }
+
+    $('contactForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const name = $('contactName').value || 'Visiteur';
+        const contact = $('contactInfo').value || 'N/A';
+        const type = $('contactType').value;
+        const msg = $('contactMessage').value;
+        if (!msg.trim()) { toast('Message vide'); return; }
+        const types = { suggestion: 'Suggestion', reclamation: 'Réclamation', demande: 'Demande', collaboration: 'Collaboration' };
+        window.open(`https://wa.me/${CFG.WA_NUM}?text=${encodeURIComponent(`📝 Message\n\nNom: ${name}\nContact: ${contact}\nType: ${types[type]}\n\n${msg}`)}`, '_blank');
+        toast('Message envoyé');
+        $('contactName').value = '';
+        $('contactInfo').value = '';
+        $('contactMessage').value = '';
+    });
+
+    document.querySelectorAll('.type-btn').forEach(b => b.addEventListener('click', () => {
+        $('contactType').value = b.dataset.type;
+        document.querySelectorAll('.type-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+    }));
+
+    setupStats();
+    initDatabaseManager();
+    showSec('about');
+    updBtns();
+    window.addEventListener('popstate', e => { e.preventDefault(); handleBack(); });
+    history.pushState(null, null, location.href);
+    setTimeout(() => { $('loading').style.display = 'none'; }, 900);
+}
+
+// Expose globals
+Object.assign(window, {
+    showQRWithShare, shareQRWithData, closeModal, exportCSV, shareForm, sendShare,
+    togglePin, genPDF, genPDFDetail, shareItem, showDetail, checkSubscribe, verifyAdmin, openForm,
+    editDBItem, deleteDBItem, copyToClipboard
+});
+
+init();
+})();
+</script>
+</body>
+</html>
