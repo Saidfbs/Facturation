@@ -577,6 +577,32 @@ textarea.input-field{resize:vertical;}
 .loading-progress{height:100%;background:linear-gradient(90deg,var(--gold),var(--steel));border-radius:1px;animation:prog 1.2s ease infinite;}
 @keyframes prog{0%{width:0;margin-left:0}50%{width:70%;margin-left:0}100%{width:0;margin-left:100%}}
 
+/* Form section styles */
+.form-section {
+  background: var(--bg2);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+}
+.form-section .form-group {
+  margin-bottom: 15px;
+}
+.form-section label {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--txt3);
+  margin-bottom: 5px;
+  letter-spacing: 0.05em;
+}
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
 @media(max-width:768px){
   .main-content{padding-top:68px;padding-left:10px;padding-right:10px;}
   .items-grid{grid-template-columns:1fr;}
@@ -797,42 +823,87 @@ textarea.input-field{resize:vertical;}
 
   <!-- DATABASE MANAGER SECTION -->
   <div id="dbmanagerSection" class="section">
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-database"></i> Gestionnaire Firebase</div>
-      <div class="panel-body">
-        <!-- Stats -->
-        <div class="search-stats" style="margin-bottom: 15px;">
-          <div class="s-badge" id="dbStatsFirebase"><i class="fab fa-firebase"></i> <span id="dbFirebaseStatus">Vérification...</span></div>
-          <div class="s-badge" id="dbStatsCount"><i class="fas fa-chart-line"></i> <span id="dbCount">0</span> éléments</div>
-          <div class="s-badge" id="dbStatsFiltered"><i class="fas fa-filter"></i> <span id="dbFilteredCount">0</span> affichés</div>
-        </div>
-        
-        <!-- Type selector and refresh -->
-        <div class="search-wrap" style="margin-bottom: 15px;">
-          <div class="filter-grp" style="flex: 1;">
-            <button class="f-btn" id="dbTypeFourBtn" style="flex:1;"><i class="fas fa-industry"></i> Fournisseurs</button>
-            <button class="f-btn" id="dbTypeExpertBtn" style="flex:1;"><i class="fas fa-microchip"></i> Experts</button>
+    <!-- View Mode -->
+    <div id="dbViewMode">
+      <div class="panel">
+        <div class="panel-head"><i class="fas fa-database"></i> Gestionnaire Firebase</div>
+        <div class="panel-body">
+          <div class="search-stats" style="margin-bottom: 15px;">
+            <div class="s-badge" id="dbStatsFirebase"><i class="fab fa-firebase"></i> <span id="dbFirebaseStatus">Vérification...</span></div>
+            <div class="s-badge" id="dbStatsCount"><i class="fas fa-chart-line"></i> <span id="dbCount">0</span> éléments</div>
+            <div class="s-badge" id="dbStatsFiltered"><i class="fas fa-filter"></i> <span id="dbFilteredCount">0</span> affichés</div>
           </div>
-          <button class="cl-btn" id="dbRefreshBtn" style="background: var(--steel-dim);"><i class="fas fa-sync-alt"></i> Actualiser</button>
-          <button class="cl-btn" id="dbAddNewBtn" style="background: var(--green-dim); color: var(--green);"><i class="fas fa-plus"></i> Ajouter</button>
-        </div>
-        
-        <!-- Search and filters -->
-        <div class="search-wrap" style="margin-bottom: 15px;">
-          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="dbSearch" placeholder="Rechercher par nom, domaine, spécialité, ville..."></div>
-          <div class="filter-grp">
-            <button class="f-btn" id="dbDomaineBtn" title="Filtrer par domaine"><i class="fas fa-folder"></i> Domaine</button>
-            <button class="f-btn" id="dbVilleBtn" title="Filtrer par ville"><i class="fas fa-city"></i> Ville</button>
-            <button class="cl-btn" id="dbClearFiltersBtn" title="Effacer les filtres"><i class="fas fa-eraser"></i> Effacer</button>
+          
+          <div class="search-wrap" style="margin-bottom: 15px;">
+            <div class="filter-grp" style="flex: 1;">
+              <button class="f-btn" id="dbTypeFourBtn" style="flex:1;"><i class="fas fa-industry"></i> Fournisseurs</button>
+              <button class="f-btn" id="dbTypeExpertBtn" style="flex:1;"><i class="fas fa-microchip"></i> Experts</button>
+            </div>
+            <button class="cl-btn" id="dbRefreshBtn" style="background: var(--steel-dim);"><i class="fas fa-sync-alt"></i> Actualiser</button>
+            <button class="cl-btn" id="dbAddNewBtn" style="background: var(--green-dim); color: var(--green);"><i class="fas fa-plus"></i> Ajouter</button>
+          </div>
+          
+          <div class="search-wrap" style="margin-bottom: 15px;">
+            <div class="search-box"><i class="fas fa-search"></i><input type="text" id="dbSearch" placeholder="Rechercher par nom, domaine, spécialité, ville..."></div>
+            <div class="filter-grp">
+              <button class="f-btn" id="dbDomaineBtn" title="Filtrer par domaine"><i class="fas fa-folder"></i> Domaine</button>
+              <button class="f-btn" id="dbVilleBtn" title="Filtrer par ville"><i class="fas fa-city"></i> Ville</button>
+              <button class="cl-btn" id="dbClearFiltersBtn" title="Effacer les filtres"><i class="fas fa-eraser"></i> Effacer</button>
+            </div>
+          </div>
+          
+          <div id="dbActiveFilters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 32px;"></div>
+          
+          <div id="dbItemsList" class="items-grid">
+            <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
           </div>
         </div>
-        
-        <!-- Active filters display -->
-        <div id="dbActiveFilters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; min-height: 32px;"></div>
-        
-        <!-- Items list with same design as fournisseurs/experts -->
-        <div id="dbItemsList" class="items-grid" style="max-height: 500px; overflow-y: auto;">
-          <div style="text-align:center;padding:36px;"><div class="loading-line"><div class="loading-progress"></div></div></div>
+      </div>
+    </div>
+
+    <!-- Edit/Create Mode (Internal Page) -->
+    <div id="dbFormMode" style="display: none;">
+      <div class="panel">
+        <div class="panel-head">
+          <i class="fas fa-edit"></i> 
+          <span id="dbFormTitle">Ajouter un élément</span>
+          <button class="cl-btn" id="dbFormCancelBtn" style="margin-left: auto; width: auto; padding: 5px 12px;"><i class="fas fa-times"></i> Annuler</button>
+        </div>
+        <div class="panel-body">
+          <div class="form-section">
+            <div class="form-group">
+              <label><i class="fas fa-user"></i> Nom / Société *</label>
+              <input type="text" id="dbFormName" class="input-field" placeholder="Nom complet ou raison sociale">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-folder"></i> Domaine</label>
+              <input type="text" id="dbFormDomaine" class="input-field" placeholder="Ex: Automatisme, Électricité, Mécanique...">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-microchip"></i> Spécialité</label>
+              <input type="text" id="dbFormSpecialite" class="input-field" placeholder="Spécialité ou compétence principale">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-map-marker-alt"></i> Ville</label>
+              <input type="text" id="dbFormCity" class="input-field" placeholder="Casablanca, Rabat, Tanger...">
+            </div>
+            <div class="form-group">
+              <label><i class="fab fa-whatsapp"></i> Téléphone (WhatsApp)</label>
+              <input type="tel" id="dbFormPhone" class="input-field" placeholder="0612345678 ou +212612345678">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-envelope"></i> Email</label>
+              <input type="email" id="dbFormEmail" class="input-field" placeholder="contact@exemple.com">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-globe"></i> Site web</label>
+              <input type="url" id="dbFormWeb" class="input-field" placeholder="https://www.exemple.com">
+            </div>
+            <div class="form-actions">
+              <button class="mini-btn" id="dbFormSaveBtn" style="background: var(--green-dim); color: var(--green);"><i class="fas fa-save"></i> Enregistrer</button>
+              <button class="mini-btn" id="dbFormCancelBtn2"><i class="fas fa-times"></i> Annuler</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -888,11 +959,12 @@ const ST = {
 const STIT = { about: 'Connect Industry', fournisseurs: 'Fournisseurs', experts: 'Experts', dbmanager: 'Base de données' };
 
 // Database Manager variables
-let dbCurrentType = 'suppliers'; // 'suppliers' or 'experts'
+let dbCurrentType = 'suppliers';
 let dbData = [];
 let dbSearchTerm = '';
 let dbDomaineFilter = null;
 let dbVilleFilter = null;
+let dbEditingId = null; // null for add mode, id for edit mode
 
 // Helper functions
 const $ = id => document.getElementById(id);
@@ -1148,6 +1220,54 @@ function updateActiveFiltersDisplay() {
     container.innerHTML = filtersHtml;
 }
 
+function shareDBItem(item) {
+    let t = `📌 ${item.name}\n🏭 Domaine: ${item.domaine}\n⚙️ Spécialité: ${item.specialite}\n📍 Ville: ${item.city}`;
+    if (item.phone) t += `\n📞 Tél: ${item.phone}`;
+    if (item.web && item.web !== 'null') t += `\n🌐 Web: ${item.web}`;
+    t += `\n\n— Connect Industry Maroc`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(t)}`, '_blank');
+}
+
+async function genDBPDF(item) {
+    if (!canEx()) { toast('Abonnez-vous pour PDF'); return; }
+    toast('Génération PDF...');
+    try {
+        const tempCard = document.createElement('div');
+        tempCard.className = 'item-card';
+        tempCard.innerHTML = `
+            <div class="item-header"><span class="item-title"><i class="fas ${dbCurrentType === 'suppliers' ? 'fa-building' : 'fa-user-astronaut'}"></i> ${esc(item.name)}</span></div>
+            <div class="item-details">
+                <div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div>
+                <div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div>
+                <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>
+                ${item.phone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${esc(item.phone)}</span></div>` : ''}
+                ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>` : ''}
+                ${item.web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(item.web)}</span></div>` : ''}
+            </div>
+        `;
+        const web = item.web && item.web !== 'null' ? item.web : '';
+        if (web) {
+            const qs = document.createElement('div');
+            qs.style.cssText = 'text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ccc;';
+            qs.innerHTML = '<div style="font-size:10px;margin-bottom:5px;color:#666;">QR Code</div><div id="pdfQR"></div>';
+            tempCard.appendChild(qs);
+            document.body.appendChild(tempCard);
+            new QRCode(tempCard.querySelector('#pdfQR'), { text: web, width: 90, height: 90 });
+            await new Promise(r => setTimeout(r, 300));
+        }
+        tempCard.style.cssText = `position:absolute;top:-9999px;left:-9999px;width:400px;background:#fff;color:#000;padding:12px;border-radius:8px;`;
+        if (!web) document.body.appendChild(tempCard);
+        const cv = await html2canvas(tempCard, { scale: 2, backgroundColor: '#ffffff' });
+        document.body.removeChild(tempCard);
+        const { jsPDF: J } = window.jspdf;
+        const pdf = new J('p', 'mm', 'a4');
+        const iw = 190, ih = (cv.height * iw) / cv.width;
+        pdf.addImage(cv.toDataURL('image/png'), 'PNG', 10, 10, iw, ih);
+        pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+        toast('PDF téléchargé');
+    } catch (e) { toast('Erreur PDF'); }
+}
+
 function renderDBItems() {
     const container = document.getElementById('dbItemsList');
     if (!container) return;
@@ -1158,11 +1278,23 @@ function renderDBItems() {
         container.innerHTML = `<div class="no-results" style="grid-column:1/-1"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Cliquez sur Actualiser pour charger les données depuis Firebase</p></div>`;
         return;
     }
+    const cu = canEx();
     let html = '';
     for (const item of filtered) {
         const isCurrentUser = isSubscriber && subPhone && matchP(subPhone, item.phone);
+        const hp = item.phone && item.phone !== 'null';
+        const web = item.web && item.web !== 'null' ? item.web : '';
         let cardClass = 'item-card';
         if (isCurrentUser) cardClass += ' current';
+        let ab = '';
+        if (hp) ab += `<button class="a-btn wa" onclick="window.open('https://wa.me/${item.phone.replace('+', '')}','_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
+        if (item.email) ab += `<button class="a-btn em" onclick="window.location.href='mailto:${item.email}'" title="Email"><i class="fas fa-envelope"></i></button>`;
+        if (web) ab += `<button class="a-btn wb" onclick="window.open('${web}','_blank')" title="Site web"><i class="fas fa-globe"></i></button>`;
+        ab += `<button class="a-btn sh" onclick="shareDBItem(${JSON.stringify(item).replace(/"/g, '&quot;')})" title="Partager"><i class="fas fa-share-alt"></i></button>`;
+        ab += `<button class="a-btn pd ${!cu ? 'disabled' : ''}" onclick="${cu ? `genDBPDF(${JSON.stringify(item).replace(/"/g, '&quot;')})` : `toast('Abonnez-vous')`}" title="PDF"><i class="fas fa-file-pdf"></i></button>`;
+        ab += `<button class="a-btn" onclick="editDBItem('${item.id}')" title="Modifier" style="color: var(--steel);"><i class="fas fa-edit"></i></button>`;
+        ab += `<button class="a-btn" onclick="deleteDBItem('${item.id}')" title="Supprimer" style="color: var(--red);"><i class="fas fa-trash"></i></button>`;
+        
         html += `
             <div class="${cardClass}">
                 <div class="item-header">
@@ -1171,10 +1303,6 @@ function renderDBItems() {
                         ${esc(item.name)}
                         ${isCurrentUser ? '<span class="badge badge-subscriber"><i class="fas fa-user-check"></i> MON PROFIL</span>' : ''}
                     </span>
-                    <div style="display: flex; gap: 5px;">
-                        <button class="pin-btn" onclick="editDBItem('${item.id}')" title="Modifier"><i class="fas fa-edit"></i></button>
-                        <button class="pin-btn" onclick="deleteDBItem('${item.id}')" title="Supprimer" style="color: var(--red);"><i class="fas fa-trash"></i></button>
-                    </div>
                 </div>
                 <div class="item-details">
                     <div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine) || '-'}</span></div>
@@ -1182,13 +1310,9 @@ function renderDBItems() {
                     <div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city) || '-'}</span></div>
                     ${item.phone ? `<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${esc(item.phone)}</span></div>` : ''}
                     ${item.email ? `<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>` : ''}
-                    ${item.web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(item.web)}</span></div>` : ''}
+                    ${web ? `<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(web)}</span></div>` : ''}
                 </div>
-                <div class="action-row" style="justify-content: flex-end; gap: 10px;">
-                    <button class="mini-btn" onclick="copyToClipboard('${(item.phone || '').replace(/'/g, "\\'")}', 'Téléphone')"><i class="fas fa-copy"></i> Tél</button>
-                    <button class="mini-btn" onclick="copyToClipboard('${(item.email || '').replace(/'/g, "\\'")}', 'Email')"><i class="fas fa-copy"></i> Email</button>
-                    ${item.web ? `<button class="mini-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i> Site</button>` : ''}
-                </div>
+                <div class="action-row">${ab}</div>
             </div>
         `;
     }
@@ -1218,43 +1342,92 @@ function updateDBStats() {
     }
 }
 
+// Show form mode for add/edit
+function showDBFormMode(isEdit = false, item = null) {
+    const viewMode = document.getElementById('dbViewMode');
+    const formMode = document.getElementById('dbFormMode');
+    const formTitle = document.getElementById('dbFormTitle');
+    
+    if (isEdit && item) {
+        dbEditingId = item.id;
+        formTitle.textContent = `Modifier: ${item.name}`;
+        document.getElementById('dbFormName').value = item.name || '';
+        document.getElementById('dbFormDomaine').value = item.domaine || '';
+        document.getElementById('dbFormSpecialite').value = item.specialite || '';
+        document.getElementById('dbFormCity').value = item.city || '';
+        document.getElementById('dbFormPhone').value = item.phone || '';
+        document.getElementById('dbFormEmail').value = item.email || '';
+        document.getElementById('dbFormWeb').value = item.web || '';
+    } else {
+        dbEditingId = null;
+        formTitle.textContent = `Ajouter un ${dbCurrentType === 'suppliers' ? 'Fournisseur' : 'Expert'}`;
+        document.getElementById('dbFormName').value = '';
+        document.getElementById('dbFormDomaine').value = '';
+        document.getElementById('dbFormSpecialite').value = '';
+        document.getElementById('dbFormCity').value = '';
+        document.getElementById('dbFormPhone').value = '';
+        document.getElementById('dbFormEmail').value = '';
+        document.getElementById('dbFormWeb').value = '';
+    }
+    
+    viewMode.style.display = 'none';
+    formMode.style.display = 'block';
+    scrollTop();
+}
+
+function hideDBFormMode() {
+    const viewMode = document.getElementById('dbViewMode');
+    const formMode = document.getElementById('dbFormMode');
+    viewMode.style.display = 'block';
+    formMode.style.display = 'none';
+    dbEditingId = null;
+    scrollTop();
+}
+
+async function saveDBForm() {
+    const formData = {
+        name: document.getElementById('dbFormName').value.trim(),
+        domaine: document.getElementById('dbFormDomaine').value.trim(),
+        specialite: document.getElementById('dbFormSpecialite').value.trim(),
+        city: document.getElementById('dbFormCity').value.trim(),
+        phone: document.getElementById('dbFormPhone').value.trim(),
+        email: document.getElementById('dbFormEmail').value.trim(),
+        web: document.getElementById('dbFormWeb').value.trim()
+    };
+    
+    if (!formData.name) {
+        toast('Le nom est requis');
+        return;
+    }
+    
+    try {
+        if (dbEditingId) {
+            // Update existing
+            await database.ref(`${dbCurrentType}/${dbEditingId}`).update({
+                ...formData,
+                updatedAt: new Date().toISOString()
+            });
+            toast('✅ Élément mis à jour');
+        } else {
+            // Add new
+            await database.ref(dbCurrentType).push({
+                ...formData,
+                createdAt: new Date().toISOString()
+            });
+            toast('✅ Nouvel élément ajouté');
+        }
+        hideDBFormMode();
+        await loadDBData();
+    } catch (error) {
+        console.error('Save error:', error);
+        toast('❌ Erreur lors de l\'enregistrement');
+    }
+}
+
 function editDBItem(id) {
     const item = dbData.find(i => i.id === id);
     if (!item) return;
-    document.getElementById('editId').value = id;
-    document.getElementById('editName').value = item.name || '';
-    document.getElementById('editDomaine').value = item.domaine || '';
-    document.getElementById('editSpecialite').value = item.specialite || '';
-    document.getElementById('editCity').value = item.city || '';
-    document.getElementById('editPhone').value = item.phone || '';
-    document.getElementById('editEmail').value = item.email || '';
-    document.getElementById('editWeb').value = item.web || '';
-    document.getElementById('editModalTitle').textContent = `Modifier: ${item.name}`;
-    document.getElementById('editItemModal').classList.add('show');
-}
-
-async function saveEditItem() {
-    const id = document.getElementById('editId').value;
-    const updatedItem = {
-        name: document.getElementById('editName').value,
-        domaine: document.getElementById('editDomaine').value,
-        specialite: document.getElementById('editSpecialite').value,
-        city: document.getElementById('editCity').value,
-        phone: document.getElementById('editPhone').value,
-        email: document.getElementById('editEmail').value,
-        web: document.getElementById('editWeb').value,
-        updatedAt: new Date().toISOString()
-    };
-    if (!updatedItem.name) { toast('Le nom est requis'); return; }
-    try {
-        await database.ref(`${dbCurrentType}/${id}`).update(updatedItem);
-        toast('✅ Élément mis à jour');
-        closeModal('editItemModal');
-        await loadDBData();
-    } catch (error) {
-        console.error('Update error:', error);
-        toast('❌ Erreur lors de la mise à jour');
-    }
+    showDBFormMode(true, item);
 }
 
 async function deleteDBItem(id) {
@@ -1271,46 +1444,8 @@ async function deleteDBItem(id) {
 }
 
 function showAddDBItem() {
-    // Create form in a modal instead of separate section
-    document.getElementById('editId').value = '';
-    document.getElementById('editName').value = '';
-    document.getElementById('editDomaine').value = '';
-    document.getElementById('editSpecialite').value = '';
-    document.getElementById('editCity').value = '';
-    document.getElementById('editPhone').value = '';
-    document.getElementById('editEmail').value = '';
-    document.getElementById('editWeb').value = '';
-    document.getElementById('editModalTitle').textContent = `Ajouter un ${dbCurrentType === 'suppliers' ? 'Fournisseur' : 'Expert'}`;
-    document.getElementById('editItemModal').classList.add('show');
+    showDBFormMode(false);
 }
-
-async function saveNewItem() {
-    const newItem = {
-        name: document.getElementById('editName').value,
-        domaine: document.getElementById('editDomaine').value,
-        specialite: document.getElementById('editSpecialite').value,
-        city: document.getElementById('editCity').value,
-        phone: document.getElementById('editPhone').value,
-        email: document.getElementById('editEmail').value,
-        web: document.getElementById('editWeb').value,
-        createdAt: new Date().toISOString()
-    };
-    if (!newItem.name) { toast('Le nom est requis'); return; }
-    try {
-        await database.ref(dbCurrentType).push(newItem);
-        toast('✅ Nouvel élément ajouté');
-        closeModal('editItemModal');
-        await loadDBData();
-    } catch (error) {
-        console.error('Add error:', error);
-        toast('❌ Erreur lors de l\'ajout');
-    }
-}
-
-window.saveEditItem = function() {
-    const id = document.getElementById('editId').value;
-    if (id) { saveEditItem(); } else { saveNewItem(); }
-};
 
 function initDatabaseManager() {
     const typeFourBtn = document.getElementById('dbTypeFourBtn');
@@ -1321,6 +1456,9 @@ function initDatabaseManager() {
     const domaineBtn = document.getElementById('dbDomaineBtn');
     const villeBtn = document.getElementById('dbVilleBtn');
     const clearFiltersBtn = document.getElementById('dbClearFiltersBtn');
+    const formSaveBtn = document.getElementById('dbFormSaveBtn');
+    const formCancelBtn = document.getElementById('dbFormCancelBtn');
+    const formCancelBtn2 = document.getElementById('dbFormCancelBtn2');
     
     if (typeFourBtn) {
         typeFourBtn.addEventListener('click', async () => {
@@ -1354,6 +1492,10 @@ function initDatabaseManager() {
     if (domaineBtn) domaineBtn.addEventListener('click', () => { if (dbData.length > 0) openDBDomaineModal(); else toast('Chargez les données d\'abord'); });
     if (villeBtn) villeBtn.addEventListener('click', () => { if (dbData.length > 0) openDBVilleModal(); else toast('Chargez les données d\'abord'); });
     if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', () => { clearDBFilters(); });
+    if (formSaveBtn) formSaveBtn.addEventListener('click', () => { saveDBForm(); });
+    if (formCancelBtn) formCancelBtn.addEventListener('click', () => { hideDBFormMode(); });
+    if (formCancelBtn2) formCancelBtn2.addEventListener('click', () => { hideDBFormMode(); });
+    
     if (typeFourBtn) typeFourBtn.classList.add('active');
 }
 
@@ -1823,9 +1965,20 @@ function showSec(id, reset = false) {
         else { aF = { domaine: null, ville: null, search: "" }; $('autoSearch').value = ''; }
         renderAll();
     }
+    // Reset form mode when leaving dbmanager
+    if (id !== 'dbmanager') {
+        hideDBFormMode();
+    }
 }
 function handleBack() {
     if ($('drawer').classList.contains('open')) { closeDrawer(); return; }
+    if (curSec === 'dbmanager') {
+        const formMode = document.getElementById('dbFormMode');
+        if (formMode && formMode.style.display === 'block') {
+            hideDBFormMode();
+            return;
+        }
+    }
     if (secHist.length > 1) { secHist.pop(); showSec(secHist[secHist.length - 1]); scrollTop(); }
     else if (curSec !== 'about') { showSec('about'); scrollTop(); }
     else { if (confirm('Voulez-vous quitter ?')) { window.close(); } }
