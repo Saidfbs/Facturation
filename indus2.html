@@ -82,7 +82,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .drawer-ctrls{display:flex;gap:5px;margin-top:2px;}
 .dctrl{flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--tx2);padding:5px 7px;border-radius:var(--r6);cursor:pointer;font-size:0.58rem;font-family:var(--ff-mono);display:flex;align-items:center;justify-content:center;gap:3px;transition:all 0.18s;}
 .dctrl:hover{border-color:var(--gold);color:var(--gold);}
-.dctrl.connected{background:var(--mint-dim);border-color:var(--mint);color:var(--mint);}
 #syncBtn{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
 #syncBtn:hover{background:var(--cyan);border-color:var(--cyan);color:#000;}
 .drawer-body{flex:1;padding:8px 8px 20px;}
@@ -98,8 +97,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .nav-item.nav-adm{background:var(--red-dim);color:var(--red);border-color:var(--red-border);}
 .nav-item.nav-adm i{color:var(--red);opacity:1;}
 .nav-divider{height:1px;background:var(--border);margin:4px 8px;}
-.admin-only{display:none;}
-body.adm-mode .admin-only{display:flex;}
 
 /* ===== MAIN ===== */
 .main{padding:76px 14px 50px;max-width:1080px;margin:0 auto;position:relative;z-index:1;}
@@ -329,15 +326,15 @@ textarea.ifield{resize:vertical;}
         </div>
       </div>
       <div class="drawer-ctrls">
-        <button class="dctrl" id="syncBtn"><i class="fas fa-sync-alt"></i> Sync CSV→DB</button>
+        <button class="dctrl" id="syncBtn" style="background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);display:none;"><i class="fas fa-sync-alt"></i> Sync CSV→DB</button>
         <button class="dctrl" id="themeBtn"><i class="fas fa-moon"></i></button>
       </div>
     </div>
     <div class="drawer-body">
       <div class="nav-sec">// navigation</div>
       <button class="nav-item" data-sec="about"><i class="fas fa-home"></i> Accueil</button>
-      <button class="nav-item admin-only" data-sec="fournisseurs"><i class="fas fa-industry"></i> Fournisseurs CSV <span style="font-size:0.45rem;background:var(--red);color:#000;padding:2px 5px;border-radius:8px;margin-left:8px;">ADMIN</span></button>
-      <button class="nav-item admin-only" data-sec="experts"><i class="fas fa-microchip"></i> Experts CSV <span style="font-size:0.45rem;background:var(--red);color:#000;padding:2px 5px;border-radius:8px;margin-left:8px;">ADMIN</span></button>
+      <button class="nav-item csv-section" data-sec="fournisseurs" style="display:none;"><i class="fas fa-industry"></i> Fournisseurs CSV <span style="font-size:0.45rem;background:var(--red);color:#000;padding:2px 5px;border-radius:8px;margin-left:8px;">ADMIN</span></button>
+      <button class="nav-item csv-section" data-sec="experts" style="display:none;"><i class="fas fa-microchip"></i> Experts CSV <span style="font-size:0.45rem;background:var(--red);color:#000;padding:2px 5px;border-radius:8px;margin-left:8px;">ADMIN</span></button>
       <div class="nav-divider"></div>
       <button class="nav-item" data-sec="db-fournisseurs"><i class="fas fa-database"></i> Fournisseurs</button>
       <button class="nav-item" data-sec="db-experts"><i class="fas fa-database"></i> Experts</button>
@@ -401,8 +398,8 @@ textarea.ifield{resize:vertical;}
       </div>
     </div>
 
-    <!-- Admin Stats Panel (visible only for admin) -->
-    <div class="panel admin-only" id="adminStatsPanel" style="display:none;">
+    <!-- Admin Stats Panel -->
+    <div class="panel" id="adminStatsPanel" style="display:none;">
       <div class="ph"><i class="fas fa-chart-line"></i> Synchronisation CSV → DB</div>
       <div class="pb">
         <div class="stats-row">
@@ -506,10 +503,6 @@ textarea.ifield{resize:vertical;}
           </div>
         </div>
         <div class="filter-tags" id="fourFilterTags"></div>
-        <div id="fourFeatured" class="feat-wrap" style="display:none;">
-          <div class="feat-head"><span><i class="fas fa-star"></i> À la une</span><span id="fourFeatCnt"></span></div>
-          <div class="feat-scroll"><div id="fourFeatItems" class="feat-items"></div></div>
-        </div>
         <div id="fourGrid" class="items-grid"></div>
       </div>
     </div>
@@ -531,22 +524,18 @@ textarea.ifield{resize:vertical;}
           </div>
         </div>
         <div class="filter-tags" id="autoFilterTags"></div>
-        <div id="autoFeatured" class="feat-wrap" style="display:none;">
-          <div class="feat-head"><span><i class="fas fa-star"></i> À la une</span><span id="autoFeatCnt"></span></div>
-          <div class="feat-scroll"><div id="autoFeatItems" class="feat-items"></div></div>
-        </div>
         <div id="autoGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- DB FOURNISSEURS (Tous les utilisateurs) -->
+  <!-- DB FOURNISSEURS -->
   <div id="db-fournisseursSection" class="section">
     <div class="panel">
       <div class="ph"><i class="fas fa-database"></i> Fournisseurs — Base de données
         <div class="ph-right">
           <span class="count-pill" id="dbfcs-cnt-pill">0</span>
-          <button class="fbtn add-btn admin-only" id="dbFourAddBtn" title="Ajouter (Admin)"><i class="fas fa-plus"></i></button>
+          <button class="fbtn add-btn" id="dbFourAddBtn" style="display:none;" title="Ajouter (Admin)"><i class="fas fa-plus"></i></button>
         </div>
       </div>
       <div class="pb">
@@ -559,22 +548,18 @@ textarea.ifield{resize:vertical;}
           </div>
         </div>
         <div class="filter-tags" id="dbFourFilterTags"></div>
-        <div id="dbFourFeatured" class="feat-wrap" style="display:none;">
-          <div class="feat-head"><span><i class="fas fa-star"></i> À la une</span><span id="dbFourFeatCnt"></span></div>
-          <div class="feat-scroll"><div id="dbFourFeatItems" class="feat-items"></div></div>
-        </div>
         <div id="dbFourGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- DB EXPERTS (Tous les utilisateurs) -->
+  <!-- DB EXPERTS -->
   <div id="db-expertsSection" class="section">
     <div class="panel">
       <div class="ph"><i class="fas fa-database"></i> Experts — Base de données
         <div class="ph-right">
           <span class="count-pill" id="dbecs-cnt-pill">0</span>
-          <button class="fbtn add-btn admin-only" id="dbExpAddBtn" title="Ajouter (Admin)"><i class="fas fa-plus"></i></button>
+          <button class="fbtn add-btn" id="dbExpAddBtn" style="display:none;" title="Ajouter (Admin)"><i class="fas fa-plus"></i></button>
         </div>
       </div>
       <div class="pb">
@@ -587,10 +572,6 @@ textarea.ifield{resize:vertical;}
           </div>
         </div>
         <div class="filter-tags" id="dbExpFilterTags"></div>
-        <div id="dbExpFeatured" class="feat-wrap" style="display:none;">
-          <div class="feat-head"><span><i class="fas fa-star"></i> À la une</span><span id="dbExpFeatCnt"></span></div>
-          <div class="feat-scroll"><div id="dbExpFeatItems" class="feat-items"></div></div>
-        </div>
         <div id="dbExpGrid" class="items-grid"></div>
       </div>
     </div>
@@ -622,15 +603,12 @@ const CFG={
   FORM_FOUR:"https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform"
 };
 
-// Firebase init
 const DB_URL="https://said-rahil-default-rtdb.firebaseio.com/";
 firebase.initializeApp({databaseURL:DB_URL});
 const db=firebase.database();
 
-// Storage keys
 const SK={APF:'adminPF',APA:'adminPA',UPF:'userPF',UPA:'userPA',ADBF:'adminDBF',ADBA:'adminDBA',UDBF:'userDBF',UDBA:'userDBA',ADM:'adminMode',SPH:'subPhone',SAC:'subActive',THM:'theme'};
 
-// State
 let csvExperts=[],csvSuppliers=[],dbFourData=[],dbExpData=[];
 let isAdmin=false,isSub=false,subPhone=null,subMember=null;
 let fF={dom:null,vil:null,q:''},aF={dom:null,vil:null,q:''};
@@ -652,170 +630,80 @@ function canEx(){return isSub||isAdmin;}
 function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
 window.togglePassword=id=>{const i=$(id);i.type=i.type==='password'?'text':'password';};
 
-// Clock
 function updClock(){const n=new Date();$('appTime').textContent=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});$('appDate').textContent=n.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}
 setInterval(updClock,1000);updClock();
 
-// Drawer
 function openDrawer(){$('drawerOverlay').classList.add('open');$('drawer').classList.add('open');}
 function closeDrawer(){$('drawerOverlay').classList.remove('open');$('drawer').classList.remove('open');}
 $('menuBtn').onclick=openDrawer;
 $('drawerOverlay').onclick=closeDrawer;
 
-// Theme
 let dark=localStorage.getItem(SK.THM)!=='light';
 function toggleTheme(){dark=!dark;document.body.classList.toggle('light-mode',!dark);localStorage.setItem(SK.THM,dark?'dark':'light');const i=document.querySelector('#themeBtn i');if(i)i.className=dark?'fas fa-moon':'fas fa-sun';}
 function loadTheme(){if(localStorage.getItem(SK.THM)==='light'){dark=false;document.body.classList.add('light-mode');const i=document.querySelector('#themeBtn i');if(i)i.className='fas fa-sun';}}
 $('themeBtn').onclick=toggleTheme;
 
-// CSV loading
 async function loadCSV(url){try{const r=await fetch(url);const t=await r.text();const L=t.split(/\r?\n/);if(L.length<2)return[];const D=[];for(let i=1;i<L.length;i++){if(!L[i].trim())continue;const p=L[i].split(',').map(x=>x.replace(/["']/g,'').trim());if(p.length<5)continue;D.push({name:p[1]||'',domaine:p[2]||'',specialite:p[3]||'',city:p[4]||'',phone:fmtP(p[5]||''),email:p[6]||'',web:p[7]||''});}return D;}catch(e){return[];}}
 
-async function loadCSVData(){const[e,s]=await Promise.all([loadCSV(CFG.CSV_AUTO),loadCSV(CFG.CSV_FOUR)]);csvExperts=e;csvSuppliers=s;renderAll();updHomeStats();}
+async function loadCSVData(){const[e,s]=await Promise.all([loadCSV(CFG.CSV_AUTO),loadCSV(CFG.CSV_FOUR)]);csvExperts=e;csvSuppliers=s;if(isAdmin){renderCSVFour();renderCSVAuto();}updHomeStats();}
 
-// Firebase DB
 async function loadDBData(type){try{const snap=await db.ref(type).once('value');const data=snap.val();return data?Object.keys(data).map(k=>({id:k,...data[k]})):[];}catch(e){return[];}}
 async function loadDBFour(){dbFourData=await loadDBData('suppliers');renderDBFour();updDBStats();}
 async function loadDBExp(){dbExpData=await loadDBData('experts');renderDBExp();updDBStats();}
 
-// Sync CSV to Firebase avec progression
-async function syncCSVtoFirebase() {
-  if (!isAdmin) {
-    toast('🔒 Accès réservé à l\'administrateur');
-    return;
-  }
+function updateLastSyncTime(){
+  const lastSync=localStorage.getItem('lastSyncTime');
+  if(lastSync){const date=new Date(lastSync);const timeStr=date.toLocaleString('fr-FR');const span=$('#lastSyncTime');if(span)span.textContent=timeStr;}
+  else{const span=$('#lastSyncTime');if(span)span.textContent='Jamais';}
+}
+
+function updateAdminStats(){
+  if(!isAdmin)return;
+  if($('csvFourCount'))$('csvFourCount').textContent=csvSuppliers.length;
+  if($('csvExpCount'))$('csvExpCount').textContent=csvExperts.length;
+  if($('dbFourCount'))$('dbFourCount').textContent=dbFourData.length;
+  if($('dbExpCount'))$('dbExpCount').textContent=dbExpData.length;
+  const fourSynced=csvSuppliers.length===dbFourData.length;
+  const expSynced=csvExperts.length===dbExpData.length;
+  const allSynced=fourSynced&&expSynced;
+  if($('syncStatus')){$('syncStatus').innerHTML=fourSynced?'✓ Fournisseurs':'⚠️ Fournisseurs';$('syncStatus').style.color=fourSynced?'var(--mint)':'var(--red)';}
+  if($('syncTotalStatus')){$('syncTotalStatus').innerHTML=allSynced?'✓ Synchro':'⚠️ À synchroniser';$('syncTotalStatus').style.color=allSynced?'var(--mint)':'var(--red)';}
+}
+
+async function syncCSVtoFirebase(){
+  if(!isAdmin){toast('🔒 Accès réservé');return;}
+  if(!csvSuppliers.length&&!csvExperts.length){toast('⚠️ Aucune donnée CSV');return;}
+  if(!confirm(`🔄 Synchronisation CSV → Firebase\n\n📊 Fournisseurs CSV: ${csvSuppliers.length}\n📊 Experts CSV: ${csvExperts.length}\n\n⚠️ Les données existantes seront remplacées.`))return;
   
-  if (!csvSuppliers.length && !csvExperts.length) {
-    toast('⚠️ Aucune donnée CSV à synchroniser');
-    return;
-  }
-  
-  const confirmSync = confirm(
-    `🔄 Synchronisation CSV → Firebase\n\n` +
-    `📊 Fournisseurs CSV: ${csvSuppliers.length}\n` +
-    `📊 Experts CSV: ${csvExperts.length}\n\n` +
-    `⚠️ Attention: Les données existantes seront remplacées.\n` +
-    `Confirmez-vous la synchronisation ?`
-  );
-  
-  if (!confirmSync) return;
-  
-  // Show progress
-  const progressDiv = document.createElement('div');
-  progressDiv.className = 'sync-progress';
-  progressDiv.innerHTML = `
-    <h4><i class="fas fa-sync-alt fa-spin"></i> Synchronisation...</h4>
-    <div class="progress-bar"><div class="progress-fill" id="syncProgressFill"></div></div>
-    <p id="syncProgressText">Préparation...</p>
-  `;
+  const progressDiv=document.createElement('div');
+  progressDiv.className='sync-progress';
+  progressDiv.innerHTML=`<h4><i class="fas fa-sync-alt fa-spin"></i> Synchronisation...</h4><div class="progress-bar"><div class="progress-fill" id="syncProgressFill"></div></div><p id="syncProgressText">Préparation...</p>`;
   document.body.appendChild(progressDiv);
-  
-  const updateProgress = (percent, text) => {
-    const fill = document.getElementById('syncProgressFill');
-    const txt = document.getElementById('syncProgressText');
-    if (fill) fill.style.width = percent + '%';
-    if (txt) txt.textContent = text;
-  };
-  
-  try {
-    updateProgress(10, 'Suppression des anciennes données...');
-    await db.ref('suppliers').remove();
-    await db.ref('experts').remove();
-    
-    updateProgress(30, 'Synchronisation des fournisseurs...');
-    const fourPromises = csvSuppliers.map((supplier, idx) => {
-      updateProgress(30 + (idx / csvSuppliers.length) * 40, `Fournisseurs: ${idx+1}/${csvSuppliers.length}`);
-      return db.ref('suppliers').push({
-        ...supplier,
-        syncedAt: new Date().toISOString(),
-        syncedFrom: 'google_sheets'
-      });
-    });
-    
-    await Promise.all(fourPromises);
-    
-    updateProgress(70, 'Synchronisation des experts...');
-    const expPromises = csvExperts.map((expert, idx) => {
-      updateProgress(70 + (idx / csvExperts.length) * 25, `Experts: ${idx+1}/${csvExperts.length}`);
-      return db.ref('experts').push({
-        ...expert,
-        syncedAt: new Date().toISOString(),
-        syncedFrom: 'google_sheets'
-      });
-    });
-    
-    await Promise.all(expPromises);
-    
-    updateProgress(100, 'Finalisation...');
-    await new Promise(r => setTimeout(r, 500));
-    
-    // Recharger les données DB
-    await Promise.all([loadDBFour(), loadDBExp()]);
-    
-    // Enregistrer l'heure de synchronisation
-    localStorage.setItem('lastSyncTime', new Date().toISOString());
+  const updateProgress=(p,t)=>{const f=document.getElementById('syncProgressFill');const txt=document.getElementById('syncProgressText');if(f)f.style.width=p+'%';if(txt)txt.textContent=t;};
+  try{
+    updateProgress(10,'Suppression...');await db.ref('suppliers').remove();await db.ref('experts').remove();
+    updateProgress(30,'Fournisseurs...');
+    for(let i=0;i<csvSuppliers.length;i++){await db.ref('suppliers').push({...csvSuppliers[i],syncedAt:new Date().toISOString()});updateProgress(30+(i/csvSuppliers.length)*40,`Fournisseurs: ${i+1}/${csvSuppliers.length}`);}
+    updateProgress(70,'Experts...');
+    for(let i=0;i<csvExperts.length;i++){await db.ref('experts').push({...csvExperts[i],syncedAt:new Date().toISOString()});updateProgress(70+(i/csvExperts.length)*25,`Experts: ${i+1}/${csvExperts.length}`);}
+    updateProgress(100,'Finalisation...');
+    await new Promise(r=>setTimeout(r,500));
+    await Promise.all([loadDBFour(),loadDBExp()]);
+    localStorage.setItem('lastSyncTime',new Date().toISOString());
     updateLastSyncTime();
-    
     progressDiv.remove();
-    toast(`✅ Synchronisation terminée !\n📊 ${csvSuppliers.length} fournisseurs\n📊 ${csvExperts.length} experts`);
-    
-    // Mettre à jour les stats admin
-    if (isAdmin) updateAdminStats();
-    
-  } catch (error) {
-    progressDiv.remove();
-    console.error('Erreur sync:', error);
-    toast(`❌ Erreur: ${error.message}`);
-  }
+    toast(`✅ Synchronisation terminée !`);
+    if(isAdmin)updateAdminStats();
+  }catch(e){progressDiv.remove();toast(`❌ Erreur: ${e.message}`);}
 }
 
-// Update last sync time
-function updateLastSyncTime() {
-  const lastSync = localStorage.getItem('lastSyncTime');
-  if (lastSync) {
-    const date = new Date(lastSync);
-    const timeStr = date.toLocaleString('fr-FR');
-    const lastSyncSpan = $('#lastSyncTime');
-    if (lastSyncSpan) lastSyncSpan.textContent = timeStr;
-  } else {
-    const lastSyncSpan = $('#lastSyncTime');
-    if (lastSyncSpan) lastSyncSpan.textContent = 'Jamais';
-  }
-}
-
-// Update admin stats
-function updateAdminStats() {
-  if (!isAdmin) return;
-  if ($('csvFourCount')) $('csvFourCount').textContent = csvSuppliers.length;
-  if ($('csvExpCount')) $('csvExpCount').textContent = csvExperts.length;
-  if ($('dbFourCount')) $('dbFourCount').textContent = dbFourData.length;
-  if ($('dbExpCount')) $('dbExpCount').textContent = dbExpData.length;
-  
-  const fourSynced = csvSuppliers.length === dbFourData.length;
-  const expSynced = csvExperts.length === dbExpData.length;
-  const allSynced = fourSynced && expSynced;
-  
-  if ($('syncStatus')) {
-    $('syncStatus').innerHTML = fourSynced ? '✓ Fournisseurs' : '⚠️ Fournisseurs';
-    $('syncStatus').style.color = fourSynced ? 'var(--mint)' : 'var(--red)';
-  }
-  if ($('syncTotalStatus')) {
-    $('syncTotalStatus').innerHTML = allSynced ? '✓ Synchro' : '⚠️ À synchroniser';
-    $('syncTotalStatus').style.color = allSynced ? 'var(--mint)' : 'var(--red)';
-  }
-}
-
-// Attach sync button
-$('syncBtn').onclick = syncCSVtoFirebase;
-
-// Pins management
 function loadPins(){upF=JSON.parse(localStorage.getItem(SK.UPF)||'[]');upA=JSON.parse(localStorage.getItem(SK.UPA)||'[]');apF=JSON.parse(localStorage.getItem(SK.APF)||'[]');apA=JSON.parse(localStorage.getItem(SK.APA)||'[]');uDbF=JSON.parse(localStorage.getItem(SK.UDBF)||'[]');uDbA=JSON.parse(localStorage.getItem(SK.UDBA)||'[]');aDbF=JSON.parse(localStorage.getItem(SK.ADBF)||'[]');aDbA=JSON.parse(localStorage.getItem(SK.ADBA)||'[]');}
 function savePins(t,db_){if(!db_){if(t==='four'){localStorage.setItem(SK.UPF,JSON.stringify(upF));localStorage.setItem(SK.APF,JSON.stringify(apF));}else{localStorage.setItem(SK.UPA,JSON.stringify(upA));localStorage.setItem(SK.APA,JSON.stringify(apA));}}else{if(t==='four'){localStorage.setItem(SK.UDBF,JSON.stringify(uDbF));localStorage.setItem(SK.ADBF,JSON.stringify(aDbF));}else{localStorage.setItem(SK.UDBA,JSON.stringify(uDbA));localStorage.setItem(SK.ADBA,JSON.stringify(aDbA));}}}
 function getPinId(item){return`${item.name}|${item.phone||''}`;}
 function isPU(item,t,db_){const id=getPinId(item);if(!db_)return t==='four'?upF.includes(id):upA.includes(id);return t==='four'?uDbF.includes(id):uDbA.includes(id);}
 function isPA(item,t,db_){const id=getPinId(item);if(!db_)return t==='four'?apF.includes(id):apA.includes(id);return t==='four'?aDbF.includes(id):aDbA.includes(id);}
 
-function togglePin(t,id,name,isDB){if(!canEx()){toast('Abonnez-vous pour épingler');return;}
+function togglePin(t,id,name,isDB){if(!canEx()){toast('Abonnez-vous');return;}
 if(isDB){
   if(isAdmin){const arr=t==='four'?aDbF:aDbA;const i=arr.indexOf(id);if(i<0){arr.push(id);toast(`⭐ ${name} → À la une`);}else{arr.splice(i,1);toast(`${name} retiré`);}savePins(t,true);}
   else{const arr=t==='four'?uDbF:uDbA;const i=arr.indexOf(id);if(i<0){arr.push(id);toast(`📌 ${name} épinglé`);}else{arr.splice(i,1);toast(`${name} désépinglé`);}savePins(t,true);}
@@ -823,40 +711,19 @@ if(isDB){
 }else{
   if(isAdmin){const arr=t==='four'?apF:apA;const i=arr.indexOf(id);if(i<0){arr.push(id);toast(`⭐ ${name} → À la une`);}else{arr.splice(i,1);toast(`${name} retiré`);}savePins(t,false);}
   else{const arr=t==='four'?upF:upA;const i=arr.indexOf(id);if(i<0){arr.push(id);toast(`📌 ${name} épinglé`);}else{arr.splice(i,1);toast(`${name} désépinglé`);}savePins(t,false);}
-  renderAll();
+  if(isAdmin){renderCSVFour();renderCSVAuto();}
 }}
 window.togglePin=togglePin;
 
-function unpinAll(){if(isAdmin){apF=[];apA=[];aDbF=[];aDbA=[];savePins('four',false);savePins('auto',false);savePins('four',true);savePins('auto',true);toast('À la une effacé');}else if(isSub){upF=[];upA=[];uDbF=[];uDbA=[];savePins('four',false);savePins('auto',false);savePins('four',true);savePins('auto',true);toast('Épinglages annulés');}else{toast('Abonnez-vous');return;}renderAll();renderDBFour();renderDBExp();}
+function unpinAll(){if(isAdmin){apF=[];apA=[];aDbF=[];aDbA=[];savePins('four',false);savePins('auto',false);savePins('four',true);savePins('auto',true);toast('À la une effacé');}else if(isSub){upF=[];upA=[];uDbF=[];uDbA=[];savePins('four',false);savePins('auto',false);savePins('four',true);savePins('auto',true);toast('Épinglages annulés');}else{toast('Abonnez-vous');return;}if(isAdmin){renderCSVFour();renderCSVAuto();}renderDBFour();renderDBExp();}
 $('unpinBtn').onclick=()=>{closeDrawer();unpinAll();};
 
-// Filter tags
 function renderFTags(cid,filters,fVar,renderFn,sId){const c=$(cid);if(!c)return;let h='';if(filters.dom)h+=`<span class="ftag"><i class="fas fa-folder"></i>${esc(filters.dom)}<button onclick="${fVar}.dom=null;${renderFn}()">✕</button></span>`;if(filters.vil)h+=`<span class="ftag"><i class="fas fa-city"></i>${esc(filters.vil)}<button onclick="${fVar}.vil=null;${renderFn}()">✕</button></span>`;if(filters.q)h+=`<span class="ftag"><i class="fas fa-search"></i>${esc(filters.q)}<button onclick="${fVar}.q='';document.getElementById('${sId}').value='';${renderFn}()">✕</button></span>`;c.innerHTML=h;}
 
-// List modal
 function showList(title,items,onSel){$('listTitle').textContent=title;const c=$('listItems');c.innerHTML='';if(!items.length){c.innerHTML='<div class="litem"><span>Aucun élément</span></div>';}else items.forEach(item=>{const d=document.createElement('div');d.className='litem';d.innerHTML=`<span>${esc(item)}</span><em>→</em>`;d.onclick=()=>{onSel(item);closeModal('listModal');};c.appendChild(d);});$('listModal').classList.add('show');}
 function openDomModal(data,curVil,onSel){let d=curVil?[...new Set(data.filter(x=>x.city===curVil&&x.domaine).map(x=>x.domaine))].sort():[...new Set(data.map(x=>x.domaine).filter(x=>x))].sort();if(!d.length){toast('Aucun domaine');return;}showList('Domaine',d,onSel);}
 function openVilModal(data,curDom,onSel){let v=curDom?[...new Set(data.filter(x=>x.domaine===curDom&&x.city).map(x=>x.city))].sort():[...new Set(data.map(x=>x.city).filter(x=>x))].sort();if(!v.length){toast('Aucune ville');return;}showList('Ville',v,onSel);}
 
-// Featured renderer
-function renderFeatured(featItemsId,wrapId,countId,items,type,isFour,isDB){
-  const w=$(wrapId);if(!w)return;
-  if(!items||!items.length){w.style.display='none';return;}
-  w.style.display='block';
-  const cnt=$(countId);if(cnt)cnt.textContent=`(${items.length})`;
-  let h='';
-  for(const item of items){
-    const id=getPinId(item);
-    const isAdm=isDB?aDbF.includes(id)&&type==='four'||aDbA.includes(id)&&type==='auto':apF.includes(id)&&type==='four'||apA.includes(id)&&type==='auto';
-    const isUsr=isDB?uDbF.includes(id)&&type==='four'||uDbA.includes(id)&&type==='auto':upF.includes(id)&&type==='four'||upA.includes(id)&&type==='auto';
-    let cls=isAdm?'fadmin':isUsr?'fuser':'';
-    const ub=canEx()?`<button class="unpin-fc" onclick="event.stopPropagation();togglePin('${type}','${id}','${esc(item.name)}',${isDB})"><i class="fas fa-thumbtack"></i></button>`:'';
-    h+=`<div class="feat-card ${cls}" onclick='showDetail(${JSON.stringify(item).replace(/"/g,'&quot;')},"${type}",${isDB})'>${ub}<div class="card-name"><i class="fas ${isFour?'fa-building':'fa-user-astronaut'}"></i>${esc(item.name)}</div><div style="margin-top:6px;"><div class="drow"><i class="fas fa-folder"></i>${esc(item.domaine)||'-'}</div><div class="drow"><i class="fas fa-map-marker-alt"></i>${esc(item.city)||'-'}</div></div></div>`;
-  }
-  $(featItemsId).innerHTML=h;
-}
-
-// Universal card builder
 function buildCard(item,type,isFour,isDB){
   const id=getPinId(item);
   const pu=isPU(item,type==='four'||type==='suppliers'?'four':'auto',isDB);
@@ -904,7 +771,6 @@ function buildCard(item,type,isFour,isDB){
     <div class="card-acts">${ab}</div>
   </div>`;}
 
-// CSV render
 function filtFour(){let f=[...csvSuppliers];if(fF.dom)f=f.filter(s=>s.domaine===fF.dom);if(fF.vil)f=f.filter(s=>s.city===fF.vil);if(fF.q)f=f.filter(s=>matchS(s,fF.q));return f;}
 function filtAuto(){let f=[...csvExperts];if(aF.dom)f=f.filter(e=>e.domaine===aF.dom);if(aF.vil)f=f.filter(e=>e.city===aF.vil);if(aF.q)f=f.filter(e=>matchS(e,aF.q));return f;}
 
@@ -916,10 +782,8 @@ function renderCSVFour(){
   const userP=rest.filter(f=>upF.includes(getPinId(f)));
   const others=rest.filter(f=>!upF.includes(getPinId(f)));
   let fin=[];if(myItem)fin.push(myItem);fin.push(...userP,...others);
-  renderFeatured('fourFeatItems','fourFeatured','fourFeatCnt',pinned,'four',true,false);
-  const g=$('fourGrid');if(g)g.innerHTML=fin.length?fin.map(i=>buildCard(i,'four',true,false)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères</p></div>`;
-  const total=fin.length+(pinned?pinned.length:0);
-  const p=$('fcs-cnt-pill');if(p)p.textContent=total;
+  const g=$('fourGrid');if(g)g.innerHTML=fin.length?fin.map(i=>buildCard(i,'four',true,false)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3></div>`;
+  const p=$('fcs-cnt-pill');if(p)p.textContent=fin.length;
   renderFTags('fourFilterTags',fF,'fF','renderCSVFour','fourSearch');
 }
 
@@ -931,22 +795,17 @@ function renderCSVAuto(){
   const userP=rest.filter(a=>upA.includes(getPinId(a)));
   const others=rest.filter(a=>!upA.includes(getPinId(a)));
   let fin=[];if(myItem)fin.push(myItem);fin.push(...userP,...others);
-  renderFeatured('autoFeatItems','autoFeatured','autoFeatCnt',pinned,'auto',false,false);
-  const g=$('autoGrid');if(g)g.innerHTML=fin.length?fin.map(i=>buildCard(i,'auto',false,false)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères</p></div>`;
-  const total=fin.length+(pinned?pinned.length:0);
-  const p=$('ecs-cnt-pill');if(p)p.textContent=total;
+  const g=$('autoGrid');if(g)g.innerHTML=fin.length?fin.map(i=>buildCard(i,'auto',false,false)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3></div>`;
+  const p=$('ecs-cnt-pill');if(p)p.textContent=fin.length;
   renderFTags('autoFilterTags',aF,'aF','renderCSVAuto','autoSearch');
 }
 
-function renderAll(){if(isAdmin){renderCSVFour();renderCSVAuto();}}
-
-// DB render
 function filtDBFour(){let f=[...dbFourData];if(dbFF.dom)f=f.filter(x=>x.domaine===dbFF.dom);if(dbFF.vil)f=f.filter(x=>x.city===dbFF.vil);if(dbFF.q)f=f.filter(x=>matchS(x,dbFF.q));return f;}
 function filtDBAuto(){let f=[...dbExpData];if(dbAF.dom)f=f.filter(x=>x.domaine===dbAF.dom);if(dbAF.vil)f=f.filter(x=>x.city===dbAF.vil);if(dbAF.q)f=f.filter(x=>matchS(x,dbAF.q));return f;}
 
 function renderDBFour(){
   const g=$('dbFourGrid');if(!g)return;
-  if(dbFourData.length===0){g.innerHTML=`<div class="empty"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Utilisez "Sync CSV→DB" pour charger les données</p></div>`;$('dbFourFeatured').style.display='none';return;}
+  if(dbFourData.length===0){g.innerHTML=`<div class="empty"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Utilisez "Sync CSV→DB" (admin) pour charger</p></div>`;return;}
   let ff=filtDBFour(),myItem=null;
   if(isSub&&subPhone){for(let i=0;i<ff.length;i++){if(matchP(subPhone,ff[i].phone)){myItem=ff[i];ff.splice(i,1);break;}}}
   const pinned=ff.filter(f=>aDbF.includes(getPinId(f)));
@@ -954,17 +813,15 @@ function renderDBFour(){
   const userP=rest.filter(f=>uDbF.includes(getPinId(f)));
   const others=rest.filter(f=>!uDbF.includes(getPinId(f)));
   let fin=[];if(myItem)fin.push(myItem);fin.push(...userP,...others);
-  renderFeatured('dbFourFeatItems','dbFourFeatured','dbFourFeatCnt',pinned,'four',true,true);
   g.innerHTML=fin.length?fin.map(i=>buildCard(i,'suppliers',true,true)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3></div>`;
-  const total=fin.length+(pinned?pinned.length:0);
-  const p=$('dbfcs-cnt-pill');if(p)p.textContent=total;
-  const pill=$('dbFourTotalPill');if(pill)pill.textContent=total;
+  const p=$('dbfcs-cnt-pill');if(p)p.textContent=fin.length;
+  const pill=$('dbFourTotalPill');if(pill)pill.textContent=dbFourData.length;
   renderFTags('dbFourFilterTags',dbFF,'dbFF','renderDBFour','dbFourSearch');
 }
 
 function renderDBExp(){
   const g=$('dbExpGrid');if(!g)return;
-  if(dbExpData.length===0){g.innerHTML=`<div class="empty"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Utilisez "Sync CSV→DB" pour charger les données</p></div>`;$('dbExpFeatured').style.display='none';return;}
+  if(dbExpData.length===0){g.innerHTML=`<div class="empty"><i class="fas fa-database"></i><h3>Aucune donnée</h3><p>Utilisez "Sync CSV→DB" (admin) pour charger</p></div>`;return;}
   let af=filtDBAuto(),myItem=null;
   if(isSub&&subPhone){for(let i=0;i<af.length;i++){if(matchP(subPhone,af[i].phone)){myItem=af[i];af.splice(i,1);break;}}}
   const pinned=af.filter(a=>aDbA.includes(getPinId(a)));
@@ -972,15 +829,12 @@ function renderDBExp(){
   const userP=rest.filter(a=>uDbA.includes(getPinId(a)));
   const others=rest.filter(a=>!uDbA.includes(getPinId(a)));
   let fin=[];if(myItem)fin.push(myItem);fin.push(...userP,...others);
-  renderFeatured('dbExpFeatItems','dbExpFeatured','dbExpFeatCnt',pinned,'auto',false,true);
   g.innerHTML=fin.length?fin.map(i=>buildCard(i,'experts',false,true)).join(''):`<div class="empty"><i class="fas fa-search"></i><h3>Aucun résultat</h3></div>`;
-  const total=fin.length+(pinned?pinned.length:0);
-  const p=$('dbecs-cnt-pill');if(p)p.textContent=total;
-  const pill=$('dbExpTotalPill');if(pill)pill.textContent=total;
+  const p=$('dbecs-cnt-pill');if(p)p.textContent=fin.length;
+  const pill=$('dbExpTotalPill');if(pill)pill.textContent=dbExpData.length;
   renderFTags('dbExpFilterTags',dbAF,'dbAF','renderDBExp','dbExpSearch');
 }
 
-// Stats
 function updHomeStats(){updDBStats();}
 function updDBStats(){
   const fd=new Set(dbFourData.map(s=>s.domaine).filter(d=>d));const fv=new Set(dbFourData.map(s=>s.city).filter(v=>v));const ed=new Set(dbExpData.map(e=>e.domaine).filter(d=>d));const ev=new Set(dbExpData.map(e=>e.city).filter(v=>v));
@@ -989,11 +843,9 @@ function updDBStats(){
   if(isAdmin)updateAdminStats();
 }
 
-// PDF
-async function genPDF(btn,item,type){if(!canEx()){toast('Abonnez-vous pour PDF');return;}toast('Génération PDF...');const isFour=type==='four'||type==='suppliers';try{const tmp=document.createElement('div');tmp.className='icard';tmp.innerHTML=buildCard(item,type,isFour,type==='suppliers'||type==='experts');tmp.querySelector('.card-acts')?.remove();tmp.style.cssText='position:absolute;top:-9999px;left:-9999px;width:340px;background:#fff;color:#000;padding:14px;border-radius:8px;font-family:DM Sans,sans-serif;';document.body.appendChild(tmp);const cv=await html2canvas(tmp,{scale:2,backgroundColor:'#ffffff'});document.body.removeChild(tmp);const{jsPDF:J}=window.jspdf;const pdf=new J('p','mm','a4');const iw=190,ih=(cv.height*iw)/cv.width;pdf.addImage(cv.toDataURL('image/png'),'PNG',10,10,iw,ih);const qd=document.createElement('div');new QRCode(qd,{text:`${item.name}\n${item.phone||''}\n${item.email||''}`,width:80,height:80});await new Promise(r=>setTimeout(r,120));const qi=qd.querySelector('img');if(qi)pdf.addImage(qi.src,'PNG',155,255,30,30);pdf.save(`${item.name.replace(/[^a-z0-9]/gi,'_')}.pdf`);toast('✅ PDF téléchargé');}catch(e){toast('❌ Erreur PDF');}}
+async function genPDF(btn,item,type){if(!canEx()){toast('Abonnez-vous');return;}toast('Génération...');const isFour=type==='four'||type==='suppliers';try{const tmp=document.createElement('div');tmp.className='icard';tmp.innerHTML=buildCard(item,type,isFour,type==='suppliers'||type==='experts');tmp.querySelector('.card-acts')?.remove();tmp.style.cssText='position:absolute;top:-9999px;left:-9999px;width:340px;background:#fff;color:#000;padding:14px;border-radius:8px;';document.body.appendChild(tmp);const cv=await html2canvas(tmp,{scale:2});document.body.removeChild(tmp);const{jsPDF:J}=window.jspdf;const pdf=new J('p','mm','a4');const iw=190,ih=(cv.height*iw)/cv.width;pdf.addImage(cv.toDataURL('image/png'),'PNG',10,10,iw,ih);pdf.save(`${item.name.replace(/[^a-z0-9]/gi,'_')}.pdf`);toast('✅ PDF téléchargé');}catch(e){toast('❌ Erreur PDF');}}
 window.genPDF=genPDF;
 
-// Share
 function shareItem(item){let t=`📌 ${item.name}\n🏭 ${item.domaine}\n⚙️ ${item.specialite}\n📍 ${item.city}`;if(item.phone)t+=`\n📞 ${item.phone}`;if(item.email)t+=`\n✉️ ${item.email}`;if(item.web&&item.web!=='null')t+=`\n🌐 ${item.web}`;t+=`\n\n— Connect Industry Maroc`;window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank');}
 window.shareItem=shareItem;
 window.copyToClipboard=(text,label)=>{navigator.clipboard.writeText(text);toast(`📋 ${label} copié`);};
@@ -1005,10 +857,8 @@ window.showQR=(url,title)=>{$('qrTitle').textContent=title||'QR Code';curQR={url
 window.shareQRData=()=>window.open(`https://wa.me/?text=${encodeURIComponent(`${curQR.title}\n\n${curQR.url}`)}`,'_blank');
 window.openForm=t=>window.open(t==='expert'?CFG.FORM_AUTO:CFG.FORM_FOUR,'_blank');
 
-// Show detail modal
 window.showDetail=(item,type,isDB)=>{const isFour=type==='four'||type==='suppliers';$('listTitle').textContent=item.name;$('listItems').innerHTML=`<div style="padding:13px;">${buildCard(item,type,isFour,isDB)}</div>`;$('listModal').classList.add('show');};
 
-// DB CRUD
 window.openEdit=(id,type)=>{if(!isAdmin){toast('Admin requis');return;}const data=type==='suppliers'?dbFourData:dbExpData;const item=data.find(i=>i.id===id);if(!item)return;$('dbEditTitle').textContent=`Modifier: ${item.name}`;$('dbEditId').value=id;$('dbEditType').value=type;$('dbEditName').value=item.name||'';$('dbEditDomaine').value=item.domaine||'';$('dbEditSpecialite').value=item.specialite||'';$('dbEditCity').value=item.city||'';$('dbEditPhone').value=item.phone||'';$('dbEditEmail').value=item.email||'';$('dbEditWeb').value=item.web||'';$('dbEditModal').classList.add('show');};
 
 function openAddNew(type){if(!isAdmin){toast('Admin requis');return;}$('dbEditTitle').textContent=`Ajouter ${type==='suppliers'?'Fournisseur':'Expert'}`;$('dbEditId').value='';$('dbEditType').value=type;['dbEditName','dbEditDomaine','dbEditSpecialite','dbEditCity','dbEditPhone','dbEditEmail','dbEditWeb'].forEach(id=>{const e=$(id);if(e)e.value='';});$('dbEditModal').classList.add('show');}
@@ -1018,29 +868,25 @@ $('dbEditSaveBtn').onclick=saveEdit;
 
 window.deleteDBItem=async(id,type)=>{const data=type==='suppliers'?dbFourData:dbExpData;const item=data.find(i=>i.id===id);if(!confirm(`Supprimer "${item?.name}"?`))return;try{await db.ref(`${type}/${id}`).remove();toast('🗑️ Supprimé');if(type==='suppliers')await loadDBFour();else await loadDBExp();}catch(e){toast('❌ Erreur');}};
 
-// Auth
 function findMember(phone){const n=fmtP(phone);if(!n)return null;for(const s of csvSuppliers)if(s.phone&&matchP(s.phone,n))return{type:'supplier',data:s};for(const e of csvExperts)if(e.phone&&matchP(e.phone,n))return{type:'expert',data:e};return null;}
-function activateSub(p,m){if(isAdmin)logoutAdmin();isSub=true;subPhone=p;subMember=m;document.body.classList.add('sub-mode');localStorage.setItem(SK.SPH,p);localStorage.setItem(SK.SAC,'true');renderAll();renderDBFour();renderDBExp();toast(`✅ Bienvenue ${m?m.data.name:'!'}`);updUI();}
-function logoutSub(){isSub=false;subPhone=null;subMember=null;document.body.classList.remove('sub-mode');localStorage.removeItem(SK.SPH);localStorage.removeItem(SK.SAC);renderAll();renderDBFour();renderDBExp();toast('Déconnecté');updUI();}
+function activateSub(p,m){if(isAdmin)logoutAdmin();isSub=true;subPhone=p;subMember=m;document.body.classList.add('sub-mode');localStorage.setItem(SK.SPH,p);localStorage.setItem(SK.SAC,'true');if(isAdmin){renderCSVFour();renderCSVAuto();}renderDBFour();renderDBExp();toast(`✅ Bienvenue ${m?m.data.name:'!'}`);updUI();}
+function logoutSub(){isSub=false;subPhone=null;subMember=null;document.body.classList.remove('sub-mode');localStorage.removeItem(SK.SPH);localStorage.removeItem(SK.SAC);if(isAdmin){renderCSVFour();renderCSVAuto();}renderDBFour();renderDBExp();toast('Déconnecté');updUI();}
 window.doSubscribe=()=>{const p=$('subPhone').value.trim();if(!p){toast('Entrez votre numéro');return;}const n=fmtP(p);if(!n){toast('Numéro invalide');return;}const m=findMember(n);if(m){activateSub(n,m);closeModal('subModal');}else{closeModal('subModal');toast('Numéro non trouvé');}};
 function loadSub(){const s=localStorage.getItem(SK.SPH),a=localStorage.getItem(SK.SAC)==='true';if(s&&a&&findMember(s)){isSub=true;subPhone=s;subMember=findMember(s);document.body.classList.add('sub-mode');}}
-window.doAdmin=()=>{const p=$('adminPass').value;if(p===CFG.ADMIN_PASS){if(isSub)logoutSub();isAdmin=true;document.body.classList.add('adm-mode');localStorage.setItem(SK.ADM,'true');renderAll();closeModal('adminModal');toast('✅ Mode Admin activé');updUI();showAdminSections(true);loadDBFour();loadDBExp();updateAdminStats();updateLastSyncTime();}else toast('❌ Mot de passe incorrect');};
-function logoutAdmin(){isAdmin=false;document.body.classList.remove('adm-mode');localStorage.removeItem(SK.ADM);renderAll();renderDBFour();renderDBExp();toast('Mode visiteur - Sections CSV masquées');updUI();showAdminSections(false);}
-function loadAdmin(){if(localStorage.getItem(SK.ADM)==='true'){isAdmin=true;document.body.classList.add('adm-mode');showAdminSections(true);loadDBFour();loadDBExp();updateAdminStats();updateLastSyncTime();}else{showAdminSections(false);loadDBFour();loadDBExp();}}
-function showAdminSections(show){document.querySelectorAll('.admin-only').forEach(el=>{el.style.display=show?'flex':'none';});}
+window.doAdmin=()=>{const p=$('adminPass').value;if(p===CFG.ADMIN_PASS){if(isSub)logoutSub();isAdmin=true;document.body.classList.add('adm-mode');localStorage.setItem(SK.ADM,'true');document.querySelectorAll('.csv-section').forEach(el=>el.style.display='flex');if($('syncBtn'))$('syncBtn').style.display='flex';if($('dbFourAddBtn'))$('dbFourAddBtn').style.display='flex';if($('dbExpAddBtn'))$('dbExpAddBtn').style.display='flex';if($('adminStatsPanel'))$('adminStatsPanel').style.display='block';renderCSVFour();renderCSVAuto();loadDBFour();loadDBExp();closeModal('adminModal');updateAdminStats();updateLastSyncTime();toast('✅ Mode Admin activé');updUI();}else toast('❌ Mot de passe incorrect');};
+function logoutAdmin(){isAdmin=false;document.body.classList.remove('adm-mode');localStorage.removeItem(SK.ADM);document.querySelectorAll('.csv-section').forEach(el=>el.style.display='none');if($('syncBtn'))$('syncBtn').style.display='none';if($('dbFourAddBtn'))$('dbFourAddBtn').style.display='none';if($('dbExpAddBtn'))$('dbExpAddBtn').style.display='none';if($('adminStatsPanel'))$('adminStatsPanel').style.display='none';toast('Mode visiteur');updUI();}
+function loadAdmin(){if(localStorage.getItem(SK.ADM)==='true'){isAdmin=true;document.body.classList.add('adm-mode');document.querySelectorAll('.csv-section').forEach(el=>el.style.display='flex');if($('syncBtn'))$('syncBtn').style.display='flex';if($('dbFourAddBtn'))$('dbFourAddBtn').style.display='flex';if($('dbExpAddBtn'))$('dbExpAddBtn').style.display='flex';if($('adminStatsPanel'))$('adminStatsPanel').style.display='block';updateAdminStats();updateLastSyncTime();}else{document.querySelectorAll('.csv-section').forEach(el=>el.style.display='none');if($('syncBtn'))$('syncBtn').style.display='none';if($('dbFourAddBtn'))$('dbFourAddBtn').style.display='none';if($('dbExpAddBtn'))$('dbExpAddBtn').style.display='none';if($('adminStatsPanel'))$('adminStatsPanel').style.display='none';}}
 function updUI(){
   const sb=$('subBtn'),ab=$('adminBtn');
   if(isSub){sb.classList.add('nav-sub');$('subTxt').textContent='Abonné ✓';}else{sb.classList.remove('nav-sub');$('subTxt').textContent="S'abonner";}
-  if(isAdmin){ab.classList.add('nav-adm');$('adminTxt').textContent='Quitter Admin';showAdminSections(true);}else{ab.classList.remove('nav-adm');$('adminTxt').textContent='Mode Admin';if(!isSub)showAdminSections(false);}
+  if(isAdmin){ab.classList.add('nav-adm');$('adminTxt').textContent='Quitter Admin';}else{ab.classList.remove('nav-adm');$('adminTxt').textContent='Mode Admin';}
   const n=$('drawerName'),s=$('drawerStatus'),ml=$('modeLabel'),mb=$('modeBadge');
   if(isAdmin){n.textContent='Admin';s.textContent='admin_mode';ml.textContent='ADMIN';mb.style.setProperty('--ac','var(--red)');}
   else if(isSub&&subMember){n.textContent=subMember.data.name.substring(0,22);s.textContent='abonné ✓';ml.textContent='ABONNÉ';mb.style.setProperty('--ac','var(--mint)');}
   else{n.textContent='Visiteur';s.textContent='guest_mode';ml.textContent='GUEST';mb.style.removeProperty('--ac');}
-  const adminPanel=$('adminStatsPanel');if(adminPanel)adminPanel.style.display=isAdmin?'block':'none';
 }
 
-// Navigation
-function canAccessSection(sectionId){const adminOnlySections=['fournisseurs','experts'];if(adminOnlySections.includes(sectionId)&&!isAdmin){toast('🔒 Section réservée à l\'administrateur');return false;}return true;}
+function canAccessSection(sectionId){const adminOnly=['fournisseurs','experts'];if(adminOnly.includes(sectionId)&&!isAdmin){toast('🔒 Section réservée');return false;}return true;}
 
 function showSec(id,reset=false){
   if(!canAccessSection(id))return;
@@ -1050,10 +896,10 @@ function showSec(id,reset=false){
   curSec=id;scrollTop();closeDrawer();
   document.querySelectorAll('.nav-item[data-sec]').forEach(x=>{x.classList.toggle('active',x.dataset.sec===id);});
   if(reset){
-    if(id==='fournisseurs'){fF={dom:null,vil:null,q:''};$('fourSearch').value='';renderCSVFour();}
-    if(id==='experts'){aF={dom:null,vil:null,q:''};$('autoSearch').value='';renderCSVAuto();}
-    if(id==='db-fournisseurs'){dbFF={dom:null,vil:null,q:''};$('dbFourSearch').value='';renderDBFour();}
-    if(id==='db-experts'){dbAF={dom:null,vil:null,q:''};$('dbExpSearch').value='';renderDBExp();}
+    if(id==='fournisseurs'){fF={dom:null,vil:null,q:''};if($('fourSearch'))$('fourSearch').value='';renderCSVFour();}
+    if(id==='experts'){aF={dom:null,vil:null,q:''};if($('autoSearch'))$('autoSearch').value='';renderCSVAuto();}
+    if(id==='db-fournisseurs'){dbFF={dom:null,vil:null,q:''};if($('dbFourSearch'))$('dbFourSearch').value='';renderDBFour();}
+    if(id==='db-experts'){dbAF={dom:null,vil:null,q:''};if($('dbExpSearch'))$('dbExpSearch').value='';renderDBExp();}
   }
   if(id==='fournisseurs')renderCSVFour();
   if(id==='experts')renderCSVAuto();
@@ -1061,7 +907,6 @@ function showSec(id,reset=false){
   if(id==='db-experts')renderDBExp();
 }
 
-// Setup stat clicks
 function setupStats(){
   document.querySelectorAll('.stat[data-sec]').forEach(c=>{
     const sec=c.dataset.sec,type=c.dataset.t;
@@ -1076,51 +921,46 @@ function setupStats(){
   });
 }
 
-// Main init
 async function init(){
-  loadTheme();loadPins();loadAdmin();
-  showAdminSections(false);
+  loadTheme();loadPins();loadAdmin();loadSub();
   
-  // Navigation
   document.querySelectorAll('.nav-item[data-sec]').forEach(x=>x.addEventListener('click',()=>showSec(x.dataset.sec,true)));
   $('subBtn').onclick=()=>{closeDrawer();if(isSub)logoutSub();else $('subModal').classList.add('show');};
   $('adminBtn').onclick=()=>{closeDrawer();if(isAdmin)logoutAdmin();else $('adminModal').classList.add('show');};
   $('waBtn').onclick=()=>{closeDrawer();window.open(`https://wa.me/${CFG.WA}?text=${encodeURIComponent('Bonjour')}`,'_blank');};
+  $('syncBtn').onclick=syncCSVtoFirebase;
   
-  // CSV search/filter (admin only)
-  if($('fourSearch')) $('fourSearch').addEventListener('input',e=>{clearTimeout(fT);fT=setTimeout(()=>{fF.q=e.target.value.toLowerCase();renderCSVFour();},350);});
-  if($('fourDomBtn')) $('fourDomBtn').onclick=()=>openDomModal(csvSuppliers,fF.vil,s=>{fF.dom=s;renderCSVFour();});
-  if($('fourVilBtn')) $('fourVilBtn').onclick=()=>openVilModal(csvSuppliers,fF.dom,s=>{fF.vil=s;renderCSVFour();});
-  if($('fourClrBtn')) $('fourClrBtn').onclick=()=>{fF={dom:null,vil:null,q:''};$('fourSearch').value='';renderCSVFour();toast('Filtres effacés');};
+  if($('fourSearch'))$('fourSearch').addEventListener('input',e=>{clearTimeout(fT);fT=setTimeout(()=>{fF.q=e.target.value.toLowerCase();renderCSVFour();},350);});
+  if($('fourDomBtn'))$('fourDomBtn').onclick=()=>openDomModal(csvSuppliers,fF.vil,s=>{fF.dom=s;renderCSVFour();});
+  if($('fourVilBtn'))$('fourVilBtn').onclick=()=>openVilModal(csvSuppliers,fF.dom,s=>{fF.vil=s;renderCSVFour();});
+  if($('fourClrBtn'))$('fourClrBtn').onclick=()=>{fF={dom:null,vil:null,q:''};$('fourSearch').value='';renderCSVFour();toast('Filtres effacés');};
   
-  if($('autoSearch')) $('autoSearch').addEventListener('input',e=>{clearTimeout(aT);aT=setTimeout(()=>{aF.q=e.target.value.toLowerCase();renderCSVAuto();},350);});
-  if($('autoDomBtn')) $('autoDomBtn').onclick=()=>openDomModal(csvExperts,aF.vil,s=>{aF.dom=s;renderCSVAuto();});
-  if($('autoVilBtn')) $('autoVilBtn').onclick=()=>openVilModal(csvExperts,aF.dom,s=>{aF.vil=s;renderCSVAuto();});
-  if($('autoClrBtn')) $('autoClrBtn').onclick=()=>{aF={dom:null,vil:null,q:''};$('autoSearch').value='';renderCSVAuto();toast('Filtres effacés');};
+  if($('autoSearch'))$('autoSearch').addEventListener('input',e=>{clearTimeout(aT);aT=setTimeout(()=>{aF.q=e.target.value.toLowerCase();renderCSVAuto();},350);});
+  if($('autoDomBtn'))$('autoDomBtn').onclick=()=>openDomModal(csvExperts,aF.vil,s=>{aF.dom=s;renderCSVAuto();});
+  if($('autoVilBtn'))$('autoVilBtn').onclick=()=>openVilModal(csvExperts,aF.dom,s=>{aF.vil=s;renderCSVAuto();});
+  if($('autoClrBtn'))$('autoClrBtn').onclick=()=>{aF={dom:null,vil:null,q:''};$('autoSearch').value='';renderCSVAuto();toast('Filtres effacés');};
   
-  // DB search/filter
-  if($('dbFourSearch')) $('dbFourSearch').addEventListener('input',e=>{clearTimeout(dbFT);dbFT=setTimeout(()=>{dbFF.q=e.target.value.toLowerCase();renderDBFour();},350);});
-  if($('dbFourDomBtn')) $('dbFourDomBtn').onclick=()=>openDomModal(dbFourData,dbFF.vil,s=>{dbFF.dom=s;renderDBFour();});
-  if($('dbFourVilBtn')) $('dbFourVilBtn').onclick=()=>openVilModal(dbFourData,dbFF.dom,s=>{dbFF.vil=s;renderDBFour();});
-  if($('dbFourClrBtn')) $('dbFourClrBtn').onclick=()=>{dbFF={dom:null,vil:null,q:''};$('dbFourSearch').value='';renderDBFour();toast('Filtres effacés');};
-  if($('dbFourAddBtn')) $('dbFourAddBtn').onclick=()=>openAddNew('suppliers');
+  if($('dbFourSearch'))$('dbFourSearch').addEventListener('input',e=>{clearTimeout(dbFT);dbFT=setTimeout(()=>{dbFF.q=e.target.value.toLowerCase();renderDBFour();},350);});
+  if($('dbFourDomBtn'))$('dbFourDomBtn').onclick=()=>openDomModal(dbFourData,dbFF.vil,s=>{dbFF.dom=s;renderDBFour();});
+  if($('dbFourVilBtn'))$('dbFourVilBtn').onclick=()=>openVilModal(dbFourData,dbFF.dom,s=>{dbFF.vil=s;renderDBFour();});
+  if($('dbFourClrBtn'))$('dbFourClrBtn').onclick=()=>{dbFF={dom:null,vil:null,q:''};$('dbFourSearch').value='';renderDBFour();toast('Filtres effacés');};
+  if($('dbFourAddBtn'))$('dbFourAddBtn').onclick=()=>openAddNew('suppliers');
   
-  if($('dbExpSearch')) $('dbExpSearch').addEventListener('input',e=>{clearTimeout(dbAT);dbAT=setTimeout(()=>{dbAF.q=e.target.value.toLowerCase();renderDBExp();},350);});
-  if($('dbExpDomBtn')) $('dbExpDomBtn').onclick=()=>openDomModal(dbExpData,dbAF.vil,s=>{dbAF.dom=s;renderDBExp();});
-  if($('dbExpVilBtn')) $('dbExpVilBtn').onclick=()=>openVilModal(dbExpData,dbAF.dom,s=>{dbAF.vil=s;renderDBExp();});
-  if($('dbExpClrBtn')) $('dbExpClrBtn').onclick=()=>{dbAF={dom:null,vil:null,q:''};$('dbExpSearch').value='';renderDBExp();toast('Filtres effacés');};
-  if($('dbExpAddBtn')) $('dbExpAddBtn').onclick=()=>openAddNew('experts');
+  if($('dbExpSearch'))$('dbExpSearch').addEventListener('input',e=>{clearTimeout(dbAT);dbAT=setTimeout(()=>{dbAF.q=e.target.value.toLowerCase();renderDBExp();},350);});
+  if($('dbExpDomBtn'))$('dbExpDomBtn').onclick=()=>openDomModal(dbExpData,dbAF.vil,s=>{dbAF.dom=s;renderDBExp();});
+  if($('dbExpVilBtn'))$('dbExpVilBtn').onclick=()=>openVilModal(dbExpData,dbAF.dom,s=>{dbAF.vil=s;renderDBExp();});
+  if($('dbExpClrBtn'))$('dbExpClrBtn').onclick=()=>{dbAF={dom:null,vil:null,q:''};$('dbExpSearch').value='';renderDBExp();toast('Filtres effacés');};
+  if($('dbExpAddBtn'))$('dbExpAddBtn').onclick=()=>openAddNew('experts');
   
-  // Contact form
-  if($('contactForm')) $('contactForm').addEventListener('submit',e=>{e.preventDefault();const name=$('contactName').value||'Visiteur',contact=$('contactInfo').value||'N/A',type=$('contactType').value,msg=$('contactMessage').value;if(!msg.trim()){toast('Message vide');return;}const types={suggestion:'Suggestion',reclamation:'Réclamation',demande:'Demande',collaboration:'Collaboration'};window.open(`https://wa.me/${CFG.WA}?text=${encodeURIComponent(`📝 Message\n\nNom: ${name}\nContact: ${contact}\nType: ${types[type]}\n\n${msg}`)}`,'_blank');toast('Message envoyé');$('contactName').value='';$('contactInfo').value='';$('contactMessage').value='';});
+  if($('contactForm'))$('contactForm').addEventListener('submit',e=>{e.preventDefault();const name=$('contactName').value||'Visiteur',contact=$('contactInfo').value||'N/A',type=$('contactType').value,msg=$('contactMessage').value;if(!msg.trim()){toast('Message vide');return;}const types={suggestion:'Suggestion',reclamation:'Réclamation',demande:'Demande',collaboration:'Collaboration'};window.open(`https://wa.me/${CFG.WA}?text=${encodeURIComponent(`📝 Message\n\nNom: ${name}\nContact: ${contact}\nType: ${types[type]}\n\n${msg}`)}`,'_blank');toast('Message envoyé');$('contactName').value='';$('contactInfo').value='';$('contactMessage').value='';});
   document.querySelectorAll('.mtype').forEach(b=>b.addEventListener('click',()=>{$('contactType').value=b.dataset.type;document.querySelectorAll('.mtype').forEach(x=>x.classList.remove('active'));b.classList.add('active');}));
   
-  // Admin pass enter key
-  if($('adminPass')) $('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')window.doAdmin();});
+  if($('adminPass'))$('adminPass').addEventListener('keydown',e=>{if(e.key==='Enter')window.doAdmin();});
   
   setupStats();
   await loadCSVData();
-  loadSub();updUI();
+  await Promise.all([loadDBFour(),loadDBExp()]);
+  updUI();
   showSec('db-fournisseurs');
   
   window.addEventListener('popstate',e=>{e.preventDefault();if(secHist.length>1){secHist.pop();showSec(secHist[secHist.length-1]);}else if(curSec!=='db-fournisseurs')showSec('db-fournisseurs');});
