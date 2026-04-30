@@ -343,6 +343,12 @@ select.ifield{cursor:pointer;}
         <div class="search-bar">
           <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
         </div>
+        <div class="filter-row">
+          <button class="filter-btn" id="fourDomaineBtn"><i class="fas fa-folder"></i><span>DOMAINE</span></button>
+          <button class="filter-btn" id="fourVilleBtn"><i class="fas fa-city"></i><span>VILLE</span></button>
+          <button class="filter-btn clr" id="fourClearBtn"><i class="fas fa-eraser"></i><span>EFFACER</span></button>
+        </div>
+        <div class="filter-tags" id="fourFilterTags"></div>
         <div id="fourResultInfo" class="search-result-info" style="display:none;"></div>
         <div id="fourGrid" class="items-grid"></div>
       </div>
@@ -356,6 +362,12 @@ select.ifield{cursor:pointer;}
         <div class="search-bar">
           <div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="autoSearch" placeholder="Rechercher..."></div>
         </div>
+        <div class="filter-row">
+          <button class="filter-btn" id="autoDomaineBtn"><i class="fas fa-folder"></i><span>DOMAINE</span></button>
+          <button class="filter-btn" id="autoVilleBtn"><i class="fas fa-city"></i><span>VILLE</span></button>
+          <button class="filter-btn clr" id="autoClearBtn"><i class="fas fa-eraser"></i><span>EFFACER</span></button>
+        </div>
+        <div class="filter-tags" id="autoFilterTags"></div>
         <div id="autoResultInfo" class="search-result-info" style="display:none;"></div>
         <div id="autoGrid" class="items-grid"></div>
       </div>
@@ -399,8 +411,8 @@ let csvExperts = [], csvSuppliers = [];
 let dbData = [];
 
 let dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
-let fourSearchTerm = '';
-let autoSearchTerm = '';
+let fourFilters = { domaine: null, ville: null, search: '' };
+let autoFilters = { domaine: null, ville: null, search: '' };
 let explorerLevel = 0;
 let explorerState = { type: null, domaine: null, specialite: null };
 let pendingDelete = null;
@@ -595,7 +607,48 @@ function getDBAvailableVilles() {
   return [...new Set(data.map(d => d.ville).filter(v => v && v !== 'null'))].sort();
 }
 
-// Build Card with Type and Category badges
+// CSV Filter Functions
+function getFilteredFourData() {
+  let data = [...csvSuppliers];
+  if(fourFilters.domaine) data = data.filter(d => d.domaine === fourFilters.domaine);
+  if(fourFilters.ville) data = data.filter(d => d.ville === fourFilters.ville);
+  if(fourFilters.search) data = data.filter(d => d.name.toLowerCase().includes(fourFilters.search) || d.domaine.toLowerCase().includes(fourFilters.search));
+  return data;
+}
+
+function getFourAvailableDomaines() {
+  let data = [...csvSuppliers];
+  if(fourFilters.ville) data = data.filter(d => d.ville === fourFilters.ville);
+  return [...new Set(data.map(d => d.domaine).filter(d => d))].sort();
+}
+
+function getFourAvailableVilles() {
+  let data = [...csvSuppliers];
+  if(fourFilters.domaine) data = data.filter(d => d.domaine === fourFilters.domaine);
+  return [...new Set(data.map(d => d.ville).filter(v => v))].sort();
+}
+
+function getFilteredAutoData() {
+  let data = [...csvExperts];
+  if(autoFilters.domaine) data = data.filter(d => d.domaine === autoFilters.domaine);
+  if(autoFilters.ville) data = data.filter(d => d.ville === autoFilters.ville);
+  if(autoFilters.search) data = data.filter(d => d.name.toLowerCase().includes(autoFilters.search) || d.domaine.toLowerCase().includes(autoFilters.search));
+  return data;
+}
+
+function getAutoAvailableDomaines() {
+  let data = [...csvExperts];
+  if(autoFilters.ville) data = data.filter(d => d.ville === autoFilters.ville);
+  return [...new Set(data.map(d => d.domaine).filter(d => d))].sort();
+}
+
+function getAutoAvailableVilles() {
+  let data = [...csvExperts];
+  if(autoFilters.domaine) data = data.filter(d => d.domaine === autoFilters.domaine);
+  return [...new Set(data.map(d => d.ville).filter(v => v))].sort();
+}
+
+// Build Card with Type and Category badges (YAD AMILA for EXPERTS)
 function buildCard(item) {
   const hasPhone = item.phone && item.phone !== 'null';
   const hasWeb = item.web && item.web !== 'null';
@@ -605,12 +658,17 @@ function buildCard(item) {
     ? '<span class="card-badge type-fournisseur"><i class="fas fa-industry"></i> FOURNISSEUR</span>'
     : '<span class="card-badge type-expert"><i class="fas fa-microchip"></i> EXPERT</span>';
   
-  // Category badge
+  // Category badge - For EXPERTS, default to YAD AMILA if no category specified
+  let categoryToShow = item.categorie;
+  if(item.type === 'experts' && (!categoryToShow || categoryToShow === '')) {
+    categoryToShow = 'labor'; // YAD AMILA
+  }
+  
   const catNames = { services: 'SERVICES', products: 'PRODUITS', contractor: 'MAQAOLA', labor: 'YAD AMILA' };
   const catIcons = { services: 'fa-cogs', products: 'fa-boxes', contractor: 'fa-hard-hat', labor: 'fa-hands' };
   let catBadge = '';
-  if(item.categorie && catNames[item.categorie]) {
-    catBadge = `<span class="card-badge cat-${item.categorie}"><i class="fas ${catIcons[item.categorie]}"></i> ${catNames[item.categorie]}</span>`;
+  if(categoryToShow && catNames[categoryToShow]) {
+    catBadge = `<span class="card-badge cat-${categoryToShow}"><i class="fas ${catIcons[categoryToShow]}"></i> ${catNames[categoryToShow]}</span>`;
   }
   
   let buttons = '';
@@ -688,21 +746,18 @@ function renderDB() {
 }
 
 function renderFournisseursCSV() {
-  let data = [...csvSuppliers];
-  if(fourSearchTerm) {
-    data = data.filter(d => 
-      d.name.toLowerCase().includes(fourSearchTerm) || 
-      d.domaine.toLowerCase().includes(fourSearchTerm) ||
-      d.specialite.toLowerCase().includes(fourSearchTerm) ||
-      d.ville.toLowerCase().includes(fourSearchTerm)
-    );
-  }
+  const data = getFilteredFourData();
   $('fourGrid').innerHTML = data.length ? data.map(i => buildCsvCard(i, true)).join('') : '<div class="empty"><i class="fas fa-search"></i><h3>AUCUN RÉSULTAT</h3></div>';
   $('fourCsvCnt').innerText = data.length;
+  updateFourFilterTags();
   
   const resultInfo = $('fourResultInfo');
-  if(fourSearchTerm) {
-    resultInfo.innerHTML = `<i class="fas fa-chart-line"></i> ${data.length} résultat(s) trouvé(s) pour "${fourSearchTerm}"`;
+  if(fourFilters.search || fourFilters.domaine || fourFilters.ville) {
+    let filters = [];
+    if(fourFilters.search) filters.push(`Recherche: "${fourFilters.search}"`);
+    if(fourFilters.domaine) filters.push(`Domaine: ${fourFilters.domaine}`);
+    if(fourFilters.ville) filters.push(`Ville: ${fourFilters.ville}`);
+    resultInfo.innerHTML = `<i class="fas fa-chart-line"></i> ${data.length} résultat(s) trouvé(s) | Filtres: ${filters.join(' | ')}`;
     resultInfo.style.display = 'block';
   } else {
     resultInfo.style.display = 'none';
@@ -710,21 +765,18 @@ function renderFournisseursCSV() {
 }
 
 function renderExpertsCSV() {
-  let data = [...csvExperts];
-  if(autoSearchTerm) {
-    data = data.filter(d => 
-      d.name.toLowerCase().includes(autoSearchTerm) || 
-      d.domaine.toLowerCase().includes(autoSearchTerm) ||
-      d.specialite.toLowerCase().includes(autoSearchTerm) ||
-      d.ville.toLowerCase().includes(autoSearchTerm)
-    );
-  }
+  const data = getFilteredAutoData();
   $('autoGrid').innerHTML = data.length ? data.map(i => buildCsvCard(i, false)).join('') : '<div class="empty"><i class="fas fa-search"></i><h3>AUCUN RÉSULTAT</h3></div>';
   $('autoCsvCnt').innerText = data.length;
+  updateAutoFilterTags();
   
   const resultInfo = $('autoResultInfo');
-  if(autoSearchTerm) {
-    resultInfo.innerHTML = `<i class="fas fa-chart-line"></i> ${data.length} résultat(s) trouvé(s) pour "${autoSearchTerm}"`;
+  if(autoFilters.search || autoFilters.domaine || autoFilters.ville) {
+    let filters = [];
+    if(autoFilters.search) filters.push(`Recherche: "${autoFilters.search}"`);
+    if(autoFilters.domaine) filters.push(`Domaine: ${autoFilters.domaine}`);
+    if(autoFilters.ville) filters.push(`Ville: ${autoFilters.ville}`);
+    resultInfo.innerHTML = `<i class="fas fa-chart-line"></i> ${data.length} résultat(s) trouvé(s) | Filtres: ${filters.join(' | ')}`;
     resultInfo.style.display = 'block';
   } else {
     resultInfo.style.display = 'none';
@@ -748,6 +800,24 @@ function updateDBFilterTags() {
   container.innerHTML = html;
 }
 
+function updateFourFilterTags() {
+  const container = $('fourFilterTags');
+  if(!container) return;
+  let html = '';
+  if(fourFilters.domaine) html += `<div class="ftag"><i class="fas fa-folder"></i> ${esc(fourFilters.domaine)}<button onclick="fourFilters.domaine=null;renderFournisseursCSV()">✕</button></div>`;
+  if(fourFilters.ville) html += `<div class="ftag"><i class="fas fa-city"></i> ${esc(fourFilters.ville)}<button onclick="fourFilters.ville=null;renderFournisseursCSV()">✕</button></div>`;
+  container.innerHTML = html;
+}
+
+function updateAutoFilterTags() {
+  const container = $('autoFilterTags');
+  if(!container) return;
+  let html = '';
+  if(autoFilters.domaine) html += `<div class="ftag"><i class="fas fa-folder"></i> ${esc(autoFilters.domaine)}<button onclick="autoFilters.domaine=null;renderExpertsCSV()">✕</button></div>`;
+  if(autoFilters.ville) html += `<div class="ftag"><i class="fas fa-city"></i> ${esc(autoFilters.ville)}<button onclick="autoFilters.ville=null;renderExpertsCSV()">✕</button></div>`;
+  container.innerHTML = html;
+}
+
 // Edit Functions
 async function openEditModal(itemId) {
   const item = dbData.find(i => i.id === itemId);
@@ -756,7 +826,7 @@ async function openEditModal(itemId) {
   $('editId').value = item.id;
   $('editName').value = item.name || '';
   $('editTypeSelect').value = item.type || 'fournisseurs';
-  $('editCategorieSelect').value = item.categorie || 'services';
+  $('editCategorieSelect').value = item.categorie || (item.type === 'experts' ? 'labor' : 'services');
   $('editDomaine').value = item.domaine || '';
   $('editSpecialite').value = item.specialite || '';
   $('editVille').value = item.ville || '';
@@ -1057,11 +1127,17 @@ document.querySelectorAll('.mtype').forEach(b => b.addEventListener('click', () 
   b.classList.add('active');
 }));
 
-// CSV Fournisseurs Search
-$('fourSearch').addEventListener('input', e => { fourSearchTerm = e.target.value.toLowerCase(); renderFournisseursCSV(); });
+// CSV Fournisseurs Filters
+$('fourSearch').addEventListener('input', e => { fourFilters.search = e.target.value.toLowerCase(); renderFournisseursCSV(); });
+$('fourDomaineBtn').onclick = () => { const items = getFourAvailableDomaines(); if(items.length) showList('DOMAINE FOURNISSEURS', items, s => { fourFilters.domaine = s; renderFournisseursCSV(); }); else toast('AUCUN DOMAINE'); };
+$('fourVilleBtn').onclick = () => { const items = getFourAvailableVilles(); if(items.length) showList('VILLE FOURNISSEURS', items, s => { fourFilters.ville = s; renderFournisseursCSV(); }); else toast('AUCUNE VILLE'); };
+$('fourClearBtn').onclick = () => { fourFilters = { domaine: null, ville: null, search: '' }; $('fourSearch').value = ''; renderFournisseursCSV(); toast('FILTRES EFFACÉS'); };
 
-// CSV Experts Search
-$('autoSearch').addEventListener('input', e => { autoSearchTerm = e.target.value.toLowerCase(); renderExpertsCSV(); });
+// CSV Experts Filters
+$('autoSearch').addEventListener('input', e => { autoFilters.search = e.target.value.toLowerCase(); renderExpertsCSV(); });
+$('autoDomaineBtn').onclick = () => { const items = getAutoAvailableDomaines(); if(items.length) showList('DOMAINE EXPERTS', items, s => { autoFilters.domaine = s; renderExpertsCSV(); }); else toast('AUCUN DOMAINE'); };
+$('autoVilleBtn').onclick = () => { const items = getAutoAvailableVilles(); if(items.length) showList('VILLE EXPERTS', items, s => { autoFilters.ville = s; renderExpertsCSV(); }); else toast('AUCUNE VILLE'); };
+$('autoClearBtn').onclick = () => { autoFilters = { domaine: null, ville: null, search: '' }; $('autoSearch').value = ''; renderExpertsCSV(); toast('FILTRES EFFACÉS'); };
 
 // DB Filters
 $('dbSearch').addEventListener('input', e => { dbFilters.search = e.target.value.toLowerCase(); renderDB(); });
