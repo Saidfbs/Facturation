@@ -417,8 +417,11 @@ body.admin-mode .admin-only { display: flex !important; }
         <div class="filter-strip">
           <button class="filter-chip" id="filterTypeBtn"><i class="fas fa-tags"></i><span>Type</span></button>
           <button class="filter-chip" id="filterCatBtn"><i class="fas fa-layer-group"></i><span>Catégorie</span></button>
+          <button class="filter-chip" id="filterVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
+          <button class="filter-chip" id="filterDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
           <button class="filter-chip danger" id="filterResetBtn"><i class="fas fa-eraser"></i><span>Effacer</span></button>
         </div>
+        <div class="active-filters" id="dbFilterTags"></div>
         <div id="dbResultInfo" class="result-bar" style="display:none"></div>
         <div id="dbGrid" class="items-grid"></div>
         <div id="dbPagination" class="pagination"></div>
@@ -522,7 +525,7 @@ let currentSection = 'about';
 let explorerStack = [];
 let currentPage = 1;
 const ITEMS_PER_PAGE = 20;
-let dbFilters = { type: null, cat: null, search: '' };
+let dbFilters = { type: null, cat: null, ville: null, domaine: null, search: '' };
 let fourSearch = '', expSearch = '';
 let pendingDelete = null;
 
@@ -676,16 +679,61 @@ function getFilteredDB() {
   return dbData.filter(d => {
     if (dbFilters.type && d.type !== dbFilters.type) return false;
     if (dbFilters.cat && d.categorie !== dbFilters.cat) return false;
+    if (dbFilters.ville && d.ville !== dbFilters.ville) return false;
+    if (dbFilters.domaine && d.domaine !== dbFilters.domaine) return false;
     if (dbFilters.search && !d.name.toLowerCase().includes(dbFilters.search.toLowerCase())) return false;
     return true;
   });
 }
 
 function resetDBFilters() {
-  dbFilters = { type: null, cat: null, search: '' };
+  dbFilters = { type: null, cat: null, ville: null, domaine: null, search: '' };
   if ($('dbSearch')) $('dbSearch').value = '';
   currentPage = 1;
   document.querySelectorAll('.stat-tile').forEach(t => t.classList.remove('active'));
+  renderDBFilterTags();
+}
+
+function getDBVilles() {
+  let filtered = [...dbData];
+  if (dbFilters.type) filtered = filtered.filter(d => d.type === dbFilters.type);
+  if (dbFilters.cat) filtered = filtered.filter(d => d.categorie === dbFilters.cat);
+  if (dbFilters.domaine) filtered = filtered.filter(d => d.domaine === dbFilters.domaine);
+  return [...new Set(filtered.map(d => d.ville).filter(v => v && v !== 'null'))].sort((a,b) => a.localeCompare(b));
+}
+
+function getDBDomaines() {
+  let filtered = [...dbData];
+  if (dbFilters.type) filtered = filtered.filter(d => d.type === dbFilters.type);
+  if (dbFilters.cat) filtered = filtered.filter(d => d.categorie === dbFilters.cat);
+  if (dbFilters.ville) filtered = filtered.filter(d => d.ville === dbFilters.ville);
+  return [...new Set(filtered.map(d => d.domaine).filter(v => v && v !== 'null'))].sort((a,b) => a.localeCompare(b));
+}
+
+function renderDBFilterTags() {
+  const container = $('dbFilterTags');
+  if (!container) return;
+  let html = '';
+  if (dbFilters.type) html += `<div class="active-filter-tag"><i class="fas fa-tag"></i> ${dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : 'Experts'} <button onclick="removeFilter('type')">✕</button></div>`;
+  if (dbFilters.cat) {
+    const catNames = { services: 'Services', products: 'Produits', maqola: 'Maqaola', 'yad-amila': 'Yad Amila' };
+    html += `<div class="active-filter-tag"><i class="fas fa-layer-group"></i> ${catNames[dbFilters.cat]} <button onclick="removeFilter('cat')">✕</button></div>`;
+  }
+  if (dbFilters.ville) html += `<div class="active-filter-tag"><i class="fas fa-city"></i> ${escapeHtml(dbFilters.ville)} <button onclick="removeFilter('ville')">✕</button></div>`;
+  if (dbFilters.domaine) html += `<div class="active-filter-tag"><i class="fas fa-folder"></i> ${escapeHtml(dbFilters.domaine)} <button onclick="removeFilter('domaine')">✕</button></div>`;
+  if (dbFilters.search) html += `<div class="active-filter-tag"><i class="fas fa-search"></i> "${escapeHtml(dbFilters.search)}" <button onclick="removeFilter('search')">✕</button></div>`;
+  container.innerHTML = html;
+}
+
+function removeFilter(key) {
+  if (key === 'type') dbFilters.type = null;
+  else if (key === 'cat') dbFilters.cat = null;
+  else if (key === 'ville') dbFilters.ville = null;
+  else if (key === 'domaine') dbFilters.domaine = null;
+  else if (key === 'search') { dbFilters.search = ''; if ($('dbSearch')) $('dbSearch').value = ''; }
+  currentPage = 1;
+  renderDB();
+  renderDBFilterTags();
 }
 
 // RENDER FUNCTIONS
@@ -697,8 +745,9 @@ function renderDB() {
   $('dbGrid').innerHTML = paged.length ? paged.map(i => buildCard(i, false, true)).join('') : '<div class="empty-state"><i class="fas fa-search"></i><h3>AUCUN RÉSULTAT</h3></div>';
   $('dbCount').textContent = total;
   renderPagination(total);
+  renderDBFilterTags();
   
-  const filters = [dbFilters.search && `"${dbFilters.search}"`, dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : dbFilters.type === 'experts' ? 'Experts' : null, dbFilters.cat].filter(Boolean);
+  const filters = [dbFilters.search && `"${dbFilters.search}"`, dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : dbFilters.type === 'experts' ? 'Experts' : null, dbFilters.cat, dbFilters.ville, dbFilters.domaine].filter(Boolean);
   const resultDiv = $('dbResultInfo');
   if (filters.length) {
     resultDiv.innerHTML = `<i class="fas fa-filter"></i> ${total} résultat(s) · ${filters.join(' · ')}`;
@@ -1014,7 +1063,44 @@ function showCatFilter() {
   $('listModal').classList.add('show');
 }
 
-function setDBFilter(key, value) { dbFilters[key] = value; currentPage = 1; renderDB(); }
+function showVilleFilter() {
+  const villes = getDBVilles();
+  if (!villes.length) { toast('⚠️ Aucune ville disponible'); return; }
+  showList('Villes', villes, v => { setDBFilter('ville', v); });
+}
+
+function showDomaineFilter() {
+  const domaines = getDBDomaines();
+  if (!domaines.length) { toast('⚠️ Aucun domaine disponible'); return; }
+  showList('Domaines', domaines, d => { setDBFilter('domaine', d); });
+}
+
+function setDBFilter(key, value) { 
+  if (key === 'type') dbFilters.type = value;
+  else if (key === 'cat') dbFilters.cat = value;
+  else if (key === 'ville') dbFilters.ville = value;
+  else if (key === 'domaine') dbFilters.domaine = value;
+  currentPage = 1;
+  renderDB();
+  closeModal('listModal');
+}
+
+function showList(title, items, onSelect) {
+  $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${escapeHtml(title)}`;
+  const container = $('listItems');
+  container.innerHTML = '';
+  const all = document.createElement('div'); all.className = 'list-item';
+  all.innerHTML = `<span>Tous</span><i class="fas fa-chevron-right"></i>`;
+  all.onclick = () => { onSelect(null); closeModal('listModal'); };
+  container.appendChild(all);
+  items.forEach(item => {
+    const el = document.createElement('div'); el.className = 'list-item';
+    el.innerHTML = `<span>${escapeHtml(item)}</span><i class="fas fa-chevron-right"></i>`;
+    el.onclick = () => { onSelect(item); closeModal('listModal'); };
+    container.appendChild(el);
+  });
+  $('listModal').classList.add('show');
+}
 
 // STAT CLICK HANDLERS
 function applyStatFilter(statType, value) {
@@ -1040,23 +1126,6 @@ function applyStatFilter(statType, value) {
   }
   showSection('db', false);
   renderDB();
-}
-
-function showList(title, items, onSelect) {
-  $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${escapeHtml(title)}`;
-  const container = $('listItems');
-  container.innerHTML = '';
-  const all = document.createElement('div'); all.className = 'list-item';
-  all.innerHTML = `<span>Tous</span><i class="fas fa-chevron-right"></i>`;
-  all.onclick = () => { onSelect(null); closeModal('listModal'); };
-  container.appendChild(all);
-  items.forEach(item => {
-    const el = document.createElement('div'); el.className = 'list-item';
-    el.innerHTML = `<span>${escapeHtml(item)}</span><i class="fas fa-chevron-right"></i>`;
-    el.onclick = () => { onSelect(item); closeModal('listModal'); };
-    container.appendChild(el);
-  });
-  $('listModal').classList.add('show');
 }
 
 // NAVIGATION
@@ -1113,6 +1182,8 @@ $('syncBtn').onclick = syncToFirebase;
 $('addBtn').onclick = openAddModal;
 $('filterTypeBtn').onclick = showTypeFilter;
 $('filterCatBtn').onclick = showCatFilter;
+$('filterVilleBtn').onclick = showVilleFilter;
+$('filterDomaineBtn').onclick = showDomaineFilter;
 $('filterResetBtn').onclick = () => { resetDBFilters(); renderDB(); toast('Filtres effacés'); };
 $('dbSearch').addEventListener('input', (e) => { dbFilters.search = e.target.value; currentPage = 1; renderDB(); });
 $('dbClear').onclick = () => { dbFilters.search = ''; $('dbSearch').value = ''; currentPage = 1; renderDB(); };
@@ -1173,6 +1244,7 @@ window.confirmDeleteItem = confirmDeleteItem;
 window.shareItem = shareItem;
 window.exportToPDF = exportToPDF;
 window.changePage = changePage;
+window.removeFilter = removeFilter;
 
 // INIT
 async function init() {
