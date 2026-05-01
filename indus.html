@@ -10,6 +10,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -105,7 +108,7 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* ═══════════════ SCANLINE TEXTURE ═══════════════ */
+/* SCANLINE TEXTURE */
 body::after {
   content: '';
   position: fixed;
@@ -121,7 +124,7 @@ body::after {
   z-index: 9998;
 }
 
-/* ═══════════════ TOPBAR ═══════════════ */
+/* TOPBAR */
 .topbar {
   position: fixed; top: 0; left: 0; right: 0;
   height: var(--nav-h);
@@ -192,8 +195,9 @@ body.light .topbar { background: rgba(248,250,252,0.9); }
 }
 .icon-btn:hover { border-color: var(--border3); color: var(--text); background: var(--surface2); }
 .icon-btn.admin-on { background: var(--admin); color: #fff; border-color: var(--admin); box-shadow: 0 0 16px rgba(168,85,247,0.3); }
+.icon-btn.logout-on { background: var(--rose); color: #fff; border-color: var(--rose); }
 
-/* ═══════════════ BOTTOM TABS ═══════════════ */
+/* BOTTOM TABS */
 .bottom-tabs {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: var(--tab-h);
@@ -238,7 +242,7 @@ body.light .bottom-tabs { background: rgba(248,250,252,0.95); }
 .tab-admin { display: none !important; }
 body.admin-mode .tab-admin { display: flex !important; }
 
-/* ═══════════════ MAIN LAYOUT ═══════════════ */
+/* MAIN LAYOUT */
 .main {
   padding: calc(var(--nav-h) + 16px) 16px 16px;
   max-width: 1400px; margin: 0 auto;
@@ -252,7 +256,7 @@ body.admin-mode .tab-admin { display: flex !important; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══════════════ HERO ═══════════════ */
+/* HERO */
 .hero {
   position: relative; overflow: hidden;
   border-radius: var(--r24);
@@ -350,7 +354,7 @@ body.admin-mode .tab-admin { display: flex !important; }
   letter-spacing: 1.5px; margin-top: 4px;
 }
 
-/* ═══════════════ CARDS & PANELS ═══════════════ */
+/* CARDS & PANELS */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -398,7 +402,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 
 .card-body { padding: 18px; }
 
-/* ═══════════════ STATS GRID ═══════════════ */
+/* STATS GRID */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -451,36 +455,7 @@ body.admin-mode .tab-admin { display: flex !important; }
   text-transform: uppercase;
 }
 
-/* ═══════════════ ADMIN STATS ═══════════════ */
-.admin-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-  margin-bottom: 14px; padding: 12px;
-  background: var(--surface2); border-radius: var(--r12);
-  border: 1px solid rgba(168,85,247,0.15);
-}
-.admin-stat {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r8); padding: 10px 12px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.admin-stat-label {
-  font-family: var(--font-mono); font-size: 0.58rem; color: var(--text3);
-}
-.admin-stat-value {
-  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
-  color: var(--admin);
-}
-.sync-pill {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-mono); font-size: 0.6rem; color: var(--text3);
-  padding: 8px 12px; background: var(--surface2);
-  border-radius: var(--r8); margin-top: 8px;
-}
-.sync-pill.ok { color: var(--emerald); }
-.sync-pill.warn { color: var(--amber); }
-.sync-pill.err { color: var(--rose); }
-
-/* ═══════════════ SEARCH & FILTERS ═══════════════ */
+/* SEARCH & FILTERS */
 .search-box {
   display: flex; align-items: center; gap: 10px;
   background: var(--surface2); border: 1px solid var(--border);
@@ -550,7 +525,7 @@ body.admin-mode .tab-admin { display: flex !important; }
   font-family: var(--font-mono); font-size: 0.62rem; color: var(--amber);
 }
 
-/* ═══════════════ ITEM CARDS ═══════════════ */
+/* ITEM CARDS */
 .items-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -632,6 +607,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .act-btn.share:hover { background: var(--amber); color: #000; border-color: var(--amber); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
 .act-btn.copy:hover { background: var(--cyan); color: #000; border-color: var(--cyan); }
 .act-btn.phone:hover { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+.act-btn.pdf:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
 .act-btn.edit:hover { background: #f97316; color: #fff; border-color: #f97316; }
 .act-btn.del:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
 
@@ -646,11 +622,12 @@ body.admin-mode .tab-admin { display: flex !important; }
   font-size: 1.4rem; margin: 0 auto 14px; color: var(--text4);
 }
 .empty-state h3 {
-  font-family: var(--font-display); font-size: 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
   letter-spacing: 2px; opacity: 0.5;
 }
 
-/* ═══════════════ CHART ═══════════════ */
+/* CHART */
 .chart-wrap {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--r16); padding: 18px; margin-bottom: 14px;
@@ -662,7 +639,7 @@ body.admin-mode .tab-admin { display: flex !important; }
   background: linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent);
 }
 
-/* ═══════════════ EXPLORER ═══════════════ */
+/* EXPLORER */
 .breadcrumb {
   display: flex; gap: 6px; flex-wrap: wrap;
   margin-bottom: 14px; align-items: center;
@@ -695,7 +672,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .exp-card p { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text3); margin-top: 3px; }
 .exp-card-arrow { margin-left: auto; color: var(--text4); font-size: 0.7rem; }
 
-/* ═══════════════ PAGINATION ═══════════════ */
+/* PAGINATION */
 .pagination {
   display: flex; justify-content: center; gap: 6px;
   margin-top: 20px; flex-wrap: wrap;
@@ -711,7 +688,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .pg-ellipsis { color: var(--text3); padding: 8px 4px; font-size: 0.7rem; align-self: center; }
 
-/* ═══════════════ MODALS ═══════════════ */
+/* MODALS */
 .overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.8);
@@ -792,7 +769,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .btn-cancel { padding: 10px 24px; border-radius: var(--r8); cursor: pointer; font-weight: 600; font-size: 0.73rem; font-family: var(--font-body); transition: all 0.2s; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
 .btn-cancel:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); }
 
-/* ═══════════════ FORM ═══════════════ */
+/* FORM */
 .fgroup { margin-bottom: 14px; }
 .fgroup label { display: block; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 500; letter-spacing: 1px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; }
 .fgroup label span { color: var(--rose); margin-left: 2px; }
@@ -805,7 +782,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .field:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.06); background: var(--surface); }
 .field option { background: var(--surface); }
 
-/* ═══════════════ BUTTONS ═══════════════ */
+/* BUTTONS */
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 16px; border-radius: var(--r8); cursor: pointer;
@@ -823,7 +800,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 .btn-danger:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
 .btn-full { width: 100%; justify-content: center; }
 
-/* ═══════════════ TOAST ═══════════════ */
+/* TOAST */
 .toast {
   position: fixed; bottom: calc(var(--tab-h) + 10px); left: 50%;
   transform: translateX(-50%);
@@ -837,7 +814,7 @@ body.admin-mode .tab-admin { display: flex !important; }
 }
 .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-6px); }
 
-/* ═══════════════ LOADING ═══════════════ */
+/* LOADING */
 .loading-screen {
   position: fixed; inset: 0;
   background: var(--bg); z-index: 9999;
@@ -858,38 +835,30 @@ body.admin-mode .tab-admin { display: flex !important; }
 .loading-fill { width: 40%; height: 100%; background: linear-gradient(90deg, var(--amber), var(--amber3)); border-radius: 99px; animation: loading-slide 0.9s ease infinite; }
 @keyframes loading-slide { 0% { transform: translateX(-150%); } 100% { transform: translateX(280%); } }
 
-/* ═══════════════ ADMIN ═══════════════ */
+/* ADMIN */
 .admin-only { display: none !important; }
 body.admin-mode .admin-only { display: flex !important; }
 body.admin-mode .admin-only-block { display: block !important; }
 
-/* ═══════════════ RESPONSIVE ═══════════════ */
+/* RESPONSIVE */
 @media(max-width: 380px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Section transitions */
-.section-enter { animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1); }
-
-/* ═══════════════ SEGMENT CONTROL ═══════════════ */
-.segment {
-  display: flex; gap: 0; background: var(--surface2);
-  border: 1px solid var(--border); border-radius: var(--r8);
-  padding: 3px; margin-bottom: 14px; width: fit-content;
+/* QR Modal */
+#qrContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 16px;
 }
-.seg-btn {
-  padding: 6px 16px; border-radius: 6px; cursor: pointer;
-  font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500;
-  letter-spacing: 0.8px; border: none; background: transparent;
-  color: var(--text3); transition: all 0.18s;
-}
-.seg-btn.active { background: var(--amber); color: #000; font-weight: 700; }
-.seg-btn:hover:not(.active) { color: var(--text); }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div class="topbar-logo">
     <div class="logo-mark">CI</div>
@@ -901,11 +870,11 @@ body.admin-mode .admin-only-block { display: block !important; }
   <div class="topbar-right">
     <div class="topbar-clock" id="appTime">--:--</div>
     <button class="icon-btn" id="themeBtn" title="Thème"><i class="fas fa-circle-half-stroke"></i></button>
-    <button class="icon-btn" id="adminLoginBtn" title="Admin"><i class="fas fa-user-shield"></i></button>
+    <button class="icon-btn" id="adminBtn" title="Admin"><i class="fas fa-user-shield"></i></button>
+    <button class="icon-btn admin-only" id="logoutBtn" title="Déconnexion" style="display:none"><i class="fas fa-sign-out-alt"></i></button>
   </div>
 </header>
 
-<!-- BOTTOM TABS -->
 <nav class="bottom-tabs">
   <button class="tab-btn active" data-sec="about"><i class="fas fa-home"></i><span>ACCUEIL</span></button>
   <button class="tab-btn" data-sec="explorer"><i class="fas fa-compass"></i><span>EXPLORER</span></button>
@@ -918,9 +887,8 @@ body.admin-mode .admin-only-block { display: block !important; }
 
 <main class="main">
 
-  <!-- ═══ ACCUEIL ═══ -->
+  <!-- ACCUEIL -->
   <div id="aboutSection" class="section active">
-
     <div class="hero">
       <div class="hero-bg"></div>
       <div class="hero-grid-lines"></div>
@@ -929,22 +897,10 @@ body.admin-mode .admin-only-block { display: block !important; }
       <div class="hero-divider"></div>
       <p class="hero-desc">Mise en relation entre professionnels, fournisseurs et experts de l'industrie au Maroc.</p>
       <div class="hero-stats-row">
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-four">0</div>
-          <div class="hero-stat-l">Fournisseurs</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-exp">0</div>
-          <div class="hero-stat-l">Experts</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-villes">0</div>
-          <div class="hero-stat-l">Villes</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-dom">0</div>
-          <div class="hero-stat-l">Domaines</div>
-        </div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hs-four">0</div><div class="hero-stat-l">Fournisseurs</div></div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hs-exp">0</div><div class="hero-stat-l">Experts</div></div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hs-villes">0</div><div class="hero-stat-l">Villes</div></div>
+        <div class="hero-stat"><div class="hero-stat-n" id="hs-dom">0</div><div class="hero-stat-l">Domaines</div></div>
       </div>
     </div>
 
@@ -956,103 +912,38 @@ body.admin-mode .admin-only-block { display: block !important; }
       <div class="card-head">
         <div class="card-head-icon"><i class="fas fa-chart-pie"></i></div>
         <div class="card-head-title">Statistiques</div>
-        <div class="card-head-right">
-          <span id="adminBadge" class="admin-badge-inline admin-only">MODE ADMIN</span>
-        </div>
+        <div class="card-head-right"><span id="adminBadge" class="admin-badge-inline admin-only">MODE ADMIN</span></div>
       </div>
       <div class="card-body">
-        <!-- Admin Stats -->
-        <div id="adminStatsPanel" class="admin-only-block" style="display:none;">
-          <div class="admin-grid">
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Fournisseurs</span>
-              <span class="admin-stat-value" id="adminCsvFourCount">0</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Experts</span>
-              <span class="admin-stat-value" id="adminCsvExpCount">0</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-calendar-check"></i> Dernière sync</span>
-              <span class="admin-stat-value" id="adminLastSync">--</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-database"></i> Base DB</span>
-              <span class="admin-stat-value" id="adminDbCount">0</span>
-            </div>
-          </div>
-          <div class="sync-pill ok" id="syncStatus"><i class="fas fa-check-circle"></i> Synchronisé</div>
-        </div>
-
         <div class="stats-grid">
-          <div class="stat-tile" data-filter-type="fournisseurs">
-            <div class="stat-num" id="dbFourCount">0</div>
-            <div class="stat-label">Fournisseurs</div>
-          </div>
-          <div class="stat-tile" data-filter-type="experts">
-            <div class="stat-num" id="dbExpCount">0</div>
-            <div class="stat-label">Experts</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="services">
-            <div class="stat-num" id="dbSvcCount">0</div>
-            <div class="stat-label">Services</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="products">
-            <div class="stat-num" id="dbPrdCount">0</div>
-            <div class="stat-label">Produits</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="maqola">
-            <div class="stat-num" id="dbConCount">0</div>
-            <div class="stat-label">Maqaola</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="yad-amila">
-            <div class="stat-num" id="dbLabCount">0</div>
-            <div class="stat-label">Yad Amila</div>
-          </div>
-          <div class="stat-tile" data-t="villes">
-            <div class="stat-num" id="dbVillesCount">0</div>
-            <div class="stat-label">Villes</div>
-          </div>
-          <div class="stat-tile" data-t="domaines">
-            <div class="stat-num" id="dbDomainesCount">0</div>
-            <div class="stat-label">Domaines</div>
-          </div>
-          <div class="stat-tile" data-t="specialites">
-            <div class="stat-num" id="dbSpecialitesCount">0</div>
-            <div class="stat-label">Spécialités</div>
-          </div>
+          <div class="stat-tile" data-filter-type="fournisseurs"><div class="stat-num" id="dbFourCount">0</div><div class="stat-label">Fournisseurs</div></div>
+          <div class="stat-tile" data-filter-type="experts"><div class="stat-num" id="dbExpCount">0</div><div class="stat-label">Experts</div></div>
+          <div class="stat-tile" data-filter-cat="services"><div class="stat-num" id="dbSvcCount">0</div><div class="stat-label">Services</div></div>
+          <div class="stat-tile" data-filter-cat="products"><div class="stat-num" id="dbPrdCount">0</div><div class="stat-label">Produits</div></div>
+          <div class="stat-tile" data-filter-cat="maqola"><div class="stat-num" id="dbConCount">0</div><div class="stat-label">Maqaola</div></div>
+          <div class="stat-tile" data-filter-cat="yad-amila"><div class="stat-num" id="dbLabCount">0</div><div class="stat-label">Yad Amila</div></div>
+          <div class="stat-tile" data-t="villes"><div class="stat-num" id="dbVillesCount">0</div><div class="stat-label">Villes</div></div>
+          <div class="stat-tile" data-t="domaines"><div class="stat-num" id="dbDomainesCount">0</div><div class="stat-label">Domaines</div></div>
+          <div class="stat-tile" data-t="specialites"><div class="stat-num" id="dbSpecialitesCount">0</div><div class="stat-label">Spécialités</div></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══ EXPLORER ═══ -->
+  <!-- EXPLORER -->
   <div id="explorerSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-compass"></i></div>
-        <div class="card-head-title">Explorer</div>
-      </div>
-      <div class="card-body">
-        <div id="explorerContent"></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-compass"></i></div><div class="card-head-title">Explorer</div></div>
+      <div class="card-body"><div id="explorerContent"></div></div>
     </div>
   </div>
 
-  <!-- ═══ BASE DB ═══ -->
+  <!-- BASE DB -->
   <div id="db-unifiedSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-database"></i></div>
-        <div class="card-head-title">Base de Données</div>
-        <div class="card-head-right"><span class="count-badge" id="dbCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-database"></i></div><div class="card-head-title">Base de Données</div><div class="card-head-right"><span class="count-badge" id="dbCnt">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="dbSearch" placeholder="Nom, domaine, ville, téléphone, email...">
-          <button class="search-clear" id="dbSearchClear" style="display:none"><i class="fas fa-times"></i></button>
-        </div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="dbSearch" placeholder="Nom, domaine, ville, téléphone, email..."><button class="search-clear" id="dbSearchClear"><i class="fas fa-times"></i></button></div>
         <div class="filter-strip">
           <button class="filter-chip" id="filterTypeBtn"><i class="fas fa-tags"></i><span>Type</span></button>
           <button class="filter-chip" id="filterCategorieBtn"><i class="fas fa-layer-group"></i><span>Catégorie</span></button>
@@ -1068,19 +959,12 @@ body.admin-mode .admin-only-block { display: block !important; }
     </div>
   </div>
 
-  <!-- ═══ FOURNISSEURS CSV ═══ -->
+  <!-- FOURNISSEURS CSV -->
   <div id="fournisseurs-csvSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-industry"></i></div>
-        <div class="card-head-title">Fournisseurs CSV</div>
-        <div class="card-head-right"><span class="count-badge" id="fourCsvCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-industry"></i></div><div class="card-head-title">Fournisseurs CSV</div><div class="card-head-right"><span class="count-badge" id="fourCsvCnt">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="fourSearch" placeholder="Rechercher fournisseurs...">
-        </div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher fournisseurs..."></div>
         <div class="filter-strip">
           <button class="filter-chip" id="fourDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
           <button class="filter-chip" id="fourVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
@@ -1093,19 +977,12 @@ body.admin-mode .admin-only-block { display: block !important; }
     </div>
   </div>
 
-  <!-- ═══ EXPERTS CSV ═══ -->
+  <!-- EXPERTS CSV -->
   <div id="experts-csvSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-microchip"></i></div>
-        <div class="card-head-title">Experts CSV</div>
-        <div class="card-head-right"><span class="count-badge" id="autoCsvCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-microchip"></i></div><div class="card-head-title">Experts CSV</div><div class="card-head-right"><span class="count-badge" id="autoCsvCnt">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="autoSearch" placeholder="Rechercher experts...">
-        </div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="autoSearch" placeholder="Rechercher experts..."></div>
         <div class="filter-strip">
           <button class="filter-chip" id="autoDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
           <button class="filter-chip" id="autoVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
@@ -1120,67 +997,33 @@ body.admin-mode .admin-only-block { display: block !important; }
 
 </main>
 
-<!-- ═══ ADMIN LOGIN MODAL ═══ -->
+<!-- MODALS -->
 <div class="overlay" id="adminLoginModal">
   <div class="modal">
     <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3><i class="fas fa-user-shield"></i> Accès Administrateur</h3>
-      <button class="modal-close" onclick="closeModal('adminLoginModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="fgroup">
-        <label>Mot de passe <span>*</span></label>
-        <input type="password" id="adminPassword" class="field" placeholder="Entrez le mot de passe admin">
-      </div>
-      <div id="adminLoginError" style="color:var(--rose);font-family:var(--font-mono);font-size:0.62rem;margin-top:6px;display:none;"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" onclick="verifyAdminLogin()"><i class="fas fa-sign-in-alt"></i> Connexion</button>
-      <button class="btn btn-ghost" onclick="closeModal('adminLoginModal')">Annuler</button>
-    </div>
+    <div class="modal-head"><h3><i class="fas fa-user-shield"></i> Accès Administrateur</h3><button class="modal-close" onclick="closeModal('adminLoginModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div class="fgroup"><label>Mot de passe <span>*</span></label><input type="password" id="adminPassword" class="field" placeholder="Entrez le mot de passe admin"></div><div id="adminLoginError" style="color:var(--rose);font-family:var(--font-mono);font-size:0.62rem;margin-top:6px;display:none;"></div></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="verifyAdminLogin()"><i class="fas fa-sign-in-alt"></i> Connexion</button><button class="btn btn-ghost" onclick="closeModal('adminLoginModal')">Annuler</button></div>
   </div>
 </div>
 
-<!-- ═══ LIST MODAL ═══ -->
 <div class="overlay" id="listModal">
   <div class="modal">
     <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3 id="listTitle"><i class="fas fa-list"></i> Liste</h3>
-      <button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button>
-    </div>
+    <div class="modal-head"><h3 id="listTitle"><i class="fas fa-list"></i> Liste</h3><button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div>
     <div id="listItems" class="list-items"></div>
   </div>
 </div>
 
-<!-- ═══ EDIT MODAL ═══ -->
 <div class="overlay" id="editModal">
   <div class="modal">
     <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3 id="editTitle"><i class="fas fa-plus-circle"></i> Ajouter un Professionnel</h3>
-      <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
-    </div>
+    <div class="modal-head"><h3 id="editTitle"><i class="fas fa-plus-circle"></i> Ajouter un Professionnel</h3><button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div>
     <div class="modal-body">
       <input type="hidden" id="editId">
       <div class="fgroup"><label>Nom / Société <span>*</span></label><input type="text" id="editName" class="field" placeholder="Nom ou société"></div>
-      <div class="fgroup"><label>Type <span>*</span></label>
-        <select id="editType" class="field">
-          <option value="">-- Sélectionner --</option>
-          <option value="fournisseurs">FOURNISSEUR</option>
-          <option value="experts">EXPERT</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Catégorie <span>*</span></label>
-        <select id="editCategorie" class="field">
-          <option value="">-- Sélectionner --</option>
-          <option value="services">SERVICES</option>
-          <option value="products">PRODUITS</option>
-          <option value="maqola">MAQAOLA</option>
-          <option value="yad-amila">YAD AMILA</option>
-        </select>
-      </div>
+      <div class="fgroup"><label>Type <span>*</span></label><select id="editType" class="field"><option value="">-- Sélectionner --</option><option value="fournisseurs">FOURNISSEUR</option><option value="experts">EXPERT</option></select></div>
+      <div class="fgroup"><label>Catégorie <span>*</span></label><select id="editCategorie" class="field"><option value="">-- Sélectionner --</option><option value="services">SERVICES</option><option value="products">PRODUITS</option><option value="maqola">MAQAOLA</option><option value="yad-amila">YAD AMILA</option></select></div>
       <div class="fgroup"><label>Domaine</label><input type="text" id="editDomaine" class="field" placeholder="Ex: Métallurgie, Informatique..."></div>
       <div class="fgroup"><label>Spécialité</label><input type="text" id="editSpecialite" class="field" placeholder="Ex: Soudure, Automation..."></div>
       <div class="fgroup"><label>Ville</label><input type="text" id="editVille" class="field" placeholder="Ex: Casablanca, Rabat..."></div>
@@ -1188,50 +1031,38 @@ body.admin-mode .admin-only-block { display: block !important; }
       <div class="fgroup"><label>Email</label><input type="email" id="editEmail" class="field" placeholder="contact@example.com"></div>
       <div class="fgroup"><label>Site Web</label><input type="url" id="editWeb" class="field" placeholder="https://www.example.com"></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" onclick="saveItem()"><i class="fas fa-save"></i> Enregistrer</button>
-      <button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="saveItem()"><i class="fas fa-save"></i> Enregistrer</button><button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button></div>
   </div>
 </div>
 
-<!-- ═══ DELETE MODAL ═══ -->
 <div class="overlay" id="deleteModal">
   <div class="modal">
     <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3><i class="fas fa-triangle-exclamation" style="color:var(--rose)"></i> Confirmer la Suppression</h3>
-      <button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="del-box">
-        <p id="deleteMessage">Voulez-vous vraiment supprimer cet élément ?</p>
-        <div class="del-actions">
-          <button class="btn-del" onclick="confirmDelete()"><i class="fas fa-trash"></i> Supprimer</button>
-          <button class="btn-cancel" onclick="closeModal('deleteModal')">Annuler</button>
-        </div>
-      </div>
-    </div>
+    <div class="modal-head"><h3><i class="fas fa-triangle-exclamation" style="color:var(--rose)"></i> Confirmer la Suppression</h3><button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div class="del-box"><p id="deleteMessage">Voulez-vous vraiment supprimer cet élément ?</p><div class="del-actions"><button class="btn-del" onclick="confirmDelete()"><i class="fas fa-trash"></i> Supprimer</button><button class="btn-cancel" onclick="closeModal('deleteModal')">Annuler</button></div></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="qrModal">
+  <div class="modal">
+    <div class="modal-drag"></div>
+    <div class="modal-head"><h3><i class="fas fa-qrcode"></i> Carte de Visite</h3><button class="modal-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div id="qrContainer"></div><button class="btn btn-primary btn-full" id="downloadPDFBtn"><i class="fas fa-download"></i> Télécharger PDF</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo">CI <span>·</span></div>
-  <div class="loading-sub">Connect Industry</div>
-  <div class="loading-track"><div class="loading-fill"></div></div>
-</div>
+<div class="loading-screen" id="loadingScreen"><div class="loading-logo">CI <span>·</span></div><div class="loading-sub">Connect Industry</div><div class="loading-track"><div class="loading-fill"></div></div></div>
 
 <script>
-// ═══════════════ CONFIG ═══════════════
+// CONFIG
 const CONFIG = {
-  WA: "212690292010",
   CSV_EXPERTS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv",
   CSV_FOURNISSEURS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv",
   ADMIN_PASSWORD: "admin123"
 };
 
-// ═══════════════ FIREBASE ═══════════════
+// FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
   authDomain: "said-rahil-default-rtdb.firebaseio.com",
@@ -1242,7 +1073,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const dbRef = firebase.database();
 
-// ═══════════════ STATE ═══════════════
+// STATE
 let csvExperts = [], csvFournisseurs = [], dbData = [];
 let pendingDelete = null;
 let explorerLevel = 0, explorerState = { type: null, domaine: null, specialite: null };
@@ -1253,8 +1084,9 @@ const ITEMS_PER_PAGE = 20;
 let dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
 let fourFilters = { domaine: null, ville: null, search: '' };
 let autoFilters = { domaine: null, ville: null, search: '' };
+let currentQRItem = null;
 
-// ═══════════════ UTILS ═══════════════
+// UTILS
 const $ = id => document.getElementById(id);
 
 function toast(msg, dur = 3000) {
@@ -1289,7 +1121,7 @@ const catNames = { services: 'SERVICES', products: 'PRODUITS', maqola: 'MAQAOLA'
 const catIcons = { services: 'fa-cogs', products: 'fa-boxes', maqola: 'fa-hard-hat', 'yad-amila': 'fa-hands' };
 const catBadge = { services: 'badge-svc', products: 'badge-prd', maqola: 'badge-maq', 'yad-amila': 'badge-yad' };
 
-// ═══════════════ ADMIN ═══════════════
+// ADMIN
 function checkAdminStatus() {
   if (sessionStorage.getItem('adminMode') === 'true') enableAdminMode(true);
   else disableAdminMode(true);
@@ -1299,8 +1131,8 @@ function enableAdminMode(silent = false) {
   isAdmin = true;
   sessionStorage.setItem('adminMode', 'true');
   document.body.classList.add('admin-mode');
-  $('adminLoginBtn').classList.add('admin-on');
-  const p = $('adminStatsPanel'); if (p) p.style.display = 'block';
+  $('adminBtn').classList.add('admin-on');
+  $('logoutBtn').style.display = 'flex';
   if (!silent) toast('✅ Mode administrateur activé');
   updateAdminStats();
 }
@@ -1309,8 +1141,8 @@ function disableAdminMode(silent = false) {
   isAdmin = false;
   sessionStorage.removeItem('adminMode');
   document.body.classList.remove('admin-mode');
-  $('adminLoginBtn').classList.remove('admin-on');
-  const p = $('adminStatsPanel'); if (p) p.style.display = 'none';
+  $('adminBtn').classList.remove('admin-on');
+  $('logoutBtn').style.display = 'none';
   if (!silent) toast('👤 Mode utilisateur normal');
 }
 
@@ -1330,13 +1162,10 @@ function verifyAdminLogin() {
 
 function updateAdminStats() {
   if (!isAdmin) return;
-  $('adminCsvFourCount').textContent = csvFournisseurs.length;
-  $('adminCsvExpCount').textContent = csvExperts.length;
-  $('adminDbCount').textContent = dbData.length;
-  $('adminLastSync').textContent = lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString('fr-FR') : '--';
+  // Admin stats can be shown if needed
 }
 
-// ═══════════════ CSV ═══════════════
+// CSV Loading
 async function loadCSV(url, retry = 0) {
   try {
     const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
@@ -1383,11 +1212,11 @@ async function loadAllCSV() {
   const [e, f] = await Promise.all([loadCSV(CONFIG.CSV_EXPERTS), loadCSV(CONFIG.CSV_FOURNISSEURS)]);
   csvExperts = e.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
   csvFournisseurs = f.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
-  renderFournisseursCSV(); renderExpertsCSV(); updateAdminStats();
+  renderFournisseursCSV(); renderExpertsCSV();
   toast(`✅ ${csvFournisseurs.length} fournisseurs, ${csvExperts.length} experts chargés`);
 }
 
-// ═══════════════ FIREBASE ═══════════════
+// FIREBASE
 async function loadDB() {
   try {
     const snap = await dbRef.ref('professionals').once('value');
@@ -1410,7 +1239,7 @@ async function loadDB() {
       }
       dbData.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
     }
-    updateDBStats(); updateStatsChart(); updateAdminStats();
+    updateDBStats(); updateStatsChart();
     currentPage = 1; renderDB(); renderExplorer();
     toast(`✅ ${dbData.length} professionnels chargés`);
   } catch(e) {
@@ -1419,7 +1248,7 @@ async function loadDB() {
   }
 }
 
-// ═══════════════ CHART ═══════════════
+// CHART
 function updateStatsChart() {
   const canvas = $('statsChart');
   if (!canvas) return;
@@ -1456,25 +1285,13 @@ function updateStatsChart() {
     },
     options: {
       responsive: true, maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: isDark ? '#111827' : '#fff',
-          titleColor: isDark ? '#f1f5f9' : '#0f172a',
-          bodyColor: textColor,
-          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-          borderWidth: 1, cornerRadius: 8, padding: 10
-        }
-      },
-      scales: {
-        y: { ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: gridColor } },
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
-      }
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: isDark ? '#111827' : '#fff', titleColor: isDark ? '#f1f5f9' : '#0f172a', bodyColor: textColor, borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', borderWidth: 1, cornerRadius: 8, padding: 10 } },
+      scales: { y: { ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: gridColor } }, x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } } }
     }
   });
 }
 
-// ═══════════════ SYNC ═══════════════
+// SYNC
 async function syncToFirebase() {
   if (!confirm('Synchroniser les CSV vers Firebase ?')) return;
   toast('📤 Synchronisation...'); showLoading(true);
@@ -1494,14 +1311,14 @@ async function syncToFirebase() {
       email:e.email||'',web:e.web||'',createdAt:new Date().toISOString()
     }));
     await dbRef.ref('professionals').set(h);
-    lastSyncTime = Date.now(); updateAdminStats();
+    lastSyncTime = Date.now();
     toast('✅ Synchronisation terminée!');
     await loadDB();
   } catch(e) { toast('❌ Erreur sync: ' + e.message); }
   showLoading(false);
 }
 
-// ═══════════════ CRUD ═══════════════
+// CRUD
 function openAddModal() {
   if (!isAdmin) { toast('⚠️ Accès réservé aux administrateurs'); return; }
   $('editTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Ajouter un Professionnel';
@@ -1596,13 +1413,7 @@ async function confirmDelete() {
   showLoading(false);
 }
 
-window.openAddModal = openAddModal;
-window.openEditModal = openEditModal;
-window.saveItem = saveItem;
-window.openDeleteModal = openDeleteModal;
-window.confirmDelete = confirmDelete;
-
-// ═══════════════ STATS ═══════════════
+// STATS
 function updateDBStats() {
   const fCount = dbData.filter(d=>d.type==='fournisseurs').length;
   const eCount = dbData.filter(d=>d.type==='experts').length;
@@ -1614,16 +1425,17 @@ function updateDBStats() {
   $('dbLabCount').textContent = dbData.filter(d=>d.categorie==='yad-amila').length;
   const villes = new Set(dbData.map(d=>d.ville).filter(v=>v&&v!=='null'&&v!=='')).size;
   const doms = new Set(dbData.map(d=>d.domaine).filter(v=>v&&v!=='null'&&v!=='')).size;
+  const specs = new Set(dbData.map(d=>d.specialite).filter(v=>v&&v!=='null'&&v!=='')).size;
   $('dbVillesCount').textContent = villes;
   $('dbDomainesCount').textContent = doms;
-  $('dbSpecialitesCount').textContent = new Set(dbData.map(d=>d.specialite).filter(v=>v&&v!=='null'&&v!=='')).size;
+  $('dbSpecialitesCount').textContent = specs;
   $('hs-four').textContent = fCount;
   $('hs-exp').textContent = eCount;
   $('hs-villes').textContent = villes;
   $('hs-dom').textContent = doms;
 }
 
-// ═══════════════ FILTERS ═══════════════
+// FILTERS
 function resetDBFilters() {
   dbFilters = { type:null,categorie:null,ville:null,domaine:null,search:'' };
   if ($('dbSearch')) $('dbSearch').value='';
@@ -1645,33 +1457,16 @@ function getFilteredDB() {
     matchSearch(d,dbFilters.search)
   );
 }
-function getAvailableTypes() {
-  return ['fournisseurs','experts'].filter(t=>dbData.some(d=>d.type===t));
-}
-function getAvailableCategories() {
-  let d=[...dbData]; if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  return ['services','products','maqola','yad-amila'].filter(c=>d.some(x=>x.categorie===c));
-}
-function getDBVilles() {
-  let d=[...dbData];
-  if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie);
-  if(dbFilters.domaine) d=d.filter(x=>x.domaine===dbFilters.domaine);
-  return[...new Set(d.map(x=>x.ville).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr'));
-}
-function getDBDomaines() {
-  let d=[...dbData];
-  if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie);
-  if(dbFilters.ville) d=d.filter(x=>x.ville===dbFilters.ville);
-  return[...new Set(d.map(x=>x.domaine).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr'));
-}
+function getAvailableTypes() { return ['fournisseurs','experts'].filter(t=>dbData.some(d=>d.type===t)); }
+function getAvailableCategories() { let d=[...dbData]; if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type); return ['services','products','maqola','yad-amila'].filter(c=>d.some(x=>x.categorie===c)); }
+function getDBVilles() { let d=[...dbData]; if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type); if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie); if(dbFilters.domaine) d=d.filter(x=>x.domaine===dbFilters.domaine); return[...new Set(d.map(x=>x.ville).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr')); }
+function getDBDomaines() { let d=[...dbData]; if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type); if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie); if(dbFilters.ville) d=d.filter(x=>x.ville===dbFilters.ville); return[...new Set(d.map(x=>x.domaine).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr')); }
 function getFourVilles() { let d=[...csvFournisseurs]; if(fourFilters.domaine) d=d.filter(x=>x.domaine===fourFilters.domaine); return[...new Set(d.map(x=>x.ville).filter(v=>v))].sort(); }
 function getFourDomaines() { let d=[...csvFournisseurs]; if(fourFilters.ville) d=d.filter(x=>x.ville===fourFilters.ville); return[...new Set(d.map(x=>x.domaine).filter(v=>v))].sort(); }
 function getAutoVilles() { let d=[...csvExperts]; if(autoFilters.domaine) d=d.filter(x=>x.domaine===autoFilters.domaine); return[...new Set(d.map(x=>x.ville).filter(v=>v))].sort(); }
 function getAutoDomaines() { let d=[...csvExperts]; if(autoFilters.ville) d=d.filter(x=>x.ville===autoFilters.ville); return[...new Set(d.map(x=>x.domaine).filter(v=>v))].sort(); }
 
-// ═══════════════ PAGINATION ═══════════════
+// PAGINATION
 function renderPagination(total) {
   const c = $('dbPagination');
   if (!c) return;
@@ -1692,7 +1487,7 @@ function changePage(p) {
 }
 window.changePage=changePage;
 
-// ═══════════════ STAT FILTER ═══════════════
+// STAT FILTER
 function applyStatFilter(type, value) {
   document.querySelectorAll('.stat-tile').forEach(c=>c.classList.remove('active'));
   const sel = document.querySelector(`.stat-tile[data-filter-type="${value}"],.stat-tile[data-filter-cat="${value}"],.stat-tile[data-t="${value}"]`);
@@ -1706,7 +1501,7 @@ function applyStatFilter(type, value) {
   currentPage=1; showSection('db-unified');
 }
 
-// ═══════════════ CARD BUILDER ═══════════════
+// CARD BUILDER
 function buildCard(item, isCSV=false) {
   const hp = item.phone && item.phone!=='null' && item.phone!=='';
   const he = item.email && item.email!=='null' && item.email!=='';
@@ -1716,11 +1511,8 @@ function buildCard(item, isCSV=false) {
   
   let badges='';
   if (!isCSV) {
-    badges += item.type==='fournisseurs'
-      ? `<span class="ic-badge badge-fourn"><i class="fas fa-industry"></i> FOURN.</span>`
-      : `<span class="ic-badge badge-exp"><i class="fas fa-microchip"></i> EXPERT</span>`;
-    if (item.categorie && catNames[item.categorie])
-      badges += `<span class="ic-badge ${catBadge[item.categorie]}"><i class="fas ${catIcons[item.categorie]}"></i> ${catNames[item.categorie]}</span>`;
+    badges += item.type==='fournisseurs' ? `<span class="ic-badge badge-fourn"><i class="fas fa-industry"></i> FOURN.</span>` : `<span class="ic-badge badge-exp"><i class="fas fa-microchip"></i> EXPERT</span>`;
+    if (item.categorie && catNames[item.categorie]) badges += `<span class="ic-badge ${catBadge[item.categorie]}"><i class="fas ${catIcons[item.categorie]}"></i> ${catNames[item.categorie]}</span>`;
   }
   
   let btns = '';
@@ -1731,16 +1523,14 @@ function buildCard(item, isCSV=false) {
   if (hp) btns += `<button class="act-btn copy" title="Copier tél." onclick="copyClip('${sp}','Téléphone copié !')"><i class="fas fa-copy"></i></button>`;
   const is = JSON.stringify(item).replace(/"/g,'&quot;');
   btns += `<button class="act-btn share" title="Partager" onclick="shareItem('${is}')"><i class="fas fa-share-alt"></i></button>`;
+  btns += `<button class="act-btn pdf" title="Carte visite PDF" onclick="exportToPDF('${is}')"><i class="fas fa-id-card"></i></button>`;
   if (!isCSV && isAdmin) {
     btns += `<button class="act-btn edit" title="Modifier" onclick="openEditModal('${esc(item.id)}')"><i class="fas fa-pen"></i></button>`;
     btns += `<button class="act-btn del" title="Supprimer" onclick="openDeleteModal('${esc(item.id)}')"><i class="fas fa-trash"></i></button>`;
   }
   
   return `<div class="item-card">
-    <div class="ic-top">
-      <div class="ic-name">${esc(item.name)}</div>
-      <div class="ic-badges">${badges}</div>
-    </div>
+    <div class="ic-top"><div class="ic-name">${esc(item.name)}</div><div class="ic-badges">${badges}</div></div>
     <div class="ic-body">
       ${item.domaine?`<div class="ic-row"><i class="ic-row-icon fas fa-folder"></i><span class="ic-row-label">DOMAINE</span><span class="ic-row-value">${esc(item.domaine)}</span></div>`:''}
       ${item.specialite?`<div class="ic-row"><i class="ic-row-icon fas fa-cog"></i><span class="ic-row-label">SPÉCIALITÉ</span><span class="ic-row-value">${esc(item.specialite)}</span></div>`:''}
@@ -1755,7 +1545,7 @@ function buildCard(item, isCSV=false) {
 
 const emptyHTML = `<div class="empty-state"><div class="empty-state-icon"><i class="fas fa-search"></i></div><h3>AUCUN RÉSULTAT</h3></div>`;
 
-// ═══════════════ RENDER ═══════════════
+// RENDER FUNCTIONS
 function renderDB() {
   const all = getFilteredDB(); const total = all.length;
   const start = (currentPage-1)*ITEMS_PER_PAGE;
@@ -1763,13 +1553,7 @@ function renderDB() {
   $('dbGrid').innerHTML = paged.length ? paged.map(i=>buildCard(i)).join('') : emptyHTML;
   $('dbCnt').textContent = total;
   renderDBFilterTags();
-  const filters = [
-    dbFilters.search && `"${dbFilters.search}"`,
-    dbFilters.type && (dbFilters.type==='fournisseurs'?'Fournisseurs':'Experts'),
-    dbFilters.categorie && catNames[dbFilters.categorie],
-    dbFilters.ville && dbFilters.ville,
-    dbFilters.domaine && dbFilters.domaine
-  ].filter(Boolean);
+  const filters = [dbFilters.search && `"${dbFilters.search}"`, dbFilters.type && (dbFilters.type==='fournisseurs'?'Fournisseurs':'Experts'), dbFilters.categorie && catNames[dbFilters.categorie], dbFilters.ville && dbFilters.ville, dbFilters.domaine && dbFilters.domaine].filter(Boolean);
   renderResultInfo('dbResultInfo', total, filters);
   renderPagination(total);
   const clr=$('dbSearchClear'); if(clr) clr.style.display=dbFilters.search?'flex':'none';
@@ -1821,7 +1605,7 @@ function tag(label,action) {
   return `<div class="active-filter-tag"><i class="fas fa-tag"></i> ${esc(label)}<button onclick="${action}">✕</button></div>`;
 }
 
-// ═══════════════ LIST MODAL ═══════════════
+// LIST MODAL
 function showList(title, items, onSelect) {
   $('listTitle').innerHTML=`<i class="fas fa-list"></i> ${esc(title)}`;
   const c=$('listItems'); c.innerHTML='';
@@ -1869,7 +1653,7 @@ function showCategorieFilter() {
   $('listModal').classList.add('show');
 }
 
-// ═══════════════ EXPLORER ═══════════════
+// EXPLORER
 function renderExplorer() {
   const el=$('explorerContent'); if(!el) return;
   let bc='<div class="breadcrumb">';
@@ -1909,7 +1693,7 @@ function goExplorer(level,type,domaine,specialite){
 }
 window.goExplorer=goExplorer;
 
-// ═══════════════ SHARE & COPY ═══════════════
+// SHARE & COPY & PDF
 window.shareItem = function(str){
   try{
     const item=JSON.parse(str);
@@ -1931,7 +1715,46 @@ window.copyClip = function(text, label){
   });
 };
 
-// ═══════════════ NAVIGATION ═══════════════
+window.exportToPDF = async function(encoded){
+  const item = JSON.parse(decodeURIComponent(encoded));
+  currentQRItem = item;
+  const qrContainer = $('qrContainer');
+  qrContainer.innerHTML = '';
+  const info = `${item.name}\n${item.domaine || ''}\n${item.specialite || ''}\n${item.ville || ''}\nTél: ${item.phone || ''}\nEmail: ${item.email || ''}`;
+  new QRCode(qrContainer, { text: info, width: 200, height: 200 });
+  $('qrModal').classList.add('show');
+  $('downloadPDFBtn').onclick = async () => {
+    const qrCanvas = qrContainer.querySelector('canvas');
+    if(!qrCanvas) return;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ format: [105, 148], unit: 'mm' });
+    pdf.setFillColor(13, 17, 23);
+    pdf.rect(0, 0, 105, 148, 'F');
+    pdf.setTextColor(245, 158, 11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('CONNECT INDUSTRY', 105/2, 15, { align: 'center' });
+    pdf.setDrawColor(245, 158, 11);
+    pdf.line(10, 22, 95, 22);
+    pdf.setTextColor(241, 245, 249);
+    pdf.setFontSize(12);
+    pdf.text(item.name, 10, 35);
+    pdf.setFontSize(9);
+    pdf.setTextColor(148, 163, 184);
+    let y = 45;
+    if(item.domaine) { pdf.text(`Domaine: ${item.domaine}`, 10, y); y += 8; }
+    if(item.specialite) { pdf.text(`Spécialité: ${item.specialite}`, 10, y); y += 8; }
+    if(item.ville) { pdf.text(`Ville: ${item.ville}`, 10, y); y += 8; }
+    if(item.phone) { pdf.text(`Tél: ${item.phone}`, 10, y); y += 8; }
+    if(item.email) { pdf.text(`Email: ${item.email}`, 10, y); y += 8; }
+    const qrDataUrl = qrCanvas.toDataURL();
+    pdf.addImage(qrDataUrl, 'PNG', 32, y, 40, 40);
+    pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}_carte.pdf`);
+    toast('📄 PDF généré');
+  };
+};
+
+// NAVIGATION
 function showSection(id) {
   const wasReset = id !== lastActiveSection;
   if (wasReset) { resetDBFilters(); resetFourFilters(); resetAutoFilters(); }
@@ -1953,12 +1776,19 @@ document.querySelectorAll('.tab-btn[data-sec]').forEach(btn=>{
       if(window.scrollY<=10){
         if(id==='db-unified'){resetDBFilters();renderDB();toast('🗑️ Filtres réinitialisés');}
         else if(id==='explorer'){explorerLevel=0;explorerState={type:null,domaine:null,specialite:null};renderExplorer();toast('↺ Réinitialisé');}
+        else if(id==='fournisseurs-csv'){resetFourFilters();renderFournisseursCSV();toast('🔍 Recherche effacée');}
+        else if(id==='experts-csv'){resetAutoFilters();renderExpertsCSV();toast('🔍 Recherche effacée');}
       } else scrollTop();
     } else showSection(id);
   });
 });
 
-// ═══════════════ THEME ═══════════════
+// Handle back button on phone
+window.addEventListener('popstate', () => {
+  showSection('about');
+});
+
+// THEME
 let isDark=true;
 function toggleTheme(){
   isDark=!isDark;
@@ -1972,15 +1802,16 @@ function toggleTheme(){
   if(saved==='light'){isDark=false;document.body.classList.add('light');if($('themeBtn')) $('themeBtn').innerHTML='<i class="fas fa-sun"></i>';}
 })();
 
-// ═══════════════ CLOCK ═══════════════
+// CLOCK
 function updateClock(){$('appTime').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 setInterval(updateClock,1000);updateClock();
 
-// ═══════════════ EVENTS ═══════════════
+// EVENTS
 $('themeBtn').onclick=toggleTheme;
 $('syncCsvBtn').onclick=syncToFirebase;
 $('addItemBtn').onclick=openAddModal;
-$('adminLoginBtn').onclick=()=>$('adminLoginModal').classList.add('show');
+$('adminBtn').onclick=()=>$('adminLoginModal').classList.add('show');
+$('logoutBtn').onclick=()=>{ disableAdminMode(); renderCurrent(); };
 
 // Admin login Enter key
 $('adminPassword').addEventListener('keyup', e => { if(e.key==='Enter') verifyAdminLogin(); });
@@ -2021,13 +1852,21 @@ document.querySelectorAll('.stat-tile[data-t="villes"]').forEach(s=>{s.addEventL
 document.querySelectorAll('.stat-tile[data-t="domaines"]').forEach(s=>{s.addEventListener('click',()=>{const items=getDBDomaines();if(items.length) showList('Domaines',items,d=>applyStatFilter('domaine',d));});});
 document.querySelectorAll('.stat-tile[data-t="specialites"]').forEach(s=>{s.addEventListener('click',()=>{const items=[...new Set(dbData.map(d=>d.specialite).filter(v=>v&&v!=='null'&&v!==''))].sort();if(items.length) showList('Spécialités',items,sp=>applyStatFilter('specialite',sp));});});
 
-// ═══════════════ INIT ═══════════════
+// INIT
 history.pushState(null,null,location.href);
 checkAdminStatus();
 loadDB();
 loadAllCSV();
 showSection('about');
 setTimeout(()=>showLoading(false),1600);
+
+// Expose global functions
+window.openAddModal = openAddModal;
+window.openEditModal = openEditModal;
+window.saveItem = saveItem;
+window.openDeleteModal = openDeleteModal;
+window.confirmDelete = confirmDelete;
+window.applyStatFilter = applyStatFilter;
 </script>
 </body>
 </html>
