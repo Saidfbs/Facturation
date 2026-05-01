@@ -9,1058 +9,416 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
   --bg: #050609;
-  --bg2: #080b12;
   --surface: #0d1117;
   --surface2: #111827;
-  --surface3: #161d2e;
   --border: rgba(255,255,255,0.06);
-  --border2: rgba(255,255,255,0.12);
-  --border3: rgba(255,255,255,0.18);
-
   --amber: #f59e0b;
-  --amber2: #fbbf24;
-  --amber3: #fcd34d;
   --amber-dim: rgba(245,158,11,0.08);
-  --amber-mid: rgba(245,158,11,0.15);
-  --amber-glow: rgba(245,158,11,0.25);
-
-  --blue: #3b82f6;
-  --blue-dim: rgba(59,130,246,0.1);
   --emerald: #10b981;
-  --emerald-dim: rgba(16,185,129,0.1);
   --rose: #f43f5e;
-  --rose-dim: rgba(244,63,94,0.1);
-  --violet: #8b5cf6;
-  --violet-dim: rgba(139,92,246,0.1);
   --cyan: #06b6d4;
-  --cyan-dim: rgba(6,182,212,0.1);
-
+  --violet: #8b5cf6;
   --text: #f1f5f9;
   --text2: #94a3b8;
   --text3: #475569;
-  --text4: #334155;
-
-  --wa: #22c55e;
   --admin: #a855f7;
-
-  --r4: 4px;
-  --r8: 8px;
-  --r12: 12px;
-  --r16: 16px;
-  --r24: 24px;
-  --rfull: 9999px;
-
-  --font-display: 'Syne', sans-serif;
-  --font-body: 'Space Grotesk', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
-  --shadow-xl: 0 24px 64px rgba(0,0,0,0.7);
-  --glow-amber: 0 0 30px rgba(245,158,11,0.2);
-
   --nav-h: 64px;
   --tab-h: 60px;
 }
 
 body.light {
   --bg: #f8fafc;
-  --bg2: #f1f5f9;
   --surface: #ffffff;
   --surface2: #f8fafc;
-  --surface3: #f1f5f9;
   --border: rgba(0,0,0,0.06);
-  --border2: rgba(0,0,0,0.1);
-  --border3: rgba(0,0,0,0.16);
   --text: #0f172a;
   --text2: #475569;
-  --text3: #94a3b8;
-  --text4: #cbd5e1;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.1);
-  --shadow-lg: 0 12px 40px rgba(0,0,0,0.14);
 }
-
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--amber); }
-
-html { scroll-behavior: smooth; }
 
 body {
-  font-family: var(--font-body);
+  font-family: 'Space Grotesk', sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
   padding-bottom: calc(var(--tab-h) + 16px);
-  overflow-x: hidden;
-  transition: background 0.3s, color 0.3s;
+  transition: 0.3s;
 }
 
-/* ═══════════════ SCANLINE TEXTURE ═══════════════ */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.015) 2px,
-    rgba(0,0,0,0.015) 4px
-  );
-  pointer-events: none;
-  z-index: 9998;
-}
-
-/* ═══════════════ TOPBAR ═══════════════ */
 .topbar {
   position: fixed; top: 0; left: 0; right: 0;
   height: var(--nav-h);
   background: rgba(5,6,9,0.85);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px;
   z-index: 500;
 }
-body.light .topbar { background: rgba(248,250,252,0.9); }
 
-.topbar-logo {
-  display: flex; align-items: center; gap: 12px;
-  text-decoration: none; user-select: none;
-}
 .logo-mark {
   width: 38px; height: 38px;
-  background: linear-gradient(135deg, var(--amber), var(--amber3));
-  border-radius: var(--r8);
+  background: linear-gradient(135deg, var(--amber), #fcd34d);
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.9rem; font-weight: 800;
-  color: #000; letter-spacing: -0.5px;
-  box-shadow: var(--glow-amber);
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  color: #000;
 }
-.logo-mark::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
-}
-.logo-text-wrap { line-height: 1; }
-.logo-name {
-  font-family: var(--font-display);
-  font-size: 1rem; font-weight: 700;
-  letter-spacing: 2px; color: var(--text);
-}
+.logo-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 2px; }
 .logo-name span { color: var(--amber); }
-.logo-tagline {
-  font-family: var(--font-mono);
-  font-size: 0.45rem; color: var(--text3);
-  letter-spacing: 3px; text-transform: uppercase;
-  margin-top: 2px;
-}
+.logo-tagline { font-family: monospace; font-size: 0.45rem; color: var(--text3); }
 
-.topbar-right { display: flex; align-items: center; gap: 8px; }
-
+.topbar-right { display: flex; gap: 8px; }
 .topbar-clock {
-  font-family: var(--font-mono);
-  font-size: 0.7rem; font-weight: 500;
-  color: var(--amber);
-  background: var(--amber-dim);
-  border: 1px solid rgba(245,158,11,0.2);
-  padding: 6px 12px; border-radius: var(--r8);
-  letter-spacing: 1px;
+  font-family: monospace; font-size: 0.7rem;
+  color: var(--amber); background: var(--amber-dim);
+  padding: 6px 12px; border-radius: 8px;
 }
-
 .icon-btn {
-  width: 36px; height: 36px; border-radius: var(--r8);
+  width: 36px; height: 36px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border);
   cursor: pointer; color: var(--text2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.82rem; transition: all 0.2s;
 }
-.icon-btn:hover { border-color: var(--border3); color: var(--text); background: var(--surface2); }
-.icon-btn.admin-on { background: var(--admin); color: #fff; border-color: var(--admin); box-shadow: 0 0 16px rgba(168,85,247,0.3); }
+.icon-btn.admin-on { background: var(--admin); color: #fff; }
+.icon-btn.logout-on { background: var(--rose); color: #fff; }
 
-/* ═══════════════ BOTTOM TABS ═══════════════ */
 .bottom-tabs {
   position: fixed; bottom: 0; left: 0; right: 0;
   height: var(--tab-h);
   background: rgba(5,6,9,0.95);
   backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border);
-  display: flex; align-items: center;
-  z-index: 500; padding: 0 8px;
-  gap: 4px;
+  display: flex;
+  padding: 0 8px; gap: 4px;
+  z-index: 500;
 }
-body.light .bottom-tabs { background: rgba(248,250,252,0.95); }
-
 .tab-btn {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 4px; padding: 6px 4px;
-  border-radius: var(--r8); cursor: pointer;
+  border-radius: 8px; cursor: pointer;
   color: var(--text3); background: transparent; border: none;
-  transition: all 0.2s; min-width: 0; position: relative;
 }
-.tab-btn i { font-size: 1.05rem; transition: all 0.2s; }
-.tab-btn span {
-  font-size: 0.42rem; font-weight: 600;
-  letter-spacing: 1px; white-space: nowrap;
-  font-family: var(--font-mono);
-}
-.tab-btn:hover { color: var(--text2); }
+.tab-btn i { font-size: 1.05rem; }
+.tab-btn span { font-size: 0.42rem; font-weight: 600; letter-spacing: 1px; }
 .tab-btn.active { color: var(--amber); }
-.tab-btn.active i { filter: drop-shadow(0 0 6px rgba(245,158,11,0.6)); }
-.tab-btn.active::before {
-  content: '';
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 28px; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
-  border-radius: 0 0 4px 4px;
-}
-.tab-btn.tab-green { color: var(--text3); }
-.tab-btn.tab-green.active, .tab-btn.tab-green:hover { color: var(--emerald); }
-.tab-btn.tab-gold { color: var(--text3); }
-.tab-btn.tab-gold:hover { color: var(--amber); }
-.tab-admin { display: none !important; }
-body.admin-mode .tab-admin { display: flex !important; }
+.tab-admin { display: none; }
+body.admin-mode .tab-admin { display: flex; }
 
-/* ═══════════════ MAIN LAYOUT ═══════════════ */
 .main {
   padding: calc(var(--nav-h) + 16px) 16px 16px;
   max-width: 1400px; margin: 0 auto;
-  position: relative; z-index: 1;
 }
-
 .section { display: none; }
-.section.active { display: block; animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1); }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.section.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* ═══════════════ HERO ═══════════════ */
-.hero {
-  position: relative; overflow: hidden;
-  border-radius: var(--r24);
-  border: 1px solid var(--border);
-  padding: 48px 28px 40px;
-  margin-bottom: 16px;
-  text-align: center;
-  background: var(--surface);
-}
-
-.hero-bg {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 80% 100%, rgba(59,130,246,0.04) 0%, transparent 50%);
-}
-.hero-grid-lines {
-  position: absolute; inset: 0; opacity: 0.4;
-  background-image:
-    linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, transparent 70%);
-}
-
-.hero-live {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25);
-  color: var(--amber); padding: 6px 16px; border-radius: var(--rfull);
-  font-family: var(--font-mono); font-size: 0.58rem; font-weight: 500;
-  letter-spacing: 2.5px; text-transform: uppercase;
-  margin-bottom: 20px; position: relative; z-index: 1;
-}
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--amber);
-  animation: pulse-dot 2s ease infinite;
-  box-shadow: 0 0 0 0 rgba(245,158,11,0.4);
-}
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); }
-}
-
-.hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 7vw, 4.2rem);
-  font-weight: 800; line-height: 0.9;
-  letter-spacing: -1px;
-  margin-bottom: 16px;
-  position: relative; z-index: 1;
-}
-.hero h1 .word1 { color: var(--text); display: block; }
-.hero h1 .word2 {
-  color: var(--amber);
-  display: block;
-  text-shadow: 0 0 40px rgba(245,158,11,0.3);
-  font-size: 1.1em;
-}
-
-.hero-divider {
-  width: 48px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
-  margin: 18px auto;
-  position: relative; z-index: 1;
-}
-
-.hero-desc {
-  color: var(--text2); font-size: 0.82rem; line-height: 1.7;
-  max-width: 480px; margin: 0 auto;
-  position: relative; z-index: 1;
-}
-
-.hero-stats-row {
-  display: flex; justify-content: center; gap: 0;
-  margin-top: 28px; position: relative; z-index: 1;
-  border: 1px solid var(--border);
-  border-radius: var(--r16);
-  overflow: hidden;
-  background: var(--surface2);
-}
-.hero-stat {
-  flex: 1; padding: 14px 8px; text-align: center;
-  border-right: 1px solid var(--border);
-}
-.hero-stat:last-child { border-right: none; }
-.hero-stat-n {
-  font-family: var(--font-display);
-  font-size: 1.6rem; font-weight: 700;
-  color: var(--amber); line-height: 1;
-}
-.hero-stat-l {
-  font-family: var(--font-mono);
-  font-size: 0.42rem; color: var(--text3);
-  letter-spacing: 1.5px; margin-top: 4px;
-}
-
-/* ═══════════════ CARDS & PANELS ═══════════════ */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r16);
-  overflow: hidden;
+  border-radius: 16px;
   margin-bottom: 14px;
-  transition: border-color 0.2s;
+  overflow: hidden;
 }
-.card:hover { border-color: var(--border2); }
-
 .card-head {
   padding: 14px 18px;
   border-bottom: 1px solid var(--border);
   background: var(--surface2);
-  display: flex; align-items: center; gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .card-head-icon {
-  width: 28px; height: 28px; border-radius: var(--r8);
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--amber); font-size: 0.7rem; flex-shrink: 0;
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--amber-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--amber);
 }
-.card-head-title {
-  font-family: var(--font-display);
-  font-size: 0.75rem; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--text);
-}
-.card-head-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
-.count-badge {
-  font-family: var(--font-mono);
-  font-size: 0.62rem; font-weight: 500;
-  color: var(--amber); padding: 3px 10px;
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2);
-  border-radius: var(--rfull);
-}
-
-.admin-badge-inline {
-  font-family: var(--font-mono); font-size: 0.5rem;
-  background: var(--admin); color: #fff;
-  padding: 2px 8px; border-radius: var(--rfull);
-  letter-spacing: 1px;
-}
-
+.card-head-title { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; }
 .card-body { padding: 18px; }
-
-/* ═══════════════ STATS GRID ═══════════════ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
+.count-badge {
+  font-family: monospace; font-size: 0.62rem;
+  color: var(--amber); background: var(--amber-dim);
+  padding: 3px 10px; border-radius: 999px;
 }
-@media(min-width: 520px) { .stats-grid { grid-template-columns: repeat(5, 1fr); } }
-@media(min-width: 900px) { .stats-grid { grid-template-columns: repeat(9, 1fr); } }
 
+.stats-row { display: flex; flex-direction: column; gap: 16px; }
+.stats-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.stats-group-title { padding: 10px 16px; background: var(--amber-dim); font-family: monospace; font-size: 0.6rem; font-weight: 600; color: var(--amber); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); }
 .stat-tile {
   background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r12);
-  padding: 14px 8px; text-align: center;
-  cursor: pointer; transition: all 0.22s;
-  position: relative; overflow: hidden;
+  padding: 16px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
 }
-.stat-tile::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--amber), transparent);
-  transform: scaleX(0); transition: transform 0.3s;
-  transform-origin: center;
-}
-.stat-tile:hover {
-  border-color: rgba(245,158,11,0.3);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3), var(--glow-amber);
-}
-.stat-tile:hover::after { transform: scaleX(1); }
-.stat-tile.active {
-  border-color: var(--amber);
-  background: var(--amber-dim);
-  transform: translateY(-2px);
-  box-shadow: var(--glow-amber);
-}
-.stat-tile.active::after { transform: scaleX(1); }
+.stat-tile:hover { background: var(--amber-dim); }
+.stat-tile.active { background: var(--amber-dim); border-bottom: 2px solid var(--amber); }
+.stat-num { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--amber); }
+.stat-label { font-family: monospace; font-size: 0.42rem; color: var(--text3); margin-top: 6px; }
 
-.stat-num {
-  font-family: var(--font-display);
-  font-size: 1.8rem; font-weight: 700;
-  color: var(--amber); line-height: 1;
-  text-shadow: 0 0 20px rgba(245,158,11,0.2);
-}
-.stat-label {
-  font-family: var(--font-mono);
-  font-size: 0.38rem; color: var(--text3);
-  letter-spacing: 1.2px; margin-top: 5px;
-  text-transform: uppercase;
-}
-
-/* ═══════════════ ADMIN STATS ═══════════════ */
-.admin-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-  margin-bottom: 14px; padding: 12px;
-  background: var(--surface2); border-radius: var(--r12);
-  border: 1px solid rgba(168,85,247,0.15);
-}
-.admin-stat {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r8); padding: 10px 12px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.admin-stat-label {
-  font-family: var(--font-mono); font-size: 0.58rem; color: var(--text3);
-}
-.admin-stat-value {
-  font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
-  color: var(--admin);
-}
-.sync-pill {
-  display: flex; align-items: center; gap: 8px;
-  font-family: var(--font-mono); font-size: 0.6rem; color: var(--text3);
-  padding: 8px 12px; background: var(--surface2);
-  border-radius: var(--r8); margin-top: 8px;
-}
-.sync-pill.ok { color: var(--emerald); }
-.sync-pill.warn { color: var(--amber); }
-.sync-pill.err { color: var(--rose); }
-
-/* ═══════════════ SEARCH & FILTERS ═══════════════ */
 .search-box {
   display: flex; align-items: center; gap: 10px;
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r12); padding: 0 14px; height: 46px;
-  margin-bottom: 12px; transition: all 0.2s;
+  border-radius: 12px; padding: 0 14px; height: 46px;
+  margin-bottom: 12px;
 }
-.search-box:focus-within {
-  border-color: rgba(245,158,11,0.4);
-  box-shadow: 0 0 0 3px rgba(245,158,11,0.06);
-  background: var(--surface);
-}
-.search-box i { color: var(--amber); font-size: 0.8rem; flex-shrink: 0; }
-.search-box input {
-  flex: 1; background: transparent; border: none; outline: none;
-  color: var(--text); font-family: var(--font-body); font-size: 0.8rem;
-}
-.search-box input::placeholder { color: var(--text3); }
+.search-box input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); }
 .search-clear {
-  width: 26px; height: 26px; border-radius: var(--r8);
-  background: var(--surface3); border: 1px solid var(--border);
-  cursor: pointer; color: var(--text3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.65rem; transition: all 0.15s;
+  width: 26px; height: 26px; border-radius: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer;
 }
-.search-clear:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
+.search-clear:hover { background: var(--rose); color: #fff; }
 
 .filter-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .filter-chip {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r8); padding: 8px 14px;
+  border-radius: 8px; padding: 8px 14px;
   cursor: pointer; color: var(--text2);
-  font-family: var(--font-body); font-size: 0.7rem; font-weight: 500;
-  letter-spacing: 0.3px; transition: all 0.18s;
-  white-space: nowrap;
+  font-size: 0.7rem;
 }
-.filter-chip i { font-size: 0.72rem; }
-.filter-chip:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); background: var(--amber-dim); }
-.filter-chip.active { background: var(--amber); color: #000; border-color: var(--amber); font-weight: 600; }
-.filter-chip.danger:hover { border-color: var(--rose); color: var(--rose); background: var(--rose-dim); }
-@media(max-width: 768px) {
-  .filter-chip span { display: none; }
-  .filter-chip { padding: 9px 10px; }
-}
+.filter-chip:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); }
+.filter-chip.danger:hover { border-color: var(--rose); color: var(--rose); }
 
-.active-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.active-filter-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.25);
-  color: var(--amber); padding: 4px 10px; border-radius: var(--rfull);
-  font-family: var(--font-mono); font-size: 0.55rem; font-weight: 500;
-  animation: fadeUp 0.2s ease;
-}
-.active-filter-tag button {
-  background: none; border: none; cursor: pointer;
-  color: inherit; font-size: 0.65rem; padding: 0 0 0 2px;
-  opacity: 0.7; line-height: 1; transition: opacity 0.15s;
-}
-.active-filter-tag button:hover { opacity: 1; }
-
-.result-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 14px; margin-bottom: 12px;
-  background: var(--amber-dim);
-  border: 1px solid rgba(245,158,11,0.2);
-  border-radius: var(--r8);
-  font-family: var(--font-mono); font-size: 0.62rem; color: var(--amber);
-}
-
-/* ═══════════════ ITEM CARDS ═══════════════ */
-.items-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
-}
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 @media(max-width: 480px) { .items-grid { grid-template-columns: 1fr; } }
 
 .item-card {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r16); padding: 18px;
-  transition: all 0.22s; position: relative; overflow: hidden;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+  transition: 0.2s;
 }
-.item-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent);
-  transform: scaleX(0); transition: transform 0.3s; transform-origin: center;
-}
-.item-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(245,158,11,0.12);
-  border-color: rgba(245,158,11,0.2);
-}
-.item-card:hover::before { transform: scaleX(1); }
-
-.ic-top {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  margin-bottom: 14px; padding-bottom: 12px;
-  border-bottom: 1px solid var(--border);
-  gap: 10px;
-}
-.ic-name {
-  font-family: var(--font-display);
-  font-size: 0.98rem; font-weight: 700;
-  color: var(--text); line-height: 1.25;
-  word-break: break-word; flex: 1;
-}
-.ic-badges { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; }
-.ic-badge {
-  font-family: var(--font-mono);
-  font-size: 0.4rem; padding: 4px 9px; border-radius: var(--rfull);
-  font-weight: 500; letter-spacing: 0.8px; white-space: nowrap;
-}
-.badge-fourn { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
-.badge-exp { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
-.badge-svc { background: var(--emerald-dim); color: var(--emerald); border: 1px solid rgba(16,185,129,0.3); }
-.badge-prd { background: rgba(251,146,60,0.1); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
-.badge-maq { background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(139,92,246,0.3); }
-.badge-yad { background: var(--rose-dim); color: var(--rose); border: 1px solid rgba(244,63,94,0.3); }
+.item-card:hover { transform: translateY(-4px); border-color: rgba(245,158,11,0.2); }
+.ic-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.ic-name { font-family: 'Syne', sans-serif; font-size: 0.98rem; font-weight: 700; flex: 1; }
+.ic-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.ic-badge { font-family: monospace; font-size: 0.4rem; padding: 4px 9px; border-radius: 999px; }
+.badge-fourn { background: var(--amber-dim); color: var(--amber); }
+.badge-exp { background: rgba(6,182,212,0.1); color: var(--cyan); }
+.badge-svc { background: rgba(16,185,129,0.1); color: var(--emerald); }
+.badge-prd { background: rgba(251,146,60,0.1); color: #fb923c; }
+.badge-maq { background: rgba(139,92,246,0.1); color: var(--violet); }
+.badge-yad { background: rgba(244,63,94,0.1); color: var(--rose); }
 
 .ic-body { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
-.ic-row {
-  display: flex; align-items: flex-start; gap: 8px; font-size: 0.72rem;
-}
-.ic-row-icon { color: var(--amber); width: 14px; font-size: 0.6rem; margin-top: 1px; flex-shrink: 0; }
-.ic-row-label {
-  font-family: var(--font-mono); font-size: 0.46rem;
-  color: var(--text3); min-width: 62px; letter-spacing: 0.5px;
-  margin-top: 1px; flex-shrink: 0;
-}
-.ic-row-value { color: var(--text2); word-break: break-word; line-height: 1.45; }
+.ic-row { display: flex; align-items: flex-start; gap: 8px; font-size: 0.72rem; }
+.ic-row-icon { color: var(--amber); width: 14px; }
+.ic-row-label { font-family: monospace; font-size: 0.46rem; color: var(--text3); min-width: 62px; }
+.ic-row-value { color: var(--text2); word-break: break-word; }
 
-.ic-actions {
-  display: flex; gap: 7px; padding-top: 12px;
-  border-top: 1px solid var(--border); flex-wrap: wrap;
-}
+.ic-actions { display: flex; gap: 7px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 .act-btn {
-  width: 34px; height: 34px; border-radius: var(--r8);
+  width: 34px; height: 34px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border);
   cursor: pointer; color: var(--text3);
-  transition: all 0.16s; display: inline-flex;
-  align-items: center; justify-content: center;
-  font-size: 0.75rem; flex-shrink: 0;
 }
-.act-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-.act-btn.wa:hover { background: var(--wa); color: #fff; border-color: var(--wa); box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
-.act-btn.email:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
-.act-btn.web:hover { background: var(--emerald); color: #fff; border-color: var(--emerald); }
-.act-btn.share:hover { background: var(--amber); color: #000; border-color: var(--amber); box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
-.act-btn.copy:hover { background: var(--cyan); color: #000; border-color: var(--cyan); }
-.act-btn.phone:hover { background: var(--emerald); color: #fff; border-color: var(--emerald); }
-.act-btn.edit:hover { background: #f97316; color: #fff; border-color: #f97316; }
-.act-btn.del:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
+.act-btn:hover { transform: translateY(-2px); }
+.act-btn.wa:hover { background: #22c55e; color: #fff; }
+.act-btn.email:hover { background: #3b82f6; color: #fff; }
+.act-btn.share:hover { background: var(--amber); color: #000; }
+.act-btn.pdf:hover { background: var(--rose); color: #fff; }
+.act-btn.edit:hover { background: #f97316; color: #fff; }
+.act-btn.del:hover { background: var(--rose); color: #fff; }
 
-.empty-state {
-  text-align: center; padding: 56px 20px;
-  color: var(--text3); grid-column: 1/-1;
-}
-.empty-state-icon {
-  width: 56px; height: 56px; border-radius: var(--r16);
-  background: var(--surface2); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem; margin: 0 auto 14px; color: var(--text4);
-}
-.empty-state h3 {
-  font-family: var(--font-display); font-size: 0.85rem;
-  letter-spacing: 2px; opacity: 0.5;
-}
+.empty-state { text-align: center; padding: 56px 20px; color: var(--text3); grid-column: 1/-1; }
 
-/* ═══════════════ CHART ═══════════════ */
-.chart-wrap {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r16); padding: 18px; margin-bottom: 14px;
-  position: relative; overflow: hidden;
-}
-.chart-wrap::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245,158,11,0.4), transparent);
-}
-
-/* ═══════════════ EXPLORER ═══════════════ */
-.breadcrumb {
-  display: flex; gap: 6px; flex-wrap: wrap;
-  margin-bottom: 14px; align-items: center;
-}
+.breadcrumb { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .bc-item {
-  display: flex; align-items: center; gap: 5px;
-  font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500;
+  font-family: monospace; font-size: 0.6rem;
   color: var(--text3); cursor: pointer;
   background: var(--surface2); border: 1px solid var(--border);
-  padding: 5px 12px; border-radius: var(--r8);
-  transition: all 0.2s; letter-spacing: 0.5px;
+  padding: 5px 12px; border-radius: 8px;
 }
-.bc-item:hover, .bc-item.active { border-color: rgba(245,158,11,0.3); color: var(--amber); background: var(--amber-dim); }
-.bc-sep { color: var(--border3); font-size: 0.7rem; }
+.bc-item:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); }
 
 .exp-card {
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r12); padding: 16px;
+  border-radius: 12px; padding: 16px;
   cursor: pointer; margin-bottom: 10px;
-  transition: all 0.2s; display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 14px;
 }
-.exp-card:hover { transform: translateX(6px); border-color: rgba(245,158,11,0.3); background: var(--amber-dim); }
-.exp-card-icon {
-  width: 42px; height: 42px; border-radius: var(--r12);
-  background: var(--amber-dim); border: 1px solid rgba(245,158,11,0.2);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--amber); font-size: 1rem; flex-shrink: 0;
-}
-.exp-card h4 { font-family: var(--font-display); color: var(--text); font-size: 0.9rem; letter-spacing: 1px; }
-.exp-card p { font-family: var(--font-mono); font-size: 0.58rem; color: var(--text3); margin-top: 3px; }
-.exp-card-arrow { margin-left: auto; color: var(--text4); font-size: 0.7rem; }
+.exp-card:hover { transform: translateX(6px); border-color: rgba(245,158,11,0.3); }
+.exp-card-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--amber-dim); display: flex; align-items: center; justify-content: center; color: var(--amber); }
+.exp-card h4 { font-family: 'Syne', sans-serif; font-size: 0.9rem; }
 
-/* ═══════════════ PAGINATION ═══════════════ */
-.pagination {
-  display: flex; justify-content: center; gap: 6px;
-  margin-top: 20px; flex-wrap: wrap;
-}
+.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
 .pg-btn {
   background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r8); padding: 8px 14px; cursor: pointer;
-  color: var(--text2); font-family: var(--font-mono);
-  font-size: 0.65rem; font-weight: 500; transition: all 0.18s;
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  font-family: monospace; font-size: 0.65rem;
 }
-.pg-btn:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); background: var(--amber-dim); }
-.pg-btn.active { background: var(--amber); color: #000; border-color: var(--amber); font-weight: 700; }
-.pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.pg-ellipsis { color: var(--text3); padding: 8px 4px; font-size: 0.7rem; align-self: center; }
+.pg-btn.active { background: var(--amber); color: #000; }
 
-/* ═══════════════ MODALS ═══════════════ */
 .overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.8);
   z-index: 800; display: flex;
-  align-items: flex-end; justify-content: center;
-  opacity: 0; visibility: hidden; transition: all 0.22s;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-  padding: 0 0 var(--tab-h);
-}
-@media(min-width: 600px) {
-  .overlay { align-items: center; padding: 16px; }
+  align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden;
+  transition: 0.22s;
+  backdrop-filter: blur(8px);
 }
 .overlay.show { opacity: 1; visibility: visible; }
-
 .modal {
   background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--r24) var(--r24) 0 0;
+  border: 1px solid var(--border);
+  border-radius: 24px;
   width: 100%; max-width: 500px;
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.28s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: var(--shadow-xl);
+  max-height: 90vh;
+  overflow-y: auto;
 }
-@media(min-width: 600px) {
-  .modal { border-radius: var(--r24); animation: scaleIn 0.25s cubic-bezier(0.22,1,0.36,1); }
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes scaleIn { from { transform: scale(0.94) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-
-.modal-drag { width: 32px; height: 4px; background: var(--border3); border-radius: 99px; margin: 10px auto 0; display: none; }
-@media(max-width: 599px) { .modal-drag { display: block; } }
-
 .modal-head {
-  padding: 16px 18px; border-bottom: 1px solid var(--border);
-  background: var(--surface2); display: flex;
-  justify-content: space-between; align-items: center;
-  position: sticky; top: 0; z-index: 1;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.modal-head h3 {
-  font-family: var(--font-display); font-size: 0.82rem;
-  font-weight: 700; letter-spacing: 1.5px; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-.modal-head h3 i { color: var(--amber); }
 .modal-close {
-  width: 30px; height: 30px; border-radius: var(--r8);
+  width: 30px; height: 30px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border);
-  cursor: pointer; color: var(--text2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; transition: all 0.18s;
+  cursor: pointer;
 }
-.modal-close:hover { background: var(--rose); color: #fff; border-color: var(--rose); transform: rotate(90deg); }
-
 .modal-body { padding: 18px; }
-.modal-foot {
-  padding: 14px 18px; border-top: 1px solid var(--border);
-  display: flex; gap: 8px; background: var(--surface2);
-}
+.modal-foot { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
 
-.list-items { max-height: 380px; overflow-y: auto; }
-.list-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 18px; border-bottom: 1px solid var(--border);
-  cursor: pointer; transition: all 0.15s;
-}
-.list-item:hover { background: var(--amber-dim); padding-left: 22px; }
-.list-item:last-child { border-bottom: none; }
-.list-item-label { font-size: 0.78rem; color: var(--text); display: flex; align-items: center; gap: 8px; }
-.list-item-label i { color: var(--amber); font-size: 0.7rem; }
-.list-item-count { font-family: var(--font-mono); font-size: 0.58rem; color: var(--amber); }
-
-.del-box { text-align: center; padding: 8px 0; }
-.del-box p { color: var(--text2); font-size: 0.8rem; margin-bottom: 20px; line-height: 1.7; }
-.del-box strong { color: var(--amber); }
-.del-actions { display: flex; gap: 10px; justify-content: center; }
-.btn-del { padding: 10px 24px; border-radius: var(--r8); border: none; cursor: pointer; font-weight: 700; font-size: 0.73rem; font-family: var(--font-body); letter-spacing: 0.5px; transition: all 0.2s; background: var(--rose); color: #fff; }
-.btn-del:hover { background: #fb1f4a; transform: translateY(-2px); }
-.btn-cancel { padding: 10px 24px; border-radius: var(--r8); cursor: pointer; font-weight: 600; font-size: 0.73rem; font-family: var(--font-body); transition: all 0.2s; background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
-.btn-cancel:hover { border-color: rgba(245,158,11,0.3); color: var(--amber); }
-
-/* ═══════════════ FORM ═══════════════ */
 .fgroup { margin-bottom: 14px; }
-.fgroup label { display: block; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 500; letter-spacing: 1px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; }
-.fgroup label span { color: var(--rose); margin-left: 2px; }
+.fgroup label { display: block; font-family: monospace; font-size: 0.58rem; color: var(--text3); margin-bottom: 6px; }
 .field {
   width: 100%; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: var(--r8); padding: 10px 14px; color: var(--text);
-  font-family: var(--font-body); font-size: 0.8rem;
-  transition: all 0.2s; outline: none;
+  border-radius: 8px; padding: 10px 14px; color: var(--text);
+  outline: none;
 }
-.field:focus { border-color: rgba(245,158,11,0.4); box-shadow: 0 0 0 3px rgba(245,158,11,0.06); background: var(--surface); }
-.field option { background: var(--surface); }
+.field:focus { border-color: rgba(245,158,11,0.4); }
 
-/* ═══════════════ BUTTONS ═══════════════ */
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 16px; border-radius: var(--r8); cursor: pointer;
-  font-family: var(--font-body); font-size: 0.72rem;
-  font-weight: 600; letter-spacing: 0.3px;
-  transition: all 0.18s; border: 1px solid transparent;
-  white-space: nowrap;
+  padding: 9px 16px; border-radius: 8px;
+  cursor: pointer; font-size: 0.72rem; font-weight: 600;
+  border: 1px solid transparent;
 }
-.btn i { font-size: 0.75rem; }
-.btn-primary { background: var(--amber); color: #000; border-color: var(--amber); }
-.btn-primary:hover { background: var(--amber2); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+.btn-primary { background: var(--amber); color: #000; }
 .btn-ghost { background: var(--surface2); color: var(--text2); border-color: var(--border); }
-.btn-ghost:hover { border-color: var(--border3); color: var(--text); }
 .btn-danger { background: var(--surface2); color: var(--rose); border-color: rgba(244,63,94,0.3); }
-.btn-danger:hover { background: var(--rose); color: #fff; border-color: var(--rose); }
 .btn-full { width: 100%; justify-content: center; }
 
-/* ═══════════════ TOAST ═══════════════ */
 .toast {
   position: fixed; bottom: calc(var(--tab-h) + 10px); left: 50%;
   transform: translateX(-50%);
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: var(--r12); padding: 10px 20px;
-  font-family: var(--font-body); font-size: 0.73rem; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 20px;
   z-index: 9000; opacity: 0; visibility: hidden;
-  transition: all 0.25s cubic-bezier(0.22,1,0.36,1);
-  white-space: nowrap; max-width: 90%; white-space: normal; text-align: center;
-  box-shadow: var(--shadow-lg);
+  transition: 0.25s;
 }
 .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-6px); }
 
-/* ═══════════════ LOADING ═══════════════ */
 .loading-screen {
   position: fixed; inset: 0;
   background: var(--bg); z-index: 9999;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 20px;
-  transition: opacity 0.4s;
+  align-items: center; justify-content: center;
+  transition: 0.4s;
 }
 .loading-screen.hide { opacity: 0; pointer-events: none; }
-.loading-logo {
-  font-family: var(--font-display); font-size: 2.8rem;
-  font-weight: 800; color: var(--amber);
-  letter-spacing: -1px; animation: pulse-text 1.4s ease infinite;
-}
-.loading-logo span { color: var(--text); font-size: 0.6em; font-weight: 400; letter-spacing: 4px; }
-.loading-sub { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text3); letter-spacing: 4px; text-transform: uppercase; }
-@keyframes pulse-text { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.loading-logo { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800; color: var(--amber); }
 .loading-track { width: 120px; height: 2px; background: var(--border); border-radius: 99px; overflow: hidden; }
-.loading-fill { width: 40%; height: 100%; background: linear-gradient(90deg, var(--amber), var(--amber3)); border-radius: 99px; animation: loading-slide 0.9s ease infinite; }
-@keyframes loading-slide { 0% { transform: translateX(-150%); } 100% { transform: translateX(280%); } }
+.loading-fill { width: 40%; height: 100%; background: var(--amber); animation: loadingSlide 0.9s ease infinite; }
+@keyframes loadingSlide { 0% { transform: translateX(-150%); } 100% { transform: translateX(280%); } }
 
-/* ═══════════════ ADMIN ═══════════════ */
 .admin-only { display: none !important; }
 body.admin-mode .admin-only { display: flex !important; }
-body.admin-mode .admin-only-block { display: block !important; }
-
-/* ═══════════════ RESPONSIVE ═══════════════ */
-@media(max-width: 380px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
-/* Section transitions */
-.section-enter { animation: fadeUp 0.28s cubic-bezier(0.22,1,0.36,1); }
-
-/* ═══════════════ SEGMENT CONTROL ═══════════════ */
-.segment {
-  display: flex; gap: 0; background: var(--surface2);
-  border: 1px solid var(--border); border-radius: var(--r8);
-  padding: 3px; margin-bottom: 14px; width: fit-content;
-}
-.seg-btn {
-  padding: 6px 16px; border-radius: 6px; cursor: pointer;
-  font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500;
-  letter-spacing: 0.8px; border: none; background: transparent;
-  color: var(--text3); transition: all 0.18s;
-}
-.seg-btn.active { background: var(--amber); color: #000; font-weight: 700; }
-.seg-btn:hover:not(.active) { color: var(--text); }
+#qrContainer { display: flex; justify-content: center; padding: 20px; background: white; border-radius: 16px; margin-bottom: 16px; }
+.result-bar { padding: 8px 14px; margin-bottom: 12px; background: var(--amber-dim); border-radius: 8px; font-family: monospace; font-size: 0.62rem; color: var(--amber); }
+.active-filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.active-filter-tag { background: var(--amber-dim); padding: 4px 10px; border-radius: 999px; font-family: monospace; font-size: 0.55rem; color: var(--amber); }
+.list-items { max-height: 380px; overflow-y: auto; }
+.list-item { display: flex; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.list-item:hover { background: var(--amber-dim); }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
-  <div class="topbar-logo">
+  <div class="topbar-logo" style="display:flex;align-items:center;gap:12px">
     <div class="logo-mark">CI</div>
-    <div class="logo-text-wrap">
-      <div class="logo-name">CONNECT <span>INDUSTRY</span></div>
-      <div class="logo-tagline">Plateforme Industrielle · Maroc</div>
-    </div>
+    <div><div class="logo-name">CONNECT <span>INDUSTRY</span></div><div class="logo-tagline">Plateforme Industrielle · Maroc</div></div>
   </div>
   <div class="topbar-right">
     <div class="topbar-clock" id="appTime">--:--</div>
-    <button class="icon-btn" id="themeBtn" title="Thème"><i class="fas fa-circle-half-stroke"></i></button>
-    <button class="icon-btn" id="adminLoginBtn" title="Admin"><i class="fas fa-user-shield"></i></button>
+    <button class="icon-btn" id="themeBtn"><i class="fas fa-circle-half-stroke"></i></button>
+    <button class="icon-btn" id="adminBtn"><i class="fas fa-user-shield"></i></button>
+    <button class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
   </div>
 </header>
 
-<!-- BOTTOM TABS -->
 <nav class="bottom-tabs">
   <button class="tab-btn active" data-sec="about"><i class="fas fa-home"></i><span>ACCUEIL</span></button>
   <button class="tab-btn" data-sec="explorer"><i class="fas fa-compass"></i><span>EXPLORER</span></button>
-  <button class="tab-btn" data-sec="db-unified"><i class="fas fa-database"></i><span>BASE DB</span></button>
-  <button class="tab-btn tab-admin admin-only" data-sec="fournisseurs-csv"><i class="fas fa-industry"></i><span>FOURN.</span></button>
-  <button class="tab-btn tab-admin admin-only" data-sec="experts-csv"><i class="fas fa-microchip"></i><span>EXPERTS</span></button>
-  <button class="tab-btn tab-green tab-admin admin-only" id="syncCsvBtn"><i class="fas fa-cloud-upload-alt"></i><span>SYNC</span></button>
-  <button class="tab-btn tab-gold tab-admin admin-only" id="addItemBtn"><i class="fas fa-plus-circle"></i><span>AJOUTER</span></button>
+  <button class="tab-btn" data-sec="db"><i class="fas fa-database"></i><span>BASE DB</span></button>
+  <button class="tab-btn tab-admin admin-only" data-sec="fournisseurs"><i class="fas fa-industry"></i><span>FOURN.</span></button>
+  <button class="tab-btn tab-admin admin-only" data-sec="experts"><i class="fas fa-microchip"></i><span>EXPERTS</span></button>
+  <button class="tab-btn tab-admin admin-only" id="syncBtn"><i class="fas fa-cloud-upload-alt"></i><span>SYNC</span></button>
+  <button class="tab-btn tab-admin admin-only" id="addBtn"><i class="fas fa-plus-circle"></i><span>AJOUTER</span></button>
 </nav>
 
 <main class="main">
-
-  <!-- ═══ ACCUEIL ═══ -->
   <div id="aboutSection" class="section active">
-
-    <div class="hero">
-      <div class="hero-bg"></div>
-      <div class="hero-grid-lines"></div>
-      <div class="hero-live"><div class="live-dot"></div> PLATEFORME ACTIVE</div>
-      <h1><span class="word1">CONNECT</span><span class="word2">INDUSTRY</span></h1>
-      <div class="hero-divider"></div>
-      <p class="hero-desc">Mise en relation entre professionnels, fournisseurs et experts de l'industrie au Maroc.</p>
-      <div class="hero-stats-row">
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-four">0</div>
-          <div class="hero-stat-l">Fournisseurs</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-exp">0</div>
-          <div class="hero-stat-l">Experts</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-villes">0</div>
-          <div class="hero-stat-l">Villes</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-n" id="hs-dom">0</div>
-          <div class="hero-stat-l">Domaines</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="chart-wrap">
-      <canvas id="statsChart" style="max-height:280px;width:100%"></canvas>
-    </div>
-
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-chart-pie"></i></div>
-        <div class="card-head-title">Statistiques</div>
-        <div class="card-head-right">
-          <span id="adminBadge" class="admin-badge-inline admin-only">MODE ADMIN</span>
-        </div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-chart-simple"></i></div><div class="card-head-title">Statistiques</div><div class="card-head-right"><span id="adminBadge" class="admin-only" style="background:var(--admin);color:#fff;padding:2px 8px;border-radius:999px;font-size:0.5rem;">MODE ADMIN</span></div></div>
       <div class="card-body">
-        <!-- Admin Stats -->
-        <div id="adminStatsPanel" class="admin-only-block" style="display:none;">
-          <div class="admin-grid">
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Fournisseurs</span>
-              <span class="admin-stat-value" id="adminCsvFourCount">0</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Experts</span>
-              <span class="admin-stat-value" id="adminCsvExpCount">0</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-calendar-check"></i> Dernière sync</span>
-              <span class="admin-stat-value" id="adminLastSync">--</span>
-            </div>
-            <div class="admin-stat">
-              <span class="admin-stat-label"><i class="fas fa-database"></i> Base DB</span>
-              <span class="admin-stat-value" id="adminDbCount">0</span>
+        <div class="stats-row">
+          <div class="stats-group">
+            <div class="stats-group-title"><i class="fas fa-chart-line"></i> APERÇU GÉNÉRAL</div>
+            <div class="stats-grid">
+              <div class="stat-tile" data-type="fournisseurs"><div class="stat-num" id="statFour">0</div><div class="stat-label">Fournisseurs</div></div>
+              <div class="stat-tile" data-type="experts"><div class="stat-num" id="statExp">0</div><div class="stat-label">Experts</div></div>
+              <div class="stat-tile" data-extra="villes"><div class="stat-num" id="statVilles">0</div><div class="stat-label">Villes</div></div>
+              <div class="stat-tile" data-extra="domaines"><div class="stat-num" id="statDomaines">0</div><div class="stat-label">Domaines</div></div>
             </div>
           </div>
-          <div class="sync-pill ok" id="syncStatus"><i class="fas fa-check-circle"></i> Synchronisé</div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-tile" data-filter-type="fournisseurs">
-            <div class="stat-num" id="dbFourCount">0</div>
-            <div class="stat-label">Fournisseurs</div>
-          </div>
-          <div class="stat-tile" data-filter-type="experts">
-            <div class="stat-num" id="dbExpCount">0</div>
-            <div class="stat-label">Experts</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="services">
-            <div class="stat-num" id="dbSvcCount">0</div>
-            <div class="stat-label">Services</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="products">
-            <div class="stat-num" id="dbPrdCount">0</div>
-            <div class="stat-label">Produits</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="maqola">
-            <div class="stat-num" id="dbConCount">0</div>
-            <div class="stat-label">Maqaola</div>
-          </div>
-          <div class="stat-tile" data-filter-cat="yad-amila">
-            <div class="stat-num" id="dbLabCount">0</div>
-            <div class="stat-label">Yad Amila</div>
-          </div>
-          <div class="stat-tile" data-t="villes">
-            <div class="stat-num" id="dbVillesCount">0</div>
-            <div class="stat-label">Villes</div>
-          </div>
-          <div class="stat-tile" data-t="domaines">
-            <div class="stat-num" id="dbDomainesCount">0</div>
-            <div class="stat-label">Domaines</div>
-          </div>
-          <div class="stat-tile" data-t="specialites">
-            <div class="stat-num" id="dbSpecialitesCount">0</div>
-            <div class="stat-label">Spécialités</div>
+          <div class="stats-group">
+            <div class="stats-group-title"><i class="fas fa-layer-group"></i> PAR CATÉGORIE</div>
+            <div class="stats-grid">
+              <div class="stat-tile" data-cat="services"><div class="stat-num" id="statServices">0</div><div class="stat-label">Services</div></div>
+              <div class="stat-tile" data-cat="products"><div class="stat-num" id="statProduits">0</div><div class="stat-label">Produits</div></div>
+              <div class="stat-tile" data-cat="maqola"><div class="stat-num" id="statMaqola">0</div><div class="stat-label">Maqaola</div></div>
+              <div class="stat-tile" data-cat="yad-amila"><div class="stat-num" id="statYadAmila">0</div><div class="stat-label">Yad Amila</div></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ═══ EXPLORER ═══ -->
   <div id="explorerSection" class="section">
-    <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-compass"></i></div>
-        <div class="card-head-title">Explorer</div>
-      </div>
-      <div class="card-body">
-        <div id="explorerContent"></div>
-      </div>
-    </div>
+    <div class="card"><div class="card-head"><div class="card-head-icon"><i class="fas fa-compass"></i></div><div class="card-head-title">Explorer</div></div><div class="card-body"><div id="explorerContent"></div></div></div>
   </div>
 
-  <!-- ═══ BASE DB ═══ -->
-  <div id="db-unifiedSection" class="section">
+  <div id="dbSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-database"></i></div>
-        <div class="card-head-title">Base de Données</div>
-        <div class="card-head-right"><span class="count-badge" id="dbCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-database"></i></div><div class="card-head-title">Base de Données</div><div class="card-head-right"><span class="count-badge" id="dbCount">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="dbSearch" placeholder="Nom, domaine, ville, téléphone, email...">
-          <button class="search-clear" id="dbSearchClear" style="display:none"><i class="fas fa-times"></i></button>
-        </div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="dbSearch" placeholder="Rechercher..."><button class="search-clear" id="dbClear"><i class="fas fa-times"></i></button></div>
         <div class="filter-strip">
           <button class="filter-chip" id="filterTypeBtn"><i class="fas fa-tags"></i><span>Type</span></button>
-          <button class="filter-chip" id="filterCategorieBtn"><i class="fas fa-layer-group"></i><span>Catégorie</span></button>
-          <button class="filter-chip" id="filterVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
-          <button class="filter-chip" id="filterDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
-          <button class="filter-chip danger" id="filterClearBtn"><i class="fas fa-eraser"></i><span>Effacer</span></button>
+          <button class="filter-chip" id="filterCatBtn"><i class="fas fa-layer-group"></i><span>Catégorie</span></button>
+          <button class="filter-chip danger" id="filterResetBtn"><i class="fas fa-eraser"></i><span>Effacer</span></button>
         </div>
-        <div class="active-filters" id="dbFilterTags"></div>
         <div id="dbResultInfo" class="result-bar" style="display:none"></div>
         <div id="dbGrid" class="items-grid"></div>
         <div id="dbPagination" class="pagination"></div>
@@ -1068,170 +426,85 @@ body.admin-mode .admin-only-block { display: block !important; }
     </div>
   </div>
 
-  <!-- ═══ FOURNISSEURS CSV ═══ -->
-  <div id="fournisseurs-csvSection" class="section">
+  <div id="fournisseursSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-industry"></i></div>
-        <div class="card-head-title">Fournisseurs CSV</div>
-        <div class="card-head-right"><span class="count-badge" id="fourCsvCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-industry"></i></div><div class="card-head-title">Fournisseurs CSV</div><div class="card-head-right"><span class="count-badge" id="fourCount">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="fourSearch" placeholder="Rechercher fournisseurs...">
-        </div>
-        <div class="filter-strip">
-          <button class="filter-chip" id="fourDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
-          <button class="filter-chip" id="fourVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
-          <button class="filter-chip danger" id="fourClearBtn"><i class="fas fa-eraser"></i><span>Effacer</span></button>
-        </div>
-        <div class="active-filters" id="fourFilterTags"></div>
-        <div id="fourResultInfo" class="result-bar" style="display:none"></div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
         <div id="fourGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- ═══ EXPERTS CSV ═══ -->
-  <div id="experts-csvSection" class="section">
+  <div id="expertsSection" class="section">
     <div class="card">
-      <div class="card-head">
-        <div class="card-head-icon"><i class="fas fa-microchip"></i></div>
-        <div class="card-head-title">Experts CSV</div>
-        <div class="card-head-right"><span class="count-badge" id="autoCsvCnt">0</span></div>
-      </div>
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-microchip"></i></div><div class="card-head-title">Experts CSV</div><div class="card-head-right"><span class="count-badge" id="expCount">0</span></div></div>
       <div class="card-body">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="autoSearch" placeholder="Rechercher experts...">
-        </div>
-        <div class="filter-strip">
-          <button class="filter-chip" id="autoDomaineBtn"><i class="fas fa-folder"></i><span>Domaine</span></button>
-          <button class="filter-chip" id="autoVilleBtn"><i class="fas fa-city"></i><span>Ville</span></button>
-          <button class="filter-chip danger" id="autoClearBtn"><i class="fas fa-eraser"></i><span>Effacer</span></button>
-        </div>
-        <div class="active-filters" id="autoFilterTags"></div>
-        <div id="autoResultInfo" class="result-bar" style="display:none"></div>
-        <div id="autoGrid" class="items-grid"></div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="expSearch" placeholder="Rechercher..."></div>
+        <div id="expGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
-
 </main>
 
-<!-- ═══ ADMIN LOGIN MODAL ═══ -->
-<div class="overlay" id="adminLoginModal">
+<div class="overlay" id="adminModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3><i class="fas fa-user-shield"></i> Accès Administrateur</h3>
-      <button class="modal-close" onclick="closeModal('adminLoginModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="fgroup">
-        <label>Mot de passe <span>*</span></label>
-        <input type="password" id="adminPassword" class="field" placeholder="Entrez le mot de passe admin">
-      </div>
-      <div id="adminLoginError" style="color:var(--rose);font-family:var(--font-mono);font-size:0.62rem;margin-top:6px;display:none;"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" onclick="verifyAdminLogin()"><i class="fas fa-sign-in-alt"></i> Connexion</button>
-      <button class="btn btn-ghost" onclick="closeModal('adminLoginModal')">Annuler</button>
-    </div>
+    <div class="modal-head"><h3><i class="fas fa-user-shield"></i> Accès Admin</h3><button class="modal-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div class="fgroup"><label>Mot de passe</label><input type="password" id="adminPass" class="field" placeholder="admin123"></div><div id="adminError" style="color:var(--rose);display:none;"></div></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="verifyAdmin()">Connexion</button><button class="btn btn-ghost" onclick="closeModal('adminModal')">Annuler</button></div>
   </div>
 </div>
 
-<!-- ═══ LIST MODAL ═══ -->
 <div class="overlay" id="listModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3 id="listTitle"><i class="fas fa-list"></i> Liste</h3>
-      <button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button>
-    </div>
+    <div class="modal-head"><h3 id="listTitle">Liste</h3><button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div>
     <div id="listItems" class="list-items"></div>
   </div>
 </div>
 
-<!-- ═══ EDIT MODAL ═══ -->
 <div class="overlay" id="editModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3 id="editTitle"><i class="fas fa-plus-circle"></i> Ajouter un Professionnel</h3>
-      <button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button>
-    </div>
+    <div class="modal-head"><h3 id="editTitle">Ajouter</h3><button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div>
     <div class="modal-body">
       <input type="hidden" id="editId">
-      <div class="fgroup"><label>Nom / Société <span>*</span></label><input type="text" id="editName" class="field" placeholder="Nom ou société"></div>
-      <div class="fgroup"><label>Type <span>*</span></label>
-        <select id="editType" class="field">
-          <option value="">-- Sélectionner --</option>
-          <option value="fournisseurs">FOURNISSEUR</option>
-          <option value="experts">EXPERT</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Catégorie <span>*</span></label>
-        <select id="editCategorie" class="field">
-          <option value="">-- Sélectionner --</option>
-          <option value="services">SERVICES</option>
-          <option value="products">PRODUITS</option>
-          <option value="maqola">MAQAOLA</option>
-          <option value="yad-amila">YAD AMILA</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Domaine</label><input type="text" id="editDomaine" class="field" placeholder="Ex: Métallurgie, Informatique..."></div>
-      <div class="fgroup"><label>Spécialité</label><input type="text" id="editSpecialite" class="field" placeholder="Ex: Soudure, Automation..."></div>
-      <div class="fgroup"><label>Ville</label><input type="text" id="editVille" class="field" placeholder="Ex: Casablanca, Rabat..."></div>
-      <div class="fgroup"><label>Téléphone</label><input type="tel" id="editPhone" class="field" placeholder="+2126XXXXXXXX"></div>
-      <div class="fgroup"><label>Email</label><input type="email" id="editEmail" class="field" placeholder="contact@example.com"></div>
-      <div class="fgroup"><label>Site Web</label><input type="url" id="editWeb" class="field" placeholder="https://www.example.com"></div>
+      <div class="fgroup"><label>Nom</label><input type="text" id="editName" class="field"></div>
+      <div class="fgroup"><label>Type</label><select id="editType" class="field"><option value="fournisseurs">FOURNISSEUR</option><option value="experts">EXPERT</option></select></div>
+      <div class="fgroup"><label>Catégorie</label><select id="editCat" class="field"><option value="services">SERVICES</option><option value="products">PRODUITS</option><option value="maqola">MAQAOLA</option><option value="yad-amila">YAD AMILA</option></select></div>
+      <div class="fgroup"><label>Domaine</label><input type="text" id="editDomaine" class="field"></div>
+      <div class="fgroup"><label>Spécialité</label><input type="text" id="editSpecialite" class="field"></div>
+      <div class="fgroup"><label>Ville</label><input type="text" id="editVille" class="field"></div>
+      <div class="fgroup"><label>Téléphone</label><input type="tel" id="editPhone" class="field"></div>
+      <div class="fgroup"><label>Email</label><input type="email" id="editEmail" class="field"></div>
+      <div class="fgroup"><label>Site Web</label><input type="url" id="editWeb" class="field"></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn btn-primary" onclick="saveItem()"><i class="fas fa-save"></i> Enregistrer</button>
-      <button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button>
-    </div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="saveItem()">Enregistrer</button><button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button></div>
   </div>
 </div>
 
-<!-- ═══ DELETE MODAL ═══ -->
 <div class="overlay" id="deleteModal">
   <div class="modal">
-    <div class="modal-drag"></div>
-    <div class="modal-head">
-      <h3><i class="fas fa-triangle-exclamation" style="color:var(--rose)"></i> Confirmer la Suppression</h3>
-      <button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="del-box">
-        <p id="deleteMessage">Voulez-vous vraiment supprimer cet élément ?</p>
-        <div class="del-actions">
-          <button class="btn-del" onclick="confirmDelete()"><i class="fas fa-trash"></i> Supprimer</button>
-          <button class="btn-cancel" onclick="closeModal('deleteModal')">Annuler</button>
-        </div>
-      </div>
-    </div>
+    <div class="modal-head"><h3>Confirmer</h3><button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><p id="deleteMsg"></p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-danger" onclick="confirmDeleteItem()">Supprimer</button><button class="btn btn-ghost" onclick="closeModal('deleteModal')">Annuler</button></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="qrModal">
+  <div class="modal">
+    <div class="modal-head"><h3><i class="fas fa-qrcode"></i> Carte de Visite</h3><button class="modal-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div id="qrContainer"></div><button class="btn btn-primary btn-full" id="downloadPdfBtn">Télécharger PDF</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo">CI <span>·</span></div>
-  <div class="loading-sub">Connect Industry</div>
-  <div class="loading-track"><div class="loading-fill"></div></div>
-</div>
+<div class="loading-screen" id="loadingScreen"><div class="loading-logo">CI</div><div class="loading-track"><div class="loading-fill"></div></div></div>
 
 <script>
-// ═══════════════ CONFIG ═══════════════
-const CONFIG = {
-  WA: "212690292010",
-  CSV_EXPERTS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv",
-  CSV_FOURNISSEURS: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv",
-  ADMIN_PASSWORD: "admin123"
-};
+// CONFIG
+const CSV_EXPERTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
+const CSV_FOURNISSEURS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
+const ADMIN_PASSWORD = "admin123";
 
-// ═══════════════ FIREBASE ═══════════════
+// FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
   authDomain: "said-rahil-default-rtdb.firebaseio.com",
@@ -1242,792 +515,677 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const dbRef = firebase.database();
 
-// ═══════════════ STATE ═══════════════
+// STATE
 let csvExperts = [], csvFournisseurs = [], dbData = [];
-let pendingDelete = null;
-let explorerLevel = 0, explorerState = { type: null, domaine: null, specialite: null };
-let statsChart = null, navigationHistory = ['about'], lastActiveSection = 'about';
-let isAdmin = false, lastSyncTime = null;
+let isAdmin = false;
+let currentSection = 'about';
+let explorerStack = [];
 let currentPage = 1;
 const ITEMS_PER_PAGE = 20;
-let dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
-let fourFilters = { domaine: null, ville: null, search: '' };
-let autoFilters = { domaine: null, ville: null, search: '' };
+let dbFilters = { type: null, cat: null, search: '' };
+let fourSearch = '', expSearch = '';
+let pendingDelete = null;
 
-// ═══════════════ UTILS ═══════════════
-const $ = id => document.getElementById(id);
-
-function toast(msg, dur = 3000) {
-  const t = $('toast'); t.innerHTML = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), dur);
-}
-
-function closeModal(id) { const el = $(id); if (el) el.classList.remove('show'); }
-window.closeModal = closeModal;
-
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-function formatPhone(p) {
-  if (!p) return '';
-  let c = String(p).replace(/[\s\-\(\)\.]/g, '');
-  if (c.startsWith('00')) c = '+' + c.slice(2);
-  if (c.startsWith('0') && !c.startsWith('00')) c = '+212' + c.slice(1);
-  if (!c.startsWith('+') && c.length >= 9) c = '+' + c;
-  return c;
-}
-
-function showLoading(v) {
-  if (v) $('loadingScreen').classList.remove('hide');
-  else $('loadingScreen').classList.add('hide');
-}
+// DOM Helpers
+function $(id) { return document.getElementById(id); }
+function toast(msg) { const t = $('toast'); t.innerHTML = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function closeModal(id) { $(id).classList.remove('show'); }
+function showLoading(v) { if(v) $('loadingScreen').classList.remove('hide'); else $('loadingScreen').classList.add('hide'); }
 function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function escapeHtml(s) { return String(s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function formatPhone(p) { if (!p) return ''; let c = String(p).replace(/[\s\-\(\)\.]/g, ''); if (c.startsWith('00')) c = '+' + c.slice(2); if (c.startsWith('0') && !c.startsWith('00')) c = '+212' + c.slice(1); return c; }
 
-const catNames = { services: 'SERVICES', products: 'PRODUITS', maqola: 'MAQAOLA', 'yad-amila': 'YAD AMILA' };
-const catIcons = { services: 'fa-cogs', products: 'fa-boxes', maqola: 'fa-hard-hat', 'yad-amila': 'fa-hands' };
-const catBadge = { services: 'badge-svc', products: 'badge-prd', maqola: 'badge-maq', 'yad-amila': 'badge-yad' };
-
-// ═══════════════ ADMIN ═══════════════
-function checkAdminStatus() {
-  if (sessionStorage.getItem('adminMode') === 'true') enableAdminMode(true);
-  else disableAdminMode(true);
+// ADMIN
+function verifyAdmin() {
+  if ($('adminPass').value === ADMIN_PASSWORD) {
+    isAdmin = true;
+    sessionStorage.setItem('adminMode', 'true');
+    document.body.classList.add('admin-mode');
+    $('adminBtn').classList.add('admin-on');
+    $('logoutBtn').style.display = 'flex';
+    $('logoutBtn').classList.add('logout-on');
+    closeModal('adminModal');
+    toast('✅ Mode Admin activé');
+    renderCurrent();
+  } else {
+    $('adminError').style.display = 'block';
+    $('adminError').innerHTML = '❌ Mot de passe incorrect';
+    setTimeout(() => $('adminError').style.display = 'none', 2000);
+  }
 }
 
-function enableAdminMode(silent = false) {
-  isAdmin = true;
-  sessionStorage.setItem('adminMode', 'true');
-  document.body.classList.add('admin-mode');
-  $('adminLoginBtn').classList.add('admin-on');
-  const p = $('adminStatsPanel'); if (p) p.style.display = 'block';
-  if (!silent) toast('✅ Mode administrateur activé');
-  updateAdminStats();
-}
-
-function disableAdminMode(silent = false) {
+function logoutAdmin() {
   isAdmin = false;
   sessionStorage.removeItem('adminMode');
   document.body.classList.remove('admin-mode');
-  $('adminLoginBtn').classList.remove('admin-on');
-  const p = $('adminStatsPanel'); if (p) p.style.display = 'none';
-  if (!silent) toast('👤 Mode utilisateur normal');
+  $('adminBtn').classList.remove('admin-on');
+  $('logoutBtn').style.display = 'none';
+  toast('👤 Mode utilisateur normal');
+  renderCurrent();
 }
 
-function verifyAdminLogin() {
-  const pw = $('adminPassword').value;
-  const err = $('adminLoginError');
-  if (pw === CONFIG.ADMIN_PASSWORD) {
-    closeModal('adminLoginModal');
-    enableAdminMode();
-    $('adminPassword').value = '';
-  } else {
-    err.style.display = 'block';
-    err.innerHTML = '❌ Mot de passe incorrect';
-    setTimeout(() => { err.style.display = 'none'; }, 2500);
+function checkAdminStatus() {
+  if (sessionStorage.getItem('adminMode') === 'true') {
+    isAdmin = true;
+    document.body.classList.add('admin-mode');
+    $('adminBtn').classList.add('admin-on');
+    $('logoutBtn').style.display = 'flex';
   }
 }
 
-function updateAdminStats() {
-  if (!isAdmin) return;
-  $('adminCsvFourCount').textContent = csvFournisseurs.length;
-  $('adminCsvExpCount').textContent = csvExperts.length;
-  $('adminDbCount').textContent = dbData.length;
-  $('adminLastSync').textContent = lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString('fr-FR') : '--';
-}
-
-// ═══════════════ CSV ═══════════════
-async function loadCSV(url, retry = 0) {
+// CSV LOADING
+async function loadCSV(url) {
   try {
-    const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch(url);
     const text = await res.text();
     const lines = text.split(/\r?\n/);
-    if (lines.length < 2) return [];
     const data = [];
     for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-      const cols = parseCSVLine(line);
-      const item = {
-        name: cols[1]?.replace(/^["']|["']$/g,'').trim() || '',
-        domaine: cols[2]?.replace(/^["']|["']$/g,'').trim() || 'Autre',
-        specialite: cols[3]?.replace(/^["']|["']$/g,'').trim() || 'Général',
-        ville: cols[4]?.replace(/^["']|["']$/g,'').trim() || '',
-        phone: formatPhone(cols[5]?.replace(/^["']|["']$/g,'').trim() || ''),
-        email: cols[6]?.replace(/^["']|["']$/g,'').trim() || '',
-        web: cols[7]?.replace(/^["']|["']$/g,'').trim() || ''
-      };
-      if (item.name) data.push(item);
+      const cols = lines[i].split(',');
+      if (cols[1]) {
+        data.push({
+          name: cols[1]?.replace(/["']/g, '').trim() || '',
+          domaine: cols[2]?.replace(/["']/g, '').trim() || 'Autre',
+          specialite: cols[3]?.replace(/["']/g, '').trim() || 'Général',
+          ville: cols[4]?.replace(/["']/g, '').trim() || '',
+          phone: formatPhone(cols[5]?.replace(/["']/g, '').trim()),
+          email: cols[6]?.replace(/["']/g, '').trim() || '',
+          web: cols[7]?.replace(/["']/g, '').trim() || ''
+        });
+      }
     }
     return data;
-  } catch(e) {
-    if (retry < 2) { await new Promise(r => setTimeout(r, 1000)); return loadCSV(url, retry + 1); }
-    toast('⚠️ Erreur CSV: ' + e.message);
-    return [];
-  }
+  } catch(e) { return []; }
 }
 
-function parseCSVLine(line) {
-  const cols = []; let inQ = false, cur = '';
-  for (const c of line) {
-    if (c === '"') inQ = !inQ;
-    else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
-    else cur += c;
-  }
-  cols.push(cur); return cols;
-}
-
-async function loadAllCSV() {
-  toast('📥 Chargement CSV...');
-  const [e, f] = await Promise.all([loadCSV(CONFIG.CSV_EXPERTS), loadCSV(CONFIG.CSV_FOURNISSEURS)]);
-  csvExperts = e.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
-  csvFournisseurs = f.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
-  renderFournisseursCSV(); renderExpertsCSV(); updateAdminStats();
-  toast(`✅ ${csvFournisseurs.length} fournisseurs, ${csvExperts.length} experts chargés`);
-}
-
-// ═══════════════ FIREBASE ═══════════════
+// FIREBASE LOAD
 async function loadDB() {
+  showLoading(true);
   try {
     const snap = await dbRef.ref('professionals').once('value');
     const data = snap.val();
     dbData = [];
-    if (data && typeof data === 'object') {
+    if (data) {
       const typeMap = { 'FOURNISSEURS': 'fournisseurs', 'EXPERTS': 'experts' };
       const catMap = { 'SERVICES': 'services', 'PRODUITS': 'products', 'MAQAOLA': 'maqola', 'YAD AMILA': 'yad-amila' };
       for (const [ft, typeObj] of Object.entries(data)) {
-        if (!typeObj || typeof typeObj !== 'object') continue;
-        const type = typeMap[ft]; if (!type) continue;
+        const type = typeMap[ft];
+        if (!type) continue;
         for (const [fc, items] of Object.entries(typeObj)) {
-          if (!Array.isArray(items)) continue;
-          const cat = catMap[fc]; if (!cat) continue;
+          const cat = catMap[fc];
+          if (!cat || !Array.isArray(items)) continue;
           for (const item of items) {
-            if (!item?.name) continue;
-            dbData.push({ ...item, type, categorie: cat, firebaseType: ft, firebaseCategorie: fc });
+            if (item?.name) {
+              dbData.push({ ...item, type, categorie: cat, id: item.id || `${type}_${Date.now()}_${Math.random()}` });
+            }
           }
         }
       }
-      dbData.sort((a,b) => (a.name||'').localeCompare(b.name||'','fr'));
     }
-    updateDBStats(); updateStatsChart(); updateAdminStats();
-    currentPage = 1; renderDB(); renderExplorer();
-    toast(`✅ ${dbData.length} professionnels chargés`);
-  } catch(e) {
-    dbData = []; updateDBStats(); renderDB();
-    toast('❌ Erreur base: ' + e.message);
-  }
+    updateStats();
+    renderCurrent();
+  } catch(e) { toast('❌ Erreur chargement'); }
+  showLoading(false);
 }
 
-// ═══════════════ CHART ═══════════════
-function updateStatsChart() {
-  const canvas = $('statsChart');
-  if (!canvas) return;
-  if (statsChart) statsChart.destroy();
-  const isDark = !document.body.classList.contains('light');
-  const textColor = isDark ? '#94a3b8' : '#475569';
-  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
-  statsChart = new Chart(canvas.getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels: ['Fournisseurs','Experts','Services','Produits','Maqola','Yad Amila'],
-      datasets: [{
-        label: 'Professionnels',
-        data: [
-          dbData.filter(d=>d.type==='fournisseurs').length,
-          dbData.filter(d=>d.type==='experts').length,
-          dbData.filter(d=>d.categorie==='services').length,
-          dbData.filter(d=>d.categorie==='products').length,
-          dbData.filter(d=>d.categorie==='maqola').length,
-          dbData.filter(d=>d.categorie==='yad-amila').length
-        ],
-        backgroundColor: [
-          'rgba(245,158,11,0.7)','rgba(6,182,212,0.7)',
-          'rgba(16,185,129,0.7)','rgba(251,146,60,0.7)',
-          'rgba(139,92,246,0.7)','rgba(244,63,94,0.7)'
-        ],
-        borderColor: [
-          'rgb(245,158,11)','rgb(6,182,212)',
-          'rgb(16,185,129)','rgb(251,146,60)',
-          'rgb(139,92,246)','rgb(244,63,94)'
-        ],
-        borderWidth: 1, borderRadius: 6, borderSkipped: false
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: isDark ? '#111827' : '#fff',
-          titleColor: isDark ? '#f1f5f9' : '#0f172a',
-          bodyColor: textColor,
-          borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-          borderWidth: 1, cornerRadius: 8, padding: 10
-        }
-      },
-      scales: {
-        y: { ticks: { color: textColor, font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: gridColor } },
-        x: { ticks: { color: textColor, font: { size: 10 } }, grid: { display: false } }
-      }
-    }
-  });
-}
-
-// ═══════════════ SYNC ═══════════════
+// SYNC
 async function syncToFirebase() {
   if (!confirm('Synchroniser les CSV vers Firebase ?')) return;
-  toast('📤 Synchronisation...'); showLoading(true);
+  showLoading(true);
   try {
-    const h = {
+    const structure = {
       "FOURNISSEURS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] },
       "EXPERTS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] }
     };
-    csvFournisseurs.forEach((s,i) => h["FOURNISSEURS"]["SERVICES"].push({
-      id:`four_${Date.now()}_${i}`,name:s.name,domaine:s.domaine||'Autre',
-      specialite:s.specialite||'Général',ville:s.ville||'',phone:s.phone||'',
-      email:s.email||'',web:s.web||'',createdAt:new Date().toISOString()
-    }));
-    csvExperts.forEach((e,i) => h["EXPERTS"]["YAD AMILA"].push({
-      id:`exp_${Date.now()}_${i}`,name:e.name,domaine:e.domaine||'Autre',
-      specialite:e.specialite||'Général',ville:e.ville||'',phone:e.phone||'',
-      email:e.email||'',web:e.web||'',createdAt:new Date().toISOString()
-    }));
-    await dbRef.ref('professionals').set(h);
-    lastSyncTime = Date.now(); updateAdminStats();
-    toast('✅ Synchronisation terminée!');
+    csvFournisseurs.forEach((s, i) => {
+      structure["FOURNISSEURS"]["SERVICES"].push({
+        id: `four_${Date.now()}_${i}`, name: s.name, domaine: s.domaine,
+        specialite: s.specialite, ville: s.ville, phone: s.phone, email: s.email, web: s.web
+      });
+    });
+    csvExperts.forEach((e, i) => {
+      structure["EXPERTS"]["YAD AMILA"].push({
+        id: `exp_${Date.now()}_${i}`, name: e.name, domaine: e.domaine,
+        specialite: e.specialite, ville: e.ville, phone: e.phone, email: e.email, web: e.web
+      });
+    });
+    await dbRef.ref('professionals').set(structure);
+    toast('✅ Synchronisation terminée');
     await loadDB();
-  } catch(e) { toast('❌ Erreur sync: ' + e.message); }
+  } catch(e) { toast('❌ Erreur sync'); }
   showLoading(false);
 }
 
-// ═══════════════ CRUD ═══════════════
-function openAddModal() {
-  if (!isAdmin) { toast('⚠️ Accès réservé aux administrateurs'); return; }
-  $('editTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Ajouter un Professionnel';
-  ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value='');
-  $('editType').value=''; $('editCategorie').value='';
-  $('editModal').classList.add('show');
+// STATS
+function updateStats() {
+  $('statFour').textContent = dbData.filter(d => d.type === 'fournisseurs').length;
+  $('statExp').textContent = dbData.filter(d => d.type === 'experts').length;
+  $('statVilles').textContent = new Set(dbData.map(d => d.ville).filter(v => v && v !== 'null')).size;
+  $('statDomaines').textContent = new Set(dbData.map(d => d.domaine).filter(d => d && d !== 'null')).size;
+  $('statServices').textContent = dbData.filter(d => d.categorie === 'services').length;
+  $('statProduits').textContent = dbData.filter(d => d.categorie === 'products').length;
+  $('statMaqola').textContent = dbData.filter(d => d.categorie === 'maqola').length;
+  $('statYadAmila').textContent = dbData.filter(d => d.categorie === 'yad-amila').length;
+  $('dbCount').textContent = dbData.length;
+  $('fourCount').textContent = csvFournisseurs.length;
+  $('expCount').textContent = csvExperts.length;
 }
 
-function openEditModal(id) {
-  if (!isAdmin) { toast('⚠️ Accès réservé aux administrateurs'); return; }
-  const item = dbData.find(i=>i.id===id);
-  if (!item) { toast('❌ Élément non trouvé'); return; }
-  $('editTitle').innerHTML = '<i class="fas fa-pen"></i> Modifier le Professionnel';
-  $('editId').value = item.id||'';
-  $('editName').value = item.name||'';
-  $('editType').value = item.type||'';
-  $('editCategorie').value = item.categorie||'';
-  $('editDomaine').value = item.domaine||'';
-  $('editSpecialite').value = item.specialite||'';
-  $('editVille').value = item.ville||'';
-  $('editPhone').value = item.phone||'';
-  $('editEmail').value = item.email||'';
-  $('editWeb').value = item.web||'';
-  $('editModal').classList.add('show');
-}
-
-async function saveItem() {
-  if (!isAdmin) { toast('⚠️ Accès réservé aux administrateurs'); return; }
-  const name = $('editName').value.trim();
-  const type = $('editType').value;
-  const cat = $('editCategorie').value;
-  const id = $('editId').value;
-  if (!name) { toast('⚠️ Nom requis'); return; }
-  if (!type) { toast('⚠️ Type requis'); return; }
-  if (!cat) { toast('⚠️ Catégorie requise'); return; }
-  const itemData = {
-    id: id || `${type}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-    name, type, categorie: cat,
-    domaine: $('editDomaine').value.trim()||'Autre',
-    specialite: $('editSpecialite').value.trim()||'Général',
-    ville: $('editVille').value.trim()||'',
-    phone: formatPhone($('editPhone').value.trim()),
-    email: $('editEmail').value.trim()||'',
-    web: $('editWeb').value.trim()||'',
-    updatedAt: new Date().toISOString(),
-    createdAt: id ? (dbData.find(i=>i.id===id)?.createdAt || new Date().toISOString()) : new Date().toISOString()
-  };
-  const fType = type==='fournisseurs'?'FOURNISSEURS':'EXPERTS';
-  const catMap = { services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA' };
-  const fCat = catMap[cat]||'SERVICES';
-  showLoading(true);
-  try {
-    if (id) {
-      const old = dbData.find(i=>i.id===id);
-      if (old && (old.type!==type || old.categorie!==cat)) {
-        const oldPath = `professionals/${old.firebaseType}/${old.firebaseCategorie}`;
-        const oldSnap = await dbRef.ref(oldPath).once('value');
-        await dbRef.ref(oldPath).set((oldSnap.val()||[]).filter(i=>i.id!==id));
-      }
-    }
-    const path = `professionals/${fType}/${fCat}`;
-    const snap = await dbRef.ref(path).once('value');
-    let arr = snap.val()||[];
-    if (id) { const idx=arr.findIndex(i=>i.id===id); if(idx!==-1) arr[idx]=itemData; else arr.push(itemData); }
-    else arr.push(itemData);
-    await dbRef.ref(path).set(arr);
-    toast(id?'✅ Modifié':'✅ Ajouté');
-    closeModal('editModal'); await loadDB();
-  } catch(e) { toast('❌ Erreur: '+e.message); }
-  showLoading(false);
-}
-
-function openDeleteModal(id) {
-  if (!isAdmin) { toast('⚠️ Accès réservé aux administrateurs'); return; }
-  const item = dbData.find(i=>i.id===id);
-  if (!item) { toast('❌ Élément non trouvé'); return; }
-  pendingDelete = item;
-  $('deleteMessage').innerHTML = `Supprimer <strong>${esc(item.name)}</strong> ?`;
-  $('deleteModal').classList.add('show');
-}
-
-async function confirmDelete() {
-  if (!pendingDelete) return;
-  showLoading(true);
-  try {
-    const path = `professionals/${pendingDelete.firebaseType}/${pendingDelete.firebaseCategorie}`;
-    const snap = await dbRef.ref(path).once('value');
-    await dbRef.ref(path).set((snap.val()||[]).filter(i=>i.id!==pendingDelete.id));
-    toast(`🗑️ "${pendingDelete.name}" supprimé`);
-    closeModal('deleteModal'); pendingDelete = null; await loadDB();
-  } catch(e) { toast('❌ Erreur: '+e.message); }
-  showLoading(false);
-}
-
-window.openAddModal = openAddModal;
-window.openEditModal = openEditModal;
-window.saveItem = saveItem;
-window.openDeleteModal = openDeleteModal;
-window.confirmDelete = confirmDelete;
-
-// ═══════════════ STATS ═══════════════
-function updateDBStats() {
-  const fCount = dbData.filter(d=>d.type==='fournisseurs').length;
-  const eCount = dbData.filter(d=>d.type==='experts').length;
-  $('dbFourCount').textContent = fCount;
-  $('dbExpCount').textContent = eCount;
-  $('dbSvcCount').textContent = dbData.filter(d=>d.categorie==='services').length;
-  $('dbPrdCount').textContent = dbData.filter(d=>d.categorie==='products').length;
-  $('dbConCount').textContent = dbData.filter(d=>d.categorie==='maqola').length;
-  $('dbLabCount').textContent = dbData.filter(d=>d.categorie==='yad-amila').length;
-  const villes = new Set(dbData.map(d=>d.ville).filter(v=>v&&v!=='null'&&v!=='')).size;
-  const doms = new Set(dbData.map(d=>d.domaine).filter(v=>v&&v!=='null'&&v!=='')).size;
-  $('dbVillesCount').textContent = villes;
-  $('dbDomainesCount').textContent = doms;
-  $('dbSpecialitesCount').textContent = new Set(dbData.map(d=>d.specialite).filter(v=>v&&v!=='null'&&v!=='')).size;
-  $('hs-four').textContent = fCount;
-  $('hs-exp').textContent = eCount;
-  $('hs-villes').textContent = villes;
-  $('hs-dom').textContent = doms;
-}
-
-// ═══════════════ FILTERS ═══════════════
-function resetDBFilters() {
-  dbFilters = { type:null,categorie:null,ville:null,domaine:null,search:'' };
-  if ($('dbSearch')) $('dbSearch').value='';
-  currentPage=1;
-}
-function resetFourFilters() { fourFilters={domaine:null,ville:null,search:''}; if($('fourSearch')) $('fourSearch').value=''; }
-function resetAutoFilters() { autoFilters={domaine:null,ville:null,search:''}; if($('autoSearch')) $('autoSearch').value=''; }
-function matchSearch(item, q) {
-  if (!q) return true;
-  const t = q.toLowerCase();
-  return [item.name,item.domaine,item.specialite,item.ville,item.phone,item.email,item.web].some(f=>f&&String(f).toLowerCase().includes(t));
-}
+// FILTERS
 function getFilteredDB() {
-  return dbData.filter(d=>
-    (!dbFilters.type||d.type===dbFilters.type)&&
-    (!dbFilters.categorie||d.categorie===dbFilters.categorie)&&
-    (!dbFilters.domaine||d.domaine===dbFilters.domaine)&&
-    (!dbFilters.ville||d.ville===dbFilters.ville)&&
-    matchSearch(d,dbFilters.search)
-  );
-}
-function getAvailableTypes() {
-  return ['fournisseurs','experts'].filter(t=>dbData.some(d=>d.type===t));
-}
-function getAvailableCategories() {
-  let d=[...dbData]; if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  return ['services','products','maqola','yad-amila'].filter(c=>d.some(x=>x.categorie===c));
-}
-function getDBVilles() {
-  let d=[...dbData];
-  if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie);
-  if(dbFilters.domaine) d=d.filter(x=>x.domaine===dbFilters.domaine);
-  return[...new Set(d.map(x=>x.ville).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr'));
-}
-function getDBDomaines() {
-  let d=[...dbData];
-  if(dbFilters.type) d=d.filter(x=>x.type===dbFilters.type);
-  if(dbFilters.categorie) d=d.filter(x=>x.categorie===dbFilters.categorie);
-  if(dbFilters.ville) d=d.filter(x=>x.ville===dbFilters.ville);
-  return[...new Set(d.map(x=>x.domaine).filter(v=>v&&v!=='null'&&v!==''))].sort((a,b)=>a.localeCompare(b,'fr'));
-}
-function getFourVilles() { let d=[...csvFournisseurs]; if(fourFilters.domaine) d=d.filter(x=>x.domaine===fourFilters.domaine); return[...new Set(d.map(x=>x.ville).filter(v=>v))].sort(); }
-function getFourDomaines() { let d=[...csvFournisseurs]; if(fourFilters.ville) d=d.filter(x=>x.ville===fourFilters.ville); return[...new Set(d.map(x=>x.domaine).filter(v=>v))].sort(); }
-function getAutoVilles() { let d=[...csvExperts]; if(autoFilters.domaine) d=d.filter(x=>x.domaine===autoFilters.domaine); return[...new Set(d.map(x=>x.ville).filter(v=>v))].sort(); }
-function getAutoDomaines() { let d=[...csvExperts]; if(autoFilters.ville) d=d.filter(x=>x.ville===autoFilters.ville); return[...new Set(d.map(x=>x.domaine).filter(v=>v))].sort(); }
-
-// ═══════════════ PAGINATION ═══════════════
-function renderPagination(total) {
-  const c = $('dbPagination');
-  if (!c) return;
-  const pages = Math.ceil(total / ITEMS_PER_PAGE);
-  if (pages <= 1) { c.innerHTML=''; return; }
-  let h = '';
-  h += `<button class="pg-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}><i class="fas fa-chevron-left"></i></button>`;
-  const s=Math.max(1,currentPage-2), e=Math.min(pages,currentPage+2);
-  if(s>1){h+=`<button class="pg-btn" onclick="changePage(1)">1</button>`;if(s>2) h+=`<span class="pg-ellipsis">···</span>`;}
-  for(let i=s;i<=e;i++) h+=`<button class="pg-btn ${i===currentPage?'active':''}" onclick="changePage(${i})">${i}</button>`;
-  if(e<pages){if(e<pages-1) h+=`<span class="pg-ellipsis">···</span>`;h+=`<button class="pg-btn" onclick="changePage(${pages})">${pages}</button>`;}
-  h+=`<button class="pg-btn" onclick="changePage(${currentPage+1})" ${currentPage===pages?'disabled':''}><i class="fas fa-chevron-right"></i></button>`;
-  c.innerHTML=h;
-}
-function changePage(p) {
-  const total=getFilteredDB().length; const pages=Math.ceil(total/ITEMS_PER_PAGE);
-  if(p<1||p>pages) return; currentPage=p; renderDB(); scrollTop();
-}
-window.changePage=changePage;
-
-// ═══════════════ STAT FILTER ═══════════════
-function applyStatFilter(type, value) {
-  document.querySelectorAll('.stat-tile').forEach(c=>c.classList.remove('active'));
-  const sel = document.querySelector(`.stat-tile[data-filter-type="${value}"],.stat-tile[data-filter-cat="${value}"],.stat-tile[data-t="${value}"]`);
-  if (sel) sel.classList.add('active');
-  resetDBFilters();
-  if (type==='type') { dbFilters.type=value; toast(`🔍 ${value==='fournisseurs'?'Fournisseurs':'Experts'}`); }
-  else if (type==='categorie') { dbFilters.categorie=value; toast(`🔍 ${catNames[value]||value}`); }
-  else if (type==='ville') { dbFilters.ville=value; toast(`📍 ${value||'Toutes les villes'}`); }
-  else if (type==='domaine') { dbFilters.domaine=value; toast(`📁 ${value||'Tous les domaines'}`); }
-  else if (type==='specialite') { dbFilters.search=value; if($('dbSearch')) $('dbSearch').value=value||''; toast(`⚙️ ${value||'Toutes spécialités'}`); }
-  currentPage=1; showSection('db-unified');
+  return dbData.filter(d => {
+    if (dbFilters.type && d.type !== dbFilters.type) return false;
+    if (dbFilters.cat && d.categorie !== dbFilters.cat) return false;
+    if (dbFilters.search && !d.name.toLowerCase().includes(dbFilters.search.toLowerCase())) return false;
+    return true;
+  });
 }
 
-// ═══════════════ CARD BUILDER ═══════════════
-function buildCard(item, isCSV=false) {
-  const hp = item.phone && item.phone!=='null' && item.phone!=='';
-  const he = item.email && item.email!=='null' && item.email!=='';
-  const hw = item.web && item.web!=='null' && item.web!=='' && item.web.startsWith('http');
-  const sp = hp ? esc(item.phone) : '';
-  const sp2 = hp ? item.phone.replace(/\+/g,'') : '';
+function resetDBFilters() {
+  dbFilters = { type: null, cat: null, search: '' };
+  if ($('dbSearch')) $('dbSearch').value = '';
+  currentPage = 1;
+  document.querySelectorAll('.stat-tile').forEach(t => t.classList.remove('active'));
+}
+
+// RENDER FUNCTIONS
+function renderDB() {
+  const filtered = getFilteredDB();
+  const total = filtered.length;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paged = filtered.slice(start, start + ITEMS_PER_PAGE);
+  $('dbGrid').innerHTML = paged.length ? paged.map(i => buildCard(i, false, true)).join('') : '<div class="empty-state"><i class="fas fa-search"></i><h3>AUCUN RÉSULTAT</h3></div>';
+  $('dbCount').textContent = total;
+  renderPagination(total);
   
-  let badges='';
+  const filters = [dbFilters.search && `"${dbFilters.search}"`, dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : dbFilters.type === 'experts' ? 'Experts' : null, dbFilters.cat].filter(Boolean);
+  const resultDiv = $('dbResultInfo');
+  if (filters.length) {
+    resultDiv.innerHTML = `<i class="fas fa-filter"></i> ${total} résultat(s) · ${filters.join(' · ')}`;
+    resultDiv.style.display = 'flex';
+  } else {
+    resultDiv.style.display = 'none';
+  }
+}
+
+function renderFournisseurs() {
+  let d = csvFournisseurs;
+  if (fourSearch) d = d.filter(f => f.name.toLowerCase().includes(fourSearch.toLowerCase()));
+  $('fourGrid').innerHTML = d.length ? d.map(i => buildCard(i, true, false)).join('') : '<div class="empty-state"><i class="fas fa-industry"></i><h3>AUCUN FOURNISSEUR</h3></div>';
+}
+
+function renderExperts() {
+  let d = csvExperts;
+  if (expSearch) d = d.filter(e => e.name.toLowerCase().includes(expSearch.toLowerCase()));
+  $('expGrid').innerHTML = d.length ? d.map(i => buildCard(i, true, false)).join('') : '<div class="empty-state"><i class="fas fa-microchip"></i><h3>AUCUN EXPERT</h3></div>';
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / ITEMS_PER_PAGE);
+  const container = $('dbPagination');
+  if (!container || pages <= 1) { if (container) container.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+  for (let i = 1; i <= Math.min(pages, 5); i++) {
+    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  if (pages > 5) html += `<span>...</span><button class="pg-btn" onclick="changePage(${pages})">${pages}</button>`;
+  html += `<button class="pg-btn" onclick="changePage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+  container.innerHTML = html;
+}
+
+function changePage(page) {
+  const total = getFilteredDB().length;
+  const pages = Math.ceil(total / ITEMS_PER_PAGE);
+  if (page < 1 || page > pages) return;
+  currentPage = page;
+  renderDB();
+  scrollTop();
+}
+
+// BUILD CARD - PDF seulement pour DB (showPDF=true)
+function buildCard(item, isCSV = false, showPDF = true) {
+  const hasPhone = item.phone && item.phone !== 'null';
+  const hasEmail = item.email && item.email !== 'null';
+  const hasWeb = item.web && item.web !== 'null' && item.web.startsWith('http');
+  
+  let badges = '';
   if (!isCSV) {
-    badges += item.type==='fournisseurs'
-      ? `<span class="ic-badge badge-fourn"><i class="fas fa-industry"></i> FOURN.</span>`
-      : `<span class="ic-badge badge-exp"><i class="fas fa-microchip"></i> EXPERT</span>`;
-    if (item.categorie && catNames[item.categorie])
-      badges += `<span class="ic-badge ${catBadge[item.categorie]}"><i class="fas ${catIcons[item.categorie]}"></i> ${catNames[item.categorie]}</span>`;
+    badges += item.type === 'fournisseurs' ? '<span class="ic-badge badge-fourn">FOURN.</span>' : '<span class="ic-badge badge-exp">EXPERT</span>';
+    const catNames = { services:'SERVICES', products:'PRODUITS', maqola:'MAQAOLA', 'yad-amila':'YAD AMILA' };
+    const catClasses = { services:'badge-svc', products:'badge-prd', maqola:'badge-maq', 'yad-amila':'badge-yad' };
+    if (item.categorie) badges += `<span class="ic-badge ${catClasses[item.categorie]}">${catNames[item.categorie]}</span>`;
   }
   
   let btns = '';
-  if (hp) btns += `<button class="act-btn phone" title="Appeler" onclick="window.location.href='tel:${sp}'"><i class="fas fa-phone-alt"></i></button>`;
-  if (hp) btns += `<button class="act-btn wa" title="WhatsApp" onclick="window.open('https://wa.me/${sp2}','_blank')"><i class="fab fa-whatsapp"></i></button>`;
-  if (he) btns += `<button class="act-btn email" title="Email" onclick="window.location.href='mailto:${esc(item.email)}'"><i class="fas fa-envelope"></i></button>`;
-  if (hw) btns += `<button class="act-btn web" title="Site web" onclick="window.open('${esc(item.web)}','_blank')"><i class="fas fa-globe"></i></button>`;
-  if (hp) btns += `<button class="act-btn copy" title="Copier tél." onclick="copyClip('${sp}','Téléphone copié !')"><i class="fas fa-copy"></i></button>`;
-  const is = JSON.stringify(item).replace(/"/g,'&quot;');
-  btns += `<button class="act-btn share" title="Partager" onclick="shareItem('${is}')"><i class="fas fa-share-alt"></i></button>`;
+  if (hasPhone) btns += `<button class="act-btn phone" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i></button>`;
+  if (hasPhone) btns += `<button class="act-btn wa" onclick="window.open('https://wa.me/${item.phone.replace(/[^0-9]/g, '')}','_blank')"><i class="fab fa-whatsapp"></i></button>`;
+  if (hasEmail) btns += `<button class="act-btn email" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
+  if (hasWeb) btns += `<button class="act-btn web" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i></button>`;
+  btns += `<button class="act-btn share" onclick="shareItem('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-share-alt"></i></button>`;
+  
+  // PDF UNIQUEMENT POUR LA BASE DE DONNÉES
+  if (showPDF && !isCSV) {
+    btns += `<button class="act-btn pdf" onclick="exportToPDF('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-id-card"></i></button>`;
+  }
+  
   if (!isCSV && isAdmin) {
-    btns += `<button class="act-btn edit" title="Modifier" onclick="openEditModal('${esc(item.id)}')"><i class="fas fa-pen"></i></button>`;
-    btns += `<button class="act-btn del" title="Supprimer" onclick="openDeleteModal('${esc(item.id)}')"><i class="fas fa-trash"></i></button>`;
+    btns += `<button class="act-btn edit" onclick="openEditModal('${item.id}')"><i class="fas fa-pen"></i></button>`;
+    btns += `<button class="act-btn del" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button>`;
   }
   
   return `<div class="item-card">
-    <div class="ic-top">
-      <div class="ic-name">${esc(item.name)}</div>
-      <div class="ic-badges">${badges}</div>
-    </div>
+    <div class="ic-top"><div class="ic-name">${escapeHtml(item.name)}</div><div class="ic-badges">${badges}</div></div>
     <div class="ic-body">
-      ${item.domaine?`<div class="ic-row"><i class="ic-row-icon fas fa-folder"></i><span class="ic-row-label">DOMAINE</span><span class="ic-row-value">${esc(item.domaine)}</span></div>`:''}
-      ${item.specialite?`<div class="ic-row"><i class="ic-row-icon fas fa-cog"></i><span class="ic-row-label">SPÉCIALITÉ</span><span class="ic-row-value">${esc(item.specialite)}</span></div>`:''}
-      ${item.ville?`<div class="ic-row"><i class="ic-row-icon fas fa-map-marker-alt"></i><span class="ic-row-label">VILLE</span><span class="ic-row-value">${esc(item.ville)}</span></div>`:''}
-      ${hp?`<div class="ic-row"><i class="ic-row-icon fas fa-phone-alt"></i><span class="ic-row-label">TÉL.</span><span class="ic-row-value">${sp}</span></div>`:''}
-      ${he?`<div class="ic-row"><i class="ic-row-icon fas fa-envelope"></i><span class="ic-row-label">EMAIL</span><span class="ic-row-value">${esc(item.email)}</span></div>`:''}
-      ${hw?`<div class="ic-row"><i class="ic-row-icon fas fa-globe"></i><span class="ic-row-label">WEB</span><span class="ic-row-value">${esc(item.web)}</span></div>`:''}
+      ${item.domaine ? `<div class="ic-row"><i class="ic-row-icon fas fa-folder"></i><span class="ic-row-label">DOMAINE</span><span class="ic-row-value">${escapeHtml(item.domaine)}</span></div>` : ''}
+      ${item.specialite ? `<div class="ic-row"><i class="ic-row-icon fas fa-cog"></i><span class="ic-row-label">SPÉCIALITÉ</span><span class="ic-row-value">${escapeHtml(item.specialite)}</span></div>` : ''}
+      ${item.ville ? `<div class="ic-row"><i class="ic-row-icon fas fa-map-marker-alt"></i><span class="ic-row-label">VILLE</span><span class="ic-row-value">${escapeHtml(item.ville)}</span></div>` : ''}
+      ${hasPhone ? `<div class="ic-row"><i class="ic-row-icon fas fa-phone-alt"></i><span class="ic-row-label">TÉL.</span><span class="ic-row-value">${escapeHtml(item.phone)}</span></div>` : ''}
+      ${hasEmail ? `<div class="ic-row"><i class="ic-row-icon fas fa-envelope"></i><span class="ic-row-label">EMAIL</span><span class="ic-row-value">${escapeHtml(item.email)}</span></div>` : ''}
     </div>
     <div class="ic-actions">${btns}</div>
   </div>`;
 }
 
-const emptyHTML = `<div class="empty-state"><div class="empty-state-icon"><i class="fas fa-search"></i></div><h3>AUCUN RÉSULTAT</h3></div>`;
-
-// ═══════════════ RENDER ═══════════════
-function renderDB() {
-  const all = getFilteredDB(); const total = all.length;
-  const start = (currentPage-1)*ITEMS_PER_PAGE;
-  const paged = all.slice(start, start+ITEMS_PER_PAGE);
-  $('dbGrid').innerHTML = paged.length ? paged.map(i=>buildCard(i)).join('') : emptyHTML;
-  $('dbCnt').textContent = total;
-  renderDBFilterTags();
-  const filters = [
-    dbFilters.search && `"${dbFilters.search}"`,
-    dbFilters.type && (dbFilters.type==='fournisseurs'?'Fournisseurs':'Experts'),
-    dbFilters.categorie && catNames[dbFilters.categorie],
-    dbFilters.ville && dbFilters.ville,
-    dbFilters.domaine && dbFilters.domaine
-  ].filter(Boolean);
-  renderResultInfo('dbResultInfo', total, filters);
-  renderPagination(total);
-  const clr=$('dbSearchClear'); if(clr) clr.style.display=dbFilters.search?'flex':'none';
+// CRUD
+function openAddModal() {
+  if (!isAdmin) { toast('⚠️ Accès réservé'); return; }
+  $('editTitle').innerHTML = 'Ajouter';
+  ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id => $(id).value = '');
+  $('editType').value = 'fournisseurs';
+  $('editCat').value = 'services';
+  $('editModal').classList.add('show');
 }
 
-function renderFournisseursCSV() {
-  let d=csvFournisseurs.filter(x=>(!fourFilters.domaine||x.domaine===fourFilters.domaine)&&(!fourFilters.ville||x.ville===fourFilters.ville)&&(!fourFilters.search||matchSearch(x,fourFilters.search)));
-  $('fourGrid').innerHTML=d.length?d.map(i=>buildCard(i,true)).join(''):emptyHTML;
-  $('fourCsvCnt').textContent=d.length;
-  renderFourFilterTags();
-  renderResultInfo('fourResultInfo',d.length,[fourFilters.search&&`"${fourFilters.search}"`,fourFilters.domaine,fourFilters.ville].filter(Boolean));
+function openEditModal(id) {
+  const item = dbData.find(i => i.id === id);
+  if (!item) return;
+  $('editTitle').innerHTML = 'Modifier';
+  $('editId').value = item.id;
+  $('editName').value = item.name;
+  $('editType').value = item.type;
+  $('editCat').value = item.categorie;
+  $('editDomaine').value = item.domaine || '';
+  $('editSpecialite').value = item.specialite || '';
+  $('editVille').value = item.ville || '';
+  $('editPhone').value = item.phone || '';
+  $('editEmail').value = item.email || '';
+  $('editWeb').value = item.web || '';
+  $('editModal').classList.add('show');
 }
 
-function renderExpertsCSV() {
-  let d=csvExperts.filter(x=>(!autoFilters.domaine||x.domaine===autoFilters.domaine)&&(!autoFilters.ville||x.ville===autoFilters.ville)&&(!autoFilters.search||matchSearch(x,autoFilters.search)));
-  $('autoGrid').innerHTML=d.length?d.map(i=>buildCard(i,true)).join(''):emptyHTML;
-  $('autoCsvCnt').textContent=d.length;
-  renderAutoFilterTags();
-  renderResultInfo('autoResultInfo',d.length,[autoFilters.search&&`"${autoFilters.search}"`,autoFilters.domaine,autoFilters.ville].filter(Boolean));
+async function saveItem() {
+  const id = $('editId').value;
+  const itemData = {
+    id: id || `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    name: $('editName').value,
+    type: $('editType').value,
+    categorie: $('editCat').value,
+    domaine: $('editDomaine').value || 'Autre',
+    specialite: $('editSpecialite').value || 'Général',
+    ville: $('editVille').value || '',
+    phone: formatPhone($('editPhone').value),
+    email: $('editEmail').value || '',
+    web: $('editWeb').value || ''
+  };
+  if (!itemData.name) { toast('Nom requis'); return; }
+  
+  showLoading(true);
+  try {
+    const fType = itemData.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS';
+    const catMap = { services:'SERVICES', products:'PRODUITS', maqola:'MAQAOLA', 'yad-amila':'YAD AMILA' };
+    const fCat = catMap[itemData.categorie];
+    const path = `professionals/${fType}/${fCat}`;
+    const snap = await dbRef.ref(path).once('value');
+    let arr = snap.val() || [];
+    if (id) {
+      const idx = arr.findIndex(i => i.id === id);
+      if (idx !== -1) arr[idx] = itemData;
+      else arr.push(itemData);
+    } else {
+      arr.push(itemData);
+    }
+    await dbRef.ref(path).set(arr);
+    toast(id ? 'Modifié' : 'Ajouté');
+    closeModal('editModal');
+    await loadDB();
+  } catch(e) { toast('Erreur: ' + e.message); }
+  showLoading(false);
 }
 
-function renderResultInfo(id, count, filters) {
-  const el=$(id); if(!el) return;
-  if(filters.length){ el.innerHTML=`<i class="fas fa-filter"></i> ${count} résultat(s) · ${filters.join(' · ')}`; el.style.display='flex'; }
-  else el.style.display='none';
-}
-
-function renderDBFilterTags() {
-  const c=$('dbFilterTags'); if(!c) return; let h='';
-  if(dbFilters.type) h+=tag(`${dbFilters.type==='fournisseurs'?'FOURN.':'EXPERTS'}`,`dbFilters.type=null;currentPage=1;renderDB()`);
-  if(dbFilters.categorie) h+=tag(catNames[dbFilters.categorie]||dbFilters.categorie,`dbFilters.categorie=null;currentPage=1;renderDB()`);
-  if(dbFilters.domaine) h+=tag(dbFilters.domaine,`dbFilters.domaine=null;currentPage=1;renderDB()`);
-  if(dbFilters.ville) h+=tag(dbFilters.ville,`dbFilters.ville=null;currentPage=1;renderDB()`);
-  c.innerHTML=h;
-}
-function renderFourFilterTags() {
-  const c=$('fourFilterTags'); if(!c) return; let h='';
-  if(fourFilters.domaine) h+=tag(fourFilters.domaine,`fourFilters.domaine=null;renderFournisseursCSV()`);
-  if(fourFilters.ville) h+=tag(fourFilters.ville,`fourFilters.ville=null;renderFournisseursCSV()`);
-  c.innerHTML=h;
-}
-function renderAutoFilterTags() {
-  const c=$('autoFilterTags'); if(!c) return; let h='';
-  if(autoFilters.domaine) h+=tag(autoFilters.domaine,`autoFilters.domaine=null;renderExpertsCSV()`);
-  if(autoFilters.ville) h+=tag(autoFilters.ville,`autoFilters.ville=null;renderExpertsCSV()`);
-  c.innerHTML=h;
-}
-function tag(label,action) {
-  return `<div class="active-filter-tag"><i class="fas fa-tag"></i> ${esc(label)}<button onclick="${action}">✕</button></div>`;
-}
-
-// ═══════════════ LIST MODAL ═══════════════
-function showList(title, items, onSelect) {
-  $('listTitle').innerHTML=`<i class="fas fa-list"></i> ${esc(title)}`;
-  const c=$('listItems'); c.innerHTML='';
-  const all=document.createElement('div'); all.className='list-item';
-  all.innerHTML=`<span class="list-item-label"><i class="fas fa-undo-alt"></i> TOUS</span><span class="list-item-count">→</span>`;
-  all.onclick=()=>{ onSelect(null); closeModal('listModal'); }; c.appendChild(all);
-  if(!items.length){const n=document.createElement('div');n.className='list-item';n.innerHTML='<span class="list-item-label">Aucun élément</span>';c.appendChild(n);}
-  items.forEach(item=>{
-    const el=document.createElement('div'); el.className='list-item';
-    el.innerHTML=`<span class="list-item-label"><i class="fas fa-chevron-right"></i> ${esc(item)}</span><span class="list-item-count">→</span>`;
-    el.onclick=()=>{ onSelect(item); closeModal('listModal'); }; c.appendChild(el);
-  });
-  $('listModal').classList.add('show');
-}
-
-function showTypeFilter() {
-  const types=getAvailableTypes(); if(!types.length){toast('⚠️ Aucun type');return;}
-  $('listTitle').innerHTML='<i class="fas fa-tags"></i> TYPE';
-  const c=$('listItems'); c.innerHTML='';
-  const opts=[{value:null,label:'TOUS',icon:'fa-undo-alt'}];
-  if(types.includes('fournisseurs')) opts.push({value:'fournisseurs',label:'FOURNISSEURS',icon:'fa-industry'});
-  if(types.includes('experts')) opts.push({value:'experts',label:'EXPERTS',icon:'fa-microchip'});
-  opts.forEach(o=>{
-    const el=document.createElement('div'); el.className='list-item';
-    el.innerHTML=`<span class="list-item-label"><i class="fas ${o.icon}"></i> ${o.label}</span><span class="list-item-count">→</span>`;
-    el.onclick=()=>{ dbFilters.type=o.value; dbFilters.categorie=null; currentPage=1; renderDB(); closeModal('listModal'); };
-    c.appendChild(el);
-  });
-  $('listModal').classList.add('show');
-}
-
-function showCategorieFilter() {
-  const cats=getAvailableCategories(); if(!cats.length){toast('⚠️ Aucune catégorie');return;}
-  $('listTitle').innerHTML='<i class="fas fa-layer-group"></i> CATÉGORIE';
-  const c=$('listItems'); c.innerHTML='';
-  const cLabels={services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
-  const cIcons={services:'fa-cogs',products:'fa-boxes',maqola:'fa-hard-hat','yad-amila':'fa-hands'};
-  const opts=[{value:null,label:'TOUTES',icon:'fa-undo-alt'},...cats.map(cat=>({value:cat,label:cLabels[cat],icon:cIcons[cat]}))];
-  opts.forEach(o=>{
-    const el=document.createElement('div'); el.className='list-item';
-    el.innerHTML=`<span class="list-item-label"><i class="fas ${o.icon}"></i> ${o.label}</span><span class="list-item-count">→</span>`;
-    el.onclick=()=>{ dbFilters.categorie=o.value; currentPage=1; renderDB(); closeModal('listModal'); };
-    c.appendChild(el);
-  });
-  $('listModal').classList.add('show');
-}
-
-// ═══════════════ EXPLORER ═══════════════
-function renderExplorer() {
-  const el=$('explorerContent'); if(!el) return;
-  let bc='<div class="breadcrumb">';
-  bc+=`<div class="bc-item ${explorerLevel===0?'active':''}" onclick="goExplorer(0)"><i class="fas fa-home"></i> ACCUEIL</div>`;
-  if(explorerLevel>=1&&explorerState.type){bc+=`<span class="bc-sep">›</span><div class="bc-item ${explorerLevel===1?'active':''}" onclick="goExplorer(1)"><i class="fas fa-${explorerState.type==='fournisseurs'?'industry':'microchip'}"></i> ${explorerState.type==='fournisseurs'?'FOURNISSEURS':'EXPERTS'}</div>`;}
-  if(explorerLevel>=2&&explorerState.domaine){bc+=`<span class="bc-sep">›</span><div class="bc-item ${explorerLevel===2?'active':''}" onclick="goExplorer(2)"><i class="fas fa-folder"></i> ${esc(explorerState.domaine)}</div>`;}
-  if(explorerLevel>=3&&explorerState.specialite){bc+=`<span class="bc-sep">›</span><div class="bc-item active"><i class="fas fa-cog"></i> ${esc(explorerState.specialite)}</div>`;}
-  bc+='</div>';
-  let content='';
-  if(explorerLevel===0){
-    const types=[];
-    if(dbData.some(d=>d.type==='fournisseurs')) types.push({id:'fournisseurs',label:'FOURNISSEURS',icon:'fa-industry',count:dbData.filter(d=>d.type==='fournisseurs').length});
-    if(dbData.some(d=>d.type==='experts')) types.push({id:'experts',label:'EXPERTS',icon:'fa-microchip',count:dbData.filter(d=>d.type==='experts').length});
-    content=types.map(t=>`<div class="exp-card" onclick="goExplorer(1,'${t.id}')"><div class="exp-card-icon"><i class="fas ${t.icon}"></i></div><div><h4>${t.label}</h4><p>${t.count} PROFESSIONNEL(S)</p></div><i class="fas fa-chevron-right exp-card-arrow"></i></div>`).join('');
-  } else if(explorerLevel===1){
-    const dm={};
-    dbData.filter(d=>d.type===explorerState.type).forEach(i=>{const d=i.domaine||'Autre';dm[d]=(dm[d]||0)+1;});
-    content='<div class="items-grid">'+Object.entries(dm).sort(([a],[b])=>a.localeCompare(b,'fr')).map(([d,c])=>`<div class="exp-card" onclick="goExplorer(2,null,'${esc(d)}')"><div class="exp-card-icon"><i class="fas fa-folder"></i></div><div><h4>${esc(d)}</h4><p>${c} PROFESSIONNEL(S)</p></div><i class="fas fa-chevron-right exp-card-arrow"></i></div>`).join('')+'</div>';
-  } else if(explorerLevel===2){
-    const sm={};
-    dbData.filter(d=>d.type===explorerState.type&&(d.domaine||'Autre')===explorerState.domaine).forEach(i=>{const s=i.specialite||'Général';sm[s]=(sm[s]||0)+1;});
-    content='<div class="items-grid">'+Object.entries(sm).sort(([a],[b])=>a.localeCompare(b,'fr')).map(([s,c])=>`<div class="exp-card" onclick="goExplorer(3,null,null,'${esc(s)}')"><div class="exp-card-icon"><i class="fas fa-cog"></i></div><div><h4>${esc(s)}</h4><p>${c} SPÉCIALISTE(S)</p></div><i class="fas fa-chevron-right exp-card-arrow"></i></div>`).join('')+'</div>';
-  } else if(explorerLevel===3){
-    const pros=dbData.filter(d=>d.type===explorerState.type&&(d.domaine||'Autre')===explorerState.domaine&&(d.specialite||'Général')===explorerState.specialite);
-    content=pros.length?`<div class="items-grid">${pros.map(i=>buildCard(i)).join('')}</div>`:emptyHTML;
+function openDeleteModal(id) {
+  const item = dbData.find(i => i.id === id);
+  if (item) {
+    pendingDelete = item;
+    $('deleteMsg').innerHTML = `Supprimer <strong>${escapeHtml(item.name)}</strong> ?`;
+    $('deleteModal').classList.add('show');
   }
-  el.innerHTML=bc+content;
 }
 
-function goExplorer(level,type,domaine,specialite){
-  explorerLevel=level;
-  if(level===0) explorerState={type:null,domaine:null,specialite:null};
-  else if(level===1){explorerState.type=type||explorerState.type;explorerState.domaine=null;explorerState.specialite=null;}
-  else if(level===2){explorerState.domaine=domaine||explorerState.domaine;explorerState.specialite=null;}
-  else if(level===3) explorerState.specialite=specialite||explorerState.specialite;
-  renderExplorer(); scrollTop();
+async function confirmDeleteItem() {
+  if (!pendingDelete) return;
+  showLoading(true);
+  try {
+    const fType = pendingDelete.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS';
+    const catMap = { services:'SERVICES', products:'PRODUITS', maqola:'MAQAOLA', 'yad-amila':'YAD AMILA' };
+    const fCat = catMap[pendingDelete.categorie];
+    const path = `professionals/${fType}/${fCat}`;
+    const snap = await dbRef.ref(path).once('value');
+    await dbRef.ref(path).set((snap.val() || []).filter(i => i.id !== pendingDelete.id));
+    toast('Supprimé');
+    closeModal('deleteModal');
+    pendingDelete = null;
+    await loadDB();
+  } catch(e) { toast('Erreur'); }
+  showLoading(false);
 }
-window.goExplorer=goExplorer;
 
-// ═══════════════ SHARE & COPY ═══════════════
-window.shareItem = function(str){
-  try{
-    const item=JSON.parse(str);
-    let msg=`📌 *${item.name}*`;
-    if(item.domaine) msg+=`\n🏭 ${item.domaine}`;
-    if(item.specialite) msg+=`\n⚙️ ${item.specialite}`;
-    if(item.ville) msg+=`\n📍 ${item.ville}`;
-    if(item.phone) msg+=`\n📞 ${item.phone}`;
-    if(item.email) msg+=`\n✉️ ${item.email}`;
-    if(item.web) msg+=`\n🌐 ${item.web}`;
-    msg+='\n\n🔗 *Connect Industry* — Plateforme Industrielle Maroc';
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-  }catch(e){toast('❌ Erreur partage');}
-};
+// SHARE & PDF
+function shareItem(encoded) {
+  const item = JSON.parse(decodeURIComponent(encoded));
+  let msg = `📌 ${item.name}\n`;
+  if (item.domaine) msg += `🏭 ${item.domaine}\n`;
+  if (item.specialite) msg += `⚙️ ${item.specialite}\n`;
+  if (item.ville) msg += `📍 ${item.ville}\n`;
+  if (item.phone) msg += `📞 ${item.phone}\n`;
+  if (item.email) msg += `✉️ ${item.email}\n`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
 
-window.copyClip = function(text, label){
-  navigator.clipboard.writeText(text).then(()=>toast(`📋 ${label||'Copié!'}`)).catch(()=>{
-    const el=document.createElement('textarea');el.value=text;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);toast(`📋 ${label||'Copié!'}`);
+async function exportToPDF(encoded) {
+  const item = JSON.parse(decodeURIComponent(encoded));
+  const qrContainer = $('qrContainer');
+  qrContainer.innerHTML = '';
+  const info = `${item.name}\n${item.domaine || ''}\n${item.specialite || ''}\n${item.ville || ''}\nTél: ${item.phone || ''}\nEmail: ${item.email || ''}`;
+  new QRCode(qrContainer, { text: info, width: 200, height: 200 });
+  $('qrModal').classList.add('show');
+  $('downloadPdfBtn').onclick = async () => {
+    const qrCanvas = qrContainer.querySelector('canvas');
+    if (!qrCanvas) return;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ format: [105, 148], unit: 'mm' });
+    pdf.setFillColor(13, 17, 23);
+    pdf.rect(0, 0, 105, 148, 'F');
+    pdf.setTextColor(245, 158, 11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('CONNECT INDUSTRY', 105/2, 15, { align: 'center' });
+    pdf.setDrawColor(245, 158, 11);
+    pdf.line(10, 22, 95, 22);
+    pdf.setTextColor(241, 245, 249);
+    pdf.setFontSize(12);
+    pdf.text(item.name, 10, 35);
+    pdf.setFontSize(9);
+    pdf.setTextColor(148, 163, 184);
+    let y = 45;
+    if (item.domaine) { pdf.text(`Domaine: ${item.domaine}`, 10, y); y += 8; }
+    if (item.specialite) { pdf.text(`Spécialité: ${item.specialite}`, 10, y); y += 8; }
+    if (item.ville) { pdf.text(`Ville: ${item.ville}`, 10, y); y += 8; }
+    if (item.phone) { pdf.text(`Tél: ${item.phone}`, 10, y); y += 8; }
+    if (item.email) { pdf.text(`Email: ${item.email}`, 10, y); y += 8; }
+    const qrDataUrl = qrCanvas.toDataURL();
+    pdf.addImage(qrDataUrl, 'PNG', 32, y, 40, 40);
+    pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}_carte.pdf`);
+    toast('📄 PDF généré');
+    closeModal('qrModal');
+  };
+}
+
+// EXPLORER
+function renderExplorer() {
+  const container = $('explorerContent');
+  if (!container) return;
+  
+  let html = '<div class="breadcrumb">';
+  html += `<div class="bc-item" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> ACCUEIL</div>`;
+  explorerStack.forEach((item, idx) => {
+    html += `<span class="bc-sep">›</span>`;
+    html += `<div class="bc-item" onclick="goExplorerLevel(${idx + 1})">${escapeHtml(item.label)}</div>`;
   });
-};
-
-// ═══════════════ NAVIGATION ═══════════════
-function showSection(id) {
-  const wasReset = id !== lastActiveSection;
-  if (wasReset) { resetDBFilters(); resetFourFilters(); resetAutoFilters(); }
-  if (id==='db-unified') renderDB();
-  if (id==='fournisseurs-csv') renderFournisseursCSV();
-  if (id==='experts-csv') renderExpertsCSV();
-  if (id==='explorer') renderExplorer();
-  if (navigationHistory[navigationHistory.length-1]!==id) navigationHistory.push(id);
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  const sec=$(id+'Section'); if(sec) sec.classList.add('active');
-  document.querySelectorAll('.tab-btn[data-sec]').forEach(b=>b.classList.toggle('active',b.dataset.sec===id));
-  lastActiveSection=id; scrollTop();
+  html += '</div>';
+  
+  if (explorerStack.length === 0) {
+    html += `<div class="items-grid">
+      <div class="exp-card" onclick="explorerSelectType('fournisseurs')"><div class="exp-card-icon"><i class="fas fa-industry"></i></div><div><h4>FOURNISSEURS</h4><p>${dbData.filter(d => d.type === 'fournisseurs').length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>
+      <div class="exp-card" onclick="explorerSelectType('experts')"><div class="exp-card-icon"><i class="fas fa-microchip"></i></div><div><h4>EXPERTS</h4><p>${dbData.filter(d => d.type === 'experts').length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>
+    </div>`;
+  } else if (explorerStack.length === 1) {
+    const type = explorerStack[0].type;
+    const domains = [...new Set(dbData.filter(d => d.type === type).map(d => d.domaine).filter(Boolean))];
+    html += `<div class="items-grid">${domains.map(d => `<div class="exp-card" onclick="explorerSelectDomain('${escapeHtml(d)}')"><div class="exp-card-icon"><i class="fas fa-folder"></i></div><div><h4>${escapeHtml(d)}</h4><p>${dbData.filter(i => i.type === type && i.domaine === d).length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>`).join('')}</div>`;
+  } else if (explorerStack.length === 2) {
+    const type = explorerStack[0].type;
+    const domaine = explorerStack[1].domaine;
+    const specialites = [...new Set(dbData.filter(d => d.type === type && d.domaine === domaine).map(d => d.specialite).filter(Boolean))];
+    html += `<div class="items-grid">${specialites.map(s => `<div class="exp-card" onclick="explorerSelectSpecialite('${escapeHtml(s)}')"><div class="exp-card-icon"><i class="fas fa-cog"></i></div><div><h4>${escapeHtml(s)}</h4><p>${dbData.filter(i => i.type === type && i.domaine === domaine && i.specialite === s).length} spécialistes</p></div><i class="fas fa-chevron-right"></i></div>`).join('')}</div>`;
+  } else {
+    const type = explorerStack[0].type;
+    const domaine = explorerStack[1].domaine;
+    const specialite = explorerStack[2].specialite;
+    const items = dbData.filter(d => d.type === type && d.domaine === domaine && d.specialite === specialite);
+    html += `<div class="items-grid">${items.map(i => buildCard(i, false, true)).join('')}</div>`;
+  }
+  container.innerHTML = html;
 }
 
-document.querySelectorAll('.tab-btn[data-sec]').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    const id=btn.dataset.sec;
-    if(lastActiveSection===id){
-      if(window.scrollY<=10){
-        if(id==='db-unified'){resetDBFilters();renderDB();toast('🗑️ Filtres réinitialisés');}
-        else if(id==='explorer'){explorerLevel=0;explorerState={type:null,domaine:null,specialite:null};renderExplorer();toast('↺ Réinitialisé');}
-      } else scrollTop();
-    } else showSection(id);
+function goExplorerLevel(level) {
+  explorerStack = explorerStack.slice(0, level);
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectType(type) {
+  explorerStack.push({ label: type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS', type });
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectDomain(domaine) {
+  explorerStack.push({ label: domaine, domaine });
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectSpecialite(specialite) {
+  explorerStack.push({ label: specialite, specialite });
+  renderExplorer();
+  scrollTop();
+}
+
+// FILTER MODALS
+function showTypeFilter() {
+  $('listTitle').innerHTML = 'Type';
+  $('listItems').innerHTML = `
+    <div class="list-item" onclick="setDBFilter('type', null);closeModal('listModal')"><span>Tous</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('type', 'fournisseurs');closeModal('listModal')"><span>Fournisseurs</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('type', 'experts');closeModal('listModal')"><span>Experts</span><i class="fas fa-chevron-right"></i></div>
+  `;
+  $('listModal').classList.add('show');
+}
+
+function showCatFilter() {
+  $('listTitle').innerHTML = 'Catégorie';
+  $('listItems').innerHTML = `
+    <div class="list-item" onclick="setDBFilter('cat', null);closeModal('listModal')"><span>Tous</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('cat', 'services');closeModal('listModal')"><span>Services</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('cat', 'products');closeModal('listModal')"><span>Produits</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('cat', 'maqola');closeModal('listModal')"><span>Maqaola</span><i class="fas fa-chevron-right"></i></div>
+    <div class="list-item" onclick="setDBFilter('cat', 'yad-amila');closeModal('listModal')"><span>Yad Amila</span><i class="fas fa-chevron-right"></i></div>
+  `;
+  $('listModal').classList.add('show');
+}
+
+function setDBFilter(key, value) { dbFilters[key] = value; currentPage = 1; renderDB(); }
+
+// STAT CLICK HANDLERS
+function applyStatFilter(statType, value) {
+  resetDBFilters();
+  document.querySelectorAll('.stat-tile').forEach(t => t.classList.remove('active'));
+  const clickedTile = event.currentTarget;
+  clickedTile.classList.add('active');
+  
+  if (statType === 'type') { dbFilters.type = value; toast(`🔍 ${value === 'fournisseurs' ? 'Fournisseurs' : 'Experts'}`); }
+  else if (statType === 'cat') { dbFilters.cat = value; toast(`🔍 ${value}`); }
+  else if (statType === 'villes') {
+    const villes = [...new Set(dbData.map(d => d.ville).filter(v => v && v !== 'null'))];
+    if (villes.length) {
+      showList('Villes', villes, v => { dbFilters.search = v; if($('dbSearch')) $('dbSearch').value = v; renderDB(); closeModal('listModal'); });
+      return;
+    }
+  } else if (statType === 'domaines') {
+    const domaines = [...new Set(dbData.map(d => d.domaine).filter(d => d && d !== 'null'))];
+    if (domaines.length) {
+      showList('Domaines', domaines, d => { dbFilters.search = d; if($('dbSearch')) $('dbSearch').value = d; renderDB(); closeModal('listModal'); });
+      return;
+    }
+  }
+  showSection('db', false);
+  renderDB();
+}
+
+function showList(title, items, onSelect) {
+  $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${escapeHtml(title)}`;
+  const container = $('listItems');
+  container.innerHTML = '';
+  const all = document.createElement('div'); all.className = 'list-item';
+  all.innerHTML = `<span>Tous</span><i class="fas fa-chevron-right"></i>`;
+  all.onclick = () => { onSelect(null); closeModal('listModal'); };
+  container.appendChild(all);
+  items.forEach(item => {
+    const el = document.createElement('div'); el.className = 'list-item';
+    el.innerHTML = `<span>${escapeHtml(item)}</span><i class="fas fa-chevron-right"></i>`;
+    el.onclick = () => { onSelect(item); closeModal('listModal'); };
+    container.appendChild(el);
   });
+  $('listModal').classList.add('show');
+}
+
+// NAVIGATION
+function showSection(id, resetFilters = true) {
+  if (resetFilters) {
+    resetDBFilters();
+    fourSearch = '';
+    expSearch = '';
+    if ($('fourSearch')) $('fourSearch').value = '';
+    if ($('expSearch')) $('expSearch').value = '';
+  }
+  if (id !== 'explorer') explorerStack = [];
+  
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  $(id + 'Section').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const tabBtn = document.querySelector(`.tab-btn[data-sec="${id}"]`);
+  if (tabBtn) tabBtn.classList.add('active');
+  
+  currentSection = id;
+  if (id === 'db') renderDB();
+  else if (id === 'explorer') renderExplorer();
+  else if (id === 'fournisseurs') renderFournisseurs();
+  else if (id === 'experts') renderExperts();
+  scrollTop();
+}
+
+function handleTabClick(id) {
+  if (currentSection === id) {
+    if (window.scrollY > 10) {
+      scrollTop();
+    } else {
+      if (id === 'db') { resetDBFilters(); renderDB(); toast('🔍 Filtres réinitialisés'); }
+      else if (id === 'explorer') { explorerStack = []; renderExplorer(); toast('↺ Explorer réinitialisé'); }
+      else if (id === 'fournisseurs') { fourSearch = ''; if ($('fourSearch')) $('fourSearch').value = ''; renderFournisseurs(); toast('🔍 Recherche effacée'); }
+      else if (id === 'experts') { expSearch = ''; if ($('expSearch')) $('expSearch').value = ''; renderExperts(); toast('🔍 Recherche effacée'); }
+    }
+  } else {
+    showSection(id, true);
+  }
+}
+
+function renderCurrent() {
+  if (currentSection === 'db') renderDB();
+  else if (currentSection === 'explorer') renderExplorer();
+  else if (currentSection === 'fournisseurs') renderFournisseurs();
+  else if (currentSection === 'experts') renderExperts();
+}
+
+// EVENT LISTENERS
+$('adminBtn').onclick = () => $('adminModal').classList.add('show');
+$('logoutBtn').onclick = logoutAdmin;
+$('syncBtn').onclick = syncToFirebase;
+$('addBtn').onclick = openAddModal;
+$('filterTypeBtn').onclick = showTypeFilter;
+$('filterCatBtn').onclick = showCatFilter;
+$('filterResetBtn').onclick = () => { resetDBFilters(); renderDB(); toast('Filtres effacés'); };
+$('dbSearch').addEventListener('input', (e) => { dbFilters.search = e.target.value; currentPage = 1; renderDB(); });
+$('dbClear').onclick = () => { dbFilters.search = ''; $('dbSearch').value = ''; currentPage = 1; renderDB(); };
+$('fourSearch').addEventListener('input', (e) => { fourSearch = e.target.value; renderFournisseurs(); });
+$('expSearch').addEventListener('input', (e) => { expSearch = e.target.value; renderExperts(); });
+
+document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => {
+  btn.onclick = () => handleTabClick(btn.dataset.sec);
 });
 
-// ═══════════════ THEME ═══════════════
-let isDark=true;
-function toggleTheme(){
-  isDark=!isDark;
-  document.body.classList.toggle('light',!isDark);
-  localStorage.setItem('theme',isDark?'dark':'light');
-  $('themeBtn').innerHTML=isDark?'<i class="fas fa-circle-half-stroke"></i>':'<i class="fas fa-sun"></i>';
-  updateStatsChart();
-}
-(function(){
-  const saved=localStorage.getItem('theme');
-  if(saved==='light'){isDark=false;document.body.classList.add('light');if($('themeBtn')) $('themeBtn').innerHTML='<i class="fas fa-sun"></i>';}
-})();
-
-// ═══════════════ CLOCK ═══════════════
-function updateClock(){$('appTime').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
-setInterval(updateClock,1000);updateClock();
-
-// ═══════════════ EVENTS ═══════════════
-$('themeBtn').onclick=toggleTheme;
-$('syncCsvBtn').onclick=syncToFirebase;
-$('addItemBtn').onclick=openAddModal;
-$('adminLoginBtn').onclick=()=>$('adminLoginModal').classList.add('show');
-
-// Admin login Enter key
-$('adminPassword').addEventListener('keyup', e => { if(e.key==='Enter') verifyAdminLogin(); });
-
-// DB Search
-$('dbSearch').addEventListener('input',e=>{dbFilters.search=e.target.value;currentPage=1;renderDB();});
-const clrBtn=$('dbSearchClear');
-if(clrBtn) clrBtn.onclick=()=>{$('dbSearch').value='';dbFilters.search='';currentPage=1;renderDB();};
-
-// DB Filters
-$('filterTypeBtn').onclick=showTypeFilter;
-$('filterCategorieBtn').onclick=showCategorieFilter;
-$('filterVilleBtn').onclick=()=>{const items=getDBVilles();if(items.length) showList('Villes',items,v=>{dbFilters.ville=v;currentPage=1;renderDB();});else toast('⚠️ Aucune ville');};
-$('filterDomaineBtn').onclick=()=>{const items=getDBDomaines();if(items.length) showList('Domaines',items,d=>{dbFilters.domaine=d;currentPage=1;renderDB();});else toast('⚠️ Aucun domaine');};
-$('filterClearBtn').onclick=()=>{resetDBFilters();renderDB();document.querySelectorAll('.stat-tile').forEach(c=>c.classList.remove('active'));toast('🗑️ Filtres effacés');};
-
-// Fournisseurs CSV
-$('fourSearch').addEventListener('input',e=>{fourFilters.search=e.target.value;renderFournisseursCSV();});
-$('fourDomaineBtn').onclick=()=>{const items=getFourDomaines();if(items.length) showList('Domaines Fournisseurs',items,d=>{fourFilters.domaine=d;renderFournisseursCSV();});else toast('⚠️ Aucun domaine');};
-$('fourVilleBtn').onclick=()=>{const items=getFourVilles();if(items.length) showList('Villes Fournisseurs',items,v=>{fourFilters.ville=v;renderFournisseursCSV();});else toast('⚠️ Aucune ville');};
-$('fourClearBtn').onclick=()=>{resetFourFilters();renderFournisseursCSV();toast('🗑️ Filtres effacés');};
-
-// Experts CSV
-$('autoSearch').addEventListener('input',e=>{autoFilters.search=e.target.value;renderExpertsCSV();});
-$('autoDomaineBtn').onclick=()=>{const items=getAutoDomaines();if(items.length) showList('Domaines Experts',items,d=>{autoFilters.domaine=d;renderExpertsCSV();});else toast('⚠️ Aucun domaine');};
-$('autoVilleBtn').onclick=()=>{const items=getAutoVilles();if(items.length) showList('Villes Experts',items,v=>{autoFilters.ville=v;renderExpertsCSV();});else toast('⚠️ Aucune ville');};
-$('autoClearBtn').onclick=()=>{resetAutoFilters();renderExpertsCSV();toast('🗑️ Filtres effacés');};
-
-// Overlay close on backdrop click
-document.querySelectorAll('.overlay').forEach(ov=>{
-  ov.addEventListener('click',e=>{if(e.target===ov) ov.classList.remove('show');});
+document.querySelectorAll('.stat-tile[data-type]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('type', tile.dataset.type);
+});
+document.querySelectorAll('.stat-tile[data-cat]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('cat', tile.dataset.cat);
+});
+document.querySelectorAll('.stat-tile[data-extra="villes"]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('villes', null);
+});
+document.querySelectorAll('.stat-tile[data-extra="domaines"]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('domaines', null);
 });
 
-// Stat tile listeners
-document.querySelectorAll('.stat-tile[data-filter-type]').forEach(s=>{s.addEventListener('click',()=>applyStatFilter('type',s.dataset.filterType));});
-document.querySelectorAll('.stat-tile[data-filter-cat]').forEach(s=>{s.addEventListener('click',()=>applyStatFilter('categorie',s.dataset.filterCat));});
-document.querySelectorAll('.stat-tile[data-t="villes"]').forEach(s=>{s.addEventListener('click',()=>{const items=getDBVilles();if(items.length) showList('Villes',items,v=>applyStatFilter('ville',v));});});
-document.querySelectorAll('.stat-tile[data-t="domaines"]').forEach(s=>{s.addEventListener('click',()=>{const items=getDBDomaines();if(items.length) showList('Domaines',items,d=>applyStatFilter('domaine',d));});});
-document.querySelectorAll('.stat-tile[data-t="specialites"]').forEach(s=>{s.addEventListener('click',()=>{const items=[...new Set(dbData.map(d=>d.specialite).filter(v=>v&&v!=='null'&&v!==''))].sort();if(items.length) showList('Spécialités',items,sp=>applyStatFilter('specialite',sp));});});
+// BACK BUTTON
+window.addEventListener('popstate', () => { showSection('about', true); });
 
-// ═══════════════ INIT ═══════════════
-history.pushState(null,null,location.href);
-checkAdminStatus();
-loadDB();
-loadAllCSV();
-showSection('about');
-setTimeout(()=>showLoading(false),1600);
+// THEME
+let isDark = true;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+if (localStorage.getItem('theme') === 'light') { isDark = false; document.body.classList.add('light'); }
+$('themeBtn').onclick = toggleTheme;
+
+// CLOCK
+function updateClock() { $('appTime').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+setInterval(updateClock, 1000); updateClock();
+
+// CLOSE MODALS ON BACKDROP
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+});
+
+// EXPOSE GLOBALS
+window.closeModal = closeModal;
+window.verifyAdmin = verifyAdmin;
+window.setDBFilter = setDBFilter;
+window.goExplorerLevel = goExplorerLevel;
+window.explorerSelectType = explorerSelectType;
+window.explorerSelectDomain = explorerSelectDomain;
+window.explorerSelectSpecialite = explorerSelectSpecialite;
+window.openEditModal = openEditModal;
+window.openDeleteModal = openDeleteModal;
+window.saveItem = saveItem;
+window.confirmDeleteItem = confirmDeleteItem;
+window.shareItem = shareItem;
+window.exportToPDF = exportToPDF;
+window.changePage = changePage;
+
+// INIT
+async function init() {
+  showLoading(true);
+  checkAdminStatus();
+  const [experts, fours] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]);
+  csvExperts = experts;
+  csvFournisseurs = fours;
+  await loadDB();
+  setTimeout(() => showLoading(false), 500);
+}
+
+init();
 </script>
 </body>
 </html>
