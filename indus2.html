@@ -9,11 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/xlsx.full.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
 :root{
-  /* Dark mode */
   --bg:#080a0f;
   --bg2:#0c0f17;
   --card:#10141f;
@@ -60,13 +61,11 @@ body.light{
   --shadow:rgba(0,0,0,0.1);
 }
 
-/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg2);}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--gold);}
 
-/* ===== BODY ===== */
 body{
   font-family:'Exo 2',sans-serif;
   background:var(--bg);
@@ -77,7 +76,6 @@ body{
   overflow-x:hidden;
 }
 
-/* ===== NOISE OVERLAY ===== */
 body::before{
   content:'';
   position:fixed;
@@ -88,7 +86,6 @@ body::before{
   opacity:0.4;
 }
 
-/* ===== APP BAR ===== */
 .app-bar{
   position:fixed;top:0;left:0;right:0;height:58px;
   background:rgba(8,10,15,0.92);
@@ -147,7 +144,6 @@ body.light .app-bar{background:rgba(240,244,252,0.92);}
 }
 .theme-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);}
 
-/* ===== BOTTOM NAV ===== */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;
   height:62px;background:rgba(8,10,15,0.95);
@@ -180,7 +176,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .bnav-accent:hover{color:var(--green)!important;}
 .bnav-add{color:var(--gold)!important;}
 
-/* ===== MAIN ===== */
 .main{
   padding:72px 14px 16px;
   max-width:1400px;margin:0 auto;
@@ -190,7 +185,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .section.active{display:block;animation:fadeUp .3s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
-/* ===== HERO ===== */
 .hero{
   position:relative;overflow:hidden;
   background:var(--card);
@@ -246,7 +240,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
   margin:16px auto 18px;
 }
 
-/* ===== PANEL ===== */
 .panel{
   background:var(--card);border:1px solid var(--border);
   border-radius:16px;margin-bottom:16px;overflow:hidden;
@@ -271,7 +264,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 }
 .pb{padding:18px;}
 
-/* ===== STATS GRID ===== */
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 @media(min-width:600px){.stats-grid{grid-template-columns:repeat(5,1fr);}}
 @media(min-width:900px){.stats-grid{grid-template-columns:repeat(9,1fr);}}
@@ -300,7 +292,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
   letter-spacing:1px;margin-top:5px;
 }
 
-/* ===== FILTER ROW ===== */
 .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
 .fbtn{
   display:inline-flex;align-items:center;gap:7px;
@@ -315,7 +306,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .fbtn i{font-size:.78rem;}
 .fbtn.active{background:var(--gold);color:#000;border-color:var(--gold);}
 
-/* ===== SEARCH ===== */
 .search-wrap{
   display:flex;align-items:center;gap:10px;
   background:var(--card2);border:1px solid var(--border);
@@ -330,7 +320,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 }
 .search-wrap input::placeholder{color:var(--text3);}
 
-/* ===== FILTER TAGS ===== */
 .filter-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;}
 .ftag{
   display:inline-flex;align-items:center;gap:5px;
@@ -346,7 +335,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 }
 .ftag button:hover{opacity:1;}
 
-/* ===== RESULT INFO ===== */
 .result-info{
   text-align:center;padding:8px 14px;margin-bottom:12px;
   background:var(--gold-glow2);border:1px solid var(--gold);
@@ -354,11 +342,9 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
   font-family:'Share Tech Mono',monospace;
 }
 
-/* ===== ITEMS GRID ===== */
 .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
 @media(max-width:500px){.items-grid{grid-template-columns:1fr;}}
 
-/* ===== CARD ===== */
 .icard{
   background:var(--card2);border:1px solid var(--border);
   border-radius:14px;padding:18px;
@@ -424,14 +410,13 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .iab:hover{transform:translateY(-2px);}
 .iab.ab-wa:hover{background:var(--wa);color:#fff;border-color:var(--wa);box-shadow:0 4px 12px rgba(34,197,94,0.3);}
 .iab.ab-em:hover{background:var(--cyan);color:#000;border-color:var(--cyan);box-shadow:0 4px 12px var(--cyan-glow);}
-.iab.ab-wb:hover{background:var(--green);color:#000;border-color:var(--green);box-shadow:0 4px 12px var(--green-glow);}
+.iab.ab-wb:hover{background:var(--green);color:#000;border-color:var(--green);}
 .iab.ab-sh:hover{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 4px 12px var(--gold-glow);}
 .iab.ab-cp:hover{background:var(--cyan);color:#000;border-color:var(--cyan);}
-.iab.ab-ph:hover{background:var(--green);color:#000;border-color:var(--green);box-shadow:0 4px 12px var(--green-glow);}
+.iab.ab-ph:hover{background:var(--green);color:#000;border-color:var(--green);}
 .iab.ab-edit:hover{background:var(--orange);color:#000;border-color:var(--orange);box-shadow:0 4px 12px var(--orange-glow);}
 .iab.ab-del:hover{background:var(--danger);color:#fff;border-color:var(--danger);box-shadow:0 4px 12px var(--danger-glow);}
 
-/* ===== EMPTY ===== */
 .empty{
   text-align:center;padding:50px 20px;
   color:var(--text3);grid-column:1/-1;
@@ -439,7 +424,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .empty i{font-size:2.2rem;margin-bottom:12px;opacity:.2;display:block;}
 .empty h3{font-family:'Rajdhani',sans-serif;font-size:.9rem;letter-spacing:2px;opacity:.5;}
 
-/* ===== EXPLORER ===== */
 .exp-card{
   background:var(--card2);border:1px solid var(--border);
   border-radius:12px;padding:16px;cursor:pointer;
@@ -456,7 +440,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .exp-card h4{font-family:'Rajdhani',sans-serif;color:var(--gold);font-size:.95rem;letter-spacing:1px;}
 .exp-card p{font-size:.65rem;color:var(--text3);margin-top:3px;}
 
-/* ===== BREADCRUMB ===== */
 .breadcrumb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
 .bcrumb{
   display:flex;align-items:center;gap:5px;
@@ -468,7 +451,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .bcrumb:hover,.bcrumb.active{border-color:var(--gold);color:var(--gold);background:var(--gold-glow);}
 .bcrumb-sep{color:var(--border2);font-size:.6rem;}
 
-/* ===== CONTACT ===== */
 .wa-box{
   text-align:center;padding:20px 16px;
   background:var(--card2);border:1px solid var(--border);
@@ -513,7 +495,6 @@ textarea.ifield{resize:vertical;min-height:80px;}
 }
 .btn-send:hover{transform:translateY(-2px);box-shadow:0 5px 20px var(--gold-glow);}
 
-/* ===== MODAL ===== */
 .modal-overlay{
   position:fixed;inset:0;
   background:rgba(0,0,0,0.85);
@@ -558,7 +539,21 @@ textarea.ifield{resize:vertical;min-height:80px;}
   display:flex;gap:10px;background:var(--card2);
 }
 
-/* ===== LIST MODAL ===== */
+/* Pagination */
+.pagination{
+  display:flex;justify-content:center;gap:8px;
+  margin-top:20px;flex-wrap:wrap;
+}
+.page-btn{
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:8px;padding:8px 14px;cursor:pointer;
+  color:var(--text2);font-family:'Exo 2',sans-serif;
+  font-size:.7rem;font-weight:600;transition:all .2s;
+}
+.page-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-glow);}
+.page-btn.active{background:var(--gold);color:#000;border-color:var(--gold);}
+.page-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
 .list-items{max-height:360px;overflow-y:auto;}
 .litem{
   display:flex;justify-content:space-between;align-items:center;
@@ -574,7 +569,6 @@ textarea.ifield{resize:vertical;min-height:80px;}
   font-size:.6rem;color:var(--gold);font-style:normal;
 }
 
-/* ===== DELETE CONFIRM ===== */
 .del-confirm{text-align:center;padding:10px 0 4px;}
 .del-confirm p{color:var(--text2);font-size:.82rem;margin-bottom:20px;line-height:1.6;}
 .del-confirm strong{color:var(--gold);}
@@ -585,7 +579,6 @@ textarea.ifield{resize:vertical;min-height:80px;}
 .cbtn.cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
 .cbtn.cancel:hover{border-color:var(--gold);color:var(--gold);}
 
-/* ===== TOAST ===== */
 .toast{
   position:fixed;bottom:76px;left:50%;transform:translateX(-50%);
   background:var(--card);border:1px solid var(--gold);
@@ -599,7 +592,6 @@ textarea.ifield{resize:vertical;min-height:80px;}
 }
 .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px);}
 
-/* ===== LOADING ===== */
 .loading{
   position:fixed;inset:0;
   background:var(--bg);
@@ -627,17 +619,16 @@ textarea.ifield{resize:vertical;min-height:80px;}
 @keyframes loadPulse{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes loadSlide{0%{transform:translateX(-200%)}100%{transform:translateX(400%)}}
 
-/* ===== SYNC STATUS ===== */
-.sync-status{
-  display:flex;align-items:center;gap:6px;
-  font-size:.6rem;color:var(--green);
-  font-family:'Share Tech Mono',monospace;
-  padding:4px 10px;background:var(--green-glow);
-  border:1px solid var(--green);border-radius:6px;
+/* Chart container */
+.chart-container{
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+  margin-bottom:16px;
 }
-.sync-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
 
-/* ===== RESPONSIVE ===== */
+/* Responsive */
 @media(max-width:768px){
   .nav-pills{display:none;}
   .bnav-item span{display:none;}
@@ -692,6 +683,11 @@ textarea.ifield{resize:vertical;min-height:80px;}
       <h1>CONNECT<em>INDUSTRY</em></h1>
       <div class="hero-line"></div>
       <p>Plateforme industrielle de mise en relation entre professionnels, fournisseurs et experts au Maroc.</p>
+    </div>
+
+    <!-- Nouveau: Graphique des statistiques -->
+    <div class="chart-container">
+      <canvas id="statsChart" style="max-height: 300px; width:100%"></canvas>
     </div>
 
     <div class="panel">
@@ -793,11 +789,13 @@ textarea.ifield{resize:vertical;min-height:80px;}
           <button class="fbtn" id="filterCategorieBtn"><i class="fas fa-layer-group"></i><span>CATÉGORIE</span></button>
           <button class="fbtn" id="filterVilleBtn"><i class="fas fa-city"></i><span>VILLE</span></button>
           <button class="fbtn" id="filterDomaineBtn"><i class="fas fa-folder"></i><span>DOMAINE</span></button>
+          <button class="fbtn" id="exportExcelBtn"><i class="fas fa-file-excel"></i><span>EXCEL</span></button>
           <button class="fbtn danger" id="filterClearBtn"><i class="fas fa-eraser"></i><span>EFFACER</span></button>
         </div>
         <div class="filter-tags" id="dbFilterTags"></div>
         <div id="dbResultInfo" class="result-info" style="display:none;"></div>
         <div id="dbGrid" class="items-grid"></div>
+        <div id="dbPagination" class="pagination"></div>
       </div>
     </div>
   </div>
@@ -951,6 +949,11 @@ let dbData = [];
 let pendingDelete = null;
 let explorerLevel = 0;
 let explorerState = { type: null, domaine: null, specialite: null };
+let statsChart = null;
+
+// Pagination
+let currentPage = 1;
+const itemsPerPage = 20;
 
 let dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
 let fourFilters = { domaine: null, ville: null, search: '' };
@@ -999,8 +1002,41 @@ const catNames = { services: 'SERVICES', products: 'PRODUITS', maqola: 'MAQAOLA'
 const catIcons = { services: 'fa-cogs', products: 'fa-boxes', maqola: 'fa-hard-hat', 'yad-amila': 'fa-hands' };
 const catBadgeClass = { services: 'cb-svc', products: 'cb-prd', maqola: 'cb-maq', 'yad-amila': 'cb-yad' };
 
-// ===== CSV LOADER =====
-async function loadCSV(url) {
+// ===== EXPORT EXCEL =====
+function exportToExcel() {
+  const data = getFilteredDB();
+  if (data.length === 0) {
+    toast('⚠️ Aucune donnée à exporter');
+    return;
+  }
+  
+  const wsData = [
+    ['Nom', 'Type', 'Catégorie', 'Domaine', 'Spécialité', 'Ville', 'Téléphone', 'Email', 'Site Web']
+  ];
+  
+  data.forEach(d => {
+    wsData.push([
+      d.name || '',
+      d.type === 'fournisseurs' ? 'Fournisseur' : 'Expert',
+      catNames[d.categorie] || d.categorie || '',
+      d.domaine || '',
+      d.specialite || '',
+      d.ville || '',
+      d.phone || '',
+      d.email || '',
+      d.web || ''
+    ]);
+  });
+  
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Professionnels');
+  XLSX.writeFile(wb, `connect_industry_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+  toast('✅ Export Excel terminé');
+}
+
+// ===== CSV LOADER avec retry =====
+async function loadCSV(url, retryCount = 0) {
   try {
     const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1027,6 +1063,11 @@ async function loadCSV(url) {
     return data;
   } catch (e) {
     console.error('CSV Error:', e);
+    if (retryCount < 2) {
+      toast(`⚠️ Réessai ${retryCount + 1}/2...`);
+      await new Promise(r => setTimeout(r, 1000));
+      return loadCSV(url, retryCount + 1);
+    }
     toast('⚠️ Erreur chargement CSV: ' + e.message);
     return [];
   }
@@ -1088,6 +1129,8 @@ async function loadDB() {
     }
 
     updateDBStats();
+    updateStatsChart();
+    currentPage = 1;
     renderDB();
     renderExplorer();
     toast(`✅ Base: ${dbData.length} professionnels`);
@@ -1098,6 +1141,47 @@ async function loadDB() {
     renderDB();
     toast('❌ Erreur base: ' + e.message);
   }
+}
+
+// ===== STATS CHART =====
+function updateStatsChart() {
+  const ctx = $('#statsChart')?.getContext('2d');
+  if (!ctx) return;
+  
+  if (statsChart) statsChart.destroy();
+  
+  statsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Fournisseurs', 'Experts', 'Services', 'Produits', 'Maqola', 'Yad Amila'],
+      datasets: [{
+        label: 'Nombre de professionnels',
+        data: [
+          dbData.filter(d => d.type === 'fournisseurs').length,
+          dbData.filter(d => d.type === 'experts').length,
+          dbData.filter(d => d.categorie === 'services').length,
+          dbData.filter(d => d.categorie === 'products').length,
+          dbData.filter(d => d.categorie === 'maqola').length,
+          dbData.filter(d => d.categorie === 'yad-amila').length
+        ],
+        backgroundColor: 'rgba(212,168,67,0.6)',
+        borderColor: 'var(--gold)',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { labels: { color: 'var(--text2)', font: { size: 10 } } }
+      },
+      scales: {
+        y: { ticks: { color: 'var(--text3)' }, grid: { color: 'var(--border)' } },
+        x: { ticks: { color: 'var(--text2)' }, grid: { display: false } }
+      }
+    }
+  });
 }
 
 // ===== SYNC =====
@@ -1171,10 +1255,14 @@ async function saveItem() {
   const type = $('editType').value;
   const categorie = $('editCategorie').value;
   const id = $('editId').value;
+  const isEdit = !!id;
 
   if (!name) { toast('⚠️ Veuillez saisir le nom'); return; }
   if (!type) { toast('⚠️ Veuillez sélectionner le type'); return; }
   if (!categorie) { toast('⚠️ Veuillez sélectionner la catégorie'); return; }
+  
+  // Confirmation for edit
+  if (isEdit && !confirm('Voulez-vous vraiment modifier cet élément ?')) return;
 
   const itemData = {
     id: id || `${type}_${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -1189,14 +1277,12 @@ async function saveItem() {
     createdAt: id ? (dbData.find(i => i.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString()
   };
 
-  // FIX: Preserve original Firebase path when editing
   let firebaseType = type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS';
   const catToFirebase = { services: 'SERVICES', products: 'PRODUITS', maqola: 'MAQAOLA', 'yad-amila': 'YAD AMILA' };
   let firebaseCategorie = catToFirebase[categorie] || 'SERVICES';
 
   showLoading(true);
   try {
-    // If editing, remove from old path first (handles category change)
     if (id) {
       const oldItem = dbData.find(i => i.id === id);
       if (oldItem && (oldItem.type !== type || oldItem.categorie !== categorie)) {
@@ -1214,7 +1300,7 @@ async function saveItem() {
     if (id) {
       const idx = arr.findIndex(i => i.id === id);
       if (idx !== -1) arr[idx] = itemData;
-      else arr.push(itemData); // moved to new category
+      else arr.push(itemData);
     } else {
       arr.push(itemData);
     }
@@ -1255,7 +1341,6 @@ async function confirmDelete() {
   showLoading(false);
 }
 
-// Make functions global
 window.openAddModal = openAddModal;
 window.openEditModal = openEditModal;
 window.saveItem = saveItem;
@@ -1320,6 +1405,48 @@ function getAutoDomaines() {
   return [...new Set(csvExperts.filter(d => !autoFilters.ville || d.ville === autoFilters.ville).map(d => d.domaine).filter(v => v))].sort();
 }
 
+// ===== PAGINATION =====
+function renderPagination(totalItems, containerId) {
+  const container = $(containerId);
+  if (!container) return;
+  
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (totalPages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  html += `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+  
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+  
+  if (startPage > 1) html += `<button class="page-btn" onclick="changePage(1)">1</button>${startPage > 2 ? '<span>...</span>' : ''}`;
+  
+  for (let i = startPage; i <= endPage; i++) {
+    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  
+  if (endPage < totalPages) html += `${endPage < totalPages - 1 ? '<span>...</span>' : ''}<button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+  
+  html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+  
+  container.innerHTML = html;
+}
+
+function changePage(page) {
+  if (page < 1) return;
+  const totalItems = getFilteredDB().length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  if (page > totalPages) return;
+  currentPage = page;
+  renderDB();
+  scrollTop();
+}
+
+window.changePage = changePage;
+
 // ===== CARD BUILDER =====
 function buildCard(item, isCSV = false) {
   const hasPhone = item.phone && item.phone !== 'null' && item.phone !== '';
@@ -1328,7 +1455,6 @@ function buildCard(item, isCSV = false) {
 
   const safePhone = hasPhone ? esc(item.phone) : '';
   const safePhone2 = hasPhone ? item.phone.replace(/\+/g,'') : '';
-  const itemJSON = !isCSV ? `data-id="${item.id}"` : '';
 
   let badges = '';
   if (!isCSV) {
@@ -1346,13 +1472,15 @@ function buildCard(item, isCSV = false) {
   if (hasEmail) btns += `<button class="iab ab-em" title="Email" onclick="window.location.href='mailto:${esc(item.email)}'"><i class="fas fa-envelope"></i></button>`;
   if (hasWeb) btns += `<button class="iab ab-wb" title="Site web" onclick="window.open('${esc(item.web)}','_blank')"><i class="fas fa-globe"></i></button>`;
   if (hasPhone) btns += `<button class="iab ab-cp" title="Copier téléphone" onclick="copyClip('${safePhone}','Téléphone copié')"><i class="fas fa-copy"></i></button>`;
-  btns += `<button class="iab ab-sh" title="Partager" onclick="shareItem(${JSON.stringify(JSON.stringify(item))})"><i class="fas fa-share-alt"></i></button>`;
+  // Fixed share button - properly encode the item
+  const itemStr = JSON.stringify(item).replace(/"/g, '&quot;');
+  btns += `<button class="iab ab-sh" title="Partager" onclick="shareItem('${itemStr}')"><i class="fas fa-share-alt"></i></button>`;
   if (!isCSV) {
     btns += `<button class="iab ab-edit" title="Modifier" onclick="openEditModal('${esc(item.id)}')"><i class="fas fa-edit"></i></button>`;
     btns += `<button class="iab ab-del" title="Supprimer" onclick="openDeleteModal('${esc(item.id)}')"><i class="fas fa-trash"></i></button>`;
   }
 
-  return `<div class="icard" ${itemJSON}>
+  return `<div class="icard">
     <div class="card-top">
       <div class="card-name">${esc(item.name)}</div>
       <div class="card-badges">${badges}</div>
@@ -1371,20 +1499,26 @@ function buildCard(item, isCSV = false) {
 
 const emptyHTML = `<div class="empty"><i class="fas fa-search"></i><h3>AUCUN RÉSULTAT</h3></div>`;
 
-// ===== RENDER DB =====
+// ===== RENDER DB with pagination =====
 function renderDB() {
-  const data = getFilteredDB();
-  $('dbGrid').innerHTML = data.length ? data.map(i => buildCard(i)).join('') : emptyHTML;
-  $('dbCnt').textContent = data.length;
+  const allData = getFilteredDB();
+  const totalItems = allData.length;
+  const start = (currentPage - 1) * itemsPerPage;
+  const paginatedData = allData.slice(start, start + itemsPerPage);
+  
+  $('dbGrid').innerHTML = paginatedData.length ? paginatedData.map(i => buildCard(i)).join('') : emptyHTML;
+  $('dbCnt').textContent = totalItems;
   renderDBFilterTags();
-  renderResultInfo('dbResultInfo', data.length, [
+  renderResultInfo('dbResultInfo', totalItems, [
     dbFilters.search && `Recherche: "${dbFilters.search}"`,
     dbFilters.type && `Type: ${dbFilters.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS'}`,
     dbFilters.categorie && `Catégorie: ${catNames[dbFilters.categorie]}`,
     dbFilters.ville && `Ville: ${dbFilters.ville}`,
     dbFilters.domaine && `Domaine: ${dbFilters.domaine}`
   ].filter(Boolean));
-  // Update clear button search icon
+  
+  renderPagination(totalItems, 'dbPagination');
+  
   const clearBtn = $('dbSearchClear');
   if (clearBtn) clearBtn.style.display = dbFilters.search ? 'flex' : 'none';
 }
@@ -1508,7 +1642,7 @@ function showTypeFilter() {
     const el = document.createElement('div');
     el.className = 'litem';
     el.innerHTML = `<span><i class="fas ${o.icon}"></i> ${o.label}</span><em>→</em>`;
-    el.onclick = () => { dbFilters.type = o.value; renderDB(); closeModal('listModal'); };
+    el.onclick = () => { dbFilters.type = o.value; currentPage = 1; renderDB(); closeModal('listModal'); };
     c.appendChild(el);
   });
   $('listModal').classList.add('show');
@@ -1531,7 +1665,7 @@ function showCategorieFilter() {
     const el = document.createElement('div');
     el.className = 'litem';
     el.innerHTML = `<span><i class="fas ${o.icon}"></i> ${o.label}</span><em>→</em>`;
-    el.onclick = () => { dbFilters.categorie = o.value; renderDB(); closeModal('listModal'); };
+    el.onclick = () => { dbFilters.categorie = o.value; currentPage = 1; renderDB(); closeModal('listModal'); };
     c.appendChild(el);
   });
   $('listModal').classList.add('show');
@@ -1645,17 +1779,21 @@ function goExplorer(level, type, domaine, specialite) {
 window.goExplorer = goExplorer;
 
 // ===== SHARE & COPY =====
-window.shareItem = function(jsonStr) {
-  const item = JSON.parse(jsonStr);
-  let msg = `📌 ${item.name}`;
-  if (item.domaine) msg += `\n🏭 ${item.domaine}`;
-  if (item.specialite) msg += `\n⚙️ ${item.specialite}`;
-  if (item.ville) msg += `\n📍 ${item.ville}`;
-  if (item.phone) msg += `\n📞 ${item.phone}`;
-  if (item.email) msg += `\n✉️ ${item.email}`;
-  if (item.web) msg += `\n🌐 ${item.web}`;
-  msg += '\n\n🔗 Connect Industry - Plateforme Industrielle Maroc';
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+window.shareItem = function(itemStr) {
+  try {
+    const item = JSON.parse(itemStr);
+    let msg = `📌 ${item.name}`;
+    if (item.domaine) msg += `\n🏭 ${item.domaine}`;
+    if (item.specialite) msg += `\n⚙️ ${item.specialite}`;
+    if (item.ville) msg += `\n📍 ${item.ville}`;
+    if (item.phone) msg += `\n📞 ${item.phone}`;
+    if (item.email) msg += `\n✉️ ${item.email}`;
+    if (item.web) msg += `\n🌐 ${item.web}`;
+    msg += '\n\n🔗 Connect Industry - Plateforme Industrielle Maroc';
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  } catch(e) {
+    toast('❌ Erreur lors du partage');
+  }
 };
 
 window.copyClip = function(text, label) {
@@ -1680,7 +1818,7 @@ function showSection(id) {
   scrollTop();
 
   if (id === 'explorer') renderExplorer();
-  if (id === 'db-unified') renderDB();
+  if (id === 'db-unified') { currentPage = 1; renderDB(); }
   if (id === 'fournisseurs-csv') renderFournisseursCSV();
   if (id === 'experts-csv') renderExpertsCSV();
 }
@@ -1692,6 +1830,7 @@ function toggleTheme() {
   document.body.classList.toggle('light', !isDark);
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
   $('themeBtn').innerHTML = isDark ? '<i class="fas fa-circle-half-stroke"></i>' : '<i class="fas fa-sun"></i>';
+  updateStatsChart(); // Refresh chart colors
 }
 
 function loadTheme() {
@@ -1719,6 +1858,7 @@ $('themeBtn').onclick = toggleTheme;
 $('syncCsvBtn').onclick = syncToFirebase;
 $('addItemBtn').onclick = openAddModal;
 $('contactWABtn').onclick = () => window.open(`https://wa.me/${CONFIG.WA}`, '_blank');
+$('exportExcelBtn').onclick = exportToExcel;
 
 // Contact form
 $('contactForm').addEventListener('submit', e => {
@@ -1738,6 +1878,7 @@ $('contactForm').addEventListener('submit', e => {
 // DB Search
 $('dbSearch').addEventListener('input', e => {
   dbFilters.search = e.target.value;
+  currentPage = 1;
   renderDB();
 });
 
@@ -1747,6 +1888,7 @@ if (dbSearchClear) {
   dbSearchClear.onclick = () => {
     $('dbSearch').value = '';
     dbFilters.search = '';
+    currentPage = 1;
     renderDB();
   };
 }
@@ -1756,17 +1898,18 @@ $('filterTypeBtn').onclick = showTypeFilter;
 $('filterCategorieBtn').onclick = showCategorieFilter;
 $('filterVilleBtn').onclick = () => {
   const items = getDBVilles();
-  if (items.length) showList('VILLES', items, v => { dbFilters.ville = v; renderDB(); });
+  if (items.length) showList('VILLES', items, v => { dbFilters.ville = v; currentPage = 1; renderDB(); });
   else toast('⚠️ Aucune ville disponible');
 };
 $('filterDomaineBtn').onclick = () => {
   const items = getDBDomaines();
-  if (items.length) showList('DOMAINES', items, d => { dbFilters.domaine = d; renderDB(); });
+  if (items.length) showList('DOMAINES', items, d => { dbFilters.domaine = d; currentPage = 1; renderDB(); });
   else toast('⚠️ Aucun domaine disponible');
 };
 $('filterClearBtn').onclick = () => {
   dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
   $('dbSearch').value = '';
+  currentPage = 1;
   renderDB();
   toast('🗑️ Filtres effacés');
 };
@@ -1790,8 +1933,7 @@ $('fourClearBtn').onclick = () => {
   toast('🗑️ Filtres effacés');
 };
 
-// Experts CSV
-$('autoSearch').addEventListener('input', e => { autoFilters.search = e.target.value; renderExpertsCSV(); });
+// Experts CSV$('autoSearch').addEventListener('input', e => { autoFilters.search = e.target.value; renderExpertsCSV(); });
 $('autoDomaineBtn').onclick = () => {
   const items = getAutoDomaines();
   if (items.length) showList('DOMAINES EXPERTS', items, d => { autoFilters.domaine = d; renderExpertsCSV(); });
@@ -1814,6 +1956,7 @@ document.querySelectorAll('.stat-card[data-filter-type]').forEach(s => {
   s.addEventListener('click', () => {
     dbFilters.type = s.dataset.filterType;
     dbFilters.categorie = null;
+    currentPage = 1;
     showSection('db-unified');
   });
 });
@@ -1821,6 +1964,7 @@ document.querySelectorAll('.stat-card[data-filter-cat]').forEach(s => {
   s.addEventListener('click', () => {
     dbFilters.categorie = s.dataset.filterCat;
     dbFilters.type = null;
+    currentPage = 1;
     showSection('db-unified');
   });
 });
@@ -1829,13 +1973,13 @@ document.querySelectorAll('.stat-card[data-t]').forEach(s => {
     const t = s.dataset.t;
     if (t === 'villes') {
       const items = getDBVilles();
-      if (items.length) { showList('VILLES', items, v => { dbFilters.ville = v; showSection('db-unified'); }); }
+      if (items.length) { showList('VILLES', items, v => { dbFilters.ville = v; currentPage = 1; showSection('db-unified'); }); }
     } else if (t === 'domaines') {
       const items = getDBDomaines();
-      if (items.length) { showList('DOMAINES', items, d => { dbFilters.domaine = d; showSection('db-unified'); }); }
+      if (items.length) { showList('DOMAINES', items, d => { dbFilters.domaine = d; currentPage = 1; showSection('db-unified'); }); }
     } else if (t === 'specialites') {
       const items = [...new Set(dbData.map(d => d.specialite).filter(v => v && v !== 'null' && v !== ''))].sort();
-      if (items.length) { showList('SPÉCIALITÉS', items, s => { dbFilters.search = s; $('dbSearch').value = s; showSection('db-unified'); }); }
+      if (items.length) { showList('SPÉCIALITÉS', items, s => { dbFilters.search = s; $('dbSearch').value = s; currentPage = 1; showSection('db-unified'); }); }
     }
   });
 });
