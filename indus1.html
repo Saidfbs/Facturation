@@ -3,1150 +3,1479 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0b0e14">
-<title>Connect Industry Maroc</title>
+<meta name="theme-color" content="#050609">
+<title>Connect Industry | Plateforme Industrielle Maroc</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@300;400;500;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --gold: #c8992a;
-  --gold-lt: #f0c040;
-  --gold-dim: rgba(200,153,42,0.12);
-  --gold-glow: rgba(200,153,42,0.3);
-  --steel: #4a9eca;
-  --steel-dim: rgba(74,158,202,0.12);
-  --steel-glow: rgba(74,158,202,0.3);
-  --green: #2eb87e;
-  --green-dim: rgba(46,184,126,0.12);
-  --green-glow: rgba(46,184,126,0.3);
-  --red: #e05252;
-  --red-dim: rgba(224,82,82,0.12);
-  --red-glow: rgba(224,82,82,0.3);
-  --wa: #25D366;
-  --bg0: #070a10;
-  --bg1: #0b0e17;
-  --bg2: #111520;
-  --bg3: #161b28;
-  --bg4: #1c2235;
-  --line: rgba(255,255,255,0.06);
-  --line2: rgba(255,255,255,0.1);
-  --txt: #dde4f0;
-  --txt2: #7a8ba8;
-  --txt3: #404e65;
-  --accent: var(--gold);
-  --accent-dim: var(--gold-dim);
-  --accent-glow: var(--gold-glow);
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #ffffff;
+  --surface3: #f8f9fa;
+  --border: #e4e6eb;
+  --border2: #ddd;
+  --amber: #ff7e29;
+  --amber-dim: #fff5e8;
+  --emerald: #31a24c;
+  --rose: #e41e3f;
+  --cyan: #00a6c3;
+  --violet: #8b5cf6;
+  --text: #1b1f23;
+  --text2: #65676b;
+  --text3: #8a8d91;
+  --admin: #a855f7;
+  --nav-h: 60px;
+  --tab-h: 56px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+body.light {
+  --bg: #f0f2f5;
+  --surface: #ffffff;
+  --surface2: #ffffff;
+  --border: #e4e6eb;
+  --text: #1b1f23;
+  --text2: #65676b;
 }
 
 body {
-  font-family: 'Barlow', sans-serif;
-  background: var(--bg0);
-  color: var(--txt);
-  min-height: 100vh;
-  overflow-x: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: calc(var(--tab-h) + 16px);
+  transition: 0.3s;
 }
 
-/* ─── SCANLINE OVERLAY ─── */
-body::before {
-  content:'';
-  position:fixed;inset:0;
-  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-  pointer-events:none;z-index:0;
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px;
+  z-index: 500;
+  box-shadow: var(--shadow-sm);
 }
 
-/* ─── CORNER DECORATION ─── */
-.corner-tl,.corner-br{position:fixed;width:80px;height:80px;pointer-events:none;z-index:1;}
-.corner-tl{top:0;left:0;border-top:2px solid var(--gold);border-left:2px solid var(--gold);opacity:0.25;}
-.corner-br{bottom:0;right:0;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold);opacity:0.25;}
+.logo-mark {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--amber), #ff9f4a);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  color: #fff;
+}
+.logo-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+.logo-name span { color: var(--amber); }
+.logo-tagline { font-size: 0.4rem; color: var(--text2); }
 
-/* ─── APP BAR ─── */
-.app-bar {
-  position:fixed;top:0;left:0;right:0;
-  height:58px;
-  background: linear-gradient(90deg, var(--bg1) 0%, rgba(11,14,23,0.96) 100%);
-  border-bottom:1px solid var(--line);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;z-index:100;
-  backdrop-filter:blur(20px);
+.topbar-right { display: flex; gap: 8px; }
+.topbar-clock {
+  font-size: 0.7rem;
+  background: var(--surface3);
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: var(--text2);
 }
-.app-bar::after {
-  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-  background: linear-gradient(90deg, transparent, var(--gold), var(--steel), var(--gold), transparent);
-  opacity:0.6;
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--surface3);
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  transition: 0.2s;
 }
-.menu-icon {
-  background:transparent;border:1px solid var(--line2);
-  color:var(--gold);cursor:pointer;
-  width:38px;height:38px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:0.95rem;transition:all 0.2s;
-}
-.menu-icon:hover{background:var(--gold-dim);border-color:var(--gold);box-shadow:0 0 12px var(--gold-glow);}
+.icon-btn:hover { background: var(--border); }
+.icon-btn.admin-on { background: var(--admin); color: #fff; }
+.icon-btn.logout-on { background: var(--rose); color: #fff; }
 
-.app-bar-logo {
-  font-family:'Barlow Condensed',sans-serif;
-  font-weight:800;font-size:1.15rem;
-  letter-spacing:0.04em;text-transform:uppercase;
-  color:var(--txt);
+.bottom-tabs {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: var(--tab-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 4px 8px;
+  gap: 4px;
+  z-index: 500;
+  box-shadow: 0 -1px 8px rgba(0,0,0,0.05);
 }
-.app-bar-logo .hi { color:var(--gold); }
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; padding: 6px 4px;
+  border-radius: 12px; cursor: pointer;
+  color: var(--text2); background: transparent; border: none;
+  transition: 0.2s;
+}
+.tab-btn i { font-size: 1.1rem; }
+.tab-btn span { font-size: 0.45rem; font-weight: 500; }
+.tab-btn.active { color: var(--amber); background: var(--amber-dim); }
+.tab-admin { display: none; }
+body.admin-mode .tab-admin { display: flex; }
 
-.app-bar-clock {
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.72rem;text-align:right;
-  color:var(--txt2);letter-spacing:0.05em;
+.main {
+  padding: calc(var(--nav-h) + 12px) 12px 12px;
+  max-width: 1200px; margin: 0 auto;
 }
-.app-bar-clock .time{color:var(--gold);font-size:0.82rem;}
+.section { display: none; }
+.section.active { display: block; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ─── DRAWER ─── */
-.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;opacity:0;visibility:hidden;transition:all 0.3s;backdrop-filter:blur(3px);}
-.drawer-overlay.open{opacity:1;visibility:visible;}
-.drawer {
-  position:fixed;top:0;left:0;bottom:0;width:290px;max-width:85vw;
-  background: var(--bg1);
-  border-right:1px solid var(--line);
-  z-index:1001;transform:translateX(-100%);
-  transition:transform 0.35s cubic-bezier(0.16,1,0.3,1);
-  display:flex;flex-direction:column;overflow-y:auto;
+.card {
+  background: var(--surface);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
 }
-.drawer::after{content:'';position:absolute;top:0;right:0;bottom:0;width:1px;background:linear-gradient(180deg,transparent,var(--gold),transparent);opacity:0.4;}
-.drawer.open{transform:translateX(0);}
-
-.drawer-header {
-  padding:24px 18px 18px;
-  background: linear-gradient(160deg, var(--bg2) 0%, var(--bg1) 100%);
-  border-bottom:1px solid var(--line);
-  position:relative;overflow:hidden;
+.card-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.drawer-header::before {
-  content:'CI';position:absolute;right:-12px;bottom:-18px;
-  font-family:'Barlow Condensed',sans-serif;font-size:6rem;font-weight:800;
-  color:var(--gold);opacity:0.04;pointer-events:none;line-height:1;
+.card-head-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--amber-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--amber);
 }
-.drawer-header-accent {
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg, var(--gold), transparent);
-}
-
-.drawer-logo-row {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:1.2rem;font-weight:800;
-  letter-spacing:0.05em;text-transform:uppercase;
-  color:var(--txt);margin-bottom:3px;
-}
-.drawer-logo-row span{color:var(--gold);}
-.drawer-sub{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);letter-spacing:0.1em;margin-bottom:14px;}
-
-.drawer-user-card {
-  background:var(--bg3);
-  border:1px solid var(--line);
-  border-radius:8px;padding:10px 12px;
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:12px;
-}
-.drawer-avatar {
-  width:36px;height:36px;border-radius:6px;
-  background:var(--bg4);
-  border:1px solid var(--gold);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--gold);font-size:1rem;flex-shrink:0;
-  box-shadow:0 0 8px var(--gold-glow);
-}
-.drawer-uname{font-weight:600;font-size:0.83rem;color:var(--txt);}
-.drawer-ustatus{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);}
-
-.drawer-time-row{display:flex;justify-content:space-between;align-items:center;}
-.drawer-time{font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--gold);}
-.drawer-date{font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);}
-.drawer-theme-btn {
-  background:var(--bg3);border:1px solid var(--line2);
-  color:var(--txt2);padding:4px 9px;border-radius:5px;
-  cursor:pointer;font-size:0.62rem;
-  display:flex;align-items:center;gap:5px;
-  font-family:'Share Tech Mono',monospace;
-  transition:all 0.2s;
-}
-.drawer-theme-btn:hover{border-color:var(--gold);color:var(--gold);}
-
-.drawer-menu{flex:1;padding:10px;}
-.drawer-section-title {
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--txt3);padding:10px 8px 5px;
-}
-.drawer-item {
-  display:flex;align-items:center;gap:12px;
-  padding:9px 12px;background:transparent;
-  border:1px solid transparent;width:100%;text-align:left;
-  color:var(--txt2);cursor:pointer;border-radius:6px;
-  font-size:0.84rem;font-family:'Barlow',sans-serif;
-  transition:all 0.18s;
-}
-.drawer-item:hover{background:var(--bg3);color:var(--txt);border-color:var(--line2);}
-.drawer-item i{width:18px;font-size:0.85rem;color:var(--gold);opacity:0.7;}
-.drawer-item.active{background:var(--gold-dim);color:var(--gold);border-color:rgba(200,153,42,0.3);}
-.drawer-item.active i{opacity:1;}
-.drawer-divider{height:1px;background:var(--line);margin:6px 8px;}
-.drawer-item.subscriber-active{background:var(--green-dim);color:var(--green);border-color:rgba(46,184,126,0.3);}
-.drawer-item.subscriber-active i{color:var(--green);}
-.drawer-item.admin-active{background:var(--red-dim);color:var(--red);border-color:rgba(224,82,82,0.3);}
-.drawer-item.admin-active i{color:var(--red);}
-
-/* MODE COLORS */
-body.subscriber-mode { --accent:var(--green); --accent-dim:var(--green-dim); --accent-glow:var(--green-glow); }
-body.light-mode { --bg0:#f0f2f7; --bg1:#ffffff; --bg2:#f4f6fb; --bg3:#eaecf3; --bg4:#dde0ea; --line:rgba(0,0,0,0.07); --line2:rgba(0,0,0,0.12); --txt:#1a2035; --txt2:#4a5575; --txt3:#9aa0b5; }
-body.admin-mode { --accent:var(--red); --accent-dim:var(--red-dim); --accent-glow:var(--red-glow); }
-
-/* ─── MAIN ─── */
-.main-content {
-  padding:72px 14px 28px;
-  max-width:1100px;margin:0 auto;
-  position:relative;z-index:1;
-}
-.section{display:none;animation:fadeUp 0.32s ease both;}
-.section.active{display:block;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
-
-/* ─── PANEL (card) ─── */
-.panel {
-  background:var(--bg1);
-  border:1px solid var(--line);
-  border-radius:10px;
-  margin-bottom:16px;
-  overflow:hidden;
-  position:relative;
-}
-.panel::before {
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg, var(--accent), transparent 60%);
-  opacity:0.8;
-}
-.panel-head {
-  background:var(--bg2);
-  padding:12px 16px;
-  border-bottom:1px solid var(--line);
-  display:flex;align-items:center;gap:10px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;font-size:0.95rem;
-  letter-spacing:0.04em;text-transform:uppercase;
-  color:var(--txt);
-}
-.panel-head i{color:var(--accent);font-size:0.9rem;}
-.panel-body{padding:16px;}
-
-/* ─── HERO ─── */
-.hero {
-  background:var(--bg1);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:22px 18px;
-  margin-bottom:16px;
-  position:relative;overflow:hidden;
-}
-.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--steel),var(--gold));opacity:0.7;}
-.hero-badge {
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--gold-dim);border:1px solid rgba(200,153,42,0.35);
-  color:var(--gold);padding:3px 10px;border-radius:3px;
-  font-family:'Share Tech Mono',monospace;font-size:0.6rem;
-  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;
-}
-.hero h1 {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:1.6rem;font-weight:800;
-  letter-spacing:-0.01em;text-transform:uppercase;
-  color:var(--txt);line-height:1.15;margin-bottom:8px;
-}
-.hero h1 span{color:var(--gold);}
-.hero p{font-size:0.82rem;color:var(--txt2);line-height:1.6;max-width:520px;}
-.hero-geo {
-  position:absolute;right:14px;top:14px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:3.5rem;font-weight:800;
-  color:var(--gold);opacity:0.05;
-  pointer-events:none;line-height:1;
+.card-head-title { font-weight: 600; font-size: 0.9rem; }
+.card-body { padding: 16px; }
+.count-badge {
+  background: var(--amber-dim);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--amber);
 }
 
-/* ─── STATS GRID ─── */
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
-.stat-card {
-  background:var(--bg2);
-  border:1px solid var(--line);
-  border-radius:8px;padding:12px 8px;
-  text-align:center;cursor:pointer;
-  transition:all 0.2s;position:relative;overflow:hidden;
+.stats-row { display: flex; flex-direction: column; gap: 12px; }
+.stats-group { background: var(--surface3); border-radius: 16px; overflow: hidden; }
+.stats-group-title { padding: 10px 14px; background: var(--amber-dim); font-size: 0.7rem; font-weight: 600; color: var(--amber); }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); }
+.stat-tile {
+  background: var(--surface);
+  padding: 12px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s;
 }
-.stat-card::after{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:opacity 0.2s;}
-.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px var(--accent-glow);}
-.stat-card:hover::after{opacity:0.04;}
-.stat-num {
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:2rem;font-weight:800;
-  color:var(--accent);line-height:1;
-  text-shadow:0 0 20px var(--accent-glow);
-}
-.stat-lbl {
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.58rem;color:var(--txt3);
-  text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;
-}
+.stat-tile:hover { background: var(--amber-dim); }
+.stat-tile.active { background: var(--amber-dim); position: relative; }
+.stat-tile.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--amber); }
+.stat-num { font-size: 1.5rem; font-weight: 700; color: var(--amber); }
+.stat-label { font-size: 0.45rem; color: var(--text2); margin-top: 4px; text-transform: uppercase; }
 
-/* ─── SECTION LABEL ─── */
-.sec-label {
-  display:flex;align-items:center;gap:8px;
-  font-family:'Share Tech Mono',monospace;
-  font-size:0.6rem;text-transform:uppercase;
-  letter-spacing:0.12em;color:var(--txt3);
-  margin-bottom:10px;
-}
-.sec-label::after{content:'';flex:1;height:1px;background:var(--line);}
-
-/* ─── SEARCH ─── */
-.search-wrap{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
 .search-box {
-  flex:2;background:var(--bg2);
-  border:1px solid var(--line);border-radius:7px;
-  padding:9px 12px;display:flex;align-items:center;gap:8px;
-  transition:border-color 0.2s;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface3);
+  border-radius: 40px;
+  padding: 0 16px;
+  height: 44px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
 }
-.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
-.search-box i{color:var(--accent);font-size:0.8rem;}
-.search-box input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font-size:0.83rem;font-family:'Barlow',sans-serif;}
-.search-box input::placeholder{color:var(--txt3);}
-.filter-grp{display:flex;gap:6px;flex:1;}
-.f-btn {
-  flex:1;background:var(--bg2);border:1px solid var(--line);
-  border-radius:7px;padding:9px;cursor:pointer;
-  color:var(--txt3);display:flex;align-items:center;justify-content:center;
-  font-size:0.85rem;transition:all 0.2s;
+.search-box input { flex: 1; background: transparent; border: none; outline: none; font-size: 0.85rem; }
+.search-clear {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
 }
-.f-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
-.f-btn.active{background:var(--accent);border-color:var(--accent);color:#000;}
-.cl-btn{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:9px;cursor:pointer;color:var(--txt3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all 0.2s;}
-.cl-btn:hover{border-color:var(--red);color:var(--red);background:var(--red-dim);}
 
-.search-stats{display:flex;gap:8px;margin-bottom:12px;}
-.s-badge {
-  background:var(--bg2);border:1px solid var(--line);
-  padding:7px 12px;border-radius:6px;
-  font-size:0.78rem;cursor:pointer;
-  transition:all 0.2s;flex:1;
-  text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;
-  font-family:'Barlow',sans-serif;
+.filter-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: 0.2s;
+  color: var(--text2);
 }
-.s-badge:hover{border-color:var(--accent);background:var(--accent-dim);}
-.s-badge .cnt{color:var(--accent);font-weight:700;font-family:'Barlow Condensed',sans-serif;font-size:1rem;}
+.filter-chip i { font-size: 0.7rem; }
+.filter-chip:hover { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+.filter-chip.active { background: var(--amber); color: #fff; border-color: var(--amber); }
+.filter-chip.danger:hover { background: var(--rose-dim); border-color: var(--rose); color: var(--rose); }
 
-/* ─── FEATURED ─── */
-.featured-section{
-  background:var(--bg2);border:1px solid var(--line);
-  border-radius:8px;margin-bottom:12px;padding:10px;
-}
-.featured-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:10px;
-  font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;font-size:0.85rem;
-  letter-spacing:0.05em;text-transform:uppercase;
-  color:var(--gold);
-}
-.featured-scroll{overflow-x:auto;padding-bottom:5px;}
-.featured-scroll::-webkit-scrollbar{height:3px;}
-.featured-scroll::-webkit-scrollbar-thumb{background:var(--gold);border-radius:2px;}
-.featured-items{display:inline-flex;gap:8px;}
-.featured-card {
-  background:var(--bg1);
-  border:1px solid var(--line);
-  border-top:2px solid var(--gold);
-  border-radius:8px;padding:12px;
-  width:230px;display:inline-block;
-  white-space:normal;cursor:pointer;
-  transition:all 0.2s;position:relative;
-}
-.featured-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px var(--gold-glow);border-color:var(--gold);}
-.unpin-featured-btn{position:absolute;top:5px;right:5px;background:transparent;border:none;color:var(--txt3);cursor:pointer;font-size:0.75rem;padding:4px;transition:all 0.2s;}
-.unpin-featured-btn:hover{color:var(--red);}
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+@media(max-width: 600px) { .items-grid { grid-template-columns: 1fr; } }
 
-/* ─── ITEMS GRID ─── */
-.items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;}
 .item-card {
-  background:var(--bg1);border:1px solid var(--line);
-  border-radius:9px;padding:14px;
-  transition:all 0.22s;position:relative;overflow:hidden;
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 14px;
+  transition: 0.2s;
+  border: 1px solid var(--border);
+  cursor: pointer;
 }
-.item-card::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:var(--line);transition:background 0.2s;
-}
-.item-card:hover{border-color:var(--line2);box-shadow:0 4px 20px rgba(0,0,0,0.3);transform:translateY(-1px);}
-.item-card:hover::before{background:var(--accent);}
-.item-card.pinned{border-color:rgba(200,153,42,0.25);}
-.item-card.pinned::before{background:var(--gold);}
-.item-card.current{border-color:rgba(46,184,126,0.3);background:linear-gradient(135deg,rgba(46,184,126,0.05),var(--bg1));}
-.item-card.current::before{background:var(--green);}
-.item-card.current::after{
-  content:'MON PROFIL';
-  position:absolute;top:9px;right:-28px;
-  background:var(--green);color:#000;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:0.5rem;font-weight:800;
-  padding:3px 28px;transform:rotate(45deg);
-  letter-spacing:0.08em;
-}
+.item-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--amber); }
 
-.item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--line);}
-.item-title{
-  font-family:'Barlow Condensed',sans-serif;
-  font-weight:700;font-size:0.92rem;
-  color:var(--accent);display:flex;
-  align-items:center;gap:6px;flex-wrap:wrap;
-  letter-spacing:0.02em;text-transform:uppercase;
-}
-.item-details{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;}
-.detail-row{display:flex;align-items:flex-start;gap:8px;font-size:0.74rem;color:var(--txt2);}
-.detail-row i{width:13px;margin-top:2px;color:var(--accent);opacity:0.5;flex-shrink:0;font-size:0.7rem;}
-.detail-row .lbl{font-family:'Share Tech Mono',monospace;font-size:0.62rem;min-width:62px;color:var(--txt3);letter-spacing:0.03em;}
-.detail-row .val{color:var(--txt);flex:1;word-break:break-word;}
+.ic-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.ic-name { font-weight: 600; font-size: 0.95rem; flex: 1; }
+.ic-badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.ic-badge { font-size: 0.4rem; padding: 4px 10px; border-radius: 30px; font-weight: 600; }
+.badge-fourn { background: var(--amber-dim); color: var(--amber); }
+.badge-exp { background: rgba(0,166,195,0.1); color: var(--cyan); }
+.badge-svc { background: rgba(49,162,76,0.1); color: var(--emerald); }
+.badge-prd { background: rgba(251,146,60,0.1); color: #fb923c; }
+.badge-maq { background: rgba(139,92,246,0.1); color: var(--violet); }
+.badge-yad { background: rgba(228,30,63,0.1); color: var(--rose); }
 
-.action-row{display:flex;gap:5px;padding-top:9px;border-top:1px solid var(--line);justify-content:space-around;}
-.a-btn {
-  background:var(--bg2);border:1px solid var(--line);
-  padding:7px;cursor:pointer;font-size:0.88rem;
-  transition:all 0.2s;border-radius:6px;
-  color:var(--txt3);
-  display:flex;align-items:center;justify-content:center;
-  width:34px;height:34px;
-}
-.a-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-.a-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
-.a-btn.wa{color:var(--wa);}
-.a-btn.wa:hover{background:var(--wa);color:#fff;border-color:var(--wa);}
-.a-btn.em:hover{background:var(--steel-dim);color:var(--steel);border-color:var(--steel);}
-.a-btn.wb:hover{background:rgba(6,182,212,0.12);color:#06b6d4;border-color:#06b6d4;}
-.a-btn.sh:hover{background:var(--gold-dim);color:var(--gold);border-color:var(--gold);}
-.a-btn.pd:hover{background:var(--red-dim);color:var(--red);border-color:var(--red);}
+.ic-body { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.ic-row { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; }
+.ic-row-icon { width: 16px; color: var(--text2); }
+.ic-row-label { color: var(--text3); min-width: 60px; }
+.ic-row-value { color: var(--text2); }
 
-.pin-btn{background:transparent;border:none;cursor:pointer;padding:5px;color:var(--txt3);font-size:0.85rem;transition:all 0.2s;border-radius:5px;flex-shrink:0;}
-.pin-btn:hover{color:var(--gold);}
-.pin-btn.pinned{color:var(--gold);text-shadow:0 0 8px var(--gold-glow);}
-.pin-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
+.ic-actions { display: flex; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.act-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface3);
+  border: none;
+  cursor: pointer;
+  color: var(--text2);
+  transition: 0.2s;
+}
+.act-btn:hover { transform: translateY(-2px); }
+.act-btn.wa:hover { background: #22c55e; color: #fff; }
+.act-btn.email:hover { background: #3b82f6; color: #fff; }
+.act-btn.share:hover { background: var(--amber); color: #fff; }
+.act-btn.pdf:hover { background: var(--rose); color: #fff; }
+.act-btn.edit:hover { background: #f97316; color: #fff; }
+.act-btn.del:hover { background: var(--rose); color: #fff; }
 
-.badge{font-size:0.5rem;padding:2px 6px;border-radius:3px;font-weight:700;font-family:'Share Tech Mono',monospace;letter-spacing:0.05em;}
-.badge-pinned{background:rgba(200,153,42,0.15);color:var(--gold);border:1px solid rgba(200,153,42,0.3);}
-.badge-subscriber{background:rgba(46,184,126,0.15);color:var(--green);border:1px solid rgba(46,184,126,0.3);}
-.badge-admin{background:rgba(200,153,42,0.15);color:var(--gold);}
+.empty-state { text-align: center; padding: 40px; color: var(--text2); }
 
-/* ─── WHATSAPP GROUPS ─── */
-.wa-section{background:var(--bg1);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;position:relative;}
-.wa-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--wa),transparent);opacity:0.7;}
-.wa-head{background:var(--bg2);padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;}
-.wa-head i{color:var(--wa);}
-.wa-grid{display:flex;flex-direction:column;gap:8px;padding:14px;}
-.wa-item {
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--bg2);border:1px solid var(--line);
-  border-radius:8px;padding:11px 14px;
-  transition:all 0.22s;gap:12px;
+.breadcrumb { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.bc-item {
+  background: var(--surface3);
+  padding: 5px 14px;
+  border-radius: 30px;
+  font-size: 0.7rem;
+  cursor: pointer;
 }
-.wa-item:hover{border-color:rgba(37,211,102,0.4);box-shadow:inset 3px 0 0 var(--wa);}
-.wa-info{display:flex;align-items:center;gap:11px;flex:1;min-width:0;}
-.wa-icon{
-  width:36px;height:36px;border-radius:7px;
-  background:rgba(37,211,102,0.1);
-  border:1px solid rgba(37,211,102,0.25);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--wa);font-size:1rem;flex-shrink:0;
-}
-.wa-details h4{font-size:0.84rem;font-weight:600;color:var(--txt);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.wa-details .st{font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--txt3);}
-.wa-acts{display:flex;gap:6px;flex-shrink:0;}
-.wa-btn{
-  width:34px;height:34px;border-radius:7px;
-  background:var(--bg1);border:1px solid var(--line);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all 0.2s;color:var(--txt3);font-size:0.88rem;
-}
-.wa-btn.join{color:var(--wa);border-color:rgba(37,211,102,0.3);}
-.wa-btn.join:hover{background:var(--wa);color:#000;border-color:var(--wa);transform:scale(1.05);}
-.wa-btn.qr:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);}
+.bc-item:hover { background: var(--amber-dim); color: var(--amber); }
 
-/* ─── ACTION CARDS ─── */
-.ac-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:480px){.ac-grid{grid-template-columns:1fr;}}
-.ac-card{background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:16px;text-align:center;position:relative;overflow:hidden;}
-.ac-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-.ac-icon{font-size:1.7rem;color:var(--accent);margin-bottom:8px;text-shadow:0 0 20px var(--accent-glow);}
-.ac-card h3{font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.03em;text-transform:uppercase;margin-bottom:4px;color:var(--txt);}
-.ac-card p{font-size:0.71rem;color:var(--txt3);margin-bottom:12px;}
-.ac-btns{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;}
-.mini-btn {
-  background:var(--bg1);border:1px solid var(--line);
-  padding:5px 10px;border-radius:5px;cursor:pointer;
-  font-size:0.72rem;transition:all 0.2s;
-  color:var(--txt2);display:inline-flex;
-  align-items:center;gap:5px;font-family:'Barlow',sans-serif;
+.exp-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: 0.2s;
 }
-.mini-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
-.mini-btn.disabled{opacity:0.25;cursor:not-allowed;pointer-events:none;}
-body.subscriber-mode .mini-btn:hover{background:var(--green-dim);border-color:var(--green);color:var(--green);}
-body.admin-mode .mini-btn:hover{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+.exp-card:hover { transform: translateX(6px); border-color: var(--amber); background: var(--amber-dim); }
+.exp-card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--amber-dim); display: flex; align-items: center; justify-content: center; color: var(--amber); }
 
-/* ─── CONTACT ─── */
-.contact-form{display:flex;flex-direction:column;gap:9px;}
-.input-field{
-  width:100%;padding:9px 13px;
-  background:var(--bg2);border:1px solid var(--line);
-  border-radius:7px;color:var(--txt);
-  font-size:0.82rem;font-family:'Barlow',sans-serif;
-  outline:none;transition:all 0.2s;
+.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
+.pg-btn {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 500;
 }
-.input-field:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim);}
-textarea.input-field{resize:vertical;}
-.msg-types{display:flex;gap:5px;flex-wrap:wrap;}
-.type-btn{
-  flex:1;background:var(--bg2);border:1px solid var(--line);
-  padding:6px;border-radius:6px;cursor:pointer;
-  font-size:0.7rem;transition:all 0.2s;
-  display:flex;align-items:center;justify-content:center;gap:4px;
-  color:var(--txt3);font-family:'Barlow',sans-serif;
-}
-.type-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
-.send-btn{
-  width:100%;background:var(--wa);
-  border:none;padding:11px;border-radius:7px;
-  cursor:pointer;color:#000;
-  font-family:'Barlow Condensed',sans-serif;
-  font-size:0.9rem;font-weight:700;
-  letter-spacing:0.04em;text-transform:uppercase;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:all 0.2s;
-}
-.send-btn:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 8px 24px rgba(37,211,102,0.3);}
+.pg-btn.active { background: var(--amber); color: #fff; border-color: var(--amber); }
 
-.wa-contact-row{
-  background:var(--bg2);border:1px solid var(--line);
-  border-radius:8px;padding:14px;text-align:center;
-  margin-bottom:12px;position:relative;
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.2s;
 }
-.wa-contact-row::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--wa),transparent);opacity:0.5;}
-.wa-num{font-family:'Share Tech Mono',monospace;font-size:0.95rem;color:var(--wa);margin:6px 0;letter-spacing:0.05em;}
-.wa-row-btns{display:flex;gap:8px;justify-content:center;}
-
-/* ─── LIST MODAL ─── */
-.list-items{max-height:360px;overflow-y:auto;}
-.list-items::-webkit-scrollbar{width:3px;}
-.list-items::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px;}
-.list-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:10px 15px;border-bottom:1px solid var(--line);
-  cursor:pointer;transition:all 0.18s;
+.overlay.show { opacity: 1; visibility: visible; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  margin: 20px;
 }
-.list-item:hover{background:var(--accent-dim);}
-.list-item:last-child{border-bottom:none;}
-.list-item-name{font-size:0.82rem;color:var(--txt);}
-.list-item-arrow{font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--accent);}
-
-/* ─── MODALS ─── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.75);
-  backdrop-filter:blur(6px);z-index:2000;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;visibility:hidden;transition:all 0.28s;
+.modal-head {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
 }
-.modal-overlay.show{opacity:1;visibility:visible;}
-.modal-content{
-  background:var(--bg1);
-  border:1px solid var(--line);
-  border-radius:12px;width:92%;max-width:460px;
-  max-height:86vh;overflow-y:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,0.6);
-  animation:modalIn 0.3s cubic-bezier(0.16,1,0.3,1);
-  position:relative;
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface3);
+  border: none;
+  cursor: pointer;
 }
-.modal-content::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
-@keyframes modalIn{from{transform:scale(0.93) translateY(18px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
-.modal-header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
-.modal-header h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:0.04em;text-transform:uppercase;}
-.modal-close{
-  background:var(--bg2);border:1px solid var(--line);
-  font-size:0.9rem;cursor:pointer;color:var(--txt3);
-  width:30px;height:30px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.2s;
+.modal-body { padding: 16px; }
+.modal-foot { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+
+.fgroup { margin-bottom: 14px; }
+.fgroup label { display: block; font-size: 0.7rem; font-weight: 500; margin-bottom: 6px; color: var(--text2); }
+.field {
+  width: 100%;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  outline: none;
 }
-.modal-close:hover{background:var(--red-dim);color:var(--red);border-color:var(--red);}
-.modal-body{padding:15px;}
-.modal-body p{font-size:0.82rem;color:var(--txt2);margin-bottom:10px;}
-.modal-footer{display:flex;padding:11px 15px;border-top:1px solid var(--line);gap:8px;}
-.modal-footer .mini-btn{flex:1;justify-content:center;}
-.qr-container{display:flex;justify-content:center;margin:14px 0;padding:14px;background:#fff;border-radius:8px;}
+.field:focus { border-color: var(--amber); }
 
-/* ─── NO RESULTS ─── */
-.no-results{text-align:center;padding:44px 20px;color:var(--txt3);}
-.no-results i{font-size:2.2rem;margin-bottom:10px;display:block;opacity:0.3;}
-.no-results h3{font-family:'Barlow Condensed',sans-serif;font-size:1rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--txt2);margin-bottom:5px;}
-.no-results p{font-size:0.78rem;}
-
-/* ─── TOAST ─── */
-.toast{
-  position:fixed;bottom:20px;left:50%;
-  transform:translateX(-50%) translateY(10px);
-  background:var(--bg1);
-  border:1px solid var(--accent);
-  color:var(--txt);padding:8px 18px;
-  border-radius:100px;font-size:0.76rem;
-  font-family:'Barlow',sans-serif;
-  z-index:3000;opacity:0;visibility:hidden;
-  transition:all 0.28s cubic-bezier(0.16,1,0.3,1);
-  white-space:nowrap;
-  box-shadow:0 4px 20px var(--accent-glow);
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  transition: 0.2s;
 }
-.toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
+.btn-primary { background: var(--amber); color: #fff; }
+.btn-primary:hover { background: #ff6a1a; transform: translateY(-1px); }
+.btn-ghost { background: var(--surface3); color: var(--text2); border: 1px solid var(--border); }
+.btn-danger { background: var(--rose-dim); color: var(--rose); }
+.btn-full { width: 100%; justify-content: center; }
 
-/* ─── LOADING ─── */
-.loading{position:fixed;inset:0;background:var(--bg0);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;}
-.loading-text{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:2rem;color:var(--gold);letter-spacing:0.08em;text-transform:uppercase;animation:flicker 1.4s ease infinite;}
-@keyframes flicker{0%,100%{opacity:1}45%{opacity:1}50%{opacity:0.3}55%{opacity:1}}
-.loading-line{width:140px;height:1px;background:var(--line2);border-radius:1px;overflow:hidden;}
-.loading-progress{height:100%;background:linear-gradient(90deg,var(--gold),var(--steel));border-radius:1px;animation:prog 1.2s ease infinite;}
-@keyframes prog{0%{width:0;margin-left:0}50%{width:70%;margin-left:0}100%{width:0;margin-left:100%}}
-
-.filter-modal .modal-content{background:var(--bg1);}
-.filter-modal .join-btn{background:transparent;border:1px solid var(--line);margin:3px 0;width:100%;text-align:left;padding:9px 12px;border-radius:6px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:0.82rem;color:var(--txt);}
-.filter-modal .join-btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
-
-@media(max-width:768px){
-  .main-content{padding-top:68px;padding-left:10px;padding-right:10px;}
-  .items-grid{grid-template-columns:1fr;}
-  .wa-item{flex-direction:column;gap:9px;text-align:center;}
-  .wa-info{flex-direction:column;text-align:center;}
-  .wa-acts{width:100%;justify-content:center;}
-  .toast{white-space:normal;max-width:88%;text-align:center;}
-  .hero h1{font-size:1.3rem;}
+.toast {
+  position: fixed; bottom: calc(var(--tab-h) + 10px); left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  border-radius: 40px;
+  padding: 10px 20px;
+  font-size: 0.8rem;
+  z-index: 9000;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.25s;
 }
+.toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-6px); }
+
+.loading-screen {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.4s;
+}
+.loading-screen.hide { opacity: 0; pointer-events: none; }
+.loading-logo { font-size: 2.5rem; font-weight: 800; color: var(--amber); }
+
+.admin-only { display: none !important; }
+body.admin-mode .admin-only { display: flex !important; }
+#qrContainer { display: flex; justify-content: center; padding: 20px; background: #fff; border-radius: 16px; margin-bottom: 16px; }
+.result-bar { padding: 8px 14px; margin-bottom: 12px; background: var(--amber-dim); border-radius: 30px; font-size: 0.7rem; color: var(--amber); }
+.active-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.active-filter-tag { background: var(--amber-dim); padding: 5px 12px; border-radius: 30px; font-size: 0.7rem; color: var(--amber); display: inline-flex; align-items: center; gap: 8px; }
+.active-filter-tag button { background: none; border: none; cursor: pointer; color: var(--amber); }
+.list-items { max-height: 400px; overflow-y: auto; }
+.list-item { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.list-item:hover { background: var(--amber-dim); }
 </style>
 </head>
 <body>
 
-<div class="corner-tl"></div>
-<div class="corner-br"></div>
-
-<!-- APP BAR -->
-<div class="app-bar">
-  <button class="menu-icon" id="menuIcon"><i class="fas fa-bars"></i></button>
-  <div class="app-bar-logo">Connect <span class="hi">Industry</span> <span style="color:var(--txt3);font-size:0.7rem;">// Maroc</span></div>
-  <div class="app-bar-clock">
-    <div class="time" id="appTime">--:--</div>
-    <div id="appDate">--/--/----</div>
+<header class="topbar">
+  <div class="topbar-logo" style="display:flex;align-items:center;gap:10px">
+    <div class="logo-mark">CI</div>
+    <div><div class="logo-name">CONNECT <span>INDUSTRY</span></div><div class="logo-tagline">Marketplace Industriel</div></div>
   </div>
-</div>
-
-<!-- DRAWER -->
-<div class="drawer-overlay" id="drawerOverlay">
-  <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <div class="drawer-header-accent"></div>
-      <div class="drawer-logo-row">Connect <span>Industry</span></div>
-      <div class="drawer-sub">// plateforme_industrielle.ma</div>
-      <div class="drawer-user-card">
-        <div class="drawer-avatar"><i class="fas fa-user"></i></div>
-        <div>
-          <div class="drawer-uname" id="drawerUserName">Visiteur</div>
-          <div class="drawer-ustatus" id="drawerUserStatus">guest_mode</div>
-        </div>
-      </div>
-      <div class="drawer-time-row">
-        <div>
-          <div class="drawer-time" id="drawerTime">--:--</div>
-          <div class="drawer-date" id="drawerDate">--/--/----</div>
-        </div>
-        <button class="drawer-theme-btn" id="drawerThemeBtn"><i class="fas fa-moon"></i> theme</button>
-      </div>
-    </div>
-    <div class="drawer-menu">
-      <div class="drawer-section-title">// navigation</div>
-      <button class="drawer-item" data-section="about"><i class="fas fa-building"></i> À Propos</button>
-      <button class="drawer-item" data-section="fournisseurs"><i class="fas fa-industry"></i> Fournisseurs</button>
-      <button class="drawer-item" data-section="experts"><i class="fas fa-microchip"></i> Experts</button>
-      <button class="drawer-item" data-section="groups"><i class="fab fa-whatsapp"></i> Groupes WhatsApp</button>
-      <div class="drawer-divider"></div>
-      <div class="drawer-section-title">// compte</div>
-      <button class="drawer-item" id="drawerSubscribeBtn"><i class="fas fa-user-plus"></i><span id="drawerSubscribeText">S'abonner</span></button>
-      <button class="drawer-item" id="drawerAdminBtn"><i class="fas fa-key"></i><span id="drawerAdminText">Mode Admin</span></button>
-      <button class="drawer-item" id="drawerUnpinBtn"><i class="fas fa-trash-alt"></i> Annuler épinglages</button>
-      <div class="drawer-divider"></div>
-      <div class="drawer-section-title">// liens</div>
-      <button class="drawer-item" id="drawerWaBtn"><i class="fab fa-whatsapp"></i> Contact WhatsApp</button>
-    </div>
+  <div class="topbar-right">
+    <div class="topbar-clock" id="appTime">--:--</div>
+    <button class="icon-btn" id="themeBtn"><i class="fas fa-moon"></i></button>
+    <button class="icon-btn" id="adminBtn"><i class="fas fa-user-shield"></i></button>
+    <button class="icon-btn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
   </div>
-</div>
+</header>
 
-<!-- MAIN -->
-<div class="main-content">
+<nav class="bottom-tabs">
+  <button class="tab-btn active" data-sec="about"><i class="fas fa-home"></i><span>ACCUEIL</span></button>
+  <button class="tab-btn" data-sec="explorer"><i class="fas fa-compass"></i><span>EXPLORER</span></button>
+  <button class="tab-btn" data-sec="db"><i class="fas fa-store"></i><span>MARKETPLACE</span></button>
+  <button class="tab-btn tab-admin admin-only" data-sec="fournisseurs"><i class="fas fa-industry"></i><span>FOURN.</span></button>
+  <button class="tab-btn tab-admin admin-only" data-sec="experts"><i class="fas fa-microchip"></i><span>EXPERTS</span></button>
+  <button class="tab-btn tab-admin admin-only" id="syncBtn"><i class="fas fa-sync-alt"></i><span>SYNC</span></button>
+  <button class="tab-btn tab-admin admin-only" id="addBtn"><i class="fas fa-plus"></i><span>AJOUTER</span></button>
+</nav>
 
-  <!-- ABOUT -->
+<main class="main">
   <div id="aboutSection" class="section active">
-    <div class="hero">
-      <div class="hero-geo">MA</div>
-      <div class="hero-badge"><i class="fas fa-globe-africa"></i> Maroc Industrial Network</div>
-      <h1>Connect<br><span>Industry</span></h1>
-      <p>Plateforme digitale de mise en relation entre demandeurs de produits industriels et le plus grand réseau de fournisseurs et professionnels au Maroc.</p>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-industry"></i> Fournisseurs Industriels</div>
-      <div class="panel-body">
-        <div class="stats-grid">
-          <div class="stat-card" data-section="fournisseurs" data-type="total"><div class="stat-num" id="fourTotal">0</div><div class="stat-lbl">Total</div></div>
-          <div class="stat-card" data-section="fournisseurs" data-type="domaines"><div class="stat-num" id="fourDomaines">0</div><div class="stat-lbl">Domaines</div></div>
-          <div class="stat-card" data-section="fournisseurs" data-type="villes"><div class="stat-num" id="fourVilles">0</div><div class="stat-lbl">Villes</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-microchip"></i> Experts & Automaticiens</div>
-      <div class="panel-body">
-        <div class="stats-grid">
-          <div class="stat-card" data-section="experts" data-type="total"><div class="stat-num" id="autoTotal">0</div><div class="stat-lbl">Total</div></div>
-          <div class="stat-card" data-section="experts" data-type="domaines"><div class="stat-num" id="autoDomaines">0</div><div class="stat-lbl">Domaines</div></div>
-          <div class="stat-card" data-section="experts" data-type="villes"><div class="stat-num" id="autoVilles">0</div><div class="stat-lbl">Villes</div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-user-plus"></i> Rejoignez notre réseau</div>
-      <div class="panel-body">
-        <div class="ac-grid">
-          <div class="ac-card">
-            <div class="ac-icon"><i class="fas fa-microchip"></i></div>
-            <h3>Ajouter un expert</h3>
-            <p>Formulaire pour les experts en automatisme</p>
-            <div class="ac-btns">
-              <button class="mini-btn" onclick="openForm('expert')"><i class="fas fa-plus-circle"></i> Formulaire</button>
-              <button class="mini-btn" onclick="shareForm('expert')"><i class="fas fa-share-alt"></i> Partager</button>
-              <button class="mini-btn" onclick="showQRWithShare('https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform','Formulaire Expert')"><i class="fas fa-qrcode"></i> QR</button>
-              <button class="mini-btn" id="exportExpertBtn" onclick="exportCSV('expert')"><i class="fas fa-file-csv"></i> CSV</button>
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-chart-line"></i></div><div class="card-head-title">Statistiques</div><div class="card-head-right"><span id="adminBadge" class="admin-only" style="background:var(--admin);color:#fff;padding:4px 10px;border-radius:20px;font-size:0.6rem;">ADMIN</span></div></div>
+      <div class="card-body">
+        <div class="stats-row">
+          <div class="stats-group">
+            <div class="stats-group-title"><i class="fas fa-chart-pie"></i> APERÇU GÉNÉRAL</div>
+            <div class="stats-grid">
+              <div class="stat-tile" data-type="fournisseurs"><div class="stat-num" id="statFour">0</div><div class="stat-label">Fournisseurs</div></div>
+              <div class="stat-tile" data-type="experts"><div class="stat-num" id="statExp">0</div><div class="stat-label">Experts</div></div>
+              <div class="stat-tile" data-extra="villes"><div class="stat-num" id="statVilles">0</div><div class="stat-label">Villes</div></div>
+              <div class="stat-tile" data-extra="domaines"><div class="stat-num" id="statDomaines">0</div><div class="stat-label">Domaines</div></div>
             </div>
           </div>
-          <div class="ac-card">
-            <div class="ac-icon"><i class="fas fa-industry"></i></div>
-            <h3>Ajouter un fournisseur</h3>
-            <p>Formulaire pour les fournisseurs industriels</p>
-            <div class="ac-btns">
-              <button class="mini-btn" onclick="openForm('four')"><i class="fas fa-plus-circle"></i> Formulaire</button>
-              <button class="mini-btn" onclick="shareForm('four')"><i class="fas fa-share-alt"></i> Partager</button>
-              <button class="mini-btn" onclick="showQRWithShare('https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform','Formulaire Fournisseur')"><i class="fas fa-qrcode"></i> QR</button>
-              <button class="mini-btn" id="exportFourBtn" onclick="exportCSV('four')"><i class="fas fa-file-csv"></i> CSV</button>
+          <div class="stats-group">
+            <div class="stats-group-title"><i class="fas fa-tags"></i> PAR CATÉGORIE</div>
+            <div class="stats-grid">
+              <div class="stat-tile" data-cat="services"><div class="stat-num" id="statServices">0</div><div class="stat-label">Services</div></div>
+              <div class="stat-tile" data-cat="products"><div class="stat-num" id="statProduits">0</div><div class="stat-label">Produits</div></div>
+              <div class="stat-tile" data-cat="maqola"><div class="stat-num" id="statMaqola">0</div><div class="stat-label">Maqaola</div></div>
+              <div class="stat-tile" data-cat="yad-amila"><div class="stat-num" id="statYadAmila">0</div><div class="stat-label">Yad Amila</div></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-comment-dots"></i> Suggestions et Contact</div>
-      <div class="panel-body">
-        <div class="wa-contact-row">
-          <p style="font-size:0.78rem;color:var(--txt3);margin-bottom:5px;">Pour toute question ou assistance rapide</p>
-          <div class="wa-num"><i class="fab fa-whatsapp"></i> +212 690-292010</div>
-          <div class="wa-row-btns">
-            <button class="mini-btn" onclick="window.open('https://wa.me/212690292010','_blank')"><i class="fab fa-whatsapp"></i> Contacter</button>
-            <button class="mini-btn" onclick="showQRWithShare('https://wa.me/212690292010','Contact WhatsApp')"><i class="fas fa-qrcode"></i> QR</button>
-          </div>
+  <div id="explorerSection" class="section">
+    <div class="card"><div class="card-head"><div class="card-head-icon"><i class="fas fa-compass"></i></div><div class="card-head-title">Explorer par catégorie</div></div><div class="card-body"><div id="explorerContent"></div></div></div>
+  </div>
+
+  <div id="dbSection" class="section">
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-store"></i></div><div class="card-head-title">Marketplace</div><div class="card-head-right"><span class="count-badge" id="dbCount">0</span></div></div>
+      <div class="card-body">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="dbSearch" placeholder="Rechercher un professionnel..."><button class="search-clear" id="dbClear"><i class="fas fa-times"></i></button></div>
+        <div class="filter-strip">
+          <button class="filter-chip" id="filterTypeBtn"><i class="fas fa-user-tie"></i><span>Type</span></button>
+          <button class="filter-chip" id="filterCatBtn"><i class="fas fa-tag"></i><span>Catégorie</span></button>
+          <button class="filter-chip" id="filterVilleBtn"><i class="fas fa-location-dot"></i><span>Ville</span></button>
+          <button class="filter-chip" id="filterDomaineBtn"><i class="fas fa-briefcase"></i><span>Domaine</span></button>
+          <button class="filter-chip danger" id="filterResetBtn"><i class="fas fa-undo"></i><span>Reset</span></button>
         </div>
-        <form id="contactForm" class="contact-form">
-          <input type="text" id="contactName" class="input-field" placeholder="Nom (optionnel)">
-          <input type="text" id="contactInfo" class="input-field" placeholder="Email ou Téléphone (optionnel)">
-          <div class="msg-types">
-            <button type="button" class="type-btn" data-type="suggestion"><i class="fas fa-lightbulb"></i> Suggestion</button>
-            <button type="button" class="type-btn" data-type="reclamation"><i class="fas fa-exclamation-triangle"></i> Réclamation</button>
-            <button type="button" class="type-btn" data-type="demande"><i class="fas fa-question-circle"></i> Demande</button>
-            <button type="button" class="type-btn" data-type="collaboration"><i class="fas fa-handshake"></i> Collaboration</button>
-          </div>
-          <input type="hidden" id="contactType" value="suggestion">
-          <textarea id="contactMessage" class="input-field" rows="4" placeholder="Votre message..."></textarea>
-          <button type="submit" class="send-btn"><i class="fab fa-whatsapp"></i> Envoyer via WhatsApp</button>
-        </form>
+        <div class="active-filters" id="dbFilterTags"></div>
+        <div id="dbResultInfo" class="result-bar" style="display:none"></div>
+        <div id="dbGrid" class="items-grid"></div>
+        <div id="dbPagination" class="pagination"></div>
       </div>
     </div>
   </div>
 
-  <!-- GROUPS -->
-  <div id="groupsSection" class="section">
-    <div class="wa-section">
-      <div class="wa-head"><i class="fab fa-whatsapp"></i> Groupes WhatsApp Industriels</div>
-      <div class="wa-grid">
-        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Stations de Dessalement Maroc</h4><div class="st">120+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/Fc6tLGZu1cV5B1dD9jHUIu','Stations de Dessalement Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
-        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Comptables & Gestionnaires Maroc</h4><div class="st">200+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/BoUOysLYZ2IKeTeex8c9AF','Comptables & Gestionnaires Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
-        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Fournisseurs Industriels Du Maroc</h4><div class="st">250+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/DMmASG7S3ULEdXjEWhoB7d','Fournisseurs Industriels Du Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
-        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Energie Solaire Maroc</h4><div class="st">750+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/LfM5lmhjm2yCH1051XGwow','Energie Solaire Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
-        <div class="wa-item"><div class="wa-info"><div class="wa-icon"><i class="fab fa-whatsapp"></i></div><div class="wa-details"><h4>Genie Electrique Industriel Maroc</h4><div class="st">420+ membres</div></div></div><div class="wa-acts"><button class="wa-btn join" onclick="window.open('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu','_blank')"><i class="fab fa-whatsapp"></i></button><button class="wa-btn qr" onclick="showQRWithShare('https://chat.whatsapp.com/JBELJ3eucSgEDRhlWVe7cu','Genie Electrique Industriel Maroc')"><i class="fas fa-qrcode"></i></button></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FOURNISSEURS -->
   <div id="fournisseursSection" class="section">
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-industry"></i> Fournisseurs Industriels</div>
-      <div class="panel-body">
-        <div class="search-stats">
-          <div class="s-badge" id="fourResultsBadge"><i class="fas fa-list"></i> <span class="cnt" id="fourResultCount">0</span> résultats</div>
-          <div class="s-badge" id="fourExpertsBadge"><i class="fas fa-microchip"></i> <span class="cnt" id="fourMatchCount">0</span> experts</div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-industry"></i></div><div class="card-head-title">Fournisseurs CSV</div><div class="card-head-right"><span class="count-badge" id="fourCount">0</span></div></div>
+      <div class="card-body">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
+        <div class="filter-strip">
+          <button class="filter-chip" id="fourVilleBtn"><i class="fas fa-location-dot"></i><span>Ville</span></button>
+          <button class="filter-chip" id="fourDomaineBtn"><i class="fas fa-briefcase"></i><span>Domaine</span></button>
+          <button class="filter-chip danger" id="fourResetBtn"><i class="fas fa-undo"></i><span>Reset</span></button>
         </div>
-        <div class="search-wrap">
-          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="fourSearch" placeholder="Rechercher..."></div>
-          <div class="filter-grp">
-            <button class="f-btn" id="fourDomaineBtn" title="Domaine"><i class="fas fa-folder"></i></button>
-            <button class="f-btn" id="fourVilleBtn" title="Ville"><i class="fas fa-city"></i></button>
-            <button class="cl-btn" id="fourClearBtn" title="Effacer"><i class="fas fa-eraser"></i></button>
-          </div>
-        </div>
-        <div id="fourFeatured" class="featured-section" style="display:none;">
-          <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="fourFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
-          <div class="featured-scroll"><div id="fourFeaturedItems" class="featured-items"></div></div>
-        </div>
-        <div id="fourGrid" class="items-grid">
-          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
-        </div>
+        <div class="active-filters" id="fourFilterTags"></div>
+        <div id="fourResultInfo" class="result-bar" style="display:none"></div>
+        <div id="fourGrid" class="items-grid"></div>
       </div>
     </div>
   </div>
 
-  <!-- EXPERTS -->
   <div id="expertsSection" class="section">
-    <div class="panel">
-      <div class="panel-head"><i class="fas fa-microchip"></i> Experts & Automaticiens</div>
-      <div class="panel-body">
-        <div class="search-stats">
-          <div class="s-badge" id="autoResultsBadge"><i class="fas fa-list"></i> <span class="cnt" id="autoResultCount">0</span> résultats</div>
-          <div class="s-badge" id="autoFourBadge"><i class="fas fa-industry"></i> <span class="cnt" id="autoMatchCount">0</span> fournisseurs</div>
+    <div class="card">
+      <div class="card-head"><div class="card-head-icon"><i class="fas fa-microchip"></i></div><div class="card-head-title">Experts CSV</div><div class="card-head-right"><span class="count-badge" id="expCount">0</span></div></div>
+      <div class="card-body">
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="expSearch" placeholder="Rechercher..."></div>
+        <div class="filter-strip">
+          <button class="filter-chip" id="expVilleBtn"><i class="fas fa-location-dot"></i><span>Ville</span></button>
+          <button class="filter-chip" id="expDomaineBtn"><i class="fas fa-briefcase"></i><span>Domaine</span></button>
+          <button class="filter-chip danger" id="expResetBtn"><i class="fas fa-undo"></i><span>Reset</span></button>
         </div>
-        <div class="search-wrap">
-          <div class="search-box"><i class="fas fa-search"></i><input type="text" id="autoSearch" placeholder="Rechercher..."></div>
-          <div class="filter-grp">
-            <button class="f-btn" id="autoDomaineBtn" title="Domaine"><i class="fas fa-folder"></i></button>
-            <button class="f-btn" id="autoVilleBtn" title="Ville"><i class="fas fa-city"></i></button>
-            <button class="cl-btn" id="autoClearBtn" title="Effacer"><i class="fas fa-eraser"></i></button>
-          </div>
-        </div>
-        <div id="autoFeatured" class="featured-section" style="display:none;">
-          <div class="featured-head"><span><i class="fas fa-star"></i> À la une</span><span id="autoFeaturedCount" style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:var(--txt3);"></span></div>
-          <div class="featured-scroll"><div id="autoFeaturedItems" class="featured-items"></div></div>
-        </div>
-        <div id="autoGrid" class="items-grid">
-          <div style="text-align:center;padding:36px;grid-column:1/-1;"><div class="loading-line"><div class="loading-progress"></div></div></div>
-        </div>
+        <div class="active-filters" id="expFilterTags"></div>
+        <div id="expResultInfo" class="result-bar" style="display:none"></div>
+        <div id="expGrid" class="items-grid"></div>
       </div>
     </div>
+  </div>
+</main>
+
+<div class="overlay" id="adminModal">
+  <div class="modal">
+    <div class="modal-head"><h3><i class="fas fa-shield-alt"></i> Accès Admin</h3><button class="modal-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div class="fgroup"><label>Mot de passe</label><input type="password" id="adminPass" class="field" placeholder="admin123"></div><div id="adminError" style="color:var(--rose);display:none;"></div></div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="verifyAdmin()">Connexion</button><button class="btn btn-ghost" onclick="closeModal('adminModal')">Annuler</button></div>
   </div>
 </div>
 
-<!-- MODALS -->
-<div class="modal-overlay" id="listModal"><div class="modal-content" style="max-width:360px;"><div class="modal-header"><h3 id="listModalTitle">Liste</h3><button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" style="padding:0;"><div id="listItems" class="list-items"></div></div></div></div>
-<div class="modal-overlay" id="qrModal"><div class="modal-content"><div class="modal-header"><h3 id="qrTitle">QR Code</h3><button class="modal-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="qr-container" id="qrContainer"></div><button class="mini-btn" onclick="shareQRWithData()" style="width:100%;justify-content:center"><i class="fas fa-share-alt"></i> Partager</button></div></div></div>
-<div class="modal-overlay" id="subscribeModal"><div class="modal-content"><div class="modal-header"><h3>Abonnement</h3><button class="modal-close" onclick="closeModal('subscribeModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p>Entrez votre numéro de téléphone</p><input type="tel" id="subscribePhone" class="input-field" placeholder="Ex: 0612345678"></div><div class="modal-footer"><button class="mini-btn" onclick="checkSubscribe()">S'abonner</button><button class="mini-btn" onclick="closeModal('subscribeModal')">Annuler</button></div></div></div>
-<div class="modal-overlay" id="adminModal"><div class="modal-content"><div class="modal-header"><h3>Mode Admin</h3><button class="modal-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p>Entrez le mot de passe</p><input type="password" id="adminPassword" class="input-field" placeholder="Mot de passe"></div><div class="modal-footer"><button class="mini-btn" onclick="verifyAdmin()">Confirmer</button><button class="mini-btn" onclick="closeModal('adminModal')">Annuler</button></div></div></div>
-<div class="modal-overlay" id="detailModal"><div class="modal-content"><div class="modal-header"><h3 id="detailTitle">Détails</h3><button class="modal-close" onclick="closeModal('detailModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="detailBody"></div></div></div>
-<div class="modal-overlay" id="shareModal"><div class="modal-content"><div class="modal-header"><h3>Partager</h3><button class="modal-close" onclick="closeModal('shareModal')"><i class="fas fa-times"></i></button></div><div class="modal-body"><p id="shareMsg">...</p></div><div class="modal-footer"><button class="mini-btn" onclick="sendShare()"><i class="fab fa-whatsapp"></i> WhatsApp</button><button class="mini-btn" onclick="closeModal('shareModal')">Annuler</button></div></div></div>
-<div class="modal-overlay filter-modal" id="domaineModal"><div class="modal-content"><div class="modal-header"><h3>Choisir un domaine</h3><button class="modal-close" onclick="closeModal('domaineModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="domaineList" style="max-height:280px;overflow-y:auto;"></div></div></div>
-<div class="modal-overlay filter-modal" id="villeModal"><div class="modal-content"><div class="modal-header"><h3>Choisir une ville</h3><button class="modal-close" onclick="closeModal('villeModal')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="villeList" style="max-height:280px;overflow-y:auto;"></div></div></div>
+<div class="overlay" id="listModal">
+  <div class="modal"><div class="modal-head"><h3 id="listTitle">Liste</h3><button class="modal-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div><div id="listItems" class="list-items"></div></div>
+</div>
+
+<div class="overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="editTitle">Ajouter</h3><button class="modal-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="fgroup"><label>Nom</label><input type="text" id="editName" class="field"></div>
+      <div class="fgroup"><label>Type</label><select id="editType" class="field"><option value="fournisseurs">FOURNISSEUR</option><option value="experts">EXPERT</option></select></div>
+      <div class="fgroup"><label>Catégorie</label><select id="editCat" class="field"><option value="services">SERVICES</option><option value="products">PRODUITS</option><option value="maqola">MAQAOLA</option><option value="yad-amila">YAD AMILA</option></select></div>
+      <div class="fgroup"><label>Domaine</label><input type="text" id="editDomaine" class="field"></div>
+      <div class="fgroup"><label>Spécialité</label><input type="text" id="editSpecialite" class="field"></div>
+      <div class="fgroup"><label>Ville</label><input type="text" id="editVille" class="field"></div>
+      <div class="fgroup"><label>Téléphone</label><input type="tel" id="editPhone" class="field"></div>
+      <div class="fgroup"><label>Email</label><input type="email" id="editEmail" class="field"></div>
+      <div class="fgroup"><label>Site Web</label><input type="url" id="editWeb" class="field"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-primary" onclick="saveItem()">Enregistrer</button><button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Confirmer</h3><button class="modal-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><p id="deleteMsg"></p><div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-danger" onclick="confirmDeleteItem()">Supprimer</button><button class="btn btn-ghost" onclick="closeModal('deleteModal')">Annuler</button></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="qrModal">
+  <div class="modal">
+    <div class="modal-head"><h3><i class="fas fa-qrcode"></i> Carte de Visite</h3><button class="modal-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div>
+    <div class="modal-body"><div id="qrContainer"></div><button class="btn btn-primary btn-full" id="downloadPdfBtn"><i class="fas fa-download"></i> Télécharger PDF</button></div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
-<div class="loading" id="loading">
-  <div class="loading-text">CI.MAROC</div>
-  <div class="loading-line"><div class="loading-progress"></div></div>
-</div>
+<div class="loading-screen" id="loadingScreen"><div class="loading-logo">CI</div></div>
 
 <script>
-(function(){
-const CFG={ADMIN_PASSWORD:"11111111",WA_NUM:"212690292010",AUTO_CSV:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv",FOUR_CSV:"https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv",FORM_AUTO:"https://docs.google.com/forms/d/e/1FAIpQLSfxcNDd0_02IYrnd26IrEg7NLG-CoZs_8ykySRjbbf4vwjYNg/viewform",FORM_FOUR:"https://docs.google.com/forms/d/e/1FAIpQLSc79vQhR1xqxf89r23LalhiJxkUDy_NMBRHVFYldIH48cwBVA/viewform"};
-let experts=[],suppliers=[],isAdmin=false,isSubscriber=false,subPhone=null,subMember=null;
-let fF={domaine:null,ville:null,search:""},aF={domaine:null,ville:null,search:""};
-let fT=null,aT=null,upF=[],upA=[],apF=[],apA=[];
-let curShare=null,curQR={url:"",title:""},curSec='about',secHist=['about'];
-const ST={APF:'adminPinnedFour',APA:'adminPinnedAuto',UPF:'userPinnedFour',UPA:'userPinnedAuto',ADM:'adminMode',SPH:'subscriberPhone',SAC:'subscriberActive',THM:'theme'};
-const STIT={about:'Connect Industry',fournisseurs:'Fournisseurs',experts:'Experts',groups:'Groupes WhatsApp'};
+// ========== CONFIG ==========
+const CSV_EXPERTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
+const CSV_FOURNISSEURS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
+const ADMIN_PASSWORD = "admin123";
 
-const $=id=>document.getElementById(id);
-function toast(m){const t=$('toast');t.innerHTML=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
-function closeModal(id){const m=$(id);if(m)m.classList.remove('show');}
-function scrollTop(){window.scrollTo({top:0,behavior:'smooth'});}
-function esc(s){if(!s)return'';return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function fmtPhone(p){if(!p)return null;let c=p.toString().replace(/[\s\-\(\)]/g,'');if(c.startsWith('0'))return'+212'+c.substring(1);if(c.startsWith('212'))return'+'+c;if(c.match(/^[67]\d{8}$/))return'+212'+c;return c;}
-function matchP(a,b){const f1=fmtPhone(a),f2=fmtPhone(b);return f1&&f2&&f1===f2;}
-function matchS(item,t){if(!t)return true;return[item.name,item.domaine,item.specialite,item.city,item.email,item.web,item.phone].some(f=>f&&f.toLowerCase().includes(t));}
-function canEx(){return isSubscriber||isAdmin;}
+// ========== FIREBASE ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
+  authDomain: "said-rahil-default-rtdb.firebaseio.com",
+  databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/",
+  projectId: "said-rahil",
+  storageBucket: "said-rahil.firebasestorage.app"
+};
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database();
 
-function openDrawer(){$('drawerOverlay').classList.add('open');$('drawer').classList.add('open');}
-function closeDrawer(){$('drawerOverlay').classList.remove('open');$('drawer').classList.remove('open');}
-function toggleDrawer(){$('drawer').classList.contains('open')?closeDrawer():openDrawer();}
+// ========== STATE ==========
+let csvExperts = [], csvFournisseurs = [], dbData = [];
+let isAdmin = false;
+let currentSection = 'about';
+let explorerStack = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 20;
+let dbFilters = { type: null, cat: null, ville: null, domaine: null, search: '' };
+let fourFilters = { ville: null, domaine: null, search: '' };
+let expFilters = { ville: null, domaine: null, search: '' };
+let pendingDelete = null;
 
-function handleBack(){if($('drawer').classList.contains('open')){closeDrawer();return;}if(secHist.length>1){secHist.pop();showSec(secHist[secHist.length-1]);scrollTop();}else if(curSec!=='about'){showSec('about');scrollTop();}else{if(confirm('Voulez-vous quitter ?')){window.close();}}}
+// ========== DOM HELPERS ==========
+function $(id) { return document.getElementById(id); }
+function toast(msg) { const t = $('toast'); t.innerHTML = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+function closeModal(id) { $(id).classList.remove('show'); }
+function showLoading(v) { if(v) $('loadingScreen').classList.remove('hide'); else $('loadingScreen').classList.add('hide'); }
+function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function escapeHtml(s) { return String(s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function formatPhone(p) { if (!p) return ''; let c = String(p).replace(/[\s\-\(\)\.]/g, ''); if (c.startsWith('00')) c = '+' + c.slice(2); if (c.startsWith('0') && !c.startsWith('00')) c = '+212' + c.slice(1); return c; }
 
-async function loadCSV(url){
-  try{const r=await fetch(url);const t=await r.text();const L=t.split(/\r?\n/);if(L.length<2)return[];const D=[];
-  for(let i=1;i<L.length;i++){if(!L[i].trim())continue;const p=L[i].split(',').map(x=>x.replace(/["']/g,'').trim());if(p.length<5)continue;D.push({name:p[1]||'',domaine:p[2]||'',specialite:p[3]||'',city:p[4]||'',phone:fmtPhone(p[5]||''),email:p[6]||'',web:p[7]||''});}return D;}catch(e){return[];}
+// ========== ADMIN ==========
+function verifyAdmin() {
+  if ($('adminPass').value === ADMIN_PASSWORD) {
+    isAdmin = true;
+    sessionStorage.setItem('adminMode', 'true');
+    document.body.classList.add('admin-mode');
+    $('adminBtn').classList.add('admin-on');
+    $('logoutBtn').style.display = 'flex';
+    $('logoutBtn').classList.add('logout-on');
+    closeModal('adminModal');
+    toast('✅ Mode Admin activé');
+    renderCurrent();
+  } else {
+    $('adminError').style.display = 'block';
+    $('adminError').innerHTML = '❌ Mot de passe incorrect';
+    setTimeout(() => $('adminError').style.display = 'none', 2000);
+  }
 }
 
-function updStats(){
-  const fd=new Set(suppliers.map(s=>s.domaine).filter(d=>d));const fv=new Set(suppliers.map(s=>s.city).filter(v=>v));
-  $('fourTotal').textContent=suppliers.length;$('fourDomaines').textContent=fd.size;$('fourVilles').textContent=fv.size;
-  const ad=new Set(experts.map(e=>e.domaine).filter(d=>d));const av=new Set(experts.map(e=>e.city).filter(v=>v));
-  $('autoTotal').textContent=experts.length;$('autoDomaines').textContent=ad.size;$('autoVilles').textContent=av.size;
+function logoutAdmin() {
+  isAdmin = false;
+  sessionStorage.removeItem('adminMode');
+  document.body.classList.remove('admin-mode');
+  $('adminBtn').classList.remove('admin-on');
+  $('logoutBtn').style.display = 'none';
+  toast('👤 Mode utilisateur normal');
+  renderCurrent();
 }
 
-function filtS(){let f=[...suppliers];if(fF.domaine)f=f.filter(s=>s.domaine===fF.domaine);if(fF.ville)f=f.filter(s=>s.city===fF.ville);if(fF.search)f=f.filter(s=>matchS(s,fF.search));return f;}
-function filtE(){let f=[...experts];if(aF.domaine)f=f.filter(e=>e.domaine===aF.domaine);if(aF.ville)f=f.filter(e=>e.city===aF.ville);if(aF.search)f=f.filter(e=>matchS(e,aF.search));return f;}
-function getDomForVille(d,v){return[...new Set(d.filter(x=>x.city===v&&x.domaine).map(x=>x.domaine))].sort();}
-function getVilForDom(d,dom){return[...new Set(d.filter(x=>x.domaine===dom&&x.city).map(x=>x.city))].sort();}
+function checkAdminStatus() {
+  if (sessionStorage.getItem('adminMode') === 'true') {
+    isAdmin = true;
+    document.body.classList.add('admin-mode');
+    $('adminBtn').classList.add('admin-on');
+    $('logoutBtn').style.display = 'flex';
+  }
+}
 
-function showList(title,items,onSel){
-  $('listModalTitle').textContent=title;const c=$('listItems');c.innerHTML='';
-  if(!items||!items.length){c.innerHTML='<div class="list-item"><span class="list-item-name">Aucun élément</span></div>';}
-  else items.forEach(item=>{const d=document.createElement('div');d.className='list-item';d.innerHTML=`<span class="list-item-name">${esc(item)}</span><span class="list-item-arrow">→</span>`;d.onclick=()=>{onSel(item);closeModal('listModal');};c.appendChild(d);});
+// ========== CSV LOADING ==========
+async function loadCSV(url) {
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
+    const lines = text.split(/\r?\n/);
+    const data = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',');
+      if (cols[1]) {
+        data.push({
+          name: cols[1]?.replace(/["']/g, '').trim() || '',
+          domaine: cols[2]?.replace(/["']/g, '').trim() || 'Autre',
+          specialite: cols[3]?.replace(/["']/g, '').trim() || 'Général',
+          ville: cols[4]?.replace(/["']/g, '').trim() || '',
+          phone: formatPhone(cols[5]?.replace(/["']/g, '').trim()),
+          email: cols[6]?.replace(/["']/g, '').trim() || '',
+          web: cols[7]?.replace(/["']/g, '').trim() || ''
+        });
+      }
+    }
+    return data;
+  } catch(e) { return []; }
+}
+
+// ========== FIREBASE LOAD ==========
+async function loadDB() {
+  showLoading(true);
+  try {
+    const snap = await dbRef.ref('professionals').once('value');
+    const data = snap.val();
+    dbData = [];
+    if (data) {
+      const typeMap = { 'FOURNISSEURS': 'fournisseurs', 'EXPERTS': 'experts' };
+      const catMap = { 'SERVICES': 'services', 'PRODUITS': 'products', 'MAQAOLA': 'maqola', 'YAD AMILA': 'yad-amila' };
+      for (const [ft, typeObj] of Object.entries(data)) {
+        const type = typeMap[ft];
+        if (!type) continue;
+        for (const [fc, items] of Object.entries(typeObj)) {
+          const cat = catMap[fc];
+          if (!cat || !Array.isArray(items)) continue;
+          for (const item of items) {
+            if (item?.name) {
+              dbData.push({ ...item, type, categorie: cat, id: item.id || `${type}_${Date.now()}_${Math.random()}` });
+            }
+          }
+        }
+      }
+    }
+    updateStats();
+    renderCurrent();
+  } catch(e) { toast('❌ Erreur chargement'); }
+  showLoading(false);
+}
+
+// ========== SYNC ==========
+async function syncToFirebase() {
+  if (!confirm('Synchroniser les CSV vers Firebase ?')) return;
+  showLoading(true);
+  try {
+    const structure = {
+      "FOURNISSEURS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] },
+      "EXPERTS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] }
+    };
+    csvFournisseurs.forEach((s, i) => {
+      structure["FOURNISSEURS"]["SERVICES"].push({
+        id: `four_${Date.now()}_${i}`, name: s.name, domaine: s.domaine,
+        specialite: s.specialite, ville: s.ville, phone: s.phone, email: s.email, web: s.web
+      });
+    });
+    csvExperts.forEach((e, i) => {
+      structure["EXPERTS"]["YAD AMILA"].push({
+        id: `exp_${Date.now()}_${i}`, name: e.name, domaine: e.domaine,
+        specialite: e.specialite, ville: e.ville, phone: e.phone, email: e.email, web: e.web
+      });
+    });
+    await dbRef.ref('professionals').set(structure);
+    toast('✅ Synchronisation terminée');
+    await loadDB();
+  } catch(e) { toast('❌ Erreur sync'); }
+  showLoading(false);
+}
+
+// ========== STATS ==========
+function updateStats() {
+  $('statFour').textContent = dbData.filter(d => d.type === 'fournisseurs').length;
+  $('statExp').textContent = dbData.filter(d => d.type === 'experts').length;
+  $('statVilles').textContent = new Set(dbData.map(d => d.ville).filter(v => v && v !== 'null')).size;
+  $('statDomaines').textContent = new Set(dbData.map(d => d.domaine).filter(d => d && d !== 'null')).size;
+  $('statServices').textContent = dbData.filter(d => d.categorie === 'services').length;
+  $('statProduits').textContent = dbData.filter(d => d.categorie === 'products').length;
+  $('statMaqola').textContent = dbData.filter(d => d.categorie === 'maqola').length;
+  $('statYadAmila').textContent = dbData.filter(d => d.categorie === 'yad-amila').length;
+  $('dbCount').textContent = dbData.length;
+  $('fourCount').textContent = csvFournisseurs.length;
+  $('expCount').textContent = csvExperts.length;
+}
+
+// ========== DB FILTERS (avec filtrage séquentiel) ==========
+function getAvailableDBVilles() {
+  let filtered = [...dbData];
+  if (dbFilters.type) filtered = filtered.filter(d => d.type === dbFilters.type);
+  if (dbFilters.cat) filtered = filtered.filter(d => d.categorie === dbFilters.cat);
+  if (dbFilters.domaine) filtered = filtered.filter(d => d.domaine === dbFilters.domaine);
+  return [...new Set(filtered.map(d => d.ville).filter(v => v && v !== 'null'))].sort((a,b) => a.localeCompare(b));
+}
+
+function getAvailableDBDomaines() {
+  let filtered = [...dbData];
+  if (dbFilters.type) filtered = filtered.filter(d => d.type === dbFilters.type);
+  if (dbFilters.cat) filtered = filtered.filter(d => d.categorie === dbFilters.cat);
+  if (dbFilters.ville) filtered = filtered.filter(d => d.ville === dbFilters.ville);
+  return [...new Set(filtered.map(d => d.domaine).filter(v => v && v !== 'null'))].sort((a,b) => a.localeCompare(b));
+}
+
+function getFilteredDB() {
+  return dbData.filter(d => {
+    if (dbFilters.type && d.type !== dbFilters.type) return false;
+    if (dbFilters.cat && d.categorie !== dbFilters.cat) return false;
+    if (dbFilters.ville && d.ville !== dbFilters.ville) return false;
+    if (dbFilters.domaine && d.domaine !== dbFilters.domaine) return false;
+    if (dbFilters.search && !d.name.toLowerCase().includes(dbFilters.search.toLowerCase())) return false;
+    return true;
+  });
+}
+
+function resetDBFilters() {
+  dbFilters = { type: null, cat: null, ville: null, domaine: null, search: '' };
+  if ($('dbSearch')) $('dbSearch').value = '';
+  currentPage = 1;
+  renderDBFilterTags();
+}
+
+function removeDBFilter(key) {
+  if (key === 'type') dbFilters.type = null;
+  else if (key === 'cat') dbFilters.cat = null;
+  else if (key === 'ville') dbFilters.ville = null;
+  else if (key === 'domaine') dbFilters.domaine = null;
+  else if (key === 'search') { dbFilters.search = ''; if ($('dbSearch')) $('dbSearch').value = ''; }
+  currentPage = 1;
+  renderDB();
+  renderDBFilterTags();
+}
+
+function renderDBFilterTags() {
+  const container = $('dbFilterTags');
+  if (!container) return;
+  let html = '';
+  if (dbFilters.type) html += `<div class="active-filter-tag"><i class="fas fa-user-tie"></i> ${dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : 'Experts'} <button onclick="removeDBFilter('type')">✕</button></div>`;
+  if (dbFilters.cat) {
+    const catNames = { services: 'Services', products: 'Produits', maqola: 'Maqaola', 'yad-amila': 'Yad Amila' };
+    html += `<div class="active-filter-tag"><i class="fas fa-tag"></i> ${catNames[dbFilters.cat]} <button onclick="removeDBFilter('cat')">✕</button></div>`;
+  }
+  if (dbFilters.ville) html += `<div class="active-filter-tag"><i class="fas fa-location-dot"></i> ${escapeHtml(dbFilters.ville)} <button onclick="removeDBFilter('ville')">✕</button></div>`;
+  if (dbFilters.domaine) html += `<div class="active-filter-tag"><i class="fas fa-briefcase"></i> ${escapeHtml(dbFilters.domaine)} <button onclick="removeDBFilter('domaine')">✕</button></div>`;
+  if (dbFilters.search) html += `<div class="active-filter-tag"><i class="fas fa-search"></i> "${escapeHtml(dbFilters.search)}" <button onclick="removeDBFilter('search')">✕</button></div>`;
+  container.innerHTML = html;
+}
+
+// ========== CSV FILTERS ==========
+function getFilteredFournisseurs() {
+  let filtered = [...csvFournisseurs];
+  if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville);
+  if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
+  if (fourFilters.search) filtered = filtered.filter(f => f.name.toLowerCase().includes(fourFilters.search.toLowerCase()));
+  return filtered;
+}
+
+function getAvailableFourVilles() {
+  let filtered = [...csvFournisseurs];
+  if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
+  return [...new Set(filtered.map(f => f.ville).filter(v => v))].sort();
+}
+
+function getAvailableFourDomaines() {
+  let filtered = [...csvFournisseurs];
+  if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville);
+  return [...new Set(filtered.map(f => f.domaine).filter(d => d))].sort();
+}
+
+function resetFourFilters() {
+  fourFilters = { ville: null, domaine: null, search: '' };
+  if ($('fourSearch')) $('fourSearch').value = '';
+  renderFourFilterTags();
+}
+
+function getFilteredExperts() {
+  let filtered = [...csvExperts];
+  if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville);
+  if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine);
+  if (expFilters.search) filtered = filtered.filter(e => e.name.toLowerCase().includes(expFilters.search.toLowerCase()));
+  return filtered;
+}
+
+function getAvailableExpVilles() {
+  let filtered = [...csvExperts];
+  if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine);
+  return [...new Set(filtered.map(e => e.ville).filter(v => v))].sort();
+}
+
+function getAvailableExpDomaines() {
+  let filtered = [...csvExperts];
+  if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville);
+  return [...new Set(filtered.map(e => e.domaine).filter(d => d))].sort();
+}
+
+function resetExpFilters() {
+  expFilters = { ville: null, domaine: null, search: '' };
+  if ($('expSearch')) $('expSearch').value = '';
+  renderExpFilterTags();
+}
+
+function renderFourFilterTags() {
+  const container = $('fourFilterTags');
+  if (!container) return;
+  let html = '';
+  if (fourFilters.ville) html += `<div class="active-filter-tag"><i class="fas fa-location-dot"></i> ${escapeHtml(fourFilters.ville)} <button onclick="removeFourFilter('ville')">✕</button></div>`;
+  if (fourFilters.domaine) html += `<div class="active-filter-tag"><i class="fas fa-briefcase"></i> ${escapeHtml(fourFilters.domaine)} <button onclick="removeFourFilter('domaine')">✕</button></div>`;
+  if (fourFilters.search) html += `<div class="active-filter-tag"><i class="fas fa-search"></i> "${escapeHtml(fourFilters.search)}" <button onclick="removeFourFilter('search')">✕</button></div>`;
+  container.innerHTML = html;
+}
+
+function renderExpFilterTags() {
+  const container = $('expFilterTags');
+  if (!container) return;
+  let html = '';
+  if (expFilters.ville) html += `<div class="active-filter-tag"><i class="fas fa-location-dot"></i> ${escapeHtml(expFilters.ville)} <button onclick="removeExpFilter('ville')">✕</button></div>`;
+  if (expFilters.domaine) html += `<div class="active-filter-tag"><i class="fas fa-briefcase"></i> ${escapeHtml(expFilters.domaine)} <button onclick="removeExpFilter('domaine')">✕</button></div>`;
+  if (expFilters.search) html += `<div class="active-filter-tag"><i class="fas fa-search"></i> "${escapeHtml(expFilters.search)}" <button onclick="removeExpFilter('search')">✕</button></div>`;
+  container.innerHTML = html;
+}
+
+function removeFourFilter(key) {
+  if (key === 'ville') fourFilters.ville = null;
+  else if (key === 'domaine') fourFilters.domaine = null;
+  else if (key === 'search') { fourFilters.search = ''; if ($('fourSearch')) $('fourSearch').value = ''; }
+  renderFournisseurs();
+  renderFourFilterTags();
+}
+
+function removeExpFilter(key) {
+  if (key === 'ville') expFilters.ville = null;
+  else if (key === 'domaine') expFilters.domaine = null;
+  else if (key === 'search') { expFilters.search = ''; if ($('expSearch')) $('expSearch').value = ''; }
+  renderExperts();
+  renderExpFilterTags();
+}
+
+// ========== RENDER FUNCTIONS ==========
+function renderDB() {
+  const filtered = getFilteredDB();
+  const total = filtered.length;
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paged = filtered.slice(start, start + ITEMS_PER_PAGE);
+  $('dbGrid').innerHTML = paged.length ? paged.map(i => buildCard(i, false, true)).join('') : '<div class="empty-state"><i class="fas fa-store-slash"></i><p>Aucun résultat</p></div>';
+  $('dbCount').textContent = total;
+  renderPagination(total);
+  
+  const filters = [dbFilters.search && `"${dbFilters.search}"`, dbFilters.type === 'fournisseurs' ? 'Fournisseurs' : dbFilters.type === 'experts' ? 'Experts' : null, dbFilters.cat, dbFilters.ville, dbFilters.domaine].filter(Boolean);
+  const resultDiv = $('dbResultInfo');
+  if (filters.length) {
+    resultDiv.innerHTML = `<i class="fas fa-filter"></i> ${total} résultat(s) · ${filters.join(' · ')}`;
+    resultDiv.style.display = 'flex';
+  } else {
+    resultDiv.style.display = 'none';
+  }
+}
+
+function renderFournisseurs() {
+  const filtered = getFilteredFournisseurs();
+  $('fourGrid').innerHTML = filtered.length ? filtered.map(i => buildCard(i, true, false)).join('') : '<div class="empty-state"><i class="fas fa-industry"></i><p>Aucun fournisseur</p></div>';
+  $('fourCount').textContent = filtered.length;
+  const filters = [fourFilters.search && `"${fourFilters.search}"`, fourFilters.ville, fourFilters.domaine].filter(Boolean);
+  const resultDiv = $('fourResultInfo');
+  if (filters.length) {
+    resultDiv.innerHTML = `<i class="fas fa-filter"></i> ${filtered.length} résultat(s) · ${filters.join(' · ')}`;
+    resultDiv.style.display = 'flex';
+  } else {
+    resultDiv.style.display = 'none';
+  }
+  renderFourFilterTags();
+}
+
+function renderExperts() {
+  const filtered = getFilteredExperts();
+  $('expGrid').innerHTML = filtered.length ? filtered.map(i => buildCard(i, true, false)).join('') : '<div class="empty-state"><i class="fas fa-microchip"></i><p>Aucun expert</p></div>';
+  $('expCount').textContent = filtered.length;
+  const filters = [expFilters.search && `"${expFilters.search}"`, expFilters.ville, expFilters.domaine].filter(Boolean);
+  const resultDiv = $('expResultInfo');
+  if (filters.length) {
+    resultDiv.innerHTML = `<i class="fas fa-filter"></i> ${filtered.length} résultat(s) · ${filters.join(' · ')}`;
+    resultDiv.style.display = 'flex';
+  } else {
+    resultDiv.style.display = 'none';
+  }
+  renderExpFilterTags();
+}
+
+function renderPagination(total) {
+  const pages = Math.ceil(total / ITEMS_PER_PAGE);
+  const container = $('dbPagination');
+  if (!container || pages <= 1) { if (container) container.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+  for (let i = 1; i <= Math.min(pages, 5); i++) {
+    html += `<button class="pg-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+  }
+  if (pages > 5) html += `<span>...</span><button class="pg-btn" onclick="changePage(${pages})">${pages}</button>`;
+  html += `<button class="pg-btn" onclick="changePage(${currentPage + 1})" ${currentPage === pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+  container.innerHTML = html;
+}
+
+function changePage(page) {
+  const total = getFilteredDB().length;
+  const pages = Math.ceil(total / ITEMS_PER_PAGE);
+  if (page < 1 || page > pages) return;
+  currentPage = page;
+  renderDB();
+  scrollTop();
+}
+
+// ========== BUILD CARD ==========
+function buildCard(item, isCSV = false, showPDF = true) {
+  const hasPhone = item.phone && item.phone !== 'null';
+  const hasEmail = item.email && item.email !== 'null';
+  const hasWeb = item.web && item.web !== 'null' && item.web.startsWith('http');
+  
+  let badges = '';
+  if (!isCSV) {
+    badges += item.type === 'fournisseurs' ? '<span class="ic-badge badge-fourn">Fournisseur</span>' : '<span class="ic-badge badge-exp">Expert</span>';
+    const catNames = { services:'Services', products:'Produits', maqola:'Maqaola', 'yad-amila':'Yad Amila' };
+    const catClasses = { services:'badge-svc', products:'badge-prd', maqola:'badge-maq', 'yad-amila':'badge-yad' };
+    if (item.categorie) badges += `<span class="ic-badge ${catClasses[item.categorie]}">${catNames[item.categorie]}</span>`;
+  }
+  
+  let btns = '';
+  if (hasPhone) btns += `<button class="act-btn phone" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i></button>`;
+  if (hasPhone) btns += `<button class="act-btn wa" onclick="window.open('https://wa.me/${item.phone.replace(/[^0-9]/g, '')}','_blank')"><i class="fab fa-whatsapp"></i></button>`;
+  if (hasEmail) btns += `<button class="act-btn email" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
+  if (hasWeb) btns += `<button class="act-btn web" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i></button>`;
+  btns += `<button class="act-btn share" onclick="shareItem('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-share-alt"></i></button>`;
+  
+  if (showPDF && !isCSV) {
+    btns += `<button class="act-btn pdf" onclick="exportToPDF('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-id-card"></i></button>`;
+  }
+  
+  if (!isCSV && isAdmin) {
+    btns += `<button class="act-btn edit" onclick="openEditModal('${item.id}')"><i class="fas fa-pen"></i></button>`;
+    btns += `<button class="act-btn del" onclick="openDeleteModal('${item.id}')"><i class="fas fa-trash"></i></button>`;
+  }
+  
+  return `<div class="item-card">
+    <div class="ic-top"><div class="ic-name">${escapeHtml(item.name)}</div><div class="ic-badges">${badges}</div></div>
+    <div class="ic-body">
+      ${item.domaine ? `<div class="ic-row"><i class="ic-row-icon fas fa-briefcase"></i><span class="ic-row-label">Domaine</span><span class="ic-row-value">${escapeHtml(item.domaine)}</span></div>` : ''}
+      ${item.specialite && item.specialite !== 'Général' ? `<div class="ic-row"><i class="ic-row-icon fas fa-microchip"></i><span class="ic-row-label">Spécialité</span><span class="ic-row-value">${escapeHtml(item.specialite)}</span></div>` : ''}
+      ${item.ville ? `<div class="ic-row"><i class="ic-row-icon fas fa-location-dot"></i><span class="ic-row-label">Ville</span><span class="ic-row-value">${escapeHtml(item.ville)}</span></div>` : ''}
+      ${hasPhone ? `<div class="ic-row"><i class="ic-row-icon fas fa-phone-alt"></i><span class="ic-row-label">Tél</span><span class="ic-row-value">${escapeHtml(item.phone)}</span></div>` : ''}
+      ${hasEmail ? `<div class="ic-row"><i class="ic-row-icon fas fa-envelope"></i><span class="ic-row-label">Email</span><span class="ic-row-value">${escapeHtml(item.email)}</span></div>` : ''}
+    </div>
+    <div class="ic-actions">${btns}</div>
+  </div>`;
+}
+
+// ========== CRUD ==========
+function openAddModal() {
+  if (!isAdmin) { toast('⚠️ Accès réservé'); return; }
+  $('editTitle').innerHTML = 'Ajouter';
+  ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id => $(id).value = '');
+  $('editType').value = 'fournisseurs';
+  $('editCat').value = 'services';
+  $('editModal').classList.add('show');
+}
+
+function openEditModal(id) {
+  const item = dbData.find(i => i.id === id);
+  if (!item) return;
+  $('editTitle').innerHTML = 'Modifier';
+  $('editId').value = item.id;
+  $('editName').value = item.name;
+  $('editType').value = item.type;
+  $('editCat').value = item.categorie;
+  $('editDomaine').value = item.domaine || '';
+  $('editSpecialite').value = item.specialite || '';
+  $('editVille').value = item.ville || '';
+  $('editPhone').value = item.phone || '';
+  $('editEmail').value = item.email || '';
+  $('editWeb').value = item.web || '';
+  $('editModal').classList.add('show');
+}
+
+async function saveItem() {
+  const id = $('editId').value;
+  const itemData = {
+    id: id || `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+    name: $('editName').value,
+    type: $('editType').value,
+    categorie: $('editCat').value,
+    domaine: $('editDomaine').value || 'Autre',
+    specialite: $('editSpecialite').value || 'Général',
+    ville: $('editVille').value || '',
+    phone: formatPhone($('editPhone').value),
+    email: $('editEmail').value || '',
+    web: $('editWeb').value || ''
+  };
+  if (!itemData.name) { toast('Nom requis'); return; }
+  
+  showLoading(true);
+  try {
+    const fType = itemData.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS';
+    const catMap = { services:'SERVICES', products:'PRODUITS', maqola:'MAQAOLA', 'yad-amila':'YAD AMILA' };
+    const fCat = catMap[itemData.categorie];
+    const path = `professionals/${fType}/${fCat}`;
+    const snap = await dbRef.ref(path).once('value');
+    let arr = snap.val() || [];
+    if (id) {
+      const idx = arr.findIndex(i => i.id === id);
+      if (idx !== -1) arr[idx] = itemData;
+      else arr.push(itemData);
+    } else {
+      arr.push(itemData);
+    }
+    await dbRef.ref(path).set(arr);
+    toast(id ? 'Modifié' : 'Ajouté');
+    closeModal('editModal');
+    await loadDB();
+  } catch(e) { toast('Erreur: ' + e.message); }
+  showLoading(false);
+}
+
+function openDeleteModal(id) {
+  const item = dbData.find(i => i.id === id);
+  if (item) {
+    pendingDelete = item;
+    $('deleteMsg').innerHTML = `Supprimer <strong>${escapeHtml(item.name)}</strong> ?`;
+    $('deleteModal').classList.add('show');
+  }
+}
+
+async function confirmDeleteItem() {
+  if (!pendingDelete) return;
+  showLoading(true);
+  try {
+    const fType = pendingDelete.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS';
+    const catMap = { services:'SERVICES', products:'PRODUITS', maqola:'MAQAOLA', 'yad-amila':'YAD AMILA' };
+    const fCat = catMap[pendingDelete.categorie];
+    const path = `professionals/${fType}/${fCat}`;
+    const snap = await dbRef.ref(path).once('value');
+    await dbRef.ref(path).set((snap.val() || []).filter(i => i.id !== pendingDelete.id));
+    toast('Supprimé');
+    closeModal('deleteModal');
+    pendingDelete = null;
+    await loadDB();
+  } catch(e) { toast('Erreur'); }
+  showLoading(false);
+}
+
+// ========== SHARE & PDF ==========
+function shareItem(encoded) {
+  const item = JSON.parse(decodeURIComponent(encoded));
+  let msg = `📌 *${item.name}*\n`;
+  if (item.domaine) msg += `🏭 ${item.domaine}\n`;
+  if (item.specialite && item.specialite !== 'Général') msg += `⚙️ ${item.specialite}\n`;
+  if (item.ville) msg += `📍 ${item.ville}\n`;
+  if (item.phone) msg += `📞 ${item.phone}\n`;
+  if (item.email) msg += `✉️ ${item.email}\n`;
+  msg += `\n🔗 *Connect Industry* — Marketplace Industriel du Maroc`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+async function exportToPDF(encoded) {
+  const item = JSON.parse(decodeURIComponent(encoded));
+  const qrContainer = $('qrContainer');
+  qrContainer.innerHTML = '';
+  const info = `${item.name}\n${item.domaine || ''}\n${item.specialite || ''}\n${item.ville || ''}\nTél: ${item.phone || ''}\nEmail: ${item.email || ''}`;
+  new QRCode(qrContainer, { text: info, width: 200, height: 200 });
+  $('qrModal').classList.add('show');
+  
+  const downloadBtn = $('downloadPdfBtn');
+  const newBtn = downloadBtn.cloneNode(true);
+  downloadBtn.parentNode.replaceChild(newBtn, downloadBtn);
+  
+  newBtn.onclick = async () => {
+    const qrCanvas = qrContainer.querySelector('canvas');
+    if (!qrCanvas) return;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ format: [105, 148], unit: 'mm' });
+    pdf.setFillColor(255, 126, 41);
+    pdf.rect(0, 0, 105, 148, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.text('CONNECT INDUSTRY', 105/2, 15, { align: 'center' });
+    pdf.setDrawColor(255, 255, 255);
+    pdf.line(10, 22, 95, 22);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(12);
+    pdf.text(item.name, 10, 35);
+    pdf.setFontSize(9);
+    let y = 45;
+    if (item.domaine) { pdf.text(`Domaine: ${item.domaine}`, 10, y); y += 8; }
+    if (item.specialite && item.specialite !== 'Général') { pdf.text(`Spécialité: ${item.specialite}`, 10, y); y += 8; }
+    if (item.ville) { pdf.text(`Ville: ${item.ville}`, 10, y); y += 8; }
+    if (item.phone) { pdf.text(`Tél: ${item.phone}`, 10, y); y += 8; }
+    if (item.email) { pdf.text(`Email: ${item.email}`, 10, y); y += 8; }
+    const qrDataUrl = qrCanvas.toDataURL();
+    pdf.addImage(qrDataUrl, 'PNG', 32, y, 40, 40);
+    pdf.save(`${item.name.replace(/[^a-z0-9]/gi, '_')}_carte.pdf`);
+    toast('📄 PDF généré');
+    closeModal('qrModal');
+  };
+}
+
+// ========== EXPLORER ==========
+function renderExplorer() {
+  const container = $('explorerContent');
+  if (!container) return;
+  
+  let html = '<div class="breadcrumb">';
+  html += `<div class="bc-item" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> Accueil</div>`;
+  explorerStack.forEach((item, idx) => {
+    html += `<i class="fas fa-chevron-right" style="font-size:0.6rem;color:var(--text3)"></i>`;
+    html += `<div class="bc-item" onclick="goExplorerLevel(${idx + 1})">${escapeHtml(item.label)}</div>`;
+  });
+  html += '</div>';
+  
+  if (explorerStack.length === 0) {
+    html += `<div class="items-grid">
+      <div class="exp-card" onclick="explorerSelectType('fournisseurs')"><div class="exp-card-icon"><i class="fas fa-industry"></i></div><div><h4>Fournisseurs</h4><p>${dbData.filter(d => d.type === 'fournisseurs').length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>
+      <div class="exp-card" onclick="explorerSelectType('experts')"><div class="exp-card-icon"><i class="fas fa-microchip"></i></div><div><h4>Experts</h4><p>${dbData.filter(d => d.type === 'experts').length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>
+    </div>`;
+  } else if (explorerStack.length === 1) {
+    const type = explorerStack[0].type;
+    const domains = [...new Set(dbData.filter(d => d.type === type).map(d => d.domaine).filter(Boolean))];
+    html += `<div class="items-grid">${domains.map(d => `<div class="exp-card" onclick="explorerSelectDomain('${escapeHtml(d)}')"><div class="exp-card-icon"><i class="fas fa-briefcase"></i></div><div><h4>${escapeHtml(d)}</h4><p>${dbData.filter(i => i.type === type && i.domaine === d).length} professionnels</p></div><i class="fas fa-chevron-right"></i></div>`).join('')}</div>`;
+  } else if (explorerStack.length === 2) {
+    const type = explorerStack[0].type;
+    const domaine = explorerStack[1].domaine;
+    const specialites = [...new Set(dbData.filter(d => d.type === type && d.domaine === domaine).map(d => d.specialite).filter(s => s && s !== 'Général'))];
+    html += `<div class="items-grid">${specialites.map(s => `<div class="exp-card" onclick="explorerSelectSpecialite('${escapeHtml(s)}')"><div class="exp-card-icon"><i class="fas fa-microchip"></i></div><div><h4>${escapeHtml(s)}</h4><p>${dbData.filter(i => i.type === type && i.domaine === domaine && i.specialite === s).length} spécialistes</p></div><i class="fas fa-chevron-right"></i></div>`).join('')}</div>`;
+  } else {
+    const type = explorerStack[0].type;
+    const domaine = explorerStack[1].domaine;
+    const specialite = explorerStack[2].specialite;
+    const items = dbData.filter(d => d.type === type && d.domaine === domaine && d.specialite === specialite);
+    html += `<div class="items-grid">${items.map(i => buildCard(i, false, true)).join('')}</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function goExplorerLevel(level) {
+  explorerStack = explorerStack.slice(0, level);
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectType(type) {
+  explorerStack.push({ label: type === 'fournisseurs' ? 'Fournisseurs' : 'Experts', type });
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectDomain(domaine) {
+  explorerStack.push({ label: domaine, domaine });
+  renderExplorer();
+  scrollTop();
+}
+
+function explorerSelectSpecialite(specialite) {
+  explorerStack.push({ label: specialite, specialite });
+  renderExplorer();
+  scrollTop();
+}
+
+// ========== FILTER MODALS ==========
+function showList(title, items, onSelect) {
+  $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${escapeHtml(title)}`;
+  const container = $('listItems');
+  container.innerHTML = '';
+  const all = document.createElement('div'); all.className = 'list-item';
+  all.innerHTML = `<span>Tous</span><i class="fas fa-chevron-right"></i>`;
+  all.onclick = () => { onSelect(null); closeModal('listModal'); };
+  container.appendChild(all);
+  items.forEach(item => {
+    const el = document.createElement('div'); el.className = 'list-item';
+    el.innerHTML = `<span>${escapeHtml(item)}</span><i class="fas fa-chevron-right"></i>`;
+    el.onclick = () => { onSelect(item); closeModal('listModal'); };
+    container.appendChild(el);
+  });
   $('listModal').classList.add('show');
 }
 
-function loadPins(){upF=JSON.parse(localStorage.getItem(ST.UPF)||'[]');upA=JSON.parse(localStorage.getItem(ST.UPA)||'[]');apF=JSON.parse(localStorage.getItem(ST.APF)||'[]');apA=JSON.parse(localStorage.getItem(ST.APA)||'[]');}
-function savePins(t){if(t==='four'){localStorage.setItem(ST.UPF,JSON.stringify(upF));localStorage.setItem(ST.APF,JSON.stringify(apF));}else{localStorage.setItem(ST.UPA,JSON.stringify(upA));localStorage.setItem(ST.APA,JSON.stringify(apA));}}
-function isPinned(item,t){const id=`${item.name}|${item.phone||''}`;if(isAdmin)return t==='four'?apF.includes(id):apA.includes(id);return t==='four'?upF.includes(id):upA.includes(id);}
-
-function togglePin(t,id,name){
-  if(!isSubscriber&&!isAdmin){toast('Abonnez-vous pour épingler');return;}
-  if(isAdmin){if(t==='four'){const i=apF.indexOf(id);if(i<0){apF.push(id);toast(`⭐ ${name} → À la une`);}else{apF.splice(i,1);toast(`${name} retiré`);}savePins('four');}
-  else{const i=apA.indexOf(id);if(i<0){apA.push(id);toast(`⭐ ${name} → À la une`);}else{apA.splice(i,1);toast(`${name} retiré`);}savePins('auto');}}
-  else{if(t==='four'){const i=upF.indexOf(id);if(i<0){upF.push(id);toast(`📌 ${name} épinglé`);}else{upF.splice(i,1);toast(`${name} désépinglé`);}savePins('four');}
-  else{const i=upA.indexOf(id);if(i<0){upA.push(id);toast(`📌 ${name} épinglé`);}else{upA.splice(i,1);toast(`${name} désépinglé`);}savePins('auto');}}
-  renderAll();
-}
-
-function unpinAll(){if(isAdmin){apF=[];apA=[];savePins('four');savePins('auto');toast('À la une effacé');}else if(isSubscriber){upF=[];upA=[];savePins('four');savePins('auto');toast('Épinglages annulés');}else{toast('Abonnez-vous');return;}renderAll();}
-
-async function genPDF(card,item){
-  if(!canEx()){toast('Abonnez-vous pour PDF');return;}toast('Génération PDF...');
-  try{const cl=card.cloneNode(true);const a=cl.querySelector('.action-row');if(a)a.remove();const web=item.web&&item.web!=='null'?item.web:'';
-  if(web){const qs=document.createElement('div');qs.style.cssText='text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ccc;';qs.innerHTML='<div style="font-size:10px;margin-bottom:5px;color:#666;">QR Code</div><div id="pdfQR"></div>';cl.appendChild(qs);document.body.appendChild(cl);new QRCode(cl.querySelector('#pdfQR'),{text:web,width:90,height:90});await new Promise(r=>setTimeout(r,300));}
-  cl.style.cssText='position:absolute;top:-9999px;left:-9999px;width:'+card.offsetWidth+'px;background:#fff;color:#000;padding:12px;';if(!web)document.body.appendChild(cl);
-  const cv=await html2canvas(cl,{scale:2,backgroundColor:'#ffffff'});document.body.removeChild(cl);
-  const{jsPDF:J}=window.jspdf;const pdf=new J('p','mm','a4');const iw=190,ih=(cv.height*iw)/cv.width;pdf.addImage(cv.toDataURL('image/png'),'PNG',10,10,iw,ih);pdf.save(`${item.name.replace(/[^a-z0-9]/gi,'_')}.pdf`);toast('PDF téléchargé');}catch(e){toast('Erreur PDF');}
-}
-
-function showDetail(item,type){
-  $('detailTitle').textContent=item.name;
-  const hp=item.phone&&item.phone!=='null',web=item.web&&item.web!=='null'?item.web:'',iF=type==='four',cu=canEx();
-  let ab='';
-  if(hp)ab+=`<button class="a-btn wa" onclick="window.open('https://wa.me/${item.phone.replace('+','')}','_blank')"><i class="fab fa-whatsapp"></i></button>`;
-  if(item.email)ab+=`<button class="a-btn em" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
-  if(web)ab+=`<button class="a-btn wb" onclick="window.open('${web}','_blank')"><i class="fas fa-globe"></i></button>`;
-  ab+=`<button class="a-btn sh" onclick="shareItem(${JSON.stringify(item).replace(/"/g,'&quot;')})"><i class="fas fa-share-alt"></i></button>`;
-  ab+=`<button class="a-btn pd ${!cu?'disabled':''}" onclick="${cu?`genPDFDetail(${JSON.stringify(item).replace(/"/g,'&quot;')})`:`toast('Abonnez-vous')`}"><i class="fas fa-file-pdf"></i></button>`;
-  $('detailBody').innerHTML=`<div class="item-card" style="width:100%" id="detailCard"><div class="item-header"><span class="item-title"><i class="fas ${iF?'fa-building':'fa-user-astronaut'}"></i> ${esc(item.name)}</span></div><div class="item-details"><div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div><div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div><div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>${hp?`<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${item.phone}</span></div>`:''}${item.email?`<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>`:''}${web?`<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(web)}</span></div>`:''}</div><div class="action-row">${ab}</div></div>`;
-  $('detailModal').classList.add('show');
-}
-
-async function genPDFDetail(item){
-  if(!canEx()){toast('Abonnez-vous');return;}toast('Génération PDF...');
-  try{const card=$('detailCard');if(!card){toast('Erreur');return;}const cl=card.cloneNode(true);const a=cl.querySelector('.action-row');if(a)a.remove();const web=item.web&&item.web!=='null'?item.web:'';
-  if(web){const qs=document.createElement('div');qs.style.cssText='text-align:center;margin-top:14px;padding-top:10px;border-top:1px solid #ccc;';qs.innerHTML='<div style="font-size:10px;margin-bottom:5px;color:#666;">QR Code</div><div id="pdfQR"></div>';cl.appendChild(qs);document.body.appendChild(cl);new QRCode(cl.querySelector('#pdfQR'),{text:web,width:90,height:90});await new Promise(r=>setTimeout(r,300));}
-  cl.style.cssText='position:absolute;top:-9999px;left:-9999px;width:'+(card.offsetWidth||400)+'px;background:#fff;color:#000;padding:12px;';if(!web)document.body.appendChild(cl);
-  const cv=await html2canvas(cl,{scale:2,backgroundColor:'#ffffff'});document.body.removeChild(cl);
-  const{jsPDF:J}=window.jspdf;const pdf=new J('p','mm','a4');const iw=190,ih=(cv.height*iw)/cv.width;pdf.addImage(cv.toDataURL('image/png'),'PNG',10,10,iw,ih);pdf.save(`${item.name.replace(/[^a-z0-9]/gi,'_')}.pdf`);toast('PDF téléchargé');}catch(e){toast('Erreur PDF');}
-}
-
-function shareItem(item){let t=`📌 ${item.name}\n🏭 Domaine: ${item.domaine}\n⚙️ Spécialité: ${item.specialite}\n📍 Ville: ${item.city}`;if(item.phone)t+=`\n📞 Tél: ${item.phone}`;if(item.web&&item.web!=='null')t+=`\n🌐 Web: ${item.web}`;t+=`\n\n— Connect Industry Maroc`;window.open(`https://wa.me/?text=${encodeURIComponent(t)}`,'_blank');}
-
-function renderFeatured(cid,items,t,iF){
-  const c=$(cid);const sec=c?.closest('.featured-section');
-  if(!items||!items.length){if(sec)sec.style.display='none';return;}
-  if(sec)sec.style.display='block';
-  const cs=$(`${iF?'four':'auto'}FeaturedCount`);if(cs)cs.textContent=`(${items.length})`;
-  let h='';
-  for(const item of items){
-    const id=`${item.name}|${item.phone||''}`;
-    const ub=(isAdmin&&(t==='four'?apF.includes(id):apA.includes(id)))?`<button class="unpin-featured-btn" onclick="event.stopPropagation();togglePin('${t}','${id}','${esc(item.name)}')" title="Retirer"><i class="fas fa-thumbtack"></i></button>`:'';
-    h+=`<div class="featured-card" onclick='showDetail(${JSON.stringify(item).replace(/"/g,'&quot;')},"${t}")'>${ub}<div class="item-title" style="margin-bottom:8px"><i class="fas ${iF?'fa-building':'fa-user-astronaut'}"></i> ${esc(item.name)} <span class="badge badge-admin"><i class="fas fa-star"></i></span></div><div class="detail-row"><i class="fas fa-folder"></i>${esc(item.domaine)}</div><div class="detail-row"><i class="fas fa-map-marker-alt"></i>${esc(item.city)}</div><div class="detail-row"><i class="fas fa-microchip"></i>${esc(item.specialite)}</div></div>`;
-  }
-  c.innerHTML=h;
-}
-
-function renderItems(gid,items,t,iF){
-  const g=$(gid);if(!g)return;
-  if(!items.length){g.innerHTML=`<div class="no-results" style="grid-column:1/-1"><i class="fas fa-search"></i><h3>Aucun résultat</h3><p>Modifiez vos critères</p></div>`;return;}
-  const cu=canEx();let h='';
-  for(const item of items){
-    const id=`${item.name}|${item.phone||''}`,pin=isPinned(item,t),cur=isSubscriber&&subPhone&&matchP(subPhone,item.phone);
-    const hp=item.phone&&item.phone!=='null',web=item.web&&item.web!=='null'?item.web:'';
-    let cc='item-card';if(pin)cc+=' pinned';if(cur)cc+=' current';
-    let ab='';
-    if(hp)ab+=`<button class="a-btn wa" onclick="window.open('https://wa.me/${item.phone.replace('+','')}','_blank')" title="WhatsApp"><i class="fab fa-whatsapp"></i></button>`;
-    if(item.email)ab+=`<button class="a-btn em" onclick="window.location.href='mailto:${item.email}'" title="Email"><i class="fas fa-envelope"></i></button>`;
-    if(web)ab+=`<button class="a-btn wb" onclick="window.open('${web}','_blank')" title="Site web"><i class="fas fa-globe"></i></button>`;
-    ab+=`<button class="a-btn sh" onclick="shareItem(${JSON.stringify(item).replace(/"/g,'&quot;')})" title="Partager"><i class="fas fa-share-alt"></i></button>`;
-    ab+=`<button class="a-btn pd ${!cu?'disabled':''}" onclick="${cu?`genPDF(this.closest('.item-card'),${JSON.stringify(item).replace(/"/g,'&quot;')})`:`toast('Abonnez-vous')`}" title="PDF"><i class="fas fa-file-pdf"></i></button>`;
-    h+=`<div class="${cc}"><div class="item-header"><span class="item-title"><i class="fas ${iF?'fa-building':'fa-user-astronaut'}"></i> ${esc(item.name)}${pin?'<span class="badge badge-pinned"><i class="fas fa-thumbtack"></i></span>':''}${cur?'<span class="badge badge-subscriber"><i class="fas fa-user-check"></i></span>':''}</span><button class="pin-btn ${pin?'pinned':''} ${!cu?'disabled':''}" onclick="${cu?`togglePin('${t}','${id}','${esc(item.name)}')`:`toast('Abonnez-vous')`}"><i class="fas fa-thumbtack"></i></button></div><div class="item-details"><div class="detail-row"><i class="fas fa-folder"></i><span class="lbl">Domaine</span><span class="val">${esc(item.domaine)}</span></div><div class="detail-row"><i class="fas fa-microchip"></i><span class="lbl">Spécialité</span><span class="val">${esc(item.specialite)}</span></div><div class="detail-row"><i class="fas fa-map-marker-alt"></i><span class="lbl">Ville</span><span class="val">${esc(item.city)}</span></div>${hp?`<div class="detail-row"><i class="fas fa-phone-alt"></i><span class="lbl">Tél.</span><span class="val">${item.phone}</span></div>`:''}${item.email?`<div class="detail-row"><i class="fas fa-envelope"></i><span class="lbl">Email</span><span class="val">${esc(item.email)}</span></div>`:''}${web?`<div class="detail-row"><i class="fas fa-globe"></i><span class="lbl">Site web</span><span class="val">${esc(web)}</span></div>`:''}</div><div class="action-row">${ab}</div></div>`;
-  }
-  g.innerHTML=h;
-}
-
-function updSS(){
-  const ff=filtS();$('fourResultCount').textContent=ff.length;$('fourMatchCount').textContent=experts.filter(e=>matchS(e,fF.search)).length;
-  const af=filtE();$('autoResultCount').textContent=af.length;$('autoMatchCount').textContent=suppliers.filter(s=>matchS(s,aF.search)).length;
-}
-
-function renderAll(){
-  let ff=filtS(),fuc=null;
-  if(isSubscriber&&subPhone){for(let i=0;i<ff.length;i++){if(matchP(subPhone,ff[i].phone)){fuc=ff[i];ff.splice(i,1);break;}}}
-  const fa=ff.filter(f=>apF.includes(`${f.name}|${f.phone||''}`));const fr=ff.filter(f=>!apF.includes(`${f.name}|${f.phone||''}`));
-  const fp=fr.filter(f=>upF.includes(`${f.name}|${f.phone||''}`));const fu=fr.filter(f=>!upF.includes(`${f.name}|${f.phone||''}`));
-  let ffin=[];if(fuc)ffin.push(fuc);ffin.push(...fp,...fu);
-  renderFeatured('fourFeaturedItems',fa,'four',true);renderItems('fourGrid',ffin,'four',true);
-
-  let af=filtE(),auc=null;
-  if(isSubscriber&&subPhone){for(let i=0;i<af.length;i++){if(matchP(subPhone,af[i].phone)){auc=af[i];af.splice(i,1);break;}}}
-  const aa=af.filter(a=>apA.includes(`${a.name}|${a.phone||''}`));const ar=af.filter(a=>!apA.includes(`${a.name}|${a.phone||''}`));
-  const ap=ar.filter(a=>upA.includes(`${a.name}|${a.phone||''}`));const au=ar.filter(a=>!upA.includes(`${a.name}|${a.phone||''}`));
-  let afin=[];if(auc)afin.push(auc);afin.push(...ap,...au);
-  renderFeatured('autoFeaturedItems',aa,'auto',false);renderItems('autoGrid',afin,'auto',false);
-  updSS();updStats();
-}
-
-function showQRWithShare(url,title){
-  $('qrTitle').textContent=title||'QR Code';curQR={url,title};
-  const c=$('qrContainer');c.innerHTML='';new QRCode(c,{text:url,width:180,height:180});
-  $('qrModal').classList.add('show');
-}
-function shareQRWithData(){window.open(`https://wa.me/?text=${encodeURIComponent(`${curQR.title}\n\n${curQR.url}`)}`,'_blank');toast('Partagé!');}
-
-function exportCSV(t){
-  if(!canEx()){toast('Abonnez-vous');return;}
-  const d=t==='expert'?experts:suppliers;
-  const h=['Nom','Domaine','Spécialité','Ville','Téléphone','Email','Site Web'];
-  const rows=d.map(x=>[`"${(x.name||'').replace(/"/g,'""')}"`,`"${(x.domaine||'').replace(/"/g,'""')}"`,`"${(x.specialite||'').replace(/"/g,'""')}"`,`"${(x.city||'').replace(/"/g,'""')}"`,`"${(x.phone||'').replace(/"/g,'""')}"`,`"${(x.email||'').replace(/"/g,'""')}"`,`"${(x.web||'').replace(/"/g,'""')}"`]);
-  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const b=new Blob(["\uFEFF"+csv],{type:'text/csv'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=`${t==='expert'?'experts':'fournisseurs'}.csv`;l.click();URL.revokeObjectURL(l.href);
-  toast(`CSV: ${d.length} enreg.`);
-}
-
-function shareForm(t){const url=t==='expert'?CFG.FORM_AUTO:CFG.FORM_FOUR;curShare=`Formulaire ${t==='expert'?'Expert':'Fournisseur'} - Connect Industry Maroc\n\n${url}`;$('shareMsg').innerHTML='Partager le formulaire ?';$('shareModal').classList.add('show');}
-function sendShare(){if(curShare){window.open(`https://wa.me/?text=${encodeURIComponent(curShare)}`,'_blank');closeModal('shareModal');}}
-
-function findMember(phone){const n=fmtPhone(phone);if(!n)return null;for(const s of suppliers)if(s.phone&&matchP(s.phone,n))return{type:'supplier',data:s};for(const e of experts)if(e.phone&&matchP(e.phone,n))return{type:'expert',data:e};return null;}
-
-function updBtns(){
-  const sb=$('drawerSubscribeBtn'),ab=$('drawerAdminBtn');
-  if(isSubscriber){sb.classList.add('subscriber-active');$('drawerSubscribeText').textContent='Abonné ✓';}else{sb.classList.remove('subscriber-active');$('drawerSubscribeText').textContent="S'abonner";}
-  if(isAdmin){ab.classList.add('admin-active');$('drawerAdminText').textContent='Quitter Admin';}else{ab.classList.remove('admin-active');$('drawerAdminText').textContent='Mode Admin';}
-  const cu=canEx();
-  ['exportExpertBtn','exportFourBtn'].forEach(id=>{const e=$(id);if(e){if(!cu)e.classList.add('disabled');else e.classList.remove('disabled');}});
-}
-
-function activateSub(p,m){if(isAdmin)logoutAdmin();isSubscriber=true;subPhone=p;subMember=m;document.body.classList.add('subscriber-mode');localStorage.setItem(ST.SPH,p);localStorage.setItem(ST.SAC,'true');renderAll();toast(`Bienvenue ${m?m.data.name:'!'}`);updMenu();updBtns();}
-function logoutSub(){isSubscriber=false;subPhone=null;subMember=null;document.body.classList.remove('subscriber-mode');localStorage.removeItem(ST.SPH);localStorage.removeItem(ST.SAC);renderAll();toast('Déconnecté');updMenu();updBtns();}
-function checkSubscribe(){const p=$('subscribePhone').value.trim();if(!p){toast('Entrez votre numéro');return;}const n=fmtPhone(p);if(!n){toast('Numéro invalide');return;}const m=findMember(n);if(m){activateSub(n,m);closeModal('subscribeModal');}else{closeModal('subscribeModal');toast('Numéro non trouvé');}}
-function loadSub(){const s=localStorage.getItem(ST.SPH),a=localStorage.getItem(ST.SAC)==='true';if(s&&a&&findMember(s)){isSubscriber=true;subPhone=s;document.body.classList.add('subscriber-mode');renderAll();updMenu();updBtns();}}
-function verifyAdmin(){const p=$('adminPassword').value;if(p===CFG.ADMIN_PASSWORD){if(isSubscriber)logoutSub();isAdmin=true;document.body.classList.add('admin-mode');localStorage.setItem(ST.ADM,'true');renderAll();closeModal('adminModal');toast('Mode Admin activé');updMenu();updBtns();}else{toast('Mot de passe incorrect');}}
-function logoutAdmin(){isAdmin=false;document.body.classList.remove('admin-mode');localStorage.removeItem(ST.ADM);renderAll();toast('Mode visiteur');updMenu();updBtns();}
-function loadAdmin(){if(localStorage.getItem(ST.ADM)==='true'){isAdmin=true;document.body.classList.add('admin-mode');updMenu();updBtns();}}
-
-let dark=localStorage.getItem(ST.THM)!=='light';
-function toggleTheme(){dark=!dark;if(dark){document.body.classList.remove('light-mode');}else{document.body.classList.add('light-mode');}localStorage.setItem(ST.THM,dark?'dark':'light');const i=document.querySelector('#drawerThemeBtn i');if(i)i.className=dark?'fas fa-moon':'fas fa-sun';}
-function loadTheme(){if(localStorage.getItem(ST.THM)==='light'){dark=false;document.body.classList.add('light-mode');const i=document.querySelector('#drawerThemeBtn i');if(i)i.className='fas fa-sun';}}
-
-function updMenu(){
-  const n=$('drawerUserName'),s=$('drawerUserStatus'),av=document.querySelector('.drawer-avatar');
-  if(isAdmin){n.textContent='Admin';s.textContent='admin_mode';if(av)av.style.borderColor='var(--red)';}
-  else if(isSubscriber&&subMember){n.textContent='Abonné';s.textContent=subMember.data.name.substring(0,22);if(av)av.style.borderColor='var(--green)';}
-  else{n.textContent='Visiteur';s.textContent='guest_mode';if(av)av.style.borderColor='var(--gold)';}
-}
-
-function showSec(id,reset=false){
-  if(secHist[secHist.length-1]!==id)secHist.push(id);
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  $(`${id}Section`).classList.add('active');
-  curSec=id;
-  const logo=document.querySelector('.app-bar-logo');
-  if(logo)logo.innerHTML=`Connect <span class="hi">${STIT[id]||'Industry'}</span>`;
-  scrollTop();closeDrawer();
-  document.querySelectorAll('.drawer-item[data-section]').forEach(x=>{if(x.dataset.section===id)x.classList.add('active');else x.classList.remove('active');});
-  if(reset&&['fournisseurs','experts'].includes(id)){if(id==='fournisseurs'){fF={domaine:null,ville:null,search:""};$('fourSearch').value='';}else{aF={domaine:null,ville:null,search:""};$('autoSearch').value='';}renderAll();}
-}
-
-function updClock(){const n=new Date();const ts=n.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});const ds=n.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});$('appTime').textContent=ts;$('appDate').textContent=ds;$('drawerTime').textContent=ts;$('drawerDate').textContent=ds;}
-setInterval(updClock,1000);updClock();
-
-function openDomaineModal(t){const d=t==='four'?suppliers:experts;const cv=t==='four'?fF.ville:aF.ville;let doms=cv?getDomForVille(d,cv):[...new Set(d.map(x=>x.domaine).filter(x=>x))].sort();if(!doms||!doms.length){toast('Aucun domaine');return;}showList('Domaine',doms,s=>{if(t==='four')fF.domaine=s;else aF.domaine=s;renderAll();toast(`Filtre: ${s.substring(0,25)}`);});}
-function openVilleModal(t){const d=t==='four'?suppliers:experts;const cd=t==='four'?fF.domaine:aF.domaine;let villes=cd?getVilForDom(d,cd):[...new Set(d.map(x=>x.city).filter(x=>x))].sort();if(!villes||!villes.length){toast('Aucune ville');return;}showList('Ville',villes,s=>{if(t==='four')fF.ville=s;else aF.ville=s;renderAll();toast(`Filtre: ${s.substring(0,25)}`);});}
-function clearFour(){fF={domaine:null,ville:null,search:""};$('fourSearch').value='';renderAll();toast('Filtres effacés');}
-function clearAuto(){aF={domaine:null,ville:null,search:""};$('autoSearch').value='';renderAll();toast('Filtres effacés');}
-function openForm(t){window.open(t==='expert'?CFG.FORM_AUTO:CFG.FORM_FOUR,'_blank');}
-
-function setupStats(){
-  document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="domaines"]').forEach(c=>c.addEventListener('click',()=>{const d=[...new Set(suppliers.map(s=>s.domaine).filter(x=>x))].sort();if(!d.length){toast('Aucun');return;}showList('Domaines — Fournisseurs',d,s=>{showSec('fournisseurs');fF.domaine=s;fF.ville=null;renderAll();});}));
-  document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="villes"]').forEach(c=>c.addEventListener('click',()=>{const v=[...new Set(suppliers.map(s=>s.city).filter(x=>x))].sort();if(!v.length){toast('Aucune');return;}showList('Villes — Fournisseurs',v,s=>{showSec('fournisseurs');fF.ville=s;fF.domaine=null;renderAll();});}));
-  document.querySelectorAll('.stat-card[data-section="experts"][data-type="domaines"]').forEach(c=>c.addEventListener('click',()=>{const d=[...new Set(experts.map(e=>e.domaine).filter(x=>x))].sort();if(!d.length){toast('Aucun');return;}showList('Domaines — Experts',d,s=>{showSec('experts');aF.domaine=s;aF.ville=null;renderAll();});}));
-  document.querySelectorAll('.stat-card[data-section="experts"][data-type="villes"]').forEach(c=>c.addEventListener('click',()=>{const v=[...new Set(experts.map(e=>e.city).filter(x=>x))].sort();if(!v.length){toast('Aucune');return;}showList('Villes — Experts',v,s=>{showSec('experts');aF.ville=s;aF.domaine=null;renderAll();});}));
-  document.querySelectorAll('.stat-card[data-section="fournisseurs"][data-type="total"]').forEach(c=>c.addEventListener('click',()=>showSec('fournisseurs')));
-  document.querySelectorAll('.stat-card[data-section="experts"][data-type="total"]').forEach(c=>c.addEventListener('click',()=>showSec('experts')));
-  $('fourResultsBadge').addEventListener('click',()=>showSec('fournisseurs'));
-  $('fourExpertsBadge').addEventListener('click',()=>showSec('experts'));
-  $('autoResultsBadge').addEventListener('click',()=>showSec('experts'));
-  $('autoFourBadge').addEventListener('click',()=>showSec('fournisseurs'));
-}
-
-async function init(){
-  $('loading').style.display='flex';
-  loadTheme();loadPins();
-  const[exp,sup]=await Promise.all([loadCSV(CFG.AUTO_CSV),loadCSV(CFG.FOUR_CSV)]);
-  experts=exp;suppliers=sup;
-  loadAdmin();loadSub();updMenu();
-
-  $('fourSearch').addEventListener('input',e=>{clearTimeout(fT);fT=setTimeout(()=>{fF.search=e.target.value.toLowerCase();renderAll();},500);});
-  $('autoSearch').addEventListener('input',e=>{clearTimeout(aT);aT=setTimeout(()=>{aF.search=e.target.value.toLowerCase();renderAll();},500);});
-
-  $('fourDomaineBtn').onclick=()=>openDomaineModal('four');
-  $('fourVilleBtn').onclick=()=>openVilleModal('four');
-  $('autoDomaineBtn').onclick=()=>openDomaineModal('auto');
-  $('autoVilleBtn').onclick=()=>openVilleModal('auto');
-  $('fourClearBtn').onclick=clearFour;
-  $('autoClearBtn').onclick=clearAuto;
-
-  $('menuIcon').addEventListener('click',toggleDrawer);
-  $('drawerOverlay').addEventListener('click',closeDrawer);
-  document.querySelectorAll('.drawer-item[data-section]').forEach(x=>x.addEventListener('click',()=>showSec(x.dataset.section,true)));
-  $('drawerSubscribeBtn').onclick=()=>{closeDrawer();if(isSubscriber)logoutSub();else $('subscribeModal').classList.add('show');};
-  $('drawerAdminBtn').onclick=()=>{closeDrawer();if(isAdmin)logoutAdmin();else $('adminModal').classList.add('show');};
-  $('drawerThemeBtn').onclick=()=>toggleTheme();
-  $('drawerWaBtn').onclick=()=>{closeDrawer();window.open(`https://wa.me/${CFG.WA_NUM}?text=${encodeURIComponent('Bonjour')}`,'_blank');};
-  $('drawerUnpinBtn').onclick=()=>{closeDrawer();unpinAll();};
-
-  $('contactForm').addEventListener('submit',e=>{
-    e.preventDefault();const name=$('contactName').value||'Visiteur';const contact=$('contactInfo').value||'N/A';const type=$('contactType').value;const msg=$('contactMessage').value;
-    if(!msg.trim()){toast('Message vide');return;}
-    const types={suggestion:'Suggestion',reclamation:'Réclamation',demande:'Demande',collaboration:'Collaboration'};
-    window.open(`https://wa.me/${CFG.WA_NUM}?text=${encodeURIComponent(`📝 Message\n\nNom: ${name}\nContact: ${contact}\nType: ${types[type]}\n\n${msg}`)}`,'_blank');
-    toast('Message envoyé');$('contactName').value='';$('contactInfo').value='';$('contactMessage').value='';
+function showDBTypeFilter() {
+  showList('Type', ['Fournisseurs', 'Experts'], val => {
+    if (val === 'Fournisseurs') dbFilters.type = 'fournisseurs';
+    else if (val === 'Experts') dbFilters.type = 'experts';
+    else dbFilters.type = null;
+    currentPage = 1;
+    renderDB();
+    renderDBFilterTags();
   });
-
-  document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=>{$('contactType').value=b.dataset.type;document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');}));
-
-  setupStats();renderAll();showSec('about');updBtns();
-  window.addEventListener('popstate',e=>{e.preventDefault();handleBack();});
-  history.pushState(null,null,location.href);
-  setTimeout(()=>{$('loading').style.display='none';},900);
 }
 
-// Expose globals
-Object.assign(window,{showQRWithShare,shareQRWithData,closeModal,exportCSV,shareForm,sendShare,togglePin,genPDF,genPDFDetail,shareItem,showDetail,checkSubscribe,verifyAdmin,openForm});
+function showDBCatFilter() {
+  const cats = ['Services', 'Produits', 'Maqaola', 'Yad Amila'];
+  showList('Catégorie', cats, val => {
+    const catMap = { 'Services': 'services', 'Produits': 'products', 'Maqaola': 'maqola', 'Yad Amila': 'yad-amila' };
+    dbFilters.cat = val ? catMap[val] : null;
+    currentPage = 1;
+    renderDB();
+    renderDBFilterTags();
+  });
+}
+
+function showDBVilleFilter() {
+  const villes = getAvailableDBVilles();
+  if (!villes.length) { toast('⚠️ Aucune ville disponible'); return; }
+  showList('Villes', villes, val => {
+    dbFilters.ville = val;
+    dbFilters.domaine = null;
+    currentPage = 1;
+    renderDB();
+    renderDBFilterTags();
+  });
+}
+
+function showDBDomaineFilter() {
+  const domaines = getAvailableDBDomaines();
+  if (!domaines.length) { toast('⚠️ Aucun domaine disponible'); return; }
+  showList('Domaines', domaines, val => {
+    dbFilters.domaine = val;
+    currentPage = 1;
+    renderDB();
+    renderDBFilterTags();
+  });
+}
+
+function showFourVilleFilter() {
+  const villes = getAvailableFourVilles();
+  if (!villes.length) { toast('⚠️ Aucune ville disponible'); return; }
+  showList('Villes Fournisseurs', villes, val => {
+    fourFilters.ville = val;
+    renderFournisseurs();
+    renderFourFilterTags();
+  });
+}
+
+function showFourDomaineFilter() {
+  const domaines = getAvailableFourDomaines();
+  if (!domaines.length) { toast('⚠️ Aucun domaine disponible'); return; }
+  showList('Domaines Fournisseurs', domaines, val => {
+    fourFilters.domaine = val;
+    renderFournisseurs();
+    renderFourFilterTags();
+  });
+}
+
+function showExpVilleFilter() {
+  const villes = getAvailableExpVilles();
+  if (!villes.length) { toast('⚠️ Aucune ville disponible'); return; }
+  showList('Villes Experts', villes, val => {
+    expFilters.ville = val;
+    renderExperts();
+    renderExpFilterTags();
+  });
+}
+
+function showExpDomaineFilter() {
+  const domaines = getAvailableExpDomaines();
+  if (!domaines.length) { toast('⚠️ Aucun domaine disponible'); return; }
+  showList('Domaines Experts', domaines, val => {
+    expFilters.domaine = val;
+    renderExperts();
+    renderExpFilterTags();
+  });
+}
+
+// ========== STAT CLICK ==========
+function applyStatFilter(statType, value) {
+  resetDBFilters();
+  document.querySelectorAll('.stat-tile').forEach(t => t.classList.remove('active'));
+  const clickedTile = event.currentTarget;
+  clickedTile.classList.add('active');
+  
+  if (statType === 'type') { dbFilters.type = value; toast(`🔍 ${value === 'fournisseurs' ? 'Fournisseurs' : 'Experts'}`); }
+  else if (statType === 'cat') { dbFilters.cat = value; toast(`🔍 ${value}`); }
+  else if (statType === 'villes') {
+    const villes = getAvailableDBVilles();
+    if (villes.length) { showList('Villes', villes, v => { dbFilters.search = v; if($('dbSearch')) $('dbSearch').value = v; renderDB(); closeModal('listModal'); renderDBFilterTags(); }); return; }
+  } else if (statType === 'domaines') {
+    const domaines = getAvailableDBDomaines();
+    if (domaines.length) { showList('Domaines', domaines, d => { dbFilters.search = d; if($('dbSearch')) $('dbSearch').value = d; renderDB(); closeModal('listModal'); renderDBFilterTags(); }); return; }
+  }
+  showSection('db', false);
+  renderDB();
+  renderDBFilterTags();
+}
+
+// ========== NAVIGATION ==========
+function showSection(id, resetFilters = true) {
+  if (resetFilters) {
+    resetDBFilters();
+    resetFourFilters();
+    resetExpFilters();
+    if ($('fourSearch')) $('fourSearch').value = '';
+    if ($('expSearch')) $('expSearch').value = '';
+  }
+  if (id !== 'explorer') explorerStack = [];
+  
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  $(id + 'Section').classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const tabBtn = document.querySelector(`.tab-btn[data-sec="${id}"]`);
+  if (tabBtn) tabBtn.classList.add('active');
+  
+  currentSection = id;
+  if (id === 'db') renderDB();
+  else if (id === 'explorer') renderExplorer();
+  else if (id === 'fournisseurs') renderFournisseurs();
+  else if (id === 'experts') renderExperts();
+  scrollTop();
+}
+
+function handleTabClick(id) {
+  if (currentSection === id) {
+    if (window.scrollY > 10) {
+      scrollTop();
+    } else {
+      if (id === 'db') { resetDBFilters(); renderDB(); toast('🔍 Filtres réinitialisés'); }
+      else if (id === 'explorer') { explorerStack = []; renderExplorer(); toast('↺ Explorer réinitialisé'); }
+      else if (id === 'fournisseurs') { resetFourFilters(); renderFournisseurs(); toast('🔍 Filtres effacés'); }
+      else if (id === 'experts') { resetExpFilters(); renderExperts(); toast('🔍 Filtres effacés'); }
+    }
+  } else {
+    showSection(id, true);
+  }
+}
+
+function renderCurrent() {
+  if (currentSection === 'db') renderDB();
+  else if (currentSection === 'explorer') renderExplorer();
+  else if (currentSection === 'fournisseurs') renderFournisseurs();
+  else if (currentSection === 'experts') renderExperts();
+}
+
+// ========== EVENT LISTENERS ==========
+$('adminBtn').onclick = () => $('adminModal').classList.add('show');
+$('logoutBtn').onclick = logoutAdmin;
+$('syncBtn').onclick = syncToFirebase;
+$('addBtn').onclick = openAddModal;
+$('filterTypeBtn').onclick = showDBTypeFilter;
+$('filterCatBtn').onclick = showDBCatFilter;
+$('filterVilleBtn').onclick = showDBVilleFilter;
+$('filterDomaineBtn').onclick = showDBDomaineFilter;
+$('filterResetBtn').onclick = () => { resetDBFilters(); renderDB(); toast('Filtres effacés'); };
+$('dbSearch').addEventListener('input', (e) => { dbFilters.search = e.target.value; currentPage = 1; renderDB(); renderDBFilterTags(); });
+$('dbClear').onclick = () => { dbFilters.search = ''; $('dbSearch').value = ''; currentPage = 1; renderDB(); renderDBFilterTags(); };
+$('fourSearch').addEventListener('input', (e) => { fourFilters.search = e.target.value; renderFournisseurs(); renderFourFilterTags(); });
+$('expSearch').addEventListener('input', (e) => { expFilters.search = e.target.value; renderExperts(); renderExpFilterTags(); });
+$('fourVilleBtn').onclick = showFourVilleFilter;
+$('fourDomaineBtn').onclick = showFourDomaineFilter;
+$('fourResetBtn').onclick = () => { resetFourFilters(); renderFournisseurs(); toast('Filtres effacés'); };
+$('expVilleBtn').onclick = showExpVilleFilter;
+$('expDomaineBtn').onclick = showExpDomaineFilter;
+$('expResetBtn').onclick = () => { resetExpFilters(); renderExperts(); toast('Filtres effacés'); };
+
+document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => {
+  btn.onclick = () => handleTabClick(btn.dataset.sec);
+});
+
+document.querySelectorAll('.stat-tile[data-type]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('type', tile.dataset.type);
+});
+document.querySelectorAll('.stat-tile[data-cat]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('cat', tile.dataset.cat);
+});
+document.querySelectorAll('.stat-tile[data-extra="villes"]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('villes', null);
+});
+document.querySelectorAll('.stat-tile[data-extra="domaines"]').forEach(tile => {
+  tile.onclick = (e) => applyStatFilter('domaines', null);
+});
+
+window.addEventListener('popstate', () => { showSection('about', true); });
+
+// THEME
+let isDark = false;
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  $('themeBtn').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+}
+if (localStorage.getItem('theme') === 'dark') { isDark = true; document.body.classList.remove('light'); $('themeBtn').innerHTML = '<i class="fas fa-sun"></i>'; }
+$('themeBtn').onclick = toggleTheme;
+
+function updateClock() { $('appTime').textContent = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+setInterval(updateClock, 1000); updateClock();
+
+document.querySelectorAll('.overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+});
+
+window.closeModal = closeModal;
+window.verifyAdmin = verifyAdmin;
+window.goExplorerLevel = goExplorerLevel;
+window.explorerSelectType = explorerSelectType;
+window.explorerSelectDomain = explorerSelectDomain;
+window.explorerSelectSpecialite = explorerSelectSpecialite;
+window.openEditModal = openEditModal;
+window.openDeleteModal = openDeleteModal;
+window.saveItem = saveItem;
+window.confirmDeleteItem = confirmDeleteItem;
+window.shareItem = shareItem;
+window.exportToPDF = exportToPDF;
+window.changePage = changePage;
+window.removeDBFilter = removeDBFilter;
+
+async function init() {
+  showLoading(true);
+  checkAdminStatus();
+  const [experts, fours] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]);
+  csvExperts = experts;
+  csvFournisseurs = fours;
+  await loadDB();
+  setTimeout(() => showLoading(false), 500);
+}
+
 init();
-})();
 </script>
 </body>
 </html>
