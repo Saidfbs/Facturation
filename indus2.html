@@ -585,7 +585,7 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 </head>
 <body>
 
-<!-- App Bar (sans les onglets) -->
+<!-- App Bar -->
 <div class="app-bar">
   <div class="logo">
     <div class="logo-icon">CI</div>
@@ -610,7 +610,7 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 
 <main class="main">
 
-  <!-- ACCUEIL (sans Contact & Support) -->
+  <!-- ACCUEIL -->
   <div id="aboutSection" class="section active">
     <div class="hero">
       <div class="hero-grid"></div>
@@ -857,7 +857,8 @@ let pendingDelete = null;
 let explorerLevel = 0;
 let explorerState = { type: null, domaine: null, specialite: null };
 let statsChart = null;
-let navigationHistory = ['about']; // Pour gérer l'historique de navigation
+let navigationHistory = ['about'];
+let lastActiveSection = 'about';
 
 // Pagination
 let currentPage = 1;
@@ -909,6 +910,23 @@ function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 const catNames = { services: 'SERVICES', products: 'PRODUITS', maqola: 'MAQAOLA', 'yad-amila': 'YAD AMILA' };
 const catIcons = { services: 'fa-cogs', products: 'fa-boxes', maqola: 'fa-hard-hat', 'yad-amila': 'fa-hands' };
 const catBadgeClass = { services: 'cb-svc', products: 'cb-prd', maqola: 'cb-maq', 'yad-amila': 'cb-yad' };
+
+// ===== RESET FILTERS FUNCTION =====
+function resetDBFilters() {
+  dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
+  if ($('dbSearch')) $('dbSearch').value = '';
+  currentPage = 1;
+}
+
+function resetFourFilters() {
+  fourFilters = { domaine: null, ville: null, search: '' };
+  if ($('fourSearch')) $('fourSearch').value = '';
+}
+
+function resetAutoFilters() {
+  autoFilters = { domaine: null, ville: null, search: '' };
+  if ($('autoSearch')) $('autoSearch').value = '';
+}
 
 // ===== CSV LOADER avec retry =====
 async function loadCSV(url, retryCount = 0) {
@@ -1252,7 +1270,7 @@ function getFilteredDB() {
   );
 }
 
-// === FILTRES INTELLIGENTS - montre seulement les options existantes ===
+// === FILTRES INTELLIGENTS - selon le type sélectionné ===
 function getAvailableTypes() {
   const types = [];
   if (dbData.some(d => d.type === 'fournisseurs')) types.push('fournisseurs');
@@ -1260,12 +1278,16 @@ function getAvailableTypes() {
   return types;
 }
 
-function getAvailableCategories() {
+function getAvailableCategoriesByType() {
+  let filteredData = [...dbData];
+  if (dbFilters.type) {
+    filteredData = filteredData.filter(d => d.type === dbFilters.type);
+  }
   const categories = [];
-  if (dbData.some(d => d.categorie === 'services')) categories.push('services');
-  if (dbData.some(d => d.categorie === 'products')) categories.push('products');
-  if (dbData.some(d => d.categorie === 'maqola')) categories.push('maqola');
-  if (dbData.some(d => d.categorie === 'yad-amila')) categories.push('yad-amila');
+  if (filteredData.some(d => d.categorie === 'services')) categories.push('services');
+  if (filteredData.some(d => d.categorie === 'products')) categories.push('products');
+  if (filteredData.some(d => d.categorie === 'maqola')) categories.push('maqola');
+  if (filteredData.some(d => d.categorie === 'yad-amila')) categories.push('yad-amila');
   return categories;
 }
 
@@ -1473,10 +1495,10 @@ function renderResultInfo(elId, count, activeFilters) {
 function renderDBFilterTags() {
   const c = $('dbFilterTags');
   let html = '';
-  if (dbFilters.type) html += makeFtag(`TYPE: ${dbFilters.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS'}`, `dbFilters.type=null;renderDB()`);
-  if (dbFilters.categorie) html += makeFtag(`CAT: ${catNames[dbFilters.categorie]}`, `dbFilters.categorie=null;renderDB()`);
-  if (dbFilters.domaine) html += makeFtag(`DOM: ${dbFilters.domaine}`, `dbFilters.domaine=null;renderDB()`);
-  if (dbFilters.ville) html += makeFtag(`VILLE: ${dbFilters.ville}`, `dbFilters.ville=null;renderDB()`);
+  if (dbFilters.type) html += makeFtag(`TYPE: ${dbFilters.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS'}`, `dbFilters.type=null;resetFiltersAndRender()`);
+  if (dbFilters.categorie) html += makeFtag(`CAT: ${catNames[dbFilters.categorie]}`, `dbFilters.categorie=null;resetFiltersAndRender()`);
+  if (dbFilters.domaine) html += makeFtag(`DOM: ${dbFilters.domaine}`, `dbFilters.domaine=null;resetFiltersAndRender()`);
+  if (dbFilters.ville) html += makeFtag(`VILLE: ${dbFilters.ville}`, `dbFilters.ville=null;resetFiltersAndRender()`);
   c.innerHTML = html;
 }
 
@@ -1498,6 +1520,11 @@ function renderAutoFilterTags() {
 
 function makeFtag(label, action) {
   return `<div class="ftag"><i class="fas fa-tag"></i> ${esc(label)}<button onclick="${action}">✕</button></div>`;
+}
+
+function resetFiltersAndRender() {
+  resetDBFilters();
+  renderDB();
 }
 
 // ===== MODAL LIST avec filtres intelligents =====
@@ -1556,16 +1583,23 @@ function showTypeFilter() {
     const el = document.createElement('div');
     el.className = 'litem';
     el.innerHTML = `<span><i class="fas ${o.icon}"></i> ${o.label}</span><em>→</em>`;
-    el.onclick = () => { dbFilters.type = o.value; currentPage = 1; renderDB(); closeModal('listModal'); };
+    el.onclick = () => { 
+      dbFilters.type = o.value; 
+      // Reset category when type changes (because categories depend on type)
+      dbFilters.categorie = null;
+      currentPage = 1; 
+      renderDB(); 
+      closeModal('listModal'); 
+    };
     c.appendChild(el);
   });
   $('listModal').classList.add('show');
 }
 
 function showCategorieFilter() {
-  const availableCategories = getAvailableCategories();
+  const availableCategories = getAvailableCategoriesByType();
   if (availableCategories.length === 0) {
-    toast('⚠️ Aucune catégorie disponible');
+    toast('⚠️ Aucune catégorie disponible pour ce type');
     return;
   }
   
@@ -1734,9 +1768,20 @@ window.copyClip = function(text, label) {
   });
 };
 
-// ===== SECTION NAVIGATION avec historique =====
+// ===== SECTION NAVIGATION avec reset des filtres =====
 function showSection(id) {
-  // Ajouter à l'historique seulement si ce n'est pas le même
+  // Reset filters when changing section
+  if (id !== lastActiveSection) {
+    resetDBFilters();
+    resetFourFilters();
+    resetAutoFilters();
+    if (id === 'db-unified') renderDB();
+    if (id === 'fournisseurs-csv') renderFournisseursCSV();
+    if (id === 'experts-csv') renderExpertsCSV();
+    if (id === 'explorer') renderExplorer();
+  }
+  
+  // Add to history
   if (navigationHistory[navigationHistory.length - 1] !== id) {
     navigationHistory.push(id);
   }
@@ -1745,28 +1790,59 @@ function showSection(id) {
   const sec = $(id + 'Section');
   if (sec) sec.classList.add('active');
   document.querySelectorAll('.bnav-item[data-sec]').forEach(b => b.classList.toggle('active', b.dataset.sec === id));
+  
+  lastActiveSection = id;
   scrollTop();
+}
 
-  if (id === 'explorer') renderExplorer();
-  if (id === 'db-unified') { currentPage = 1; renderDB(); }
-  if (id === 'fournisseurs-csv') renderFournisseursCSV();
-  if (id === 'experts-csv') renderExpertsCSV();
+// ===== GESTION DU CLIC SUR LE MÊME ONGLET =====
+function handleNavClick(id) {
+  if (lastActiveSection === id) {
+    // Même section: vérifier si on est en haut de la page
+    if (window.scrollY <= 10) {
+      // Déjà en haut: reset filters
+      if (id === 'db-unified') {
+        resetDBFilters();
+        renderDB();
+        toast('🗑️ Filtres réinitialisés');
+      } else if (id === 'fournisseurs-csv') {
+        resetFourFilters();
+        renderFournisseursCSV();
+        toast('🗑️ Filtres réinitialisés');
+      } else if (id === 'experts-csv') {
+        resetAutoFilters();
+        renderExpertsCSV();
+        toast('🗑️ Filtres réinitialisés');
+      } else if (id === 'explorer') {
+        explorerLevel = 0;
+        explorerState = { type: null, domaine: null, specialite: null };
+        renderExplorer();
+        toast('↺ Navigation réinitialisée');
+      }
+    } else {
+      // Pas en haut: scroll to top
+      scrollTop();
+      toast('⬆️ Haut de page');
+    }
+  } else {
+    // Section différente
+    showSection(id);
+  }
 }
 
 // ===== GESTION DU BOUTON RETOUR DU TÉLÉPHONE =====
 function handleBackButton() {
   if (navigationHistory.length > 1) {
-    // Revenir à la page précédente
     navigationHistory.pop();
     const previousPage = navigationHistory[navigationHistory.length - 1];
+    lastActiveSection = previousPage;
     showSection(previousPage);
-    return true; // Événement traité
+    return true;
   } else if (navigationHistory.length === 1) {
-    // Sur la page d'accueil, demander confirmation avant de quitter
     if (confirm('Voulez-vous vraiment quitter l\'application ?')) {
-      return false; // Permettre la fermeture
+      return false;
     }
-    return true; // Bloquer la fermeture
+    return true;
   }
   return false;
 }
@@ -1841,9 +1917,7 @@ $('filterDomaineBtn').onclick = () => {
   else toast('⚠️ Aucun domaine disponible');
 };
 $('filterClearBtn').onclick = () => {
-  dbFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
-  $('dbSearch').value = '';
-  currentPage = 1;
+  resetDBFilters();
   renderDB();
   toast('🗑️ Filtres effacés');
 };
@@ -1861,8 +1935,7 @@ $('fourVilleBtn').onclick = () => {
   else toast('⚠️ Aucune ville');
 };
 $('fourClearBtn').onclick = () => {
-  fourFilters = { domaine: null, ville: null, search: '' };
-  $('fourSearch').value = '';
+  resetFourFilters();
   renderFournisseursCSV();
   toast('🗑️ Filtres effacés');
 };
@@ -1880,8 +1953,7 @@ $('autoVilleBtn').onclick = () => {
   else toast('⚠️ Aucune ville');
 };
 $('autoClearBtn').onclick = () => {
-  autoFilters = { domaine: null, ville: null, search: '' };
-  $('autoSearch').value = '';
+  resetAutoFilters();
   renderExpertsCSV();
   toast('🗑️ Filtres effacés');
 };
@@ -1919,8 +1991,17 @@ document.querySelectorAll('.stat-card[data-t]').forEach(s => {
   });
 });
 
-// Bottom nav
-document.querySelectorAll('.bnav-item[data-sec]').forEach(b => b.addEventListener('click', () => showSection(b.dataset.sec)));
+// Bottom nav avec gestion du double clic
+const navButtons = document.querySelectorAll('.bnav-item[data-sec]');
+navButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const sectionId = btn.dataset.sec;
+    handleNavClick(sectionId);
+  });
+});
+
+// Push initial state for back button
+history.pushState(null, null, location.href);
 
 // ===== INIT =====
 loadTheme();
