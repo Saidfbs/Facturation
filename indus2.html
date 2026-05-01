@@ -11,7 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-/* ... keep existing styles ... */
+/* ... (same styles as original, keeping all existing styles) ... */
 *{margin:0;padding:0;box-sizing:border-box;}
 
 :root{
@@ -108,9 +108,11 @@ body.admin-mode .admin-only-inline { display: inline-flex !important; }
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--card2);
+  border-radius: 12px;
+  border: 1px solid var(--border);
 }
 
 .admin-stat-card {
@@ -142,6 +144,9 @@ body.admin-mode .admin-only-inline { display: inline-flex !important; }
   font-size: 0.7rem;
   color: var(--text2);
   margin-top: 8px;
+  padding: 8px 12px;
+  background: var(--card2);
+  border-radius: 8px;
 }
 
 .sync-status i {
@@ -389,8 +394,6 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
 .fbtn.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-glow);}
 .fbtn i{font-size:.78rem;}
 .fbtn.active{background:var(--gold);color:#000;border-color:var(--gold);}
-.reset-filters-btn { background: var(--card2); border: 1px solid var(--danger); color: var(--danger); }
-.reset-filters-btn:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 .search-wrap{
   display:flex;align-items:center;gap:10px;
@@ -732,6 +735,32 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
     <div class="panel">
       <div class="ph"><i class="fas fa-chart-bar"></i> STATISTIQUES <span id="adminBadge" class="admin-badge admin-only">MODE ADMIN</span></div>
       <div class="pb">
+        <!-- Admin Statistics Section - MOVED TO TOP -->
+        <div id="adminStatsPanel" class="admin-only-block" style="display: none;">
+          <div class="admin-stats-grid">
+            <div class="admin-stat-card">
+              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Fournisseurs</span>
+              <span class="admin-stat-value" id="adminCsvFourCount">0</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Experts</span>
+              <span class="admin-stat-value" id="adminCsvExpCount">0</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="admin-stat-label"><i class="fas fa-calendar"></i> Dernière sync</span>
+              <span class="admin-stat-value" id="adminLastSync">--</span>
+            </div>
+            <div class="admin-stat-card">
+              <span class="admin-stat-label"><i class="fas fa-database"></i> Base DB</span>
+              <span class="admin-stat-value" id="adminDbCount">0</span>
+            </div>
+          </div>
+          <div class="sync-status" id="syncStatus">
+            <i class="fas fa-check-circle"></i> Synchronisé
+          </div>
+        </div>
+        
+        <!-- Stats Grid -->
         <div class="stats-grid">
           <div class="stat-card" data-filter-type="fournisseurs">
             <div class="stat-n" id="dbFourCount">0</div>
@@ -771,32 +800,7 @@ body.light .bottom-nav{background:rgba(240,244,252,0.95);}
           </div>
         </div>
 
-        <!-- Admin Statistics Section -->
-        <div id="adminStatsPanel" class="admin-only-block" style="display: none;">
-          <div class="admin-stats-grid">
-            <div class="admin-stat-card">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Fournisseurs</span>
-              <span class="admin-stat-value" id="adminCsvFourCount">0</span>
-            </div>
-            <div class="admin-stat-card">
-              <span class="admin-stat-label"><i class="fas fa-file-csv"></i> CSV Experts</span>
-              <span class="admin-stat-value" id="adminCsvExpCount">0</span>
-            </div>
-            <div class="admin-stat-card">
-              <span class="admin-stat-label"><i class="fas fa-calendar"></i> Dernière sync</span>
-              <span class="admin-stat-value" id="adminLastSync">--</span>
-            </div>
-            <div class="admin-stat-card">
-              <span class="admin-stat-label"><i class="fas fa-database"></i> Base DB</span>
-              <span class="admin-stat-value" id="adminDbCount">0</span>
-            </div>
-          </div>
-          <div class="sync-status" id="syncStatus">
-            <i class="fas fa-check-circle"></i> Synchronisé
-          </div>
-        </div>
-
-        <button id="resetAllFiltersBtn" class="fbtn reset-filters-btn" style="margin-top: 12px; width: 100%;"><i class="fas fa-eraser"></i> RÉINITIALISER LES FILTRES</button>
+        <!-- RESET FILTERS BUTTON REMOVED -->
       </div>
     </div>
   </div>
@@ -1464,8 +1468,8 @@ function updateDBStats() {
   $('dbSpecialitesCount').textContent = new Set(dbData.map(d => d.specialite).filter(v => v && v !== 'null' && v !== '')).size;
 }
 
-// ===== RESET ALL FILTERS =====
-function resetAllFilters() {
+// ===== RESET ALL FILTERS (FOR ACCUEIL BACK) =====
+function resetAllFiltersForAccueil() {
   resetDBFilters();
   resetFourFilters();
   resetAutoFilters();
@@ -1479,10 +1483,72 @@ function resetAllFilters() {
     card.classList.remove('filter-active');
   });
   
+  // Clear search inputs
+  if ($('dbSearch')) $('dbSearch').value = '';
+  if ($('fourSearch')) $('fourSearch').value = '';
+  if ($('autoSearch')) $('autoSearch').value = '';
+  
   renderDB();
   renderFournisseursCSV();
   renderExpertsCSV();
   renderExplorer();
+}
+
+// ===== GO BACK IN EXPLORER =====
+function goBackInExplorer() {
+  if (lastActiveSection !== 'explorer') {
+    // If not in explorer, just go to previous page in history
+    if (navigationHistory.length > 1) {
+      navigationHistory.pop();
+      const previousPage = navigationHistory[navigationHistory.length - 1];
+      lastActiveSection = previousPage;
+      showSection(previousPage);
+    }
+    return false;
+  }
+  
+  // Currently in explorer section
+  if (explorerLevel === 3) {
+    // From Spécialité → Domaine
+    explorerLevel = 2;
+    explorerState.specialite = null;
+    renderExplorer();
+    scrollTop();
+    toast('🔙 Retour aux domaines');
+    return true;
+  } else if (explorerLevel === 2) {
+    // From Domaine → Type
+    explorerLevel = 1;
+    explorerState.domaine = null;
+    renderExplorer();
+    scrollTop();
+    toast('🔙 Retour aux types');
+    return true;
+  } else if (explorerLevel === 1) {
+    // From Type → Explorer Root (Accueil Explorer)
+    explorerLevel = 0;
+    explorerState.type = null;
+    renderExplorer();
+    scrollTop();
+    toast('🔙 Retour à l\'accueil explorateur');
+    return true;
+  } else {
+    // At root of explorer, go to previous section
+    if (navigationHistory.length > 1) {
+      navigationHistory.pop();
+      const previousPage = navigationHistory[navigationHistory.length - 1];
+      lastActiveSection = previousPage;
+      showSection(previousPage);
+      toast(`🔙 Retour à ${previousPage === 'about' ? 'ACCUEIL' : previousPage.toUpperCase()}`);
+      return true;
+    }
+  }
+  return false;
+}
+
+// ===== RESET ALL FILTERS (Legacy) =====
+function resetAllFilters() {
+  resetAllFiltersForAccueil();
   toast('🗑️ Tous les filtres ont été réinitialisés');
 }
 
@@ -2097,7 +2163,8 @@ function handleNavClick(id) {
         renderExplorer();
         toast('↺ Navigation réinitialisée');
       } else if (id === 'about') {
-        resetAllFilters();
+        resetAllFiltersForAccueil();
+        toast('🏠 Retour à l\'accueil - Filtres réinitialisés');
       }
     } else {
       scrollTop();
@@ -2109,9 +2176,22 @@ function handleNavClick(id) {
 }
 
 function handleBackButton() {
+  // Check if we're in explorer and need to navigate back within explorer
+  if (lastActiveSection === 'explorer' && explorerLevel > 0) {
+    return goBackInExplorer();
+  }
+  
+  // Otherwise, handle page navigation history
   if (navigationHistory.length > 1) {
     navigationHistory.pop();
     const previousPage = navigationHistory[navigationHistory.length - 1];
+    
+    // If going back to ACCUEIL, reset all filters
+    if (previousPage === 'about') {
+      resetAllFiltersForAccueil();
+      toast('🏠 Retour à l\'accueil - Filtres réinitialisés');
+    }
+    
     lastActiveSection = previousPage;
     showSection(previousPage);
     return true;
@@ -2195,7 +2275,7 @@ $('themeBtn').onclick = toggleTheme;
 $('syncCsvBtn').onclick = syncToFirebase;
 $('addItemBtn').onclick = openAddModal;
 $('adminLoginBtn').onclick = () => { $('adminLoginModal').classList.add('show'); };
-$('resetAllFiltersBtn').onclick = resetAllFilters;
+// Reset all filters button has been removed
 
 // DB Search
 $('dbSearch').addEventListener('input', e => {
