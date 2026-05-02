@@ -118,7 +118,9 @@ body{
 .tab-btn i{font-size:1rem;margin-bottom:2px;}
 .tab-btn.active{color:var(--blue);}
 .admin-only{display:none!important;}
+.member-only{display:none!important;}
 body.admin-mode .admin-only{display:flex!important;}
+body.member-logged .member-only{display:flex!important;}
 
 .main{padding-top:var(--nav-h);padding-bottom:calc(52px + var(--safe-bottom));min-height:100dvh;}
 .section{display:none;padding:0 12px;}
@@ -137,25 +139,27 @@ body.admin-mode .admin-only{display:flex!important;}
 .home-title{font-size:1.2rem;font-weight:700;color:#fff;position:relative;letter-spacing:-0.5px;}
 .home-title i{font-size:1rem;margin-right:5px;}
 .home-subtitle{font-size:0.6rem;color:rgba(255,255,255,0.7);margin-top:6px;position:relative;}
-.welcome-card{
+
+.member-card{
   background:var(--bg-panel);border-radius:var(--radius-md);
   padding:12px;margin-bottom:12px;border:0.5px solid var(--border);
   display:flex;align-items:center;gap:10px;
 }
-.welcome-icon{
+.member-icon{
   width:44px;height:44px;border-radius:50%;
   background:var(--blue-dim);display:flex;align-items:center;
   justify-content:center;color:var(--blue);font-size:1.1rem;
 }
-.welcome-text flex:1;
-.welcome-name{font-weight:600;font-size:0.85rem;color:var(--text);}
-.welcome-phone{font-size:0.6rem;color:var(--text2);margin-top:2px;}
-.welcome-btn{
+.member-info{flex:1;}
+.member-name{font-weight:600;font-size:0.85rem;color:var(--text);}
+.member-phone{font-size:0.6rem;color:var(--text2);margin-top:2px;}
+.member-company{font-size:0.55rem;color:var(--green);margin-top:1px;}
+.member-btn{
   background:var(--blue);border:none;border-radius:30px;
   padding:6px 12px;color:#fff;font-size:0.6rem;font-weight:500;
   cursor:pointer;transition:.15s;
 }
-.welcome-btn:hover{opacity:0.85;}
+.member-btn:hover{opacity:0.85;}
 
 .stats-section{padding:4px 0;}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px;}
@@ -407,6 +411,25 @@ select.field{padding:8px 10px;}
 .empty-icon{font-size:2.2rem;margin-bottom:8px;opacity:.4;}
 .empty-title{font-size:0.8rem;font-weight:500;}
 .empty-sub{font-size:0.65rem;margin-top:3px;opacity:.7;}
+
+/* Members list in admin mode */
+.members-list{background:var(--bg-panel);}
+.member-item{
+  display:flex;align-items:center;padding:10px 0;
+  border-bottom:0.5px solid var(--border);gap:10px;
+}
+.member-item-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--blue-dim);
+  display:flex;align-items:center;justify-content:center;color:var(--blue);
+}
+.member-item-info{flex:1;}
+.member-item-name{font-size:0.8rem;font-weight:500;color:var(--text);}
+.member-item-phone{font-size:0.55rem;color:var(--text2);}
+.member-item-delete{
+  background:none;border:none;color:var(--red);cursor:pointer;
+  padding:6px;border-radius:50%;
+}
+.member-item-delete:hover{background:var(--red-dim);}
 </style>
 </head>
 <body>
@@ -420,8 +443,8 @@ select.field{padding:8px 10px;}
   <div class="header-actions">
     <span id="appTime"></span>
     <button class="hbtn" id="themeBtn"><i class="fas fa-moon"></i></button>
-    <button class="hbtn" id="adminBtn"><i class="fas fa-user-shield"></i></button>
-    <button class="hbtn admin-only" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+    <button class="hbtn admin-only" id="adminBtn"><i class="fas fa-user-shield"></i></button>
+    <button class="hbtn member-only" id="memberSettingsBtn" onclick="openProfileModal()"><i class="fas fa-user-cog"></i></button>
   </div>
 </header>
 
@@ -429,8 +452,9 @@ select.field{padding:8px 10px;}
   <button class="tab-btn active" data-sec="home"><i class="fas fa-home"></i><span>Accueil</span></button>
   <button class="tab-btn" data-sec="explorer"><i class="fas fa-compass"></i><span>Explorer</span></button>
   <button class="tab-btn" data-sec="repertoire"><i class="fas fa-users"></i><span>Répertoire</span></button>
-  <button class="tab-btn tab-admin admin-only" id="syncBtn"><i class="fas fa-cloud-upload-alt"></i><span>Sync</span></button>
-  <button class="tab-btn tab-admin admin-only" id="addBtn"><i class="fas fa-plus-circle"></i><span>Ajouter</span></button>
+  <button class="tab-btn admin-only" id="syncBtn"><i class="fas fa-cloud-upload-alt"></i><span>Sync</span></button>
+  <button class="tab-btn admin-only" id="addBtn"><i class="fas fa-plus-circle"></i><span>Ajouter</span></button>
+  <button class="tab-btn admin-only" id="membersListBtn"><i class="fas fa-users"></i><span>Membres</span></button>
 </nav>
 
 <main class="main">
@@ -438,27 +462,18 @@ select.field{padding:8px 10px;}
   <div id="homeSection" class="section active">
     <div class="home-banner">
       <div class="home-title"><i class="fab fa-whatsapp"></i> Les Fournisseurs <span>Industriels</span></div>
-      <div class="home-subtitle">La plus grande communauté B2B au Maroc · Rejoignez-nous sur WhatsApp</div>
+      <div class="home-subtitle">La plus grande communauté B2B au Maroc</div>
     </div>
     
-    <!-- Welcome Card for logged in user -->
-    <div class="welcome-card" id="welcomeCard" style="display:none;">
-      <div class="welcome-icon"><i class="fas fa-user-circle"></i></div>
-      <div class="welcome-text" style="flex:1">
-        <div class="welcome-name" id="welcomeName"></div>
-        <div class="welcome-phone" id="welcomePhone"></div>
+    <!-- Member Card for logged in member -->
+    <div class="member-card" id="memberCard" style="display:none;">
+      <div class="member-icon"><i class="fas fa-user-circle"></i></div>
+      <div class="member-info">
+        <div class="member-name" id="memberName"></div>
+        <div class="member-phone" id="memberPhone"></div>
+        <div class="member-company" id="memberCompany"></div>
       </div>
-      <button class="welcome-btn" onclick="openProfileModal()"><i class="fas fa-edit"></i> Mon profil</button>
-    </div>
-    
-    <!-- Registration Card for unlogged user -->
-    <div class="welcome-card" id="registerCard" style="display:flex;">
-      <div class="welcome-icon"><i class="fas fa-phone-alt"></i></div>
-      <div class="welcome-text" style="flex:1">
-        <div class="welcome-name">Rejoindre le groupe</div>
-        <div class="welcome-phone">Inscrivez-vous avec votre numéro WhatsApp</div>
-      </div>
-      <button class="welcome-btn" onclick="openRegisterModal()"><i class="fas fa-sign-in-alt"></i> S'inscrire</button>
+      <button class="member-btn" onclick="openProfileModal()"><i class="fas fa-edit"></i> Modifier</button>
     </div>
     
     <div class="stats-section">
@@ -499,18 +514,6 @@ select.field{padding:8px 10px;}
         </div>
       </div>
     </div>
-    
-    <!-- WhatsApp Group Links -->
-    <div class="stats-grid" style="margin-top:4px">
-      <div class="stat-card" onclick="window.open('https://chat.whatsapp.com/your-group-link','_blank')">
-        <div class="stat-card-icon" style="background:var(--whatsapp-dim);color:var(--whatsapp)"><i class="fab fa-whatsapp"></i></div>
-        <div><div class="stat-num" style="font-size:0.8rem">Groupe WhatsApp</div><div class="stat-lbl">Rejoindre la communauté</div></div>
-      </div>
-      <div class="stat-card" onclick="window.open('https://chat.whatsapp.com/your-group-link','_blank')">
-        <div class="stat-card-icon" style="background:var(--blue-dim);color:var(--blue)"><i class="fas fa-bullhorn"></i></div>
-        <div><div class="stat-num" style="font-size:0.8rem">Annonces</div><div class="stat-lbl">Offres & demandes</div></div>
-      </div>
-    </div>
   </div>
 
   <div id="explorerSection" class="section">
@@ -540,16 +543,16 @@ select.field{padding:8px 10px;}
 
 </main>
 
-<!-- REGISTER MODAL -->
-<div class="overlay" id="registerModal">
+<!-- REGISTER MEMBER MODAL (Admin only add members) -->
+<div class="overlay" id="registerMemberModal">
   <div class="sheet">
-    <div class="sheet-head"><h3><i class="fab fa-whatsapp"></i> Rejoindre le groupe</h3><button class="sheet-close" onclick="closeModal('registerModal')"><i class="fas fa-times"></i></button></div>
+    <div class="sheet-head"><h3><i class="fas fa-user-plus"></i> Ajouter un membre</h3><button class="sheet-close" onclick="closeModal('registerMemberModal')"><i class="fas fa-times"></i></button></div>
     <div class="sheet-body">
-      <div class="fgroup"><label>Votre nom complet</label><input type="text" id="regName" class="field" placeholder="Nom et prénom"></div>
+      <div class="fgroup"><label>Nom complet</label><input type="text" id="regName" class="field" placeholder="Nom et prénom"></div>
       <div class="fgroup"><label>Numéro WhatsApp</label><input type="tel" id="regPhone" class="field" placeholder="+212 6XX XXX XXX"></div>
-      <div class="fgroup"><label>Votre profession</label><input type="text" id="regProfession" class="field" placeholder="Ex: Fournisseur de pièces auto"></div>
+      <div class="fgroup"><label>Société/Profession</label><input type="text" id="regCompany" class="field" placeholder="Ex: Fournisseur de pièces auto"></div>
       <div class="fgroup"><label>Ville</label><input type="text" id="regVille" class="field" placeholder="Casablanca, Tanger, ..."></div>
-      <button class="btn btn-primary btn-full" onclick="registerUser()"><i class="fab fa-whatsapp"></i> Rejoindre</button>
+      <button class="btn btn-primary btn-full" onclick="registerMember()"><i class="fas fa-save"></i> Ajouter</button>
     </div>
   </div>
 </div>
@@ -561,12 +564,23 @@ select.field{padding:8px 10px;}
     <div class="sheet-body">
       <div class="fgroup"><label>Nom complet</label><input type="text" id="profileName" class="field"></div>
       <div class="fgroup"><label>Numéro WhatsApp</label><input type="tel" id="profilePhone" class="field"></div>
-      <div class="fgroup"><label>Profession</label><input type="text" id="profileProfession" class="field"></div>
+      <div class="fgroup"><label>Société/Profession</label><input type="text" id="profileCompany" class="field"></div>
       <div class="fgroup"><label>Ville</label><input type="text" id="profileVille" class="field"></div>
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn btn-primary" onclick="updateProfile()"><i class="fas fa-save"></i> Enregistrer</button>
-        <button class="btn btn-danger" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+        <button class="btn btn-danger" onclick="logoutMember()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MEMBERS LIST MODAL (Admin only) -->
+<div class="overlay" id="membersListModal">
+  <div class="sheet">
+    <div class="sheet-head"><h3><i class="fas fa-users"></i> Membres inscrits</h3><button class="sheet-close" onclick="closeModal('membersListModal')"><i class="fas fa-times"></i></button></div>
+    <div class="sheet-body">
+      <button class="btn btn-primary btn-full" style="margin-bottom:12px" onclick="closeModal('membersListModal');openRegisterMemberModal()"><i class="fas fa-user-plus"></i> Ajouter un membre</button>
+      <div id="membersListContainer" style="max-height:50vh;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -666,7 +680,8 @@ let csvExperts=[],csvFournisseurs=[],dbData=[];
 let isAdmin=false,currentSection='home';
 let explorerStack=[];
 let pendingDelete=null;
-let currentUser=null;
+let currentMember=null;
+let allMembers=[];
 let repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
 
 // ==================== HELPERS ====================
@@ -695,35 +710,43 @@ function fieldMatches(value,q){
   return normalizeStr(String(value)).includes(normalizeStr(q));
 }
 
-// ==================== USER MANAGEMENT ====================
-function loadUserFromStorage(){
-  const saved = localStorage.getItem('fournisseurs_user');
+// ==================== MEMBERS MANAGEMENT ====================
+function loadMembersFromStorage(){
+  const saved = localStorage.getItem('fournisseurs_members');
   if(saved){
-    currentUser = JSON.parse(saved);
-    updateUserUI();
+    allMembers = JSON.parse(saved);
+  }
+  const currentSaved = localStorage.getItem('current_member');
+  if(currentSaved){
+    currentMember = JSON.parse(currentSaved);
+    document.body.classList.add('member-logged');
+    updateMemberUI();
   }
 }
 
-function updateUserUI(){
-  if(currentUser){
-    $('welcomeCard').style.display='flex';
-    $('registerCard').style.display='none';
-    $('welcomeName').textContent=currentUser.name;
-    $('welcomePhone').textContent=currentUser.phone;
-    $('headerName').textContent=currentUser.name.split(' ')[0] || 'Membre';
-    $('headerAvatar').innerHTML = getInitials(currentUser.name);
+function saveMembersToStorage(){
+  localStorage.setItem('fournisseurs_members', JSON.stringify(allMembers));
+}
+
+function updateMemberUI(){
+  if(currentMember){
+    $('memberCard').style.display='flex';
+    $('memberName').textContent=currentMember.name;
+    $('memberPhone').textContent=currentMember.phone;
+    $('memberCompany').textContent=currentMember.company || currentMember.profession || '';
+    $('headerName').textContent=currentMember.name.split(' ')[0] || 'Membre';
+    $('headerAvatar').innerHTML = getInitials(currentMember.name);
   } else {
-    $('welcomeCard').style.display='none';
-    $('registerCard').style.display='flex';
+    $('memberCard').style.display='none';
     $('headerName').textContent='Les Fournisseurs Industriels';
     $('headerAvatar').innerHTML = '<i class="fab fa-whatsapp"></i>';
   }
 }
 
-function registerUser(){
+function registerMember(){
   const name = $('regName').value.trim();
   const phone = formatPhone($('regPhone').value.trim());
-  const profession = $('regProfession').value.trim();
+  const company = $('regCompany').value.trim();
   const ville = $('regVille').value.trim();
   
   if(!name || !phone){
@@ -731,56 +754,109 @@ function registerUser(){
     return;
   }
   
-  currentUser = { name, phone, profession, ville, registeredAt: Date.now() };
-  localStorage.setItem('fournisseurs_user', JSON.stringify(currentUser));
-  updateUserUI();
-  closeModal('registerModal');
-  toast(`✅ Bienvenue ${name} !`);
-  
-  // Save to Firebase users list
-  dbRef.ref('users/' + phone.replace(/[^0-9]/g, '')).set(currentUser);
+  const newMember = { 
+    id: Date.now().toString(),
+    name, 
+    phone, 
+    company, 
+    ville, 
+    registeredAt: Date.now() 
+  };
+  allMembers.push(newMember);
+  saveMembersToStorage();
+  closeModal('registerMemberModal');
+  toast(`✅ Membre ${name} ajouté`);
+  renderMembersList();
 }
 
-function openRegisterModal(){
-  $('regName').value = '';
-  $('regPhone').value = '';
-  $('regProfession').value = '';
-  $('regVille').value = '';
-  $('registerModal').classList.add('show');
+function loginMember(member){
+  currentMember = member;
+  localStorage.setItem('current_member', JSON.stringify(member));
+  document.body.classList.add('member-logged');
+  updateMemberUI();
+  closeModal('membersListModal');
+  toast(`👋 Bienvenue ${member.name}`);
 }
 
 function openProfileModal(){
-  if(!currentUser){
-    openRegisterModal();
+  if(!currentMember){
+    toast('⚠️ Veuillez vous connecter d\'abord');
     return;
   }
-  $('profileName').value = currentUser.name;
-  $('profilePhone').value = currentUser.phone;
-  $('profileProfession').value = currentUser.profession || '';
-  $('profileVille').value = currentUser.ville || '';
+  $('profileName').value = currentMember.name;
+  $('profilePhone').value = currentMember.phone;
+  $('profileCompany').value = currentMember.company || '';
+  $('profileVille').value = currentMember.ville || '';
   $('profileModal').classList.add('show');
 }
 
 function updateProfile(){
-  if(!currentUser) return;
-  currentUser.name = $('profileName').value.trim();
-  currentUser.phone = formatPhone($('profilePhone').value.trim());
-  currentUser.profession = $('profileProfession').value.trim();
-  currentUser.ville = $('profileVille').value.trim();
-  localStorage.setItem('fournisseurs_user', JSON.stringify(currentUser));
-  updateUserUI();
+  if(!currentMember) return;
+  currentMember.name = $('profileName').value.trim();
+  currentMember.phone = formatPhone($('profilePhone').value.trim());
+  currentMember.company = $('profileCompany').value.trim();
+  currentMember.ville = $('profileVille').value.trim();
+  
+  // Update in allMembers array
+  const index = allMembers.findIndex(m => m.id === currentMember.id);
+  if(index !== -1) allMembers[index] = currentMember;
+  
+  localStorage.setItem('current_member', JSON.stringify(currentMember));
+  saveMembersToStorage();
+  updateMemberUI();
   closeModal('profileModal');
   toast('✅ Profil mis à jour');
-  
-  dbRef.ref('users/' + currentUser.phone.replace(/[^0-9]/g, '')).set(currentUser);
 }
 
-function logoutUser(){
-  localStorage.removeItem('fournisseurs_user');
-  currentUser = null;
-  updateUserUI();
-  closeModal('profileModal');
+function logoutMember(){
+  localStorage.removeItem('current_member');
+  currentMember = null;
+  document.body.classList.remove('member-logged');
+  updateMemberUI();
   toast('👋 Déconnecté');
+}
+
+function openRegisterMemberModal(){
+  $('regName').value = '';
+  $('regPhone').value = '';
+  $('regCompany').value = '';
+  $('regVille').value = '';
+  $('registerMemberModal').classList.add('show');
+}
+
+function openMembersListModal(){
+  renderMembersList();
+  $('membersListModal').classList.add('show');
+}
+
+function renderMembersList(){
+  const container = $('membersListContainer');
+  if(allMembers.length === 0){
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-users"></i></div><div class="empty-title">Aucun membre</div><div class="empty-sub">Ajoutez des membres pour qu'ils puissent se connecter</div></div>`;
+    return;
+  }
+  container.innerHTML = allMembers.map(member => `
+    <div class="member-item">
+      <div class="member-item-avatar"><i class="fas fa-user"></i></div>
+      <div class="member-item-info">
+        <div class="member-item-name">${escHtml(member.name)}</div>
+        <div class="member-item-phone">${escHtml(member.phone)}</div>
+        ${member.company ? `<div class="member-item-phone" style="color:var(--green)">${escHtml(member.company)}</div>` : ''}
+      </div>
+      <button class="member-item-delete" onclick="deleteMember('${member.id}')"><i class="fas fa-trash-alt"></i></button>
+      <button class="member-btn" onclick="loginMember(${JSON.stringify(member).replace(/"/g, '&quot;')})" style="background:var(--green);padding:4px 10px;"><i class="fas fa-sign-in-alt"></i></button>
+    </div>
+  `).join('');
+}
+
+function deleteMember(id){
+  allMembers = allMembers.filter(m => m.id !== id);
+  if(currentMember && currentMember.id === id){
+    logoutMember();
+  }
+  saveMembersToStorage();
+  renderMembersList();
+  toast('🗑️ Membre supprimé');
 }
 
 // ==================== FILTRAGE PAR STATS ====================
@@ -1154,12 +1230,14 @@ function updateStats(){
 
 // ==================== CRUD (Admin) ====================
 function openAddModal(){
+  if(!isAdmin){toast('⚠️ Accès réservé admin');return;}
   $('editTitle').innerHTML='<i class="fas fa-plus-circle"></i> Ajouter';
   ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value='');
   $('editType').value='fournisseurs';$('editCat').value='services';
   $('editModal').classList.add('show');
 }
 function openEditModal(id){
+  if(!isAdmin){toast('⚠️ Accès réservé admin');return;}
   const item=dbData.find(i=>i.id===id);if(!item)return;
   $('editTitle').innerHTML='<i class="fas fa-pen"></i> Modifier';
   $('editId').value=item.id;$('editName').value=item.name;
@@ -1170,6 +1248,7 @@ function openEditModal(id){
   $('editModal').classList.add('show');
 }
 async function saveItem(){
+  if(!isAdmin){toast('⚠️ Accès réservé admin');return;}
   const id=$('editId').value;
   const itemData={
     id:id||`${Date.now()}_${Math.random().toString(36).slice(2)}`,
@@ -1202,13 +1281,14 @@ async function saveItem(){
   showLoading(false);
 }
 function openDeleteModal(id){
+  if(!isAdmin){toast('⚠️ Accès réservé admin');return;}
   const item=dbData.find(i=>i.id===id);if(!item)return;
   pendingDelete=item;
   $('deleteMsg').innerHTML=`Supprimer <strong>${escHtml(item.name)}</strong> ?`;
   $('deleteModal').classList.add('show');
 }
 async function confirmDeleteItem(){
-  if(!pendingDelete)return;
+  if(!isAdmin || !pendingDelete)return;
   showLoading(true);
   try{
     const path=`professionals/${typeMap[pendingDelete.type]}/${categoryMap[pendingDelete.categorie]}`;
@@ -1222,6 +1302,7 @@ async function confirmDeleteItem(){
 
 // ==================== SYNC ====================
 async function syncToFirebase(){
+  if(!isAdmin){toast('⚠️ Accès réservé admin');return;}
   if(!confirm('Synchroniser les CSV ?'))return;
   showLoading(true);
   try{
@@ -1320,7 +1401,6 @@ function verifyAdmin(){
   if($('adminPass').value===ADMIN_PASSWORD){
     isAdmin=true;sessionStorage.setItem('adminMode','true');
     document.body.classList.add('admin-mode');
-    $('adminBtn').classList.add('admin-on');
     closeModal('adminModal');toast('✅ Mode Admin activé');
     renderCurrent();
   }else toast('❌ Mot de passe incorrect');
@@ -1328,12 +1408,11 @@ function verifyAdmin(){
 function logoutAdmin(){
   isAdmin=false;sessionStorage.removeItem('adminMode');
   document.body.classList.remove('admin-mode');
-  $('adminBtn').classList.remove('admin-on');
   toast('👤 Mode utilisateur');renderCurrent();
 }
 function checkAdminStatus(){
   if(sessionStorage.getItem('adminMode')==='true'){
-    isAdmin=true;document.body.classList.add('admin-mode');$('adminBtn').classList.add('admin-on');
+    isAdmin=true;document.body.classList.add('admin-mode');
   }
 }
 
@@ -1341,6 +1420,7 @@ function checkAdminStatus(){
 $('adminBtn').onclick=()=>{if(isAdmin)logoutAdmin();else $('adminModal').classList.add('show');};
 $('syncBtn').onclick=syncToFirebase;
 $('addBtn').onclick=openAddModal;
+$('membersListBtn').onclick=openMembersListModal;
 $('filterTypeBtn').onclick=showTypeFilter;
 $('filterCatBtn').onclick=showCatFilter;
 $('filterVilleBtn').onclick=showVilleFilter;
@@ -1384,14 +1464,17 @@ window.filterByDomaineFromStats=filterByDomaineFromStats;
 window.goExplorerLevel=goExplorerLevel;
 window.explorerNavigateTo=explorerNavigateTo;
 window.openProfileModal=openProfileModal;
-window.openRegisterModal=openRegisterModal;
 window.updateProfile=updateProfile;
-window.logoutUser=logoutUser;
-window.registerUser=registerUser;
+window.logoutMember=logoutMember;
+window.registerMember=registerMember;
+window.openRegisterMemberModal=openRegisterMemberModal;
+window.openMembersListModal=openMembersListModal;
+window.deleteMember=deleteMember;
+window.loginMember=loginMember;
 
 // ==================== INIT ====================
 async function init(){
-  showLoading(true);checkAdminStatus();loadUserFromStorage();
+  showLoading(true);checkAdminStatus();loadMembersFromStorage();
   const[experts,fours]=await Promise.all([loadCSV(CSV_EXPERTS),loadCSV(CSV_FOURNISSEURS)]);
   csvExperts=experts;csvFournisseurs=fours;
   await loadDB();
