@@ -9,10 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-/* ==================== STYLES ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -272,59 +269,48 @@ body.admin-mode .tab-admin { display: flex; }
 .cb-green { background: var(--green-dim); color: var(--green); }
 .cb-teal { background: var(--teal-dim); color: var(--teal); }
 
-/* DETAIL OVERLAY */
-.detail-overlay {
+/* MODAL DETAIL (Popup) */
+.modal-overlay {
   position: fixed; inset: 0;
-  background: var(--bg-primary);
-  z-index: 600;
-  transform: translateX(100%);
-  transition: transform 0.28s;
-  display: flex;
-  flex-direction: column;
-}
-.detail-overlay.show { transform: translateX(0); }
-.detail-header {
-  background: var(--bg-header);
-  height: var(--nav-h);
-  display: flex; align-items: center;
-  padding: 0 12px;
-  gap: 12px;
-  flex-shrink: 0;
-}
-.detail-back {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  font-size: 1rem;
-}
-.detail-header-avatar {
-  width: 40px; height: 40px;
-  border-radius: 50%;
+  background: rgba(0,0,0,0.8);
+  z-index: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.25s;
 }
-.detail-header-info { flex: 1; }
-.detail-header-name { font-weight: 600; color: #fff; font-size: 0.95rem; }
-.detail-header-sub { font-size: 0.65rem; color: rgba(255,255,255,0.7); }
-.detail-body { flex: 1; overflow-y: auto; background: var(--bg-chat); padding-bottom: 20px; }
-.detail-profile-card {
-  margin: 12px;
+.modal-overlay.show { opacity: 1; visibility: visible; }
+.modal-detail {
   background: var(--bg-panel);
-  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 28px;
   overflow: hidden;
+  animation: modalPop 0.25s ease;
 }
-.detail-profile-top {
+@keyframes modalPop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-header {
   background: var(--bg-header);
-  padding: 28px 20px;
+  padding: 20px;
   text-align: center;
+  position: relative;
 }
-.dp-avatar {
+.modal-close {
+  position: absolute; top: 12px; right: 12px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.modal-avatar {
   width: 80px; height: 80px;
   border-radius: 50%;
   margin: 0 auto 12px;
@@ -335,47 +321,49 @@ body.admin-mode .tab-admin { display: flex; }
   font-weight: 700;
   color: #fff;
 }
-.dp-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
-.dp-type { font-size: 0.7rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
-.dp-badges { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
-
-.detail-info-row {
+.modal-name { font-size: 1.2rem; font-weight: 700; color: #fff; }
+.modal-type { font-size: 0.7rem; color: rgba(255,255,255,0.7); margin-top: 4px; }
+.modal-badges { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.modal-body { padding: 20px; }
+.modal-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 20px;
+  gap: 12px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--divider);
 }
-.di-icon { color: var(--green); width: 24px; font-size: 0.9rem; text-align: center; }
-.di-content { flex: 1; }
-.di-label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; margin-bottom: 3px; }
-.di-value { font-size: 0.85rem; color: var(--text); word-break: break-word; }
-
-/* ACTION BUTTONS - ICONS ONLY */
-.detail-actions {
+.modal-row:last-child { border-bottom: none; }
+.modal-icon { width: 32px; color: var(--green); font-size: 1rem; text-align: center; }
+.modal-row-content { flex: 1; }
+.modal-row-label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; margin-bottom: 2px; }
+.modal-row-value { font-size: 0.85rem; color: var(--text); word-break: break-word; }
+.modal-actions {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
-  margin: 16px 12px;
+  gap: 16px;
+  padding: 16px 20px 24px;
+  border-top: 1px solid var(--divider);
 }
-.da-btn {
+.modal-action-btn {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--bg-panel);
+  background: var(--bg-search);
   border: none;
   cursor: pointer;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 5px;
   transition: 0.2s;
   color: var(--text2);
-  font-size: 1.2rem;
 }
-.da-btn:hover { background: var(--bg-hover); transform: scale(0.96); color: var(--green); }
-.da-btn.warning:hover { color: #f59e0b; }
-.da-btn.danger:hover { color: #f43f5e; }
+.modal-action-btn i { font-size: 1.1rem; }
+.modal-action-btn span { font-size: 0.55rem; font-weight: 500; }
+.modal-action-btn:hover { background: var(--bg-hover); transform: scale(0.96); }
+.modal-action-btn.wa:hover { color: #25d366; }
+.modal-action-btn.save:hover { color: var(--green); }
 
 /* EXPLORER TREE */
 .breadcrumb {
@@ -557,7 +545,6 @@ body.admin-mode .tab-admin { display: flex; }
 
 .admin-only { display: none !important; }
 body.admin-mode .admin-only { display: flex !important; }
-#qrContainer { display: flex; justify-content: center; padding: 20px; background: #fff; border-radius: 16px; margin-bottom: 16px; }
 .empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
 .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
 </style>
@@ -649,26 +636,18 @@ body.admin-mode .admin-only { display: flex !important; }
   </div>
 </main>
 
-<div class="detail-overlay" id="detailOverlay">
-  <div class="detail-header">
-    <button class="detail-back" onclick="closeDetail()"><i class="fas fa-arrow-left"></i></button>
-    <div class="detail-header-avatar" id="detailHeaderAvatar"></div>
-    <div class="detail-header-info">
-      <div class="detail-header-name" id="detailHeaderName"></div>
-      <div class="detail-header-sub" id="detailHeaderSub"></div>
+<!-- MODAL DETAIL (POPUP) -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-detail">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeDetailModal()"><i class="fas fa-times"></i></button>
+      <div class="modal-avatar" id="modalAvatar"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-type" id="modalType"></div>
+      <div class="modal-badges" id="modalBadges"></div>
     </div>
-  </div>
-  <div class="detail-body">
-    <div class="detail-profile-card">
-      <div class="detail-profile-top">
-        <div class="dp-avatar" id="dpAvatar"></div>
-        <div class="dp-name" id="dpName"></div>
-        <div class="dp-type" id="dpType"></div>
-        <div class="dp-badges" id="dpBadges"></div>
-      </div>
-      <div class="detail-info-rows" id="detailInfoRows"></div>
-    </div>
-    <div class="detail-actions" id="detailActions"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
   </div>
 </div>
 
@@ -679,8 +658,6 @@ body.admin-mode .admin-only { display: flex !important; }
 <div class="overlay" id="editModal"><div class="sheet"><div class="sheet-head"><h3 id="editTitle"><i class="fas fa-plus-circle"></i> Ajouter</h3><button class="sheet-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div><div class="sheet-body"><input type="hidden" id="editId"><div class="fgroup"><label>Nom</label><input type="text" id="editName" class="field"></div><div class="fgroup"><label>Type</label><select id="editType" class="field"><option value="fournisseurs">FOURNISSEUR</option><option value="experts">EXPERT</option></select></div><div class="fgroup"><label>Catégorie</label><select id="editCat" class="field"><option value="services">SERVICES</option><option value="products">PRODUITS</option><option value="maqola">MAQAOLA</option><option value="yad-amila">YAD AMILA</option></select></div><div class="fgroup"><label>Domaine</label><input type="text" id="editDomaine" class="field"></div><div class="fgroup"><label>Spécialité</label><input type="text" id="editSpecialite" class="field"></div><div class="fgroup"><label>Ville</label><input type="text" id="editVille" class="field"></div><div class="fgroup"><label>Téléphone</label><input type="tel" id="editPhone" class="field"></div><div class="fgroup"><label>Email</label><input type="email" id="editEmail" class="field"></div><div class="fgroup"><label>Site Web</label><input type="url" id="editWeb" class="field"></div></div><div class="sheet-foot"><button class="btn btn-primary" onclick="saveItem()">Enregistrer</button><button class="btn btn-ghost" onclick="closeModal('editModal')">Annuler</button></div></div></div>
 
 <div class="overlay" id="deleteModal"><div class="sheet"><div class="sheet-head"><h3>Confirmer</h3><button class="sheet-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div><div class="sheet-body"><p id="deleteMsg"></p><div style="display:flex;gap:10px;margin-top:20px"><button class="btn btn-danger" onclick="confirmDeleteItem()">Supprimer</button><button class="btn btn-ghost" onclick="closeModal('deleteModal')">Annuler</button></div></div></div></div>
-
-<div class="overlay" id="qrModal"><div class="sheet"><div class="sheet-head"><h3><i class="fas fa-qrcode"></i> QR Code</h3><button class="sheet-close" onclick="closeModal('qrModal')"><i class="fas fa-times"></i></button></div><div class="sheet-body"><div id="qrContainer"></div><button class="btn btn-primary btn-full" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> Exporter PDF</button></div></div></div>
 
 <div class="toast" id="toast"></div>
 <div class="loading-screen" id="loadingScreen"><div class="loading-logo">CI</div><div class="loading-bar"><div class="loading-fill"></div></div></div>
@@ -708,7 +685,7 @@ let isAdmin = false;
 let currentSection = 'home';
 let explorerStack = [];
 let pendingDelete = null;
-let currentDetail = null;
+let currentDetailItem = null;
 let currentDetailIsCSV = false;
 
 // Filters
@@ -722,11 +699,21 @@ function toast(msg) { const t = $('toast'); t.innerHTML = msg; t.classList.add('
 function closeModal(id) { $(id).classList.remove('show'); }
 function showLoading(v) { v ? $('loadingScreen').classList.remove('hide') : $('loadingScreen').classList.add('hide'); }
 function escHtml(s) { return String(s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-function formatPhone(p) { if (!p) return ''; let c = String(p).replace(/[\s\-\(\)\.]/g,''); if (c.startsWith('00')) c = '+' + c.slice(2); else if (c.startsWith('0')) c = '+212' + c.slice(1); return c; }
-function getInitials(name) { const parts = (name||'').trim().split(/\s+/); return parts.slice(0,2).map(p=>p[0]||'').join('').toUpperCase() || '?'; }
+function formatPhone(p) { 
+  if (!p) return ''; 
+  let c = String(p).replace(/[\s\-\(\)\.]/g,''); 
+  if (c.startsWith('00')) c = '+' + c.slice(2); 
+  else if (c.startsWith('0')) c = '+212' + c.slice(1); 
+  return c; 
+}
+function getInitials(name) { 
+  const parts = (name||'').trim().split(/\s+/); 
+  return parts.slice(0,2).map(p=>p[0]||'').join('').toUpperCase() || '?'; 
+}
 const COLORS = ['#00a884','#53bdeb','#f59e0b','#8b5cf6','#f43f5e','#25d366','#06b6d4','#ec4899'];
 function getColor(name) { let h=0; for(const c of name||'') h=(h*31+c.charCodeAt(0))&0xffff; return COLORS[h%COLORS.length]; }
 const catNameMap = { services:'Services', products:'Produits', maqola:'Maqaola', 'yad-amila':'Yad Amila' };
+const catColorMap = { services:'cb-green', products:'cb-amber', maqola:'cb-violet', 'yad-amila':'cb-rose' };
 
 // ==================== ADMIN ====================
 function verifyAdmin() {
@@ -928,14 +915,13 @@ function buildContactRow(item, isCSV = false) {
     const typeCls = item.type==='fournisseurs' ? 'cb-green' : 'cb-teal';
     badges += `<span class="cbadge ${typeCls}">${typeLabel}</span>`;
     if (item.categorie && catNameMap[item.categorie]) {
-      const catCls = {services:'cb-green',products:'cb-amber',maqola:'cb-violet','yad-amila':'cb-rose'}[item.categorie];
-      badges += `<span class="cbadge ${catCls}">${catNameMap[item.categorie]}</span>`;
+      badges += `<span class="cbadge ${catColorMap[item.categorie]}">${catNameMap[item.categorie]}</span>`;
     }
   } else {
     badges = `<span class="cbadge cb-teal">CSV</span>`;
   }
   const itemStr = encodeURIComponent(JSON.stringify(item));
-  return `<div class="contact-row" onclick="openDetail('${itemStr}', ${isCSV})">
+  return `<div class="contact-row" onclick="openDetailModal('${itemStr}', ${isCSV})">
     <div class="contact-avatar" style="background:${color}">${initials}</div>
     <div class="contact-info">
       <div class="contact-name">${escHtml(item.name)}</div>
@@ -963,7 +949,6 @@ function renderRepertoire() {
   }
   $('repertoireList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, false)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">Aucun résultat</div></div>`;
   
-  // Update active classes on filter chips
   if ($('filterTypeBtn')) $('filterTypeBtn').classList.toggle('active', !!repertoireFilters.type);
   if ($('filterCatBtn')) $('filterCatBtn').classList.toggle('active', !!repertoireFilters.cat);
   if ($('filterVilleBtn')) $('filterVilleBtn').classList.toggle('active', !!repertoireFilters.ville);
@@ -980,10 +965,10 @@ function renderExperts() {
   $('expList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, true)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-microchip"></i></div><div class="empty-title">Aucun expert</div></div>`;
 }
 
-// ==================== DETAIL ====================
-function openDetail(encodedItem, isCSV = false) {
+// ==================== DETAIL MODAL (POPUP) ====================
+function openDetailModal(encodedItem, isCSV = false) {
   const item = JSON.parse(decodeURIComponent(encodedItem));
-  currentDetail = item;
+  currentDetailItem = item;
   currentDetailIsCSV = isCSV;
   const color = getColor(item.name);
   const initials = getInitials(item.name);
@@ -991,60 +976,102 @@ function openDetail(encodedItem, isCSV = false) {
   const hasEmail = item.email && item.email !== 'null';
   const hasWeb = item.web && item.web !== 'null' && item.web.startsWith('http');
 
-  $('detailHeaderAvatar').style.background = color;
-  $('detailHeaderAvatar').textContent = initials;
-  $('detailHeaderName').textContent = item.name;
-  $('detailHeaderSub').textContent = item.domaine || (item.type === 'fournisseurs' ? 'Fournisseur' : 'Expert');
+  // Avatar
+  $('modalAvatar').style.background = color;
+  $('modalAvatar').textContent = initials;
+  $('modalName').textContent = item.name;
+  $('modalType').textContent = item.domaine || (item.type === 'fournisseurs' ? 'Fournisseur' : 'Expert');
 
-  $('dpAvatar').style.background = color;
-  $('dpAvatar').textContent = initials;
-  $('dpName').textContent = item.name;
-  $('dpType').textContent = item.type === 'fournisseurs' ? 'Fournisseur Industriel' : 'Expert / Spécialiste';
-
+  // Badges
   let badgesHtml = '';
   if (item.type) badgesHtml += `<span class="cbadge ${item.type==='fournisseurs'?'cb-green':'cb-teal'}" style="font-size:0.6rem;padding:5px 12px;">${item.type==='fournisseurs'?'Fournisseur':'Expert'}</span>`;
   if (item.categorie && catNameMap[item.categorie]) {
-    const cls = {services:'cb-green',products:'cb-amber',maqola:'cb-violet','yad-amila':'cb-rose'}[item.categorie];
-    badgesHtml += `<span class="cbadge ${cls}" style="font-size:0.6rem;padding:5px 12px;">${catNameMap[item.categorie]}</span>`;
+    badgesHtml += `<span class="cbadge ${catColorMap[item.categorie]}" style="font-size:0.6rem;padding:5px 12px;">${catNameMap[item.categorie]}</span>`;
   }
   if (isCSV) badgesHtml += `<span class="cbadge cb-teal" style="font-size:0.6rem;padding:5px 12px;">CSV</span>`;
-  $('dpBadges').innerHTML = badgesHtml;
+  $('modalBadges').innerHTML = badgesHtml;
 
+  // Body rows
   const rows = [
     item.domaine && { icon:'fa-folder', label:'Domaine', value:item.domaine },
     item.specialite && item.specialite !== 'Général' && { icon:'fa-cog', label:'Spécialité', value:item.specialite },
     item.ville && { icon:'fa-map-marker-alt', label:'Ville', value:item.ville },
-    hasPhone && { icon:'fa-phone-alt', label:'Téléphone', value:item.phone, action:`navigator.clipboard.writeText('${item.phone}').then(()=>toast('📋 Copié'))` },
-    hasEmail && { icon:'fa-envelope', label:'Email', value:item.email, action:`window.location.href='mailto:${item.email}'` },
-    hasWeb && { icon:'fa-globe', label:'Site Web', value:item.web, action:`window.open('${item.web}','_blank')` },
+    hasPhone && { icon:'fa-phone-alt', label:'Téléphone', value:item.phone },
+    hasEmail && { icon:'fa-envelope', label:'Email', value:item.email },
+    hasWeb && { icon:'fa-globe', label:'Site Web', value:item.web },
   ].filter(Boolean);
 
-  $('detailInfoRows').innerHTML = rows.map(r => `<div class="detail-info-row">
-    <i class="di-icon fas ${r.icon}"></i>
-    <div class="di-content"><div class="di-label">${r.label}</div><div class="di-value">${escHtml(r.value)}</div></div>
-    ${r.action ? `<button class="di-action" onclick="${r.action}"><i class="fas fa-copy"></i></button>` : ''}
+  $('modalBody').innerHTML = rows.map(r => `<div class="modal-row">
+    <div class="modal-icon"><i class="fas ${r.icon}"></i></div>
+    <div class="modal-row-content">
+      <div class="modal-row-label">${r.label}</div>
+      <div class="modal-row-value">${escHtml(r.value)}</div>
+    </div>
   </div>`).join('');
 
-  // Actions: ICONS ONLY
+  // Action buttons: WhatsApp, Appeler, Email, Enregistrer
   let actionsHtml = '';
   
-  if (hasPhone) actionsHtml += `<button class="da-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i></button>`;
-  if (hasEmail) actionsHtml += `<button class="da-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
-  actionsHtml += `<button class="da-btn" onclick="shareItem('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-share-alt"></i></button>`;
-  actionsHtml += `<button class="da-btn" onclick="exportToPDF('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-qrcode"></i></button>`;
-  if (hasPhone) actionsHtml += `<button class="da-btn" onclick="navigator.clipboard.writeText('${item.phone}').then(()=>toast('📋 Copié'))"><i class="fas fa-copy"></i></button>`;
-  
-  // Modifier & Supprimer - UNIQUEMENT pour Répertoire (non CSV) et en mode admin
-  if (isAdmin && !isCSV && item.id) {
-    actionsHtml += `<button class="da-btn warning" onclick="closeDetail(); openEditModal('${item.id}')"><i class="fas fa-pen"></i></button>`;
-    actionsHtml += `<button class="da-btn danger" onclick="closeDetail(); openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i></button>`;
+  // WhatsApp
+  if (hasPhone) {
+    const waNumber = item.phone.replace(/[^0-9]/g, '');
+    actionsHtml += `<button class="modal-action-btn wa" onclick="window.open('https://wa.me/${waNumber}', '_blank')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>`;
   }
   
-  $('detailActions').innerHTML = actionsHtml;
-  $('detailOverlay').classList.add('show');
+  // Appeler
+  if (hasPhone) {
+    actionsHtml += `<button class="modal-action-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>Appeler</span></button>`;
+  }
+  
+  // Email
+  if (hasEmail) {
+    actionsHtml += `<button class="modal-action-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
+  }
+  
+  // Enregistrer dans les contacts (VCF)
+  if (hasPhone) {
+    actionsHtml += `<button class="modal-action-btn save" onclick="saveContactVCF('${item.name}', '${item.phone}', '${item.email || ''}', '${item.web || ''}')"><i class="fas fa-save"></i><span>Enregistrer</span></button>`;
+  }
+  
+  $('modalActions').innerHTML = actionsHtml;
+  
+  // Admin actions (Modifier/Supprimer) - only for non-CSV and admin mode
+  if (isAdmin && !isCSV && item.id) {
+    const adminHtml = `<div style="display:flex; justify-content:center; gap:12px; margin-top:8px; padding-top:12px; border-top:1px solid var(--divider);">
+      <button class="modal-action-btn" onclick="closeDetailModal(); openEditModal('${item.id}')"><i class="fas fa-pen"></i><span>Modifier</span></button>
+      <button class="modal-action-btn" onclick="closeDetailModal(); openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i><span>Supprimer</span></button>
+    </div>`;
+    $('modalActions').innerHTML += adminHtml;
+  }
+  
+  $('detailModal').classList.add('show');
 }
 
-function closeDetail() { $('detailOverlay').classList.remove('show'); }
+function closeDetailModal() {
+  $('detailModal').classList.remove('show');
+}
+
+// Save contact as VCF file
+function saveContactVCF(name, phone, email, web) {
+  const vcfData = `BEGIN:VCARD
+VERSION:3.0
+FN:${name}
+TEL:${phone}
+${email ? `EMAIL:${email}` : ''}
+${web ? `URL:${web}` : ''}
+END:VCARD`;
+  
+  const blob = new Blob([vcfData], { type: 'text/vcard' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${name.replace(/[^a-z0-9]/gi, '_')}.vcf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📇 Contact sauvegardé');
+}
 
 // ==================== EXPLORER ====================
 function renderExplorer() {
@@ -1084,7 +1111,7 @@ function explorerSelectType(type) { explorerStack.push({ label: type === 'fourni
 function explorerSelectDomain(domaine) { explorerStack.push({ label: domaine, domaine }); renderExplorer(); }
 function explorerSelectSpecialite(specialite) { explorerStack.push({ label: specialite, specialite }); renderExplorer(); }
 
-// ==================== FILTER MODALS (FIXED) ====================
+// ==================== FILTER MODALS ====================
 function showList(title, items, onSelect) {
   $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${title}`;
   $('listItems').innerHTML = `<div class="menu-item" onclick="onSelect(null);closeModal('listModal')"><div class="menu-icon" style="background:var(--green-dim);color:var(--green)"><i class="fas fa-undo"></i></div><span class="menu-label">Tous</span></div>` +
@@ -1092,92 +1119,16 @@ function showList(title, items, onSelect) {
   $('listModal').classList.add('show');
 }
 
-function showTypeFilter() {
-  showList('Type', ['Fournisseurs', 'Experts'], function(selected) {
-    if (selected === 'Fournisseurs') setRepertoireFilter('type', 'fournisseurs');
-    else if (selected === 'Experts') setRepertoireFilter('type', 'experts');
-    else setRepertoireFilter('type', null);
-    closeModal('listModal');
-  });
-}
+function showTypeFilter() { showList('Type', ['Fournisseurs', 'Experts'], function(selected) { if (selected === 'Fournisseurs') setRepertoireFilter('type', 'fournisseurs'); else if (selected === 'Experts') setRepertoireFilter('type', 'experts'); else setRepertoireFilter('type', null); closeModal('listModal'); }); }
+function showCatFilter() { showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], function(selected) { let catVal = null; if (selected === 'Services') catVal = 'services'; else if (selected === 'Produits') catVal = 'products'; else if (selected === 'Maqaola') catVal = 'maqola'; else if (selected === 'Yad Amila') catVal = 'yad-amila'; setRepertoireFilter('cat', catVal); closeModal('listModal'); }); }
+function showRepertoireVilleFilter() { const villes = getAvailableRepertoireVilles(); if (villes.length) { showList('Villes', villes, function(v) { setRepertoireFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
+function showRepertoireDomaineFilter() { const domaines = getAvailableRepertoireDomaines(); if (domaines.length) { showList('Domaines', domaines, function(d) { setRepertoireFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
+function showFourVilleFilter() { const villes = getAvailableFourVilles(); if (villes.length) { showList('Villes Fournisseurs', villes, function(v) { setFourFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
+function showFourDomaineFilter() { const domaines = getAvailableFourDomaines(); if (domaines.length) { showList('Domaines Fournisseurs', domaines, function(d) { setFourFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
+function showExpVilleFilter() { const villes = getAvailableExpVilles(); if (villes.length) { showList('Villes Experts', villes, function(v) { setExpFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
+function showExpDomaineFilter() { const domaines = getAvailableExpDomaines(); if (domaines.length) { showList('Domaines Experts', domaines, function(d) { setExpFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
 
-function showCatFilter() {
-  showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], function(selected) {
-    let catValue = null;
-    if (selected === 'Services') catValue = 'services';
-    else if (selected === 'Produits') catValue = 'products';
-    else if (selected === 'Maqaola') catValue = 'maqola';
-    else if (selected === 'Yad Amila') catValue = 'yad-amila';
-    setRepertoireFilter('cat', catValue);
-    closeModal('listModal');
-  });
-}
-
-function showRepertoireVilleFilter() {
-  const villes = getAvailableRepertoireVilles();
-  if (villes.length) {
-    showList('Villes', villes, function(selected) {
-      setRepertoireFilter('ville', selected);
-      closeModal('listModal');
-    });
-  } else {
-    toast('⚠️ Aucune ville disponible');
-  }
-}
-
-function showRepertoireDomaineFilter() {
-  const domaines = getAvailableRepertoireDomaines();
-  if (domaines.length) {
-    showList('Domaines', domaines, function(selected) {
-      setRepertoireFilter('domaine', selected);
-      closeModal('listModal');
-    });
-  } else {
-    toast('⚠️ Aucun domaine disponible');
-  }
-}
-
-function showFourVilleFilter() { 
-  const villes = getAvailableFourVilles(); 
-  if (villes.length) { 
-    showList('Villes Fournisseurs', villes, function(v) { 
-      setFourFilter('ville', v); 
-      closeModal('listModal'); 
-    }); 
-  } else toast('⚠️ Aucune ville'); 
-}
-
-function showFourDomaineFilter() { 
-  const domaines = getAvailableFourDomaines(); 
-  if (domaines.length) { 
-    showList('Domaines Fournisseurs', domaines, function(d) { 
-      setFourFilter('domaine', d); 
-      closeModal('listModal'); 
-    }); 
-  } else toast('⚠️ Aucun domaine'); 
-}
-
-function showExpVilleFilter() { 
-  const villes = getAvailableExpVilles(); 
-  if (villes.length) { 
-    showList('Villes Experts', villes, function(v) { 
-      setExpFilter('ville', v); 
-      closeModal('listModal'); 
-    }); 
-  } else toast('⚠️ Aucune ville'); 
-}
-
-function showExpDomaineFilter() { 
-  const domaines = getAvailableExpDomaines(); 
-  if (domaines.length) { 
-    showList('Domaines Experts', domaines, function(d) { 
-      setExpFilter('domaine', d); 
-      closeModal('listModal'); 
-    }); 
-  } else toast('⚠️ Aucun domaine'); 
-}
-
-// ==================== STAT CLICK ====================
+// ==================== STAT CLICK (Apply filter) ====================
 function applyStatFilter(statType) {
   resetRepertoireFilters();
   if (statType === 'fournisseurs') { setRepertoireFilter('type', 'fournisseurs'); showSection('repertoire', false); }
@@ -1223,51 +1174,6 @@ async function confirmDeleteItem() {
     toast('Supprimé'); closeModal('deleteModal'); pendingDelete=null; await loadDB();
   } catch(e){toast('Erreur');}
   showLoading(false);
-}
-
-// ==================== SHARE & PDF ====================
-function shareItem(encoded) {
-  const item = JSON.parse(decodeURIComponent(encoded));
-  let msg = `📋 *${item.name}*\n`;
-  if(item.domaine) msg+=`🏭 ${item.domaine}\n`;
-  if(item.specialite && item.specialite!=='Général') msg+=`⚙️ ${item.specialite}\n`;
-  if(item.ville) msg+=`📍 ${item.ville}\n`;
-  if(item.phone) msg+=`📞 ${item.phone}\n`;
-  if(item.email) msg+=`✉️ ${item.email}\n`;
-  msg += `\n_via Connect Industry · Maroc_`;
-  if(navigator.share) navigator.share({title:item.name, text:msg});
-  else window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-}
-async function exportToPDF(encoded) {
-  const item = JSON.parse(decodeURIComponent(encoded));
-  $('qrContainer').innerHTML = '';
-  const info = [item.name, item.domaine, item.specialite, item.ville, `Tel: ${item.phone||''}`, `Email: ${item.email||''}`].filter(Boolean).join('\n');
-  new QRCode($('qrContainer'), {text:info, width:200, height:200});
-  $('qrModal').classList.add('show');
-  const newBtn = $('downloadPdfBtn').cloneNode(true);
-  $('downloadPdfBtn').parentNode.replaceChild(newBtn, $('downloadPdfBtn'));
-  newBtn.onclick = async () => {
-    const qrCanvas = $('qrContainer').querySelector('canvas'); if(!qrCanvas) return;
-    const {jsPDF} = window.jspdf;
-    const pdf = new jsPDF({format:[100,140], unit:'mm'});
-    pdf.setFillColor(17,27,33); pdf.rect(0,0,100,140,'F');
-    pdf.setFillColor(0,168,132); pdf.rect(0,0,100,28,'F');
-    pdf.setTextColor(255,255,255); pdf.setFont('helvetica','bold'); pdf.setFontSize(13);
-    pdf.text('CONNECT INDUSTRY', 50, 12, {align:'center'});
-    pdf.text('Plateforme Industrielle · Maroc', 50, 20, {align:'center'});
-    const color = getColor(item.name);
-    pdf.setFillColor(30,40,50); pdf.circle(50,42,12,'F');
-    pdf.setTextColor(255,255,255); pdf.text(getInitials(item.name), 50, 47, {align:'center'});
-    pdf.setFontSize(12); pdf.text(item.name, 50, 62, {align:'center'});
-    pdf.setDrawColor(0,168,132); pdf.line(20,67,80,67);
-    pdf.setFontSize(8); let y=75;
-    const rows = [[item.domaine,'Domaine'],[item.specialite,'Spécialité'],[item.ville,'Ville'],[item.phone,'Téléphone'],[item.email,'Email']].filter(([v])=>v&&v!=='null'&&v!=='Général');
-    rows.forEach(([v,l]) => { pdf.setTextColor(0,168,132); pdf.text(l+':', 14, y); pdf.setTextColor(148,163,184); pdf.text(v, 45, y); y+=8; });
-    pdf.addImage(qrCanvas.toDataURL(), 'PNG', 35, y+4, 30, 30);
-    pdf.setTextColor(70,90,100); pdf.setFontSize(6); pdf.text('Scannez pour les coordonnées', 50, y+36, {align:'center'});
-    pdf.save(`${item.name.replace(/[^a-z0-9]/gi,'_')}_carte.pdf`);
-    toast('PDF exporté'); closeModal('qrModal');
-  };
 }
 
 // ==================== NAVIGATION ====================
@@ -1332,8 +1238,8 @@ function renderCurrent() {
 function handleBackButton() {
   if (backPressTimer) clearTimeout(backPressTimer);
   
-  if ($('detailOverlay').classList.contains('show')) {
-    closeDetail();
+  if ($('detailModal').classList.contains('show')) {
+    closeDetailModal();
     return true;
   }
   
@@ -1398,9 +1304,9 @@ function updateClock(){$('appTime').textContent=new Date().toLocaleTimeString('f
 setInterval(updateClock,1000); updateClock();
 
 window.closeModal = closeModal;
-window.closeDetail = closeDetail;
+window.closeDetailModal = closeDetailModal;
 window.verifyAdmin = verifyAdmin;
-window.openDetail = openDetail;
+window.openDetailModal = openDetailModal;
 window.goExplorer = goExplorer;
 window.explorerSelectType = explorerSelectType;
 window.explorerSelectDomain = explorerSelectDomain;
@@ -1409,8 +1315,7 @@ window.openEditModal = openEditModal;
 window.openDeleteModal = openDeleteModal;
 window.saveItem = saveItem;
 window.confirmDeleteItem = confirmDeleteItem;
-window.shareItem = shareItem;
-window.exportToPDF = exportToPDF;
+window.saveContactVCF = saveContactVCF;
 
 async function init() { showLoading(true); checkAdminStatus(); const [experts,fours] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]); csvExperts=experts; csvFournisseurs=fours; await loadDB(); setTimeout(()=>showLoading(false),600); }
 init();
