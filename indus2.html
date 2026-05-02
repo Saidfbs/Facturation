@@ -585,16 +585,16 @@ body.admin-mode .admin-only { display: flex !important; }
     </div>
     <div class="stats-section">
       <div class="stats-grid">
-        <div class="stat-card" data-stat="fournisseurs"><div class="stat-card-icon"><i class="fas fa-industry"></i></div><div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">Fournisseurs</div></div></div>
-        <div class="stat-card" data-stat="experts"><div class="stat-card-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">Experts</div></div></div>
-        <div class="stat-card" data-stat="villes"><div class="stat-card-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">Villes</div></div></div>
-        <div class="stat-card" data-stat="domaines"><div class="stat-card-icon"><i class="fas fa-layer-group"></i></div><div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">Domaines</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-industry"></i></div><div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">Fournisseurs</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">Experts</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">Villes</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-layer-group"></i></div><div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">Domaines</div></div></div>
       </div>
       <div class="stats-grid">
-        <div class="stat-card" data-stat="services"><div class="stat-card-icon"><i class="fas fa-cogs"></i></div><div><div class="stat-num" id="statServices">0</div><div class="stat-lbl">Services</div></div></div>
-        <div class="stat-card" data-stat="products"><div class="stat-card-icon"><i class="fas fa-boxes"></i></div><div><div class="stat-num" id="statProduits">0</div><div class="stat-lbl">Produits</div></div></div>
-        <div class="stat-card" data-stat="maqola"><div class="stat-card-icon"><i class="fas fa-hard-hat"></i></div><div><div class="stat-num" id="statMaqola">0</div><div class="stat-lbl">Maqaola</div></div></div>
-        <div class="stat-card" data-stat="yad-amila"><div class="stat-card-icon"><i class="fas fa-hands"></i></div><div><div class="stat-num" id="statYadAmila">0</div><div class="stat-lbl">Yad Amila</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-cogs"></i></div><div><div class="stat-num" id="statServices">0</div><div class="stat-lbl">Services</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-boxes"></i></div><div><div class="stat-num" id="statProduits">0</div><div class="stat-lbl">Produits</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-hard-hat"></i></div><div><div class="stat-num" id="statMaqola">0</div><div class="stat-lbl">Maqaola</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-hands"></i></div><div><div class="stat-num" id="statYadAmila">0</div><div class="stat-lbl">Yad Amila</div></div></div>
       </div>
     </div>
   </div>
@@ -737,7 +737,7 @@ function getFilteredRepertoire() {
     filtered = filtered.filter(d => d.domaine === currentDomaine);
   }
   
-  // Filter by search (case insensitive)
+  // Filter by search (case insensitive - partial match anywhere)
   if (currentSearch && currentSearch.trim() !== '') {
     const searchLower = currentSearch.toLowerCase().trim();
     filtered = filtered.filter(d => {
@@ -746,7 +746,7 @@ function getFilteredRepertoire() {
       if ((d.ville || '').toLowerCase().includes(searchLower)) return true;
       if ((d.specialite || '').toLowerCase().includes(searchLower)) return true;
       if ((d.email || '').toLowerCase().includes(searchLower)) return true;
-      if ((d.phone || '').includes(searchLower)) return true;
+      if ((d.phone || '').toLowerCase().includes(searchLower)) return true;
       return false;
     });
   }
@@ -1017,20 +1017,6 @@ function updateStats() {
   $('statMaqola').textContent = dbData.filter(d => d.categorie === 'maqola').length;
   $('statYadAmila').textContent = dbData.filter(d => d.categorie === 'yad-amila').length;
   $('headerSub').textContent = `${dbData.length} professionnels`;
-}
-
-function applyStatFilter(statType) {
-  resetAllFilters();
-  if (statType === 'fournisseurs') { currentType = 'fournisseurs'; }
-  else if (statType === 'experts') { currentType = 'experts'; }
-  else if (statType === 'services') { currentCategory = 'services'; }
-  else if (statType === 'products') { currentCategory = 'products'; }
-  else if (statType === 'maqola') { currentCategory = 'maqola'; }
-  else if (statType === 'yad-amila') { currentCategory = 'yad-amila'; }
-  else if (statType === 'villes') { showVilleFilter(); return; }
-  else if (statType === 'domaines') { showDomaineFilter(); return; }
-  applyFilterAndRender();
-  showSection('repertoire', false);
 }
 
 // ==================== CRUD ====================
@@ -1348,10 +1334,6 @@ $('expSearch').addEventListener('input', () => renderExperts());
 
 document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => {
   btn.onclick = () => handleSectionClick(btn.dataset.sec);
-});
-
-document.querySelectorAll('.stat-card[data-stat]').forEach(card => {
-  card.onclick = () => applyStatFilter(card.dataset.stat);
 });
 
 document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); }));
