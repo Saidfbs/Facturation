@@ -268,11 +268,8 @@ body.admin-mode .tab-admin { display: flex; }
 }
 .cb-green { background: var(--green-dim); color: var(--green); }
 .cb-teal { background: var(--teal-dim); color: var(--teal); }
-.cb-amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
-.cb-violet { background: rgba(139,92,246,0.12); color: #8b5cf6; }
-.cb-rose { background: rgba(244,63,94,0.1); color: #f43f5e; }
 
-/* DETAIL OVERLAY */
+/* DETAIL OVERLAY - PERMANENT STYLE */
 .detail-overlay {
   position: fixed; inset: 0;
   background: var(--bg-primary);
@@ -313,7 +310,7 @@ body.admin-mode .tab-admin { display: flex; }
 .detail-header-info { flex: 1; }
 .detail-header-name { font-weight: 600; color: #fff; font-size: 0.95rem; }
 .detail-header-sub { font-size: 0.65rem; color: rgba(255,255,255,0.7); }
-.detail-body { flex: 1; overflow-y: auto; background: var(--bg-chat); }
+.detail-body { flex: 1; overflow-y: auto; background: var(--bg-chat); padding-bottom: 20px; }
 .detail-profile-card {
   margin: 12px;
   background: var(--bg-panel);
@@ -352,29 +349,31 @@ body.admin-mode .tab-admin { display: flex; }
 .di-label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; margin-bottom: 3px; }
 .di-value { font-size: 0.85rem; color: var(--text); word-break: break-word; }
 
-/* ACTION BUTTONS */
+/* ACTION BUTTONS - ICONS ONLY */
 .detail-actions {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 12px;
 }
 .da-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
   background: var(--bg-panel);
   border: none;
-  border-radius: 14px;
-  padding: 12px 6px;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   transition: 0.2s;
   color: var(--text2);
+  font-size: 1.2rem;
 }
-.da-btn i { font-size: 1.1rem; }
-.da-btn span { font-size: 0.55rem; font-weight: 500; }
-.da-btn:hover { background: var(--bg-hover); transform: scale(0.96); }
+.da-btn:hover { background: var(--bg-hover); transform: scale(0.96); color: var(--green); }
+.da-btn.danger:hover { color: #f43f5e; }
+.da-btn.warning:hover { color: #f59e0b; }
 
 /* EXPLORER TREE */
 .breadcrumb {
@@ -668,10 +667,6 @@ body.admin-mode .admin-only { display: flex !important; }
       <div class="detail-info-rows" id="detailInfoRows"></div>
     </div>
     <div class="detail-actions" id="detailActions"></div>
-    <div id="detailAdminActions" class="admin-only" style="margin:12px; background:var(--bg-panel); border-radius:16px; overflow:hidden; display:none">
-      <div class="menu-item" id="detailEditBtn"><div class="menu-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b"><i class="fas fa-pen"></i></div><span class="menu-label">Modifier</span></div>
-      <div class="menu-item" id="detailDeleteBtn" style="border-bottom:none"><div class="menu-icon" style="background:rgba(244,63,94,0.1);color:#f43f5e"><i class="fas fa-trash"></i></div><span class="menu-label" style="color:#f43f5e">Supprimer</span></div>
-    </div>
   </div>
 </div>
 
@@ -829,31 +824,21 @@ function updateStats() {
   $('headerSub').textContent = `${dbData.length} professionnels`;
 }
 
-// ==================== REPERTOIRE FILTERS (FIXED) ====================
+// ==================== REPERTOIRE FILTERS ====================
 function getFilteredRepertoire() {
   let filtered = [...dbData];
-  
-  // Filter by type
   if (repertoireFilters.type && repertoireFilters.type !== 'null') {
     filtered = filtered.filter(d => d.type === repertoireFilters.type);
   }
-  
-  // Filter by category
   if (repertoireFilters.cat && repertoireFilters.cat !== 'null') {
     filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
   }
-  
-  // Filter by ville
   if (repertoireFilters.ville && repertoireFilters.ville !== 'null') {
     filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
   }
-  
-  // Filter by domaine
   if (repertoireFilters.domaine && repertoireFilters.domaine !== 'null') {
     filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
   }
-  
-  // Filter by search
   if (repertoireFilters.search && repertoireFilters.search !== '') {
     const q = repertoireFilters.search.toLowerCase();
     filtered = filtered.filter(d => 
@@ -865,7 +850,6 @@ function getFilteredRepertoire() {
       (d.email||'').toLowerCase().includes(q)
     );
   }
-  
   return filtered;
 }
 
@@ -896,19 +880,10 @@ function resetRepertoireFilters() {
 function setRepertoireFilter(key, value) {
   repertoireFilters[key] = value;
   // Update active state on chips
-  if (key === 'type') {
-    const btn = $('filterTypeBtn');
-    if (btn) btn.classList.toggle('active', !!value);
-  } else if (key === 'cat') {
-    const btn = $('filterCatBtn');
-    if (btn) btn.classList.toggle('active', !!value);
-  } else if (key === 'ville') {
-    const btn = $('filterVilleBtn');
-    if (btn) btn.classList.toggle('active', !!value);
-  } else if (key === 'domaine') {
-    const btn = $('filterDomaineBtn');
-    if (btn) btn.classList.toggle('active', !!value);
-  }
+  if (key === 'type') $('filterTypeBtn')?.classList.toggle('active', !!value);
+  if (key === 'cat') $('filterCatBtn')?.classList.toggle('active', !!value);
+  if (key === 'ville') $('filterVilleBtn')?.classList.toggle('active', !!value);
+  if (key === 'domaine') $('filterDomaineBtn')?.classList.toggle('active', !!value);
   renderRepertoire();
 }
 
@@ -920,32 +895,10 @@ function getFilteredFournisseurs() {
   if (fourFilters.search && fourFilters.search !== '') filtered = filtered.filter(f => f.name.toLowerCase().includes(fourFilters.search.toLowerCase()));
   return filtered;
 }
-
-function getAvailableFourVilles() {
-  let filtered = [...csvFournisseurs];
-  if (fourFilters.domaine && fourFilters.domaine !== 'null') filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
-  return [...new Set(filtered.map(f=>f.ville).filter(v=>v))].sort();
-}
-
-function getAvailableFourDomaines() {
-  let filtered = [...csvFournisseurs];
-  if (fourFilters.ville && fourFilters.ville !== 'null') filtered = filtered.filter(f => f.ville === fourFilters.ville);
-  return [...new Set(filtered.map(f=>f.domaine).filter(d=>d))].sort();
-}
-
-function resetFourFilters() {
-  fourFilters = { ville: null, domaine: null, search: '' };
-  if ($('fourSearch')) $('fourSearch').value = '';
-  document.querySelectorAll('#fournisseursSection .fchip').forEach(c => c.classList.remove('active'));
-  renderFournisseurs();
-}
-
-function setFourFilter(key, value) {
-  fourFilters[key] = value;
-  if (key === 'ville') $('fourVilleBtn')?.classList.toggle('active', !!value);
-  if (key === 'domaine') $('fourDomaineBtn')?.classList.toggle('active', !!value);
-  renderFournisseurs();
-}
+function getAvailableFourVilles() { let filtered = [...csvFournisseurs]; if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine); return [...new Set(filtered.map(f=>f.ville).filter(v=>v))].sort(); }
+function getAvailableFourDomaines() { let filtered = [...csvFournisseurs]; if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville); return [...new Set(filtered.map(f=>f.domaine).filter(d=>d))].sort(); }
+function resetFourFilters() { fourFilters = { ville: null, domaine: null, search: '' }; if ($('fourSearch')) $('fourSearch').value = ''; document.querySelectorAll('#fournisseursSection .fchip').forEach(c => c.classList.remove('active')); renderFournisseurs(); }
+function setFourFilter(key, value) { fourFilters[key] = value; if (key === 'ville') $('fourVilleBtn')?.classList.toggle('active', !!value); if (key === 'domaine') $('fourDomaineBtn')?.classList.toggle('active', !!value); renderFournisseurs(); }
 
 function getFilteredExperts() {
   let filtered = [...csvExperts];
@@ -954,32 +907,10 @@ function getFilteredExperts() {
   if (expFilters.search && expFilters.search !== '') filtered = filtered.filter(e => e.name.toLowerCase().includes(expFilters.search.toLowerCase()));
   return filtered;
 }
-
-function getAvailableExpVilles() {
-  let filtered = [...csvExperts];
-  if (expFilters.domaine && expFilters.domaine !== 'null') filtered = filtered.filter(e => e.domaine === expFilters.domaine);
-  return [...new Set(filtered.map(e=>e.ville).filter(v=>v))].sort();
-}
-
-function getAvailableExpDomaines() {
-  let filtered = [...csvExperts];
-  if (expFilters.ville && expFilters.ville !== 'null') filtered = filtered.filter(e => e.ville === expFilters.ville);
-  return [...new Set(filtered.map(e=>e.domaine).filter(d=>d))].sort();
-}
-
-function resetExpFilters() {
-  expFilters = { ville: null, domaine: null, search: '' };
-  if ($('expSearch')) $('expSearch').value = '';
-  document.querySelectorAll('#expertsSection .fchip').forEach(c => c.classList.remove('active'));
-  renderExperts();
-}
-
-function setExpFilter(key, value) {
-  expFilters[key] = value;
-  if (key === 'ville') $('expVilleBtn')?.classList.toggle('active', !!value);
-  if (key === 'domaine') $('expDomaineBtn')?.classList.toggle('active', !!value);
-  renderExperts();
-}
+function getAvailableExpVilles() { let filtered = [...csvExperts]; if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine); return [...new Set(filtered.map(e=>e.ville).filter(v=>v))].sort(); }
+function getAvailableExpDomaines() { let filtered = [...csvExperts]; if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville); return [...new Set(filtered.map(e=>e.domaine).filter(d=>d))].sort(); }
+function resetExpFilters() { expFilters = { ville: null, domaine: null, search: '' }; if ($('expSearch')) $('expSearch').value = ''; document.querySelectorAll('#expertsSection .fchip').forEach(c => c.classList.remove('active')); renderExperts(); }
+function setExpFilter(key, value) { expFilters[key] = value; if (key === 'ville') $('expVilleBtn')?.classList.toggle('active', !!value); if (key === 'domaine') $('expDomaineBtn')?.classList.toggle('active', !!value); renderExperts(); }
 
 // ==================== RENDER FUNCTIONS ====================
 function buildContactRow(item, isCSV = false) {
@@ -1069,7 +1000,7 @@ function openDetail(encodedItem, isCSV = false) {
     const cls = {services:'cb-green',products:'cb-amber',maqola:'cb-violet','yad-amila':'cb-rose'}[item.categorie];
     badgesHtml += `<span class="cbadge ${cls}" style="font-size:0.6rem;padding:5px 12px;">${catNameMap[item.categorie]}</span>`;
   }
-  if (isCSV) badgesHtml += `<span class="cbadge cb-teal" style="font-size:0.6rem;padding:5px 12px;">Donnée CSV</span>`;
+  if (isCSV) badgesHtml += `<span class="cbadge cb-teal" style="font-size:0.6rem;padding:5px 12px;">CSV</span>`;
   $('dpBadges').innerHTML = badgesHtml;
 
   const rows = [
@@ -1087,27 +1018,27 @@ function openDetail(encodedItem, isCSV = false) {
     ${r.action ? `<button class="di-action" onclick="${r.action}"><i class="fas fa-copy"></i></button>` : ''}
   </div>`).join('');
 
-  // Actions: Appeler, Email, Partager, QR Code, Copier
-  const actions = [
-    hasPhone && { icon:'fas fa-phone-alt', label:'Appeler', cls:'da-call', action:`window.location.href='tel:${item.phone}'` },
-    hasEmail && { icon:'fas fa-envelope', label:'Email', cls:'da-email', action:`window.location.href='mailto:${item.email}'` },
-    { icon:'fas fa-share-alt', label:'Partager', cls:'da-share', action:`shareItem('${encodeURIComponent(JSON.stringify(item))}')` },
-    { icon:'fas fa-qrcode', label:'QR Code', cls:'da-qr', action:`exportToPDF('${encodeURIComponent(JSON.stringify(item))}')` },
-    hasPhone && { icon:'fas fa-copy', label:'Copier', cls:'da-copy', action:`navigator.clipboard.writeText('${item.phone}').then(()=>toast('📋 Copié'))` },
-  ].filter(Boolean);
-  $('detailActions').innerHTML = actions.map(a=>`<button class="da-btn ${a.cls}" onclick="${a.action}"><i class="${a.icon}"></i><span>${a.label}</span></button>`).join('');
-
-  // Modifier/Supprimer UNIQUEMENT pour les données Firebase (non CSV)
-  const adminActionsDiv = $('detailAdminActions');
+  // Actions: ICONS ONLY
+  let actionsHtml = '';
+  
+  // Appeler
+  if (hasPhone) actionsHtml += `<button class="da-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i></button>`;
+  // Email
+  if (hasEmail) actionsHtml += `<button class="da-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
+  // Partager
+  actionsHtml += `<button class="da-btn" onclick="shareItem('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-share-alt"></i></button>`;
+  // QR Code PDF
+  actionsHtml += `<button class="da-btn" onclick="exportToPDF('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-qrcode"></i></button>`;
+  // Copier
+  if (hasPhone) actionsHtml += `<button class="da-btn" onclick="navigator.clipboard.writeText('${item.phone}').then(()=>toast('📋 Copié'))"><i class="fas fa-copy"></i></button>`;
+  
+  // Modifier & Supprimer - UNIQUEMENT pour Répertoire (non CSV) et en mode admin
   if (isAdmin && !isCSV && item.id) {
-    adminActionsDiv.style.display = 'block';
-    const editBtn = $('detailEditBtn');
-    const deleteBtn = $('detailDeleteBtn');
-    if (editBtn) editBtn.onclick = () => { closeDetail(); openEditModal(item.id); };
-    if (deleteBtn) deleteBtn.onclick = () => { closeDetail(); openDeleteModal(item.id); };
-  } else {
-    adminActionsDiv.style.display = 'none';
+    actionsHtml += `<button class="da-btn warning" onclick="closeDetail(); openEditModal('${item.id}')"><i class="fas fa-pen"></i></button>`;
+    actionsHtml += `<button class="da-btn danger" onclick="closeDetail(); openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i></button>`;
   }
+  
+  $('detailActions').innerHTML = actionsHtml;
   $('detailOverlay').classList.add('show');
 }
 
@@ -1262,6 +1193,9 @@ async function exportToPDF(encoded) {
 }
 
 // ==================== NAVIGATION ====================
+let backPressCount = 0;
+let backPressTimer = null;
+
 function showSection(id, reset=true) {
   if(reset){ 
     resetRepertoireFilters(); 
@@ -1280,12 +1214,71 @@ function showSection(id, reset=true) {
   else if(id==='fournisseurs') renderFournisseurs();
   else if(id==='experts') renderExperts();
   window.scrollTo({top:0,behavior:'smooth'});
+  
+  // Reset back button counter when navigating
+  backPressCount = 0;
+  if (backPressTimer) clearTimeout(backPressTimer);
 }
+
+function handleSectionClick(id) {
+  if (currentSection === id) {
+    // Same section clicked
+    if (window.scrollY > 10) {
+      // Scroll to top if scrolled down
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    } else {
+      // Reset filters and search
+      if (id === 'repertoire') {
+        resetRepertoireFilters();
+        toast('🔍 Filtres réinitialisés');
+      } else if (id === 'explorer') {
+        explorerStack = [];
+        renderExplorer();
+        toast('↺ Explorer réinitialisé');
+      } else if (id === 'fournisseurs') {
+        resetFourFilters();
+        toast('🔍 Filtres effacés');
+      } else if (id === 'experts') {
+        resetExpFilters();
+        toast('🔍 Filtres effacés');
+      }
+    }
+  } else {
+    showSection(id, true);
+  }
+}
+
 function renderCurrent() {
   if(currentSection==='repertoire') renderRepertoire();
   else if(currentSection==='explorer') renderExplorer();
   else if(currentSection==='fournisseurs') renderFournisseurs();
   else if(currentSection==='experts') renderExperts();
+}
+
+// Handle back button on phone
+function handleBackButton() {
+  if (backPressTimer) clearTimeout(backPressTimer);
+  
+  if ($('detailOverlay').classList.contains('show')) {
+    closeDetail();
+    return true;
+  }
+  
+  if (currentSection !== 'home') {
+    showSection('home', true);
+    return true;
+  }
+  
+  backPressCount++;
+  if (backPressCount === 1) {
+    toast('Appuyez à nouveau pour quitter');
+    backPressTimer = setTimeout(() => { backPressCount = 0; }, 3000);
+    return true;
+  }
+  
+  // Exit the app
+  window.close();
+  return false;
 }
 
 // ==================== EVENT LISTENERS ====================
@@ -1309,11 +1302,22 @@ $('expVilleBtn').onclick = showExpVilleFilter;
 $('expDomaineBtn').onclick = showExpDomaineFilter;
 $('expResetBtn').onclick = () => { resetExpFilters(); renderExperts(); toast('Filtres effacés'); };
 
-document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { btn.onclick = () => { const sec = btn.dataset.sec; if(currentSection===sec && window.scrollY>10) window.scrollTo({top:0,behavior:'smooth'}); else if(currentSection===sec) { if(sec==='repertoire'){resetRepertoireFilters();renderRepertoire();toast('Filtres réinitialisés');} else if(sec==='explorer'){explorerStack=[];renderExplorer();toast('Explorer réinitialisé');} else if(sec==='fournisseurs'){resetFourFilters();renderFournisseurs();toast('Filtres effacés');} else if(sec==='experts'){resetExpFilters();renderExperts();toast('Filtres effacés');} } else showSection(sec, true); }; });
-
+document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { btn.onclick = () => handleSectionClick(btn.dataset.sec); });
 document.querySelectorAll('.stat-card[data-stat]').forEach(card => card.onclick = () => applyStatFilter(card.dataset.stat));
 document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('show'); }));
-window.addEventListener('popstate', () => showSection('home', true));
+
+// Back button handling
+window.addEventListener('popstate', (e) => { handleBackButton(); e.preventDefault(); });
+history.pushState(null, null, location.href);
+
+// Exit confirmation on beforeunload
+window.addEventListener('beforeunload', (e) => {
+  if (backPressCount >= 1) {
+    e.preventDefault();
+    e.returnValue = 'Voulez-vous vraiment quitter ?';
+    return 'Voulez-vous vraiment quitter ?';
+  }
+});
 
 // THEME & CLOCK
 let isDark = true;
