@@ -79,9 +79,14 @@ body{
 }
 .header-avatar{
   width:36px;height:36px;border-radius:50%;flex-shrink:0;cursor:pointer;
-  background:linear-gradient(135deg,var(--blue),var(--green));
+  background:var(--blue);
   display:flex;align-items:center;justify-content:center;
-  font-weight:600;color:#fff;font-size:0.85rem;
+  font-weight:600;color:#fff;font-size:0.9rem;
+  transition:all 0.2s ease;
+}
+.header-avatar:hover{
+  transform:scale(1.05);
+  background:var(--green);
 }
 .header-info{flex:1;min-width:0;}
 .header-name{
@@ -97,7 +102,6 @@ body{
   justify-content:center;font-size:0.9rem;transition:.15s;
 }
 .hbtn:hover{background:var(--bg-hover);color:var(--blue);}
-.hbtn.admin-on{color:var(--orange);}
 #appTime{font-size:0.55rem;color:var(--text2);padding:0 4px;}
 
 .bottom-tabs{
@@ -118,9 +122,7 @@ body{
 .tab-btn i{font-size:1rem;margin-bottom:2px;}
 .tab-btn.active{color:var(--blue);}
 .admin-only{display:none!important;}
-.member-only{display:none!important;}
 body.admin-mode .admin-only{display:flex!important;}
-body.member-logged .member-only{display:flex!important;}
 
 .main{padding-top:var(--nav-h);padding-bottom:calc(52px + var(--safe-bottom));min-height:100dvh;}
 .section{display:none;padding:0 12px;}
@@ -143,7 +145,7 @@ body.member-logged .member-only{display:flex!important;}
 .member-card{
   background:var(--bg-panel);border-radius:var(--radius-md);
   padding:12px;margin-bottom:12px;border:0.5px solid var(--border);
-  display:flex;align-items:center;gap:10px;
+  display:none;align-items:center;gap:10px;
 }
 .member-icon{
   width:44px;height:44px;border-radius:50%;
@@ -154,12 +156,20 @@ body.member-logged .member-only{display:flex!important;}
 .member-name{font-weight:600;font-size:0.85rem;color:var(--text);}
 .member-phone{font-size:0.6rem;color:var(--text2);margin-top:2px;}
 .member-company{font-size:0.55rem;color:var(--green);margin-top:1px;}
+.member-badge{
+  background:var(--blue-dim);padding:2px 8px;border-radius:30px;
+  font-size:0.5rem;color:var(--blue);
+}
 .member-btn{
   background:var(--blue);border:none;border-radius:30px;
   padding:6px 12px;color:#fff;font-size:0.6rem;font-weight:500;
   cursor:pointer;transition:.15s;
 }
 .member-btn:hover{opacity:0.85;}
+.member-btn-logout{
+  background:var(--red-dim);color:var(--red);
+}
+.member-btn-logout:hover{background:var(--red);color:#fff;}
 
 .stats-section{padding:4px 0;}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:8px;}
@@ -411,31 +421,14 @@ select.field{padding:8px 10px;}
 .empty-icon{font-size:2.2rem;margin-bottom:8px;opacity:.4;}
 .empty-title{font-size:0.8rem;font-weight:500;}
 .empty-sub{font-size:0.65rem;margin-top:3px;opacity:.7;}
-
-/* Members list in admin mode */
-.members-list{background:var(--bg-panel);}
-.member-item{
-  display:flex;align-items:center;padding:10px 0;
-  border-bottom:0.5px solid var(--border);gap:10px;
-}
-.member-item-avatar{
-  width:40px;height:40px;border-radius:50%;background:var(--blue-dim);
-  display:flex;align-items:center;justify-content:center;color:var(--blue);
-}
-.member-item-info{flex:1;}
-.member-item-name{font-size:0.8rem;font-weight:500;color:var(--text);}
-.member-item-phone{font-size:0.55rem;color:var(--text2);}
-.member-item-delete{
-  background:none;border:none;color:var(--red);cursor:pointer;
-  padding:6px;border-radius:50%;
-}
-.member-item-delete:hover{background:var(--red-dim);}
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <div class="header-avatar" id="headerAvatar" onclick="openProfileModal()">👤</div>
+  <div class="header-avatar" id="headerAvatar" onclick="openLoginModal()">
+    <i class="fas fa-user-circle"></i>
+  </div>
   <div class="header-info">
     <div class="header-name" id="headerName">Les Fournisseurs Industriels</div>
     <div class="header-sub" id="headerSub">Maroc · Professionnels</div>
@@ -443,8 +436,6 @@ select.field{padding:8px 10px;}
   <div class="header-actions">
     <span id="appTime"></span>
     <button class="hbtn" id="themeBtn"><i class="fas fa-moon"></i></button>
-    <button class="hbtn admin-only" id="adminBtn"><i class="fas fa-user-shield"></i></button>
-    <button class="hbtn member-only" id="memberSettingsBtn" onclick="openProfileModal()"><i class="fas fa-user-cog"></i></button>
   </div>
 </header>
 
@@ -465,15 +456,17 @@ select.field{padding:8px 10px;}
       <div class="home-subtitle">La plus grande communauté B2B au Maroc</div>
     </div>
     
-    <!-- Member Card for logged in member -->
-    <div class="member-card" id="memberCard" style="display:none;">
+    <!-- Member Card for logged in user -->
+    <div class="member-card" id="memberCard">
       <div class="member-icon"><i class="fas fa-user-circle"></i></div>
       <div class="member-info">
         <div class="member-name" id="memberName"></div>
         <div class="member-phone" id="memberPhone"></div>
         <div class="member-company" id="memberCompany"></div>
       </div>
-      <button class="member-btn" onclick="openProfileModal()"><i class="fas fa-edit"></i> Modifier</button>
+      <div class="member-badge" id="memberBadge"></div>
+      <button class="member-btn" id="memberEditBtn" onclick="openProfileModal()"><i class="fas fa-edit"></i> Modifier</button>
+      <button class="member-btn member-btn-logout" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Quitter</button>
     </div>
     
     <div class="stats-section">
@@ -543,16 +536,41 @@ select.field{padding:8px 10px;}
 
 </main>
 
-<!-- REGISTER MEMBER MODAL (Admin only add members) -->
-<div class="overlay" id="registerMemberModal">
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginModal">
   <div class="sheet">
-    <div class="sheet-head"><h3><i class="fas fa-user-plus"></i> Ajouter un membre</h3><button class="sheet-close" onclick="closeModal('registerMemberModal')"><i class="fas fa-times"></i></button></div>
+    <div class="sheet-head"><h3><i class="fas fa-sign-in-alt"></i> Connexion</h3><button class="sheet-close" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button></div>
     <div class="sheet-body">
-      <div class="fgroup"><label>Nom complet</label><input type="text" id="regName" class="field" placeholder="Nom et prénom"></div>
-      <div class="fgroup"><label>Numéro WhatsApp</label><input type="tel" id="regPhone" class="field" placeholder="+212 6XX XXX XXX"></div>
-      <div class="fgroup"><label>Société/Profession</label><input type="text" id="regCompany" class="field" placeholder="Ex: Fournisseur de pièces auto"></div>
-      <div class="fgroup"><label>Ville</label><input type="text" id="regVille" class="field" placeholder="Casablanca, Tanger, ..."></div>
-      <button class="btn btn-primary btn-full" onclick="registerMember()"><i class="fas fa-save"></i> Ajouter</button>
+      <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:0.5px solid var(--border);padding-bottom:12px;">
+        <button class="btn btn-primary" id="loginAdminTab" style="flex:1" onclick="showLoginTab('admin')"><i class="fas fa-user-shield"></i> Administrateur</button>
+        <button class="btn btn-ghost" id="loginMemberTab" style="flex:1" onclick="showLoginTab('member')"><i class="fas fa-user"></i> Membre</button>
+      </div>
+      
+      <!-- Admin Login -->
+      <div id="adminLoginPanel">
+        <div class="fgroup"><label>Mot de passe administrateur</label><input type="password" id="adminPassword" class="field" placeholder="••••••••"></div>
+        <button class="btn btn-primary btn-full" onclick="loginAsAdmin()"><i class="fas fa-unlock"></i> Connexion Admin</button>
+      </div>
+      
+      <!-- Member Login -->
+      <div id="memberLoginPanel" style="display:none;">
+        <div class="fgroup"><label>Numéro de téléphone</label><input type="tel" id="memberPhoneLogin" class="field" placeholder="+212 6XX XXX XXX"></div>
+        <button class="btn btn-primary btn-full" onclick="loginAsMember()"><i class="fas fa-sign-in-alt"></i> Connexion Membre</button>
+        <div style="margin-top:12px;text-align:center;">
+          <span style="font-size:0.55rem;color:var(--text2)">Vous n'avez pas de compte ? </span>
+          <button class="btn-ghost" style="padding:4px 8px;font-size:0.55rem" onclick="showRegisterPanel()">S'inscrire</button>
+        </div>
+      </div>
+      
+      <!-- Register Panel -->
+      <div id="registerPanel" style="display:none;">
+        <div class="fgroup"><label>Nom complet</label><input type="text" id="regName" class="field" placeholder="Nom et prénom"></div>
+        <div class="fgroup"><label>Numéro WhatsApp</label><input type="tel" id="regPhone" class="field" placeholder="+212 6XX XXX XXX"></div>
+        <div class="fgroup"><label>Société/Profession</label><input type="text" id="regCompany" class="field" placeholder="Ex: Fournisseur de pièces auto"></div>
+        <div class="fgroup"><label>Ville</label><input type="text" id="regVille" class="field" placeholder="Casablanca, Tanger, ..."></div>
+        <button class="btn btn-primary btn-full" onclick="registerMember()"><i class="fas fa-user-plus"></i> S'inscrire</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:8px" onclick="showLoginTab('member')">← Retour à la connexion</button>
+      </div>
     </div>
   </div>
 </div>
@@ -566,10 +584,7 @@ select.field{padding:8px 10px;}
       <div class="fgroup"><label>Numéro WhatsApp</label><input type="tel" id="profilePhone" class="field"></div>
       <div class="fgroup"><label>Société/Profession</label><input type="text" id="profileCompany" class="field"></div>
       <div class="fgroup"><label>Ville</label><input type="text" id="profileVille" class="field"></div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary" onclick="updateProfile()"><i class="fas fa-save"></i> Enregistrer</button>
-        <button class="btn btn-danger" onclick="logoutMember()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
-      </div>
+      <button class="btn btn-primary btn-full" onclick="updateProfile()"><i class="fas fa-save"></i> Enregistrer</button>
     </div>
   </div>
 </div>
@@ -579,7 +594,6 @@ select.field{padding:8px 10px;}
   <div class="sheet">
     <div class="sheet-head"><h3><i class="fas fa-users"></i> Membres inscrits</h3><button class="sheet-close" onclick="closeModal('membersListModal')"><i class="fas fa-times"></i></button></div>
     <div class="sheet-body">
-      <button class="btn btn-primary btn-full" style="margin-bottom:12px" onclick="closeModal('membersListModal');openRegisterMemberModal()"><i class="fas fa-user-plus"></i> Ajouter un membre</button>
       <div id="membersListContainer" style="max-height:50vh;overflow-y:auto;"></div>
     </div>
   </div>
@@ -597,17 +611,6 @@ select.field{padding:8px 10px;}
     </div>
     <div class="modal-body" id="modalBody"></div>
     <div class="modal-actions" id="modalActions"></div>
-  </div>
-</div>
-
-<!-- ADMIN MODAL -->
-<div class="overlay" id="adminModal">
-  <div class="sheet">
-    <div class="sheet-head"><h3><i class="fas fa-user-shield"></i> Accès Admin</h3><button class="sheet-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div>
-    <div class="sheet-body">
-      <div class="fgroup"><label>Mot de passe</label><input type="password" id="adminPass" class="field" placeholder="••••••••"></div>
-      <button class="btn btn-primary btn-full" onclick="verifyAdmin()"><i class="fas fa-unlock"></i> Connexion</button>
-    </div>
   </div>
 </div>
 
@@ -677,10 +680,9 @@ const dbRef=firebase.database();
 
 // ==================== STATE ====================
 let csvExperts=[],csvFournisseurs=[],dbData=[];
-let isAdmin=false,currentSection='home';
+let isAdmin=false,currentMember=null,currentSection='home';
 let explorerStack=[];
 let pendingDelete=null;
-let currentMember=null;
 let allMembers=[];
 let repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
 
@@ -710,40 +712,82 @@ function fieldMatches(value,q){
   return normalizeStr(String(value)).includes(normalizeStr(q));
 }
 
-// ==================== MEMBERS MANAGEMENT ====================
-function loadMembersFromStorage(){
-  const saved = localStorage.getItem('fournisseurs_members');
-  if(saved){
-    allMembers = JSON.parse(saved);
-  }
-  const currentSaved = localStorage.getItem('current_member');
-  if(currentSaved){
-    currentMember = JSON.parse(currentSaved);
-    document.body.classList.add('member-logged');
-    updateMemberUI();
-  }
+// ==================== LOGIN SYSTEM ====================
+function openLoginModal(){
+  $('loginModal').classList.add('show');
+  showLoginTab('admin');
 }
 
-function saveMembersToStorage(){
-  localStorage.setItem('fournisseurs_members', JSON.stringify(allMembers));
-}
-
-function updateMemberUI(){
-  if(currentMember){
-    $('memberCard').style.display='flex';
-    $('memberName').textContent=currentMember.name;
-    $('memberPhone').textContent=currentMember.phone;
-    $('memberCompany').textContent=currentMember.company || currentMember.profession || '';
-    $('headerName').textContent=currentMember.name.split(' ')[0] || 'Membre';
-    $('headerAvatar').innerHTML = getInitials(currentMember.name);
+function showLoginTab(tab){
+  const adminTab = $('loginAdminTab');
+  const memberTab = $('loginMemberTab');
+  
+  if(tab === 'admin'){
+    $('adminLoginPanel').style.display='block';
+    $('memberLoginPanel').style.display='none';
+    $('registerPanel').style.display='none';
+    adminTab.classList.add('btn-primary');
+    adminTab.classList.remove('btn-ghost');
+    memberTab.classList.add('btn-ghost');
+    memberTab.classList.remove('btn-primary');
   } else {
-    $('memberCard').style.display='none';
-    $('headerName').textContent='Les Fournisseurs Industriels';
-    $('headerAvatar').innerHTML = '<i class="fab fa-whatsapp"></i>';
+    $('adminLoginPanel').style.display='none';
+    $('memberLoginPanel').style.display='block';
+    $('registerPanel').style.display='none';
+    memberTab.classList.add('btn-primary');
+    memberTab.classList.remove('btn-ghost');
+    adminTab.classList.add('btn-ghost');
+    adminTab.classList.remove('btn-primary');
   }
 }
 
-function registerMember(){
+function showRegisterPanel(){
+  $('adminLoginPanel').style.display='none';
+  $('memberLoginPanel').style.display='none';
+  $('registerPanel').style.display='block';
+}
+
+function loginAsAdmin(){
+  const password = $('adminPassword').value;
+  if(password === ADMIN_PASSWORD){
+    isAdmin = true;
+    currentMember = null;
+    sessionStorage.setItem('adminMode', 'true');
+    localStorage.removeItem('current_member');
+    document.body.classList.add('admin-mode');
+    closeModal('loginModal');
+    updateUI();
+    toast('✅ Connecté en tant qu\'Administrateur');
+    renderCurrent();
+  } else {
+    toast('❌ Mot de passe incorrect');
+  }
+}
+
+async function loginAsMember(){
+  const phone = formatPhone($('memberPhoneLogin').value);
+  if(!phone){
+    toast('⚠️ Entrez votre numéro de téléphone');
+    return;
+  }
+  
+  const member = allMembers.find(m => m.phone === phone);
+  if(member){
+    currentMember = member;
+    isAdmin = false;
+    sessionStorage.removeItem('adminMode');
+    localStorage.setItem('current_member', JSON.stringify(member));
+    document.body.classList.remove('admin-mode');
+    closeModal('loginModal');
+    updateUI();
+    toast(`👋 Bienvenue ${member.name}`);
+    renderCurrent();
+  } else {
+    toast('❌ Numéro non trouvé. Veuillez vous inscrire.');
+  }
+}
+
+async function registerMember(){
   const name = $('regName').value.trim();
   const phone = formatPhone($('regPhone').value.trim());
   const company = $('regCompany').value.trim();
@@ -754,33 +798,91 @@ function registerMember(){
     return;
   }
   
-  const newMember = { 
+  if(allMembers.find(m => m.phone === phone)){
+    toast('⚠️ Ce numéro est déjà inscrit');
+    return;
+  }
+  
+  const newMember = {
     id: Date.now().toString(),
-    name, 
-    phone, 
-    company, 
-    ville, 
-    registeredAt: Date.now() 
+    name,
+    phone,
+    company,
+    ville,
+    registeredAt: Date.now()
   };
+  
   allMembers.push(newMember);
   saveMembersToStorage();
-  closeModal('registerMemberModal');
-  toast(`✅ Membre ${name} ajouté`);
-  renderMembersList();
+  
+  currentMember = newMember;
+  isAdmin = false;
+  sessionStorage.removeItem('adminMode');
+  localStorage.setItem('current_member', JSON.stringify(newMember));
+  document.body.classList.remove('admin-mode');
+  closeModal('loginModal');
+  updateUI();
+  toast(`✅ Inscription réussie ! Bienvenue ${name}`);
+  renderCurrent();
+  
+  dbRef.ref('members/' + phone.replace(/[^0-9]/g, '')).set(newMember);
 }
 
-function loginMember(member){
-  currentMember = member;
-  localStorage.setItem('current_member', JSON.stringify(member));
-  document.body.classList.add('member-logged');
-  updateMemberUI();
-  closeModal('membersListModal');
-  toast(`👋 Bienvenue ${member.name}`);
+function loadMembersFromStorage(){
+  const saved = localStorage.getItem('fournisseurs_members');
+  if(saved){
+    allMembers = JSON.parse(saved);
+  }
+  const currentSaved = localStorage.getItem('current_member');
+  if(currentSaved){
+    currentMember = JSON.parse(currentSaved);
+  }
+}
+
+function saveMembersToStorage(){
+  localStorage.setItem('fournisseurs_members', JSON.stringify(allMembers));
+}
+
+function updateUI(){
+  const avatar = $('headerAvatar');
+  const memberCard = $('memberCard');
+  const headerName = $('headerName');
+  
+  if(isAdmin){
+    memberCard.style.display='flex';
+    $('memberName').textContent='Administrateur';
+    $('memberPhone').textContent='Mode Admin';
+    $('memberCompany').textContent='Gestion complète du répertoire';
+    $('memberBadge').textContent='Admin';
+    $('memberBadge').style.background='var(--orange-dim)';
+    $('memberBadge').style.color='var(--orange)';
+    headerName.textContent='Admin • Fournisseurs Industrie';
+    avatar.innerHTML = '<i class="fas fa-user-shield"></i>';
+    avatar.style.background='var(--orange)';
+  } else if(currentMember){
+    memberCard.style.display='flex';
+    $('memberName').textContent=currentMember.name;
+    $('memberPhone').textContent=currentMember.phone;
+    $('memberCompany').textContent=currentMember.company || '';
+    $('memberBadge').textContent='Membre';
+    $('memberBadge').style.background='var(--blue-dim)';
+    $('memberBadge').style.color='var(--blue)';
+    headerName.textContent=currentMember.name.split(' ')[0] || 'Membre';
+    avatar.innerHTML = getInitials(currentMember.name);
+    avatar.style.background='var(--green)';
+  } else {
+    memberCard.style.display='none';
+    headerName.textContent='Les Fournisseurs Industriels';
+    avatar.innerHTML = '<i class="fas fa-user-circle"></i>';
+    avatar.style.background='var(--blue)';
+  }
+  $('headerSub').textContent=`${dbData.length} professionnels · ${new Set(dbData.map(d=>d.domaine).filter(Boolean)).size} domaines`;
 }
 
 function openProfileModal(){
   if(!currentMember){
     toast('⚠️ Veuillez vous connecter d\'abord');
+    openLoginModal();
     return;
   }
   $('profileName').value = currentMember.name;
@@ -797,34 +899,37 @@ function updateProfile(){
   currentMember.company = $('profileCompany').value.trim();
   currentMember.ville = $('profileVille').value.trim();
   
-  // Update in allMembers array
   const index = allMembers.findIndex(m => m.id === currentMember.id);
   if(index !== -1) allMembers[index] = currentMember;
   
   localStorage.setItem('current_member', JSON.stringify(currentMember));
   saveMembersToStorage();
-  updateMemberUI();
+  updateUI();
   closeModal('profileModal');
   toast('✅ Profil mis à jour');
 }
 
-function logoutMember(){
-  localStorage.removeItem('current_member');
-  currentMember = null;
-  document.body.classList.remove('member-logged');
-  updateMemberUI();
-  toast('👋 Déconnecté');
-}
-
-function openRegisterMemberModal(){
-  $('regName').value = '';
-  $('regPhone').value = '';
-  $('regCompany').value = '';
-  $('regVille').value = '';
-  $('registerMemberModal').classList.add('show');
+function logoutUser(){
+  if(isAdmin){
+    isAdmin = false;
+    sessionStorage.removeItem('adminMode');
+    document.body.classList.remove('admin-mode');
+    toast('👢 Déconnexion du mode Admin');
+  } else {
+    currentMember = null;
+    localStorage.removeItem('current_member');
+    toast('👋 Déconnecté');
+  }
+  updateUI();
+  closeModal('profileModal');
+  renderCurrent();
 }
 
 function openMembersListModal(){
+  if(!isAdmin){
+    toast('⚠️ Accès réservé aux administrateurs');
+    return;
+  }
   renderMembersList();
   $('membersListModal').classList.add('show');
 }
@@ -832,27 +937,27 @@ function openMembersListModal(){
 function renderMembersList(){
   const container = $('membersListContainer');
   if(allMembers.length === 0){
-    container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-users"></i></div><div class="empty-title">Aucun membre</div><div class="empty-sub">Ajoutez des membres pour qu'ils puissent se connecter</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-users"></i></div><div class="empty-title">Aucun membre</div><div class="empty-sub">Les membres inscrits apparaîtront ici</div></div>`;
     return;
   }
   container.innerHTML = allMembers.map(member => `
-    <div class="member-item">
-      <div class="member-item-avatar"><i class="fas fa-user"></i></div>
-      <div class="member-item-info">
-        <div class="member-item-name">${escHtml(member.name)}</div>
-        <div class="member-item-phone">${escHtml(member.phone)}</div>
-        ${member.company ? `<div class="member-item-phone" style="color:var(--green)">${escHtml(member.company)}</div>` : ''}
+    <div style="display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);gap:10px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center;color:var(--blue);"><i class="fas fa-user"></i></div>
+      <div style="flex:1">
+        <div style="font-size:0.8rem;font-weight:500;color:var(--text);">${escHtml(member.name)}</div>
+        <div style="font-size:0.55rem;color:var(--text2);">${escHtml(member.phone)}</div>
+        ${member.company ? `<div style="font-size:0.5rem;color:var(--green);">${escHtml(member.company)}</div>` : ''}
       </div>
-      <button class="member-item-delete" onclick="deleteMember('${member.id}')"><i class="fas fa-trash-alt"></i></button>
-      <button class="member-btn" onclick="loginMember(${JSON.stringify(member).replace(/"/g, '&quot;')})" style="background:var(--green);padding:4px 10px;"><i class="fas fa-sign-in-alt"></i></button>
+      <button onclick="deleteMember('${member.id}')" style="background:none;border:none;color:var(--red);cursor:pointer;padding:6px;border-radius:50%;"><i class="fas fa-trash-alt"></i></button>
     </div>
   `).join('');
 }
 
 function deleteMember(id){
+  if(!isAdmin) return;
   allMembers = allMembers.filter(m => m.id !== id);
   if(currentMember && currentMember.id === id){
-    logoutMember();
+    logoutUser();
   }
   saveMembersToStorage();
   renderMembersList();
@@ -1396,28 +1501,16 @@ function renderCurrent(){
   else if(currentSection==='explorer')renderExplorer();
 }
 
-// ==================== ADMIN ====================
-function verifyAdmin(){
-  if($('adminPass').value===ADMIN_PASSWORD){
-    isAdmin=true;sessionStorage.setItem('adminMode','true');
+// ==================== CHECK SESSION ====================
+function checkSession(){
+  if(sessionStorage.getItem('adminMode') === 'true'){
+    isAdmin = true;
     document.body.classList.add('admin-mode');
-    closeModal('adminModal');toast('✅ Mode Admin activé');
-    renderCurrent();
-  }else toast('❌ Mot de passe incorrect');
-}
-function logoutAdmin(){
-  isAdmin=false;sessionStorage.removeItem('adminMode');
-  document.body.classList.remove('admin-mode');
-  toast('👤 Mode utilisateur');renderCurrent();
-}
-function checkAdminStatus(){
-  if(sessionStorage.getItem('adminMode')==='true'){
-    isAdmin=true;document.body.classList.add('admin-mode');
+    updateUI();
   }
 }
 
 // ==================== EVENTS ====================
-$('adminBtn').onclick=()=>{if(isAdmin)logoutAdmin();else $('adminModal').classList.add('show');};
 $('syncBtn').onclick=syncToFirebase;
 $('addBtn').onclick=openAddModal;
 $('membersListBtn').onclick=openMembersListModal;
@@ -1452,7 +1545,7 @@ $('appTime').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',m
 
 // ==================== GLOBALS ====================
 window.closeModal=closeModal;window.closeDetailModal=closeDetailModal;
-window.verifyAdmin=verifyAdmin;window.openDetailModal=openDetailModal;
+window.openDetailModal=openDetailModal;
 window.openEditModal=openEditModal;window.openDeleteModal=openDeleteModal;
 window.saveItem=saveItem;window.confirmDeleteItem=confirmDeleteItem;
 window.saveVCF=saveVCF;window.removeRepFilter=removeRepFilter;
@@ -1465,16 +1558,22 @@ window.goExplorerLevel=goExplorerLevel;
 window.explorerNavigateTo=explorerNavigateTo;
 window.openProfileModal=openProfileModal;
 window.updateProfile=updateProfile;
-window.logoutMember=logoutMember;
+window.logoutUser=logoutUser;
+window.openLoginModal=openLoginModal;
+window.loginAsAdmin=loginAsAdmin;
+window.loginAsMember=loginAsMember;
 window.registerMember=registerMember;
-window.openRegisterMemberModal=openRegisterMemberModal;
+window.showLoginTab=showLoginTab;
+window.showRegisterPanel=showRegisterPanel;
 window.openMembersListModal=openMembersListModal;
 window.deleteMember=deleteMember;
-window.loginMember=loginMember;
 
 // ==================== INIT ====================
 async function init(){
-  showLoading(true);checkAdminStatus();loadMembersFromStorage();
+  showLoading(true);
+  checkSession();
+  loadMembersFromStorage();
+  updateUI();
   const[experts,fours]=await Promise.all([loadCSV(CSV_EXPERTS),loadCSV(CSV_FOURNISSEURS)]);
   csvExperts=experts;csvFournisseurs=fours;
   await loadDB();
