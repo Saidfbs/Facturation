@@ -109,11 +109,6 @@ body {
 .tab-btn i { font-size: 1.1rem; }
 .tab-btn span { font-size: 0.58rem; font-weight: 500; }
 .tab-btn.active { color: var(--green); }
-.tab-btn.active::before {
-  content: '';
-  position: absolute; bottom: 0; width: 30px; height: 2px;
-  background: var(--green); border-radius: 2px;
-}
 .tab-admin { display: none; }
 body.admin-mode .tab-admin { display: flex; }
 
@@ -357,7 +352,7 @@ body.admin-mode .tab-admin { display: flex; }
 .di-label { font-size: 0.6rem; color: var(--text2); text-transform: uppercase; margin-bottom: 3px; }
 .di-value { font-size: 0.85rem; color: var(--text); word-break: break-word; }
 
-/* ACTION BUTTONS (uniformes) */
+/* ACTION BUTTONS */
 .detail-actions {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -380,11 +375,6 @@ body.admin-mode .tab-admin { display: flex; }
 .da-btn i { font-size: 1.1rem; }
 .da-btn span { font-size: 0.55rem; font-weight: 500; }
 .da-btn:hover { background: var(--bg-hover); transform: scale(0.96); }
-.da-call:hover i { color: #25d366; }
-.da-email:hover i { color: #f59e0b; }
-.da-share:hover i { color: var(--green); }
-.da-qr:hover i { color: var(--teal); }
-.da-copy:hover i { color: #94a3b8; }
 
 /* EXPLORER TREE */
 .breadcrumb {
@@ -427,7 +417,6 @@ body.admin-mode .tab-admin { display: flex; }
 .exp-info { flex: 1; }
 .exp-name { font-weight: 500; color: var(--text); }
 .exp-count { font-size: 0.65rem; color: var(--text2); margin-top: 4px; }
-.exp-arrow { color: var(--text3); font-size: 0.8rem; }
 
 /* MODALS */
 .overlay {
@@ -607,13 +596,13 @@ body.admin-mode .admin-only { display: flex !important; }
       <div class="home-subtitle">Mise en relation entre professionnels de l'industrie au Maroc</div>
     </div>
     <div class="stats-section">
-      <div class="stats-grid" id="statsGrid1">
+      <div class="stats-grid">
         <div class="stat-card" data-stat="fournisseurs"><div class="stat-card-icon"><i class="fas fa-industry"></i></div><div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">Fournisseurs</div></div></div>
         <div class="stat-card" data-stat="experts"><div class="stat-card-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">Experts</div></div></div>
         <div class="stat-card" data-stat="villes"><div class="stat-card-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">Villes</div></div></div>
         <div class="stat-card" data-stat="domaines"><div class="stat-card-icon"><i class="fas fa-layer-group"></i></div><div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">Domaines</div></div></div>
       </div>
-      <div class="stats-grid" id="statsGrid2">
+      <div class="stats-grid">
         <div class="stat-card" data-stat="services"><div class="stat-card-icon"><i class="fas fa-cogs"></i></div><div><div class="stat-num" id="statServices">0</div><div class="stat-lbl">Services</div></div></div>
         <div class="stat-card" data-stat="products"><div class="stat-card-icon"><i class="fas fa-boxes"></i></div><div><div class="stat-num" id="statProduits">0</div><div class="stat-lbl">Produits</div></div></div>
         <div class="stat-card" data-stat="maqola"><div class="stat-card-icon"><i class="fas fa-hard-hat"></i></div><div><div class="stat-num" id="statMaqola">0</div><div class="stat-lbl">Maqaola</div></div></div>
@@ -679,7 +668,7 @@ body.admin-mode .admin-only { display: flex !important; }
       <div class="detail-info-rows" id="detailInfoRows"></div>
     </div>
     <div class="detail-actions" id="detailActions"></div>
-    <div id="detailAdminActions" class="admin-only" style="margin:12px; background:var(--bg-panel); border-radius:16px; overflow:hidden;">
+    <div id="detailAdminActions" class="admin-only" style="margin:12px; background:var(--bg-panel); border-radius:16px; overflow:hidden; display:none">
       <div class="menu-item" id="detailEditBtn"><div class="menu-icon" style="background:rgba(245,158,11,0.12);color:#f59e0b"><i class="fas fa-pen"></i></div><span class="menu-label">Modifier</span></div>
       <div class="menu-item" id="detailDeleteBtn" style="border-bottom:none"><div class="menu-icon" style="background:rgba(244,63,94,0.1);color:#f43f5e"><i class="fas fa-trash"></i></div><span class="menu-label" style="color:#f43f5e">Supprimer</span></div>
     </div>
@@ -723,6 +712,7 @@ let currentSection = 'home';
 let explorerStack = [];
 let pendingDelete = null;
 let currentDetail = null;
+let currentDetailIsCSV = false;
 
 // Filters
 let repertoireFilters = { type: null, cat: null, ville: null, domaine: null, search: '' };
@@ -839,14 +829,32 @@ function updateStats() {
   $('headerSub').textContent = `${dbData.length} professionnels`;
 }
 
-// ==================== REPERTOIRE FILTERS ====================
+// ==================== REPERTOIRE FILTERS (FIXED) ====================
 function getFilteredRepertoire() {
   let filtered = [...dbData];
-  if (repertoireFilters.type) filtered = filtered.filter(d => d.type === repertoireFilters.type);
-  if (repertoireFilters.cat) filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
-  if (repertoireFilters.ville) filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
-  if (repertoireFilters.domaine) filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
-  if (repertoireFilters.search) {
+  
+  // Filter by type
+  if (repertoireFilters.type && repertoireFilters.type !== 'null') {
+    filtered = filtered.filter(d => d.type === repertoireFilters.type);
+  }
+  
+  // Filter by category
+  if (repertoireFilters.cat && repertoireFilters.cat !== 'null') {
+    filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
+  }
+  
+  // Filter by ville
+  if (repertoireFilters.ville && repertoireFilters.ville !== 'null') {
+    filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
+  }
+  
+  // Filter by domaine
+  if (repertoireFilters.domaine && repertoireFilters.domaine !== 'null') {
+    filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
+  }
+  
+  // Filter by search
+  if (repertoireFilters.search && repertoireFilters.search !== '') {
     const q = repertoireFilters.search.toLowerCase();
     filtered = filtered.filter(d => 
       (d.name||'').toLowerCase().includes(q) ||
@@ -857,22 +865,23 @@ function getFilteredRepertoire() {
       (d.email||'').toLowerCase().includes(q)
     );
   }
+  
   return filtered;
 }
 
 function getAvailableRepertoireVilles() {
   let filtered = [...dbData];
-  if (repertoireFilters.type) filtered = filtered.filter(d => d.type === repertoireFilters.type);
-  if (repertoireFilters.cat) filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
-  if (repertoireFilters.domaine) filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
+  if (repertoireFilters.type && repertoireFilters.type !== 'null') filtered = filtered.filter(d => d.type === repertoireFilters.type);
+  if (repertoireFilters.cat && repertoireFilters.cat !== 'null') filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
+  if (repertoireFilters.domaine && repertoireFilters.domaine !== 'null') filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
   return [...new Set(filtered.map(d=>d.ville).filter(v=>v&&v!=='null'))].sort();
 }
 
 function getAvailableRepertoireDomaines() {
   let filtered = [...dbData];
-  if (repertoireFilters.type) filtered = filtered.filter(d => d.type === repertoireFilters.type);
-  if (repertoireFilters.cat) filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
-  if (repertoireFilters.ville) filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
+  if (repertoireFilters.type && repertoireFilters.type !== 'null') filtered = filtered.filter(d => d.type === repertoireFilters.type);
+  if (repertoireFilters.cat && repertoireFilters.cat !== 'null') filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
+  if (repertoireFilters.ville && repertoireFilters.ville !== 'null') filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
   return [...new Set(filtered.map(d=>d.domaine).filter(v=>v&&v!=='null'))].sort();
 }
 
@@ -881,53 +890,95 @@ function resetRepertoireFilters() {
   if ($('repertoireSearch')) $('repertoireSearch').value = '';
   if ($('repertoireClear')) $('repertoireClear').style.display = 'none';
   document.querySelectorAll('#repertoireSection .fchip').forEach(c => c.classList.remove('active'));
+  renderRepertoire();
+}
+
+function setRepertoireFilter(key, value) {
+  repertoireFilters[key] = value;
+  // Update active state on chips
+  if (key === 'type') {
+    const btn = $('filterTypeBtn');
+    if (btn) btn.classList.toggle('active', !!value);
+  } else if (key === 'cat') {
+    const btn = $('filterCatBtn');
+    if (btn) btn.classList.toggle('active', !!value);
+  } else if (key === 'ville') {
+    const btn = $('filterVilleBtn');
+    if (btn) btn.classList.toggle('active', !!value);
+  } else if (key === 'domaine') {
+    const btn = $('filterDomaineBtn');
+    if (btn) btn.classList.toggle('active', !!value);
+  }
+  renderRepertoire();
 }
 
 // ==================== CSV FILTERS ====================
 function getFilteredFournisseurs() {
   let filtered = [...csvFournisseurs];
-  if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville);
-  if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
-  if (fourFilters.search) filtered = filtered.filter(f => f.name.toLowerCase().includes(fourFilters.search.toLowerCase()));
+  if (fourFilters.ville && fourFilters.ville !== 'null') filtered = filtered.filter(f => f.ville === fourFilters.ville);
+  if (fourFilters.domaine && fourFilters.domaine !== 'null') filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
+  if (fourFilters.search && fourFilters.search !== '') filtered = filtered.filter(f => f.name.toLowerCase().includes(fourFilters.search.toLowerCase()));
   return filtered;
 }
+
 function getAvailableFourVilles() {
   let filtered = [...csvFournisseurs];
-  if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
+  if (fourFilters.domaine && fourFilters.domaine !== 'null') filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
   return [...new Set(filtered.map(f=>f.ville).filter(v=>v))].sort();
 }
+
 function getAvailableFourDomaines() {
   let filtered = [...csvFournisseurs];
-  if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville);
+  if (fourFilters.ville && fourFilters.ville !== 'null') filtered = filtered.filter(f => f.ville === fourFilters.ville);
   return [...new Set(filtered.map(f=>f.domaine).filter(d=>d))].sort();
 }
+
 function resetFourFilters() {
   fourFilters = { ville: null, domaine: null, search: '' };
   if ($('fourSearch')) $('fourSearch').value = '';
   document.querySelectorAll('#fournisseursSection .fchip').forEach(c => c.classList.remove('active'));
+  renderFournisseurs();
+}
+
+function setFourFilter(key, value) {
+  fourFilters[key] = value;
+  if (key === 'ville') $('fourVilleBtn')?.classList.toggle('active', !!value);
+  if (key === 'domaine') $('fourDomaineBtn')?.classList.toggle('active', !!value);
+  renderFournisseurs();
 }
 
 function getFilteredExperts() {
   let filtered = [...csvExperts];
-  if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville);
-  if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine);
-  if (expFilters.search) filtered = filtered.filter(e => e.name.toLowerCase().includes(expFilters.search.toLowerCase()));
+  if (expFilters.ville && expFilters.ville !== 'null') filtered = filtered.filter(e => e.ville === expFilters.ville);
+  if (expFilters.domaine && expFilters.domaine !== 'null') filtered = filtered.filter(e => e.domaine === expFilters.domaine);
+  if (expFilters.search && expFilters.search !== '') filtered = filtered.filter(e => e.name.toLowerCase().includes(expFilters.search.toLowerCase()));
   return filtered;
 }
+
 function getAvailableExpVilles() {
   let filtered = [...csvExperts];
-  if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine);
+  if (expFilters.domaine && expFilters.domaine !== 'null') filtered = filtered.filter(e => e.domaine === expFilters.domaine);
   return [...new Set(filtered.map(e=>e.ville).filter(v=>v))].sort();
 }
+
 function getAvailableExpDomaines() {
   let filtered = [...csvExperts];
-  if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville);
+  if (expFilters.ville && expFilters.ville !== 'null') filtered = filtered.filter(e => e.ville === expFilters.ville);
   return [...new Set(filtered.map(e=>e.domaine).filter(d=>d))].sort();
 }
+
 function resetExpFilters() {
   expFilters = { ville: null, domaine: null, search: '' };
   if ($('expSearch')) $('expSearch').value = '';
   document.querySelectorAll('#expertsSection .fchip').forEach(c => c.classList.remove('active'));
+  renderExperts();
+}
+
+function setExpFilter(key, value) {
+  expFilters[key] = value;
+  if (key === 'ville') $('expVilleBtn')?.classList.toggle('active', !!value);
+  if (key === 'domaine') $('expDomaineBtn')?.classList.toggle('active', !!value);
+  renderExperts();
 }
 
 // ==================== RENDER FUNCTIONS ====================
@@ -948,6 +999,8 @@ function buildContactRow(item, isCSV = false) {
       const catCls = {services:'cb-green',products:'cb-amber',maqola:'cb-violet','yad-amila':'cb-rose'}[item.categorie];
       badges += `<span class="cbadge ${catCls}">${catNameMap[item.categorie]}</span>`;
     }
+  } else {
+    badges = `<span class="cbadge cb-teal">CSV</span>`;
   }
   const itemStr = encodeURIComponent(JSON.stringify(item));
   return `<div class="contact-row" onclick="openDetail('${itemStr}', ${isCSV})">
@@ -976,30 +1029,24 @@ function renderRepertoire() {
   } else {
     resultDiv.style.display = 'none';
   }
-  $('repertoireList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">Aucun résultat</div></div>`;
-  
-  // Update active states
-  ['type','cat','ville','domaine'].forEach(k => { const btn = $(`filter${k.charAt(0).toUpperCase()+k.slice(1)}Btn`); if(btn) btn.classList.toggle('active', !!repertoireFilters[k]); });
+  $('repertoireList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, false)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">Aucun résultat</div></div>`;
 }
 
 function renderFournisseurs() {
   const filtered = getFilteredFournisseurs();
   $('fourList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, true)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-industry"></i></div><div class="empty-title">Aucun fournisseur</div></div>`;
-  if($('fourVilleBtn')) $('fourVilleBtn').classList.toggle('active', !!fourFilters.ville);
-  if($('fourDomaineBtn')) $('fourDomaineBtn').classList.toggle('active', !!fourFilters.domaine);
 }
 
 function renderExperts() {
   const filtered = getFilteredExperts();
   $('expList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, true)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-microchip"></i></div><div class="empty-title">Aucun expert</div></div>`;
-  if($('expVilleBtn')) $('expVilleBtn').classList.toggle('active', !!expFilters.ville);
-  if($('expDomaineBtn')) $('expDomaineBtn').classList.toggle('active', !!expFilters.domaine);
 }
 
-// ==================== DETAIL (WhatsApp Style) ====================
+// ==================== DETAIL ====================
 function openDetail(encodedItem, isCSV = false) {
   const item = JSON.parse(decodeURIComponent(encodedItem));
   currentDetail = item;
+  currentDetailIsCSV = isCSV;
   const color = getColor(item.name);
   const initials = getInitials(item.name);
   const hasPhone = item.phone && item.phone !== 'null';
@@ -1022,6 +1069,7 @@ function openDetail(encodedItem, isCSV = false) {
     const cls = {services:'cb-green',products:'cb-amber',maqola:'cb-violet','yad-amila':'cb-rose'}[item.categorie];
     badgesHtml += `<span class="cbadge ${cls}" style="font-size:0.6rem;padding:5px 12px;">${catNameMap[item.categorie]}</span>`;
   }
+  if (isCSV) badgesHtml += `<span class="cbadge cb-teal" style="font-size:0.6rem;padding:5px 12px;">Donnée CSV</span>`;
   $('dpBadges').innerHTML = badgesHtml;
 
   const rows = [
@@ -1049,14 +1097,16 @@ function openDetail(encodedItem, isCSV = false) {
   ].filter(Boolean);
   $('detailActions').innerHTML = actions.map(a=>`<button class="da-btn ${a.cls}" onclick="${a.action}"><i class="${a.icon}"></i><span>${a.label}</span></button>`).join('');
 
-  // Modifier/Supprimer uniquement pour répertoire (non CSV)
-  const adminEl = $('detailAdminActions');
+  // Modifier/Supprimer UNIQUEMENT pour les données Firebase (non CSV)
+  const adminActionsDiv = $('detailAdminActions');
   if (isAdmin && !isCSV && item.id) {
-    adminEl.style.display = 'block';
-    $('detailEditBtn').onclick = () => { closeDetail(); openEditModal(item.id); };
-    $('detailDeleteBtn').onclick = () => { closeDetail(); openDeleteModal(item.id); };
+    adminActionsDiv.style.display = 'block';
+    const editBtn = $('detailEditBtn');
+    const deleteBtn = $('detailDeleteBtn');
+    if (editBtn) editBtn.onclick = () => { closeDetail(); openEditModal(item.id); };
+    if (deleteBtn) deleteBtn.onclick = () => { closeDetail(); openDeleteModal(item.id); };
   } else {
-    adminEl.style.display = 'none';
+    adminActionsDiv.style.display = 'none';
   }
   $('detailOverlay').classList.add('show');
 }
@@ -1092,7 +1142,7 @@ function renderExplorer() {
     const domaine = explorerStack[1].domaine;
     const specialite = explorerStack[2].specialite;
     const items = dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
-    container.innerHTML = items.map(i => buildContactRow(i)).join('');
+    container.innerHTML = items.map(i => buildContactRow(i, false)).join('');
   }
 }
 
@@ -1109,22 +1159,26 @@ function showList(title, items, onSelect) {
   $('listModal').classList.add('show');
 }
 
-function showTypeFilter() { showList('Type', ['Fournisseurs', 'Experts'], val => { repertoireFilters.type = val === 'Fournisseurs' ? 'fournisseurs' : val === 'Experts' ? 'experts' : null; renderRepertoire(); }); }
-function showCatFilter() { showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], val => { repertoireFilters.cat = val ? {Services:'services',Produits:'products',Maqaola:'maqola','Yad Amila':'yad-amila'}[val] : null; renderRepertoire(); }); }
-function showRepertoireVilleFilter() { const villes = getAvailableRepertoireVilles(); if(villes.length) showList('Villes', villes, v => { repertoireFilters.ville = v; renderRepertoire(); }); else toast('⚠️ Aucune ville'); }
-function showRepertoireDomaineFilter() { const domaines = getAvailableRepertoireDomaines(); if(domaines.length) showList('Domaines', domaines, d => { repertoireFilters.domaine = d; renderRepertoire(); }); else toast('⚠️ Aucun domaine'); }
-function showFourVilleFilter() { const villes = getAvailableFourVilles(); if(villes.length) showList('Villes Fournisseurs', villes, v => { fourFilters.ville = v; renderFournisseurs(); }); else toast('⚠️ Aucune ville'); }
-function showFourDomaineFilter() { const domaines = getAvailableFourDomaines(); if(domaines.length) showList('Domaines Fournisseurs', domaines, d => { fourFilters.domaine = d; renderFournisseurs(); }); else toast('⚠️ Aucun domaine'); }
-function showExpVilleFilter() { const villes = getAvailableExpVilles(); if(villes.length) showList('Villes Experts', villes, v => { expFilters.ville = v; renderExperts(); }); else toast('⚠️ Aucune ville'); }
-function showExpDomaineFilter() { const domaines = getAvailableExpDomaines(); if(domaines.length) showList('Domaines Experts', domaines, d => { expFilters.domaine = d; renderExperts(); }); else toast('⚠️ Aucun domaine'); }
+function showTypeFilter() { showList('Type', ['Fournisseurs', 'Experts'], val => { setRepertoireFilter('type', val === 'Fournisseurs' ? 'fournisseurs' : val === 'Experts' ? 'experts' : null); }); }
+function showCatFilter() { showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], val => { setRepertoireFilter('cat', val ? {Services:'services',Produits:'products',Maqaola:'maqola','Yad Amila':'yad-amila'}[val] : null); }); }
+function showRepertoireVilleFilter() { const villes = getAvailableRepertoireVilles(); if(villes.length) showList('Villes', villes, v => { setRepertoireFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
+function showRepertoireDomaineFilter() { const domaines = getAvailableRepertoireDomaines(); if(domaines.length) showList('Domaines', domaines, d => { setRepertoireFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
+function showFourVilleFilter() { const villes = getAvailableFourVilles(); if(villes.length) showList('Villes Fournisseurs', villes, v => { setFourFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
+function showFourDomaineFilter() { const domaines = getAvailableFourDomaines(); if(domaines.length) showList('Domaines Fournisseurs', domaines, d => { setFourFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
+function showExpVilleFilter() { const villes = getAvailableExpVilles(); if(villes.length) showList('Villes Experts', villes, v => { setExpFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
+function showExpDomaineFilter() { const domaines = getAvailableExpDomaines(); if(domaines.length) showList('Domaines Experts', domaines, d => { setExpFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
 
 // ==================== STAT CLICK ====================
 function applyStatFilter(statType) {
   resetRepertoireFilters();
-  const map = { fournisseurs:{key:'type',val:'fournisseurs'}, experts:{key:'type',val:'experts'}, services:{key:'cat',val:'services'}, products:{key:'cat',val:'products'}, maqola:{key:'cat',val:'maqola'}, 'yad-amila':{key:'cat',val:'yad-amila'} };
-  if (map[statType]) { repertoireFilters[map[statType].key] = map[statType].val; showSection('repertoire', false); renderRepertoire(); }
-  else if (statType==='villes') { showSection('repertoire', false); setTimeout(()=>showRepertoireVilleFilter(),100); }
-  else if (statType==='domaines') { showSection('repertoire', false); setTimeout(()=>showRepertoireDomaineFilter(),100); }
+  if (statType === 'fournisseurs') { setRepertoireFilter('type', 'fournisseurs'); showSection('repertoire', false); }
+  else if (statType === 'experts') { setRepertoireFilter('type', 'experts'); showSection('repertoire', false); }
+  else if (statType === 'services') { setRepertoireFilter('cat', 'services'); showSection('repertoire', false); }
+  else if (statType === 'products') { setRepertoireFilter('cat', 'products'); showSection('repertoire', false); }
+  else if (statType === 'maqola') { setRepertoireFilter('cat', 'maqola'); showSection('repertoire', false); }
+  else if (statType === 'yad-amila') { setRepertoireFilter('cat', 'yad-amila'); showSection('repertoire', false); }
+  else if (statType === 'villes') { showSection('repertoire', false); setTimeout(() => showRepertoireVilleFilter(), 100); }
+  else if (statType === 'domaines') { showSection('repertoire', false); setTimeout(() => showRepertoireDomaineFilter(), 100); }
 }
 
 // ==================== CRUD ====================
@@ -1209,7 +1263,12 @@ async function exportToPDF(encoded) {
 
 // ==================== NAVIGATION ====================
 function showSection(id, reset=true) {
-  if(reset){ resetRepertoireFilters(); resetFourFilters(); resetExpFilters(); if(id!=='explorer') explorerStack=[]; }
+  if(reset){ 
+    resetRepertoireFilters(); 
+    resetFourFilters(); 
+    resetExpFilters(); 
+    if(id!=='explorer') explorerStack=[]; 
+  }
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   $(id+'Section').classList.add('active');
   document.querySelectorAll('.tab-btn[data-sec]').forEach(b=>b.classList.remove('active'));
@@ -1239,8 +1298,8 @@ $('filterCatBtn').onclick = showCatFilter;
 $('filterVilleBtn').onclick = showRepertoireVilleFilter;
 $('filterDomaineBtn').onclick = showRepertoireDomaineFilter;
 $('filterResetBtn').onclick = () => { resetRepertoireFilters(); renderRepertoire(); toast('Filtres effacés'); };
-$('repertoireSearch').addEventListener('input', e => { repertoireFilters.search=e.target.value; $('repertoireClear').style.display=e.target.value?'flex':'none'; renderRepertoire(); });
-$('repertoireClear').onclick = () => { repertoireFilters.search=''; $('repertoireSearch').value=''; $('repertoireClear').style.display='none'; renderRepertoire(); };
+$('repertoireSearch').addEventListener('input', e => { setRepertoireFilter('search', e.target.value); $('repertoireClear').style.display=e.target.value?'flex':'none'; });
+$('repertoireClear').onclick = () => { setRepertoireFilter('search', ''); $('repertoireSearch').value=''; $('repertoireClear').style.display='none'; };
 $('fourSearch').addEventListener('input', e => { fourFilters.search=e.target.value; renderFournisseurs(); });
 $('expSearch').addEventListener('input', e => { expFilters.search=e.target.value; renderExperts(); });
 $('fourVilleBtn').onclick = showFourVilleFilter;
@@ -1249,7 +1308,9 @@ $('fourResetBtn').onclick = () => { resetFourFilters(); renderFournisseurs(); to
 $('expVilleBtn').onclick = showExpVilleFilter;
 $('expDomaineBtn').onclick = showExpDomaineFilter;
 $('expResetBtn').onclick = () => { resetExpFilters(); renderExperts(); toast('Filtres effacés'); };
+
 document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { btn.onclick = () => { const sec = btn.dataset.sec; if(currentSection===sec && window.scrollY>10) window.scrollTo({top:0,behavior:'smooth'}); else if(currentSection===sec) { if(sec==='repertoire'){resetRepertoireFilters();renderRepertoire();toast('Filtres réinitialisés');} else if(sec==='explorer'){explorerStack=[];renderExplorer();toast('Explorer réinitialisé');} else if(sec==='fournisseurs'){resetFourFilters();renderFournisseurs();toast('Filtres effacés');} else if(sec==='experts'){resetExpFilters();renderExperts();toast('Filtres effacés');} } else showSection(sec, true); }; });
+
 document.querySelectorAll('.stat-card[data-stat]').forEach(card => card.onclick = () => applyStatFilter(card.dataset.stat));
 document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('show'); }));
 window.addEventListener('popstate', () => showSection('home', true));
