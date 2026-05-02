@@ -147,41 +147,12 @@ body::before {
   color: var(--accent);
 }
 
-.header-mid {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.header-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  padding: 8px 16px;
-  max-width: 280px;
-  width: 100%;
-  transition: all 0.2s;
-}
-.header-search:focus-within {
-  border-color: var(--border-bright);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-.header-search i { color: var(--text-muted); font-size: 0.7rem; }
-.header-search input {
-  background: transparent; border: none; outline: none;
-  color: var(--text-primary); font-size: 0.72rem;
-  font-family: var(--font-body); width: 100%;
-}
-.header-search input::placeholder { color: var(--text-muted); }
-
 .header-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 .hbtn {
   width: 36px; height: 36px;
@@ -494,14 +465,14 @@ body.admin-mode .admin-only { display: flex !important; }
 }
 
 /* ===== SEARCH BAR ===== */
-.rep-search-wrap {
+.rep-search-wrap, .exp-search-wrap {
   padding: 8px 0;
   position: sticky;
   top: var(--header-h);
   z-index: 100;
   background: transparent;
 }
-.rep-search {
+.rep-search, .exp-search {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -511,12 +482,12 @@ body.admin-mode .admin-only { display: flex !important; }
   padding: 10px 16px;
   transition: all 0.2s;
 }
-.rep-search:focus-within {
+.rep-search:focus-within, .exp-search:focus-within {
   border-color: var(--border-bright);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
-.rep-search i { color: var(--text-muted); font-size: 0.75rem; }
-.rep-search input {
+.rep-search i, .exp-search i { color: var(--text-muted); font-size: 0.75rem; }
+.rep-search input, .exp-search input {
   flex: 1;
   background: transparent;
   border: none;
@@ -525,8 +496,8 @@ body.admin-mode .admin-only { display: flex !important; }
   font-size: 0.75rem;
   font-family: var(--font-body);
 }
-.rep-search input::placeholder { color: var(--text-muted); }
-.rep-search-clear {
+.rep-search input::placeholder, .exp-search input::placeholder { color: var(--text-muted); }
+.rep-search-clear, .exp-search-clear {
   width: 20px; height: 20px;
   border-radius: 50%;
   background: var(--text-muted);
@@ -538,7 +509,7 @@ body.admin-mode .admin-only { display: flex !important; }
   justify-content: center;
   font-size: 0.5rem;
 }
-.search-active .rep-search-clear { display: flex; }
+.search-active .rep-search-clear, .search-active .exp-search-clear { display: flex; }
 
 /* ===== FILTER CHIPS ===== */
 .filter-strip {
@@ -1229,12 +1200,6 @@ body.admin-mode .admin-only { display: flex !important; }
     <div class="logo-mark">CI</div>
     <div class="logo-text">Connect<span>Industry</span></div>
   </div>
-  <div class="header-mid">
-    <div class="header-search">
-      <i class="fas fa-search"></i>
-      <input type="text" id="globalSearch" placeholder="Rechercher un fournisseur...">
-    </div>
-  </div>
   <div class="header-actions">
     <span id="clockEl">--:--</span>
     <button class="hbtn" id="themeBtn" title="Thème"><i class="fas fa-moon"></i></button>
@@ -1336,6 +1301,24 @@ body.admin-mode .admin-only { display: flex !important; }
 
   <!-- ===== EXPLORER ===== -->
   <div id="explorerSection" class="section">
+    <!-- Search & Filters for Explorer -->
+    <div class="exp-search-wrap" id="expSearchWrap">
+      <div class="exp-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="expSearchInput" placeholder="Rechercher dans l'explorateur...">
+        <button class="exp-search-clear" id="expSearchClear"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="filter-strip">
+      <div class="chip" id="expFilterTypeBtn"><i class="fas fa-tag"></i> Type</div>
+      <div class="chip" id="expFilterCatBtn"><i class="fas fa-layer-group"></i> Catégorie</div>
+      <div class="chip" id="expFilterVilleBtn"><i class="fas fa-map-marker-alt"></i> Ville</div>
+      <div class="chip" id="expFilterDomaineBtn"><i class="fas fa-folder"></i> Domaine</div>
+      <div class="chip reset" id="expFilterResetBtn"><i class="fas fa-eraser"></i> Effacer</div>
+    </div>
+    <div class="active-tags" id="expActiveFilters"></div>
+    <div id="expResultInfo" class="result-pill"></div>
+    
     <div class="breadcrumb-bar" id="explorerBreadcrumb"></div>
     <div id="explorerContent"></div>
   </div>
@@ -1495,6 +1478,7 @@ let isAdmin=false,currentSection='home';
 let explorerStack=[];
 let pendingDelete=null;
 let repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
+let expFilters={type:null,categorie:null,ville:null,domaine:null,search:''}; // New filters for explorer
 let isLight=false;
 
 // ===================== HELPERS =====================
@@ -1761,8 +1745,146 @@ function showCatFilter(){
 function showVilleFilter(){const v=getRepVilles();if(!v.length){toast('⚠️ Aucune ville');return;}showList('<i class="fas fa-map-marker-alt"></i> Villes',v,val=>{repFilters.ville=val;renderRepertoire();});}
 function showDomaineFilter(){const d=getRepDomaines();if(!d.length){toast('⚠️ Aucun domaine');return;}showList('<i class="fas fa-folder"></i> Domaines',d,val=>{repFilters.domaine=val;renderRepertoire();});}
 
-// ===================== EXPLORER =====================
+// ===================== EXPLORER with Filters =====================
+function getFilteredExplorerData(){
+  let data=[...dbData];
+  // Apply filters
+  if(expFilters.type) data=data.filter(d=>d.type===expFilters.type);
+  if(expFilters.categorie) data=data.filter(d=>d.categorie===expFilters.categorie);
+  if(expFilters.ville) data=data.filter(d=>normalizeStr(d.ville)===normalizeStr(expFilters.ville));
+  if(expFilters.domaine) data=data.filter(d=>normalizeStr(d.domaine)===normalizeStr(expFilters.domaine));
+  if(expFilters.search && expFilters.search.trim()){
+    const q=expFilters.search.trim();
+    data=data.filter(d=>fieldMatches(d.name,q)||fieldMatches(d.domaine,q)||fieldMatches(d.specialite,q)||fieldMatches(d.ville,q)||fieldMatches(d.phone,q)||fieldMatches(d.email,q));
+  }
+  return data;
+}
+
+function getExpVilles(){
+  let data=getFilteredExplorerData();
+  if(expFilters.type) data=data.filter(d=>d.type===expFilters.type);
+  if(expFilters.categorie) data=data.filter(d=>d.categorie===expFilters.categorie);
+  if(expFilters.domaine) data=data.filter(d=>d.domaine===expFilters.domaine);
+  return[...new Set(data.map(d=>d.ville).filter(v=>v&&v!=='null'&&v.trim()))].sort();
+}
+function getExpDomaines(){
+  let data=getFilteredExplorerData();
+  if(expFilters.type) data=data.filter(d=>d.type===expFilters.type);
+  if(expFilters.categorie) data=data.filter(d=>d.categorie===expFilters.categorie);
+  if(expFilters.ville) data=data.filter(d=>d.ville===expFilters.ville);
+  return[...new Set(data.map(d=>d.domaine).filter(v=>v&&v!=='null'&&v.trim()))].sort();
+}
+function getExpAvailableCategories(){
+  let data=getFilteredExplorerData();
+  if(expFilters.type) data=data.filter(d=>d.type===expFilters.type);
+  return[...new Set(data.map(d=>d.categorie).filter(c=>c))].map(c=>catNameMap[c]).filter(c=>c);
+}
+
+function resetExpFilters(){
+  expFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
+  const si=$('expSearchInput');if(si){si.value='';$('expSearchWrap').classList.remove('search-active');}
+  updateExpFilterUI();
+  renderExplorer(); // refresh explorer view after reset
+}
+
+function updateExpFilterUI(){
+  $('expFilterTypeBtn').classList.toggle('active',!!expFilters.type);
+  $('expFilterCatBtn').classList.toggle('active',!!expFilters.categorie);
+  $('expFilterVilleBtn').classList.toggle('active',!!expFilters.ville);
+  $('expFilterDomaineBtn').classList.toggle('active',!!expFilters.domaine);
+  const c=$('expActiveFilters'); if(!c) return;
+  let h='';
+  if(expFilters.type) h+=`<div class="atag"><i class="fas fa-tag"></i>${expFilters.type==='fournisseurs'?'Fournisseurs':'Experts'}<button onclick="removeExpFilter('type')">✕</button></div>`;
+  if(expFilters.categorie) h+=`<div class="atag"><i class="fas fa-layer-group"></i>${catNameMap[expFilters.categorie]}<button onclick="removeExpFilter('categorie')">✕</button></div>`;
+  if(expFilters.ville) h+=`<div class="atag"><i class="fas fa-map-marker-alt"></i>${escHtml(expFilters.ville)}<button onclick="removeExpFilter('ville')">✕</button></div>`;
+  if(expFilters.domaine) h+=`<div class="atag"><i class="fas fa-folder"></i>${escHtml(expFilters.domaine)}<button onclick="removeExpFilter('domaine')">✕</button></div>`;
+  if(expFilters.search) h+=`<div class="atag"><i class="fas fa-search"></i>"${escHtml(expFilters.search)}"<button onclick="removeExpFilter('search')">✕</button></div>`;
+  c.innerHTML=h;
+  
+  // Update result info pill
+  const hasAny = Object.values(expFilters).some(v=>v && v!='');
+  const ri = $('expResultInfo');
+  if(hasAny){
+    const filteredCount = getFilteredExplorerData().length;
+    ri.innerHTML = `<i class="fas fa-filter"></i> ${filteredCount} résultat(s)`;
+    ri.classList.add('visible');
+  } else {
+    ri.classList.remove('visible');
+  }
+}
+
+function removeExpFilter(k){
+  if(k==='type') expFilters.type=null;
+  else if(k==='categorie') expFilters.categorie=null;
+  else if(k==='ville') expFilters.ville=null;
+  else if(k==='domaine') expFilters.domaine=null;
+  else if(k==='search'){
+    expFilters.search='';
+    const si=$('expSearchInput');
+    if(si){ si.value=''; $('expSearchWrap').classList.remove('search-active');}
+  }
+  updateExpFilterUI();
+  renderExplorer(); // refresh explorer
+}
+
+function showExpTypeFilter(){
+  $('listTitle').innerHTML='<i class="fas fa-tag"></i> Type (Explorer)';
+  _listSelectFn=v=>{
+    if(v==='Fournisseurs') expFilters.type='fournisseurs';
+    else if(v==='Experts') expFilters.type='experts';
+    else expFilters.type=null;
+    updateExpFilterUI();
+    renderExplorer();
+    closeModal('listModal');
+  };
+  $('listItems').innerHTML=`<div class="menu-item" onclick="_listSelectFn(null);closeModal('listModal')"><div class="menu-item-icon" style="background:rgba(255,76,106,0.1);color:var(--red)"><i class="fas fa-undo"></i></div><span class="menu-item-name">Tous les types</span></div>
+  <div class="menu-item" onclick="_listSelectFn('Fournisseurs');closeModal('listModal')"><div class="menu-item-icon"><i class="fas fa-industry"></i></div><span class="menu-item-name">Fournisseurs</span><span class="menu-item-count">${dbData.filter(d=>d.type==='fournisseurs').length}</span></div>
+  <div class="menu-item" onclick="_listSelectFn('Experts');closeModal('listModal')"><div class="menu-item-icon" style="background:rgba(0,200,150,0.1);color:var(--green)"><i class="fas fa-microchip"></i></div><span class="menu-item-name">Experts</span><span class="menu-item-count">${dbData.filter(d=>d.type==='experts').length}</span></div>`;
+  $('listModal').classList.add('show');
+}
+function showExpCatFilter(){
+  const cats=getExpAvailableCategories();
+  if(!cats.length){toast('⚠️ Aucune catégorie');return;}
+  $('listTitle').innerHTML='<i class="fas fa-layer-group"></i> Catégorie (Explorer)';
+  _listSelectFn=v=>{
+    if(v==='Services') expFilters.categorie='services';
+    else if(v==='Produits') expFilters.categorie='products';
+    else if(v==='Maqaola') expFilters.categorie='maqola';
+    else if(v==='Yad Amila') expFilters.categorie='yad-amila';
+    else expFilters.categorie=null;
+    updateExpFilterUI();
+    renderExplorer();
+    closeModal('listModal');
+  };
+  const catIcons={Services:'fa-cogs',Produits:'fa-boxes',Maqaola:'fa-hard-hat','Yad Amila':'fa-hands'};
+  const catColors={Services:'var(--accent)',Produits:'var(--accent-gold)',Maqaola:'var(--accent-3)','Yad Amila':'var(--purple)'};
+  $('listItems').innerHTML=`<div class="menu-item" onclick="_listSelectFn(null);closeModal('listModal')"><div class="menu-item-icon" style="background:rgba(255,76,106,0.1);color:var(--red)"><i class="fas fa-undo"></i></div><span class="menu-item-name">Toutes les catégories</span></div>`
+    +cats.map(c=>`<div class="menu-item" onclick="_listSelectFn('${c}');closeModal('listModal')"><div class="menu-item-icon" style="color:${catColors[c]||'var(--accent)'}"><i class="fas ${catIcons[c]||'fa-tag'}"></i></div><span class="menu-item-name">${c}</span></div>`).join('');
+  $('listModal').classList.add('show');
+}
+function showExpVilleFilter(){
+  const v=getExpVilles();
+  if(!v.length){toast('⚠️ Aucune ville');return;}
+  showList('<i class="fas fa-map-marker-alt"></i> Villes (Explorer)', v, val=>{
+    expFilters.ville=val;
+    updateExpFilterUI();
+    renderExplorer();
+  });
+}
+function showExpDomaineFilter(){
+  const d=getExpDomaines();
+  if(!d.length){toast('⚠️ Aucun domaine');return;}
+  showList('<i class="fas fa-folder"></i> Domaines (Explorer)', d, val=>{
+    expFilters.domaine=val;
+    updateExpFilterUI();
+    renderExplorer();
+  });
+}
+
 function renderExplorer(){
+  // Apply filters to the dataset before building hierarchy
+  let filteredData = getFilteredExplorerData();
+  
   const bc=$('explorerBreadcrumb');
   let bch=`<div class="bc-item ${explorerStack.length===0?'active':''}" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> Accueil</div>`;
   explorerStack.forEach((item,idx)=>{
@@ -1774,9 +1896,10 @@ function renderExplorer(){
   });
   bc.innerHTML=bch;
   const c=$('explorerContent');
+  
   if(explorerStack.length===0){
-    const fCount=dbData.filter(d=>d.type==='fournisseurs').length;
-    const eCount=dbData.filter(d=>d.type==='experts').length;
+    const fCount=filteredData.filter(d=>d.type==='fournisseurs').length;
+    const eCount=filteredData.filter(d=>d.type==='experts').length;
     c.innerHTML=`
     <div class="exp-item" onclick="explorerNavigateTo('type','fournisseurs')">
       <div class="exp-icon"><i class="fas fa-industry"></i></div>
@@ -1791,16 +1914,16 @@ function renderExplorer(){
   } else if(explorerStack.length===1){
     const type=explorerStack[0].type;
     const domaines={};
-    dbData.filter(d=>d.type===type).forEach(i=>{const d=i.domaine||'Autre';domaines[d]=(domaines[d]||0)+1;});
+    filteredData.filter(d=>d.type===type).forEach(i=>{const d=i.domaine||'Autre';domaines[d]=(domaines[d]||0)+1;});
     c.innerHTML=Object.entries(domaines).sort().map(([d,cnt])=>`<div class="exp-item" onclick="explorerNavigateTo('domaine','${escHtml(d)}')"><div class="exp-icon" style="background:rgba(245,166,35,0.12);color:var(--accent-gold)"><i class="fas fa-folder"></i></div><div><div class="exp-name">${escHtml(d)}</div><div class="exp-count">${cnt} professionnels</div></div><div class="exp-arrow"><i class="fas fa-chevron-right"></i></div></div>`).join('');
   } else if(explorerStack.length===2){
     const type=explorerStack[0].type,domaine=explorerStack[1].domaine;
     const specs={};
-    dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine).forEach(i=>{const s=i.specialite||'Général';specs[s]=(specs[s]||0)+1;});
+    filteredData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine).forEach(i=>{const s=i.specialite||'Général';specs[s]=(specs[s]||0)+1;});
     c.innerHTML=Object.entries(specs).sort().map(([s,cnt])=>`<div class="exp-item" onclick="explorerNavigateTo('specialite','${escHtml(s)}')"><div class="exp-icon" style="background:rgba(155,109,255,0.12);color:var(--purple)"><i class="fas fa-cog"></i></div><div><div class="exp-name">${escHtml(s)}</div><div class="exp-count">${cnt} spécialistes</div></div><div class="exp-arrow"><i class="fas fa-chevron-right"></i></div></div>`).join('');
   } else {
     const type=explorerStack[0].type,domaine=explorerStack[1].domaine,specialite=explorerStack[2].specialite;
-    const items=dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
+    const items=filteredData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
     c.innerHTML=`<div class="contact-list-wrap">${items.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>buildContactRow(i)).join('')}</div>`;
   }
 }
@@ -1868,7 +1991,7 @@ async function saveItem(){
     if(idx!==-1)arr[idx]=itemData;else arr.push(itemData);
     await dbRef.ref(path).set(arr);
     toast(id?'✅ Modifié avec succès':'✅ Ajouté avec succès');
-    closeModal('editModal');await loadDB();resetRepFilters();
+    closeModal('editModal');await loadDB();resetRepFilters(); resetExpFilters();
   }catch(e){toast('❌ Erreur: '+e.message);}
   showLoading(false);
 }
@@ -1887,7 +2010,7 @@ async function confirmDeleteItem(){
     const snap=await dbRef.ref(path).once('value');
     await dbRef.ref(path).set((snap.val()||[]).filter(i=>i.id!==pendingDelete.id));
     toast('🗑️ Supprimé');closeModal('deleteModal');pendingDelete=null;
-    await loadDB();resetRepFilters();
+    await loadDB();resetRepFilters(); resetExpFilters();
   }catch(e){toast('❌ Erreur');}
   showLoading(false);
 }
@@ -1947,6 +2070,7 @@ function showSection(id,reset=true){
   if(reset){
     if(id!=='explorer')explorerStack=[];
     if(id!=='repertoire')resetRepFilters();
+    if(id!=='explorer')resetExpFilters(); // reset explorer filters when leaving
   }
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   $(id+'Section').classList.add('active');
@@ -1962,7 +2086,7 @@ function handleSectionClick(id){
   if(currentSection===id){
     if(window.scrollY>10)window.scrollTo({top:0,behavior:'smooth'});
     else if(id==='repertoire'){resetRepFilters();toast('🔍 Filtres réinitialisés');}
-    else if(id==='explorer'){explorerStack=[];renderExplorer();toast('↺ Explorer réinitialisé');}
+    else if(id==='explorer'){explorerStack=[]; resetExpFilters(); renderExplorer(); toast('↺ Explorer réinitialisé');}
   }else showSection(id,true);
 }
 function renderCurrent(){
@@ -1974,12 +2098,13 @@ function renderCurrent(){
 // ===================== EVENTS =====================
 $('addBtn').onclick=openAddModal;
 $('syncBtn').onclick=syncToFirebase;
+
+// Repertoire filters
 $('filterTypeBtn').onclick=showTypeFilter;
 $('filterCatBtn').onclick=showCatFilter;
 $('filterVilleBtn').onclick=showVilleFilter;
 $('filterDomaineBtn').onclick=showDomaineFilter;
 $('filterResetBtn').onclick=()=>{resetRepFilters();renderRepertoire();toast('🔍 Filtres effacés');};
-
 $('searchInput').addEventListener('input',e=>{
   repFilters.search=e.target.value;
   $('repSearchWrap').classList.toggle('search-active',!!e.target.value);
@@ -1987,20 +2112,25 @@ $('searchInput').addEventListener('input',e=>{
 });
 $('searchClear').onclick=()=>{repFilters.search='';$('searchInput').value='';$('repSearchWrap').classList.remove('search-active');renderRepertoire();updateRepFilterUI();};
 
-// Global header search
-$('globalSearch').addEventListener('input',e=>{
-  if(e.target.value.trim()){
-    showSection('repertoire',false);
-    repFilters.search=e.target.value;
-    const si=$('searchInput');if(si){si.value=e.target.value;$('repSearchWrap').classList.add('search-active');}
-    renderRepertoire();updateRepFilterUI();
-  }
+// Explorer filters
+$('expFilterTypeBtn').onclick=showExpTypeFilter;
+$('expFilterCatBtn').onclick=showExpCatFilter;
+$('expFilterVilleBtn').onclick=showExpVilleFilter;
+$('expFilterDomaineBtn').onclick=showExpDomaineFilter;
+$('expFilterResetBtn').onclick=()=>{resetExpFilters();renderExplorer();toast('🔍 Filtres explorateur effacés');};
+$('expSearchInput').addEventListener('input',e=>{
+  expFilters.search=e.target.value;
+  $('expSearchWrap').classList.toggle('search-active',!!e.target.value);
+  updateExpFilterUI();
+  renderExplorer();
 });
-$('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter')$('globalSearch').blur();});
+$('expSearchClear').onclick=()=>{expFilters.search='';$('expSearchInput').value='';$('expSearchWrap').classList.remove('search-active');updateExpFilterUI();renderExplorer();};
 
 document.querySelectorAll('.nav-item[data-sec]').forEach(btn=>{btn.onclick=()=>handleSectionClick(btn.dataset.sec);});
 document.querySelectorAll('.sheet-overlay,.modal-overlay').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('show');}));
 $('detailModal').addEventListener('click',e=>{if(e.target===$('detailModal'))closeDetailModal();});
+
+// Global search removed — no more header search
 
 // ===================== GLOBALS =====================
 window.closeModal=closeModal;window.closeDetailModal=closeDetailModal;
@@ -2008,6 +2138,7 @@ window.openDetailModal=openDetailModal;window.openEditModal=openEditModal;
 window.openDeleteModal=openDeleteModal;window.saveItem=saveItem;
 window.confirmDeleteItem=confirmDeleteItem;window.saveVCF=saveVCF;
 window.removeRepFilter=removeRepFilter;window.resetRepFilters=resetRepFilters;
+window.removeExpFilter=removeExpFilter;window.resetExpFilters=resetExpFilters;
 window.filterByTypeFromStats=filterByTypeFromStats;
 window.filterByCategorieFromStats=filterByCategorieFromStats;
 window.filterByVilleFromStats=filterByVilleFromStats;
