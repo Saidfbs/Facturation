@@ -268,8 +268,11 @@ body.admin-mode .tab-admin { display: flex; }
 }
 .cb-green { background: var(--green-dim); color: var(--green); }
 .cb-teal { background: var(--teal-dim); color: var(--teal); }
+.cb-amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
+.cb-violet { background: rgba(139,92,246,0.12); color: #8b5cf6; }
+.cb-rose { background: rgba(244,63,94,0.1); color: #f43f5e; }
 
-/* MODAL DETAIL (Popup) */
+/* MODAL DETAIL (POPUP) */
 .modal-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.8);
@@ -343,11 +346,12 @@ body.admin-mode .tab-admin { display: flex; }
   gap: 16px;
   padding: 16px 20px 24px;
   border-top: 1px solid var(--divider);
+  flex-wrap: wrap;
 }
 .modal-action-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  min-width: 56px;
+  padding: 8px 12px;
+  border-radius: 30px;
   background: var(--bg-search);
   border: none;
   cursor: pointer;
@@ -359,7 +363,7 @@ body.admin-mode .tab-admin { display: flex; }
   transition: 0.2s;
   color: var(--text2);
 }
-.modal-action-btn i { font-size: 1.1rem; }
+.modal-action-btn i { font-size: 1rem; }
 .modal-action-btn span { font-size: 0.55rem; font-weight: 500; }
 .modal-action-btn:hover { background: var(--bg-hover); transform: scale(0.96); }
 .modal-action-btn.wa:hover { color: #25d366; }
@@ -573,8 +577,8 @@ body.admin-mode .admin-only { display: flex !important; }
   <button class="tab-btn" data-sec="repertoire"><i class="fas fa-users"></i><span>Répertoire</span></button>
   <button class="tab-btn tab-admin admin-only" data-sec="fournisseurs"><i class="fas fa-industry"></i><span>Fourn.</span></button>
   <button class="tab-btn tab-admin admin-only" data-sec="experts"><i class="fas fa-microchip"></i><span>Experts</span></button>
-  <button class="tab-btn tab-admin admin-only" id="syncBtn"><i class="fas fa-cloud-upload-alt"></i><span>Sync</span></button>
-  <button class="tab-btn tab-admin admin-only" id="addBtn"><i class="fas fa-plus-circle"></i><span>Ajouter</span></button>
+  <button class="tab-btn" id="syncBtn" style="display:none"><i class="fas fa-cloud-upload-alt"></i><span>Sync</span></button>
+  <button class="tab-btn" id="addBtn"><i class="fas fa-plus-circle"></i><span>Ajouter</span></button>
 </nav>
 
 <main class="main">
@@ -715,6 +719,15 @@ function getColor(name) { let h=0; for(const c of name||'') h=(h*31+c.charCodeAt
 const catNameMap = { services:'Services', products:'Produits', maqola:'Maqaola', 'yad-amila':'Yad Amila' };
 const catColorMap = { services:'cb-green', products:'cb-amber', maqola:'cb-violet', 'yad-amila':'cb-rose' };
 
+// ==================== NORMALIZE PHONE FOR SEARCH ====================
+function normalizePhoneForSearch(phone) {
+  if (!phone) return '';
+  let normalized = String(phone).replace(/[\s\-\(\)\.]/g, '');
+  if (normalized.startsWith('+212')) normalized = '0' + normalized.slice(4);
+  else if (normalized.startsWith('212')) normalized = '0' + normalized.slice(3);
+  return normalized;
+}
+
 // ==================== ADMIN ====================
 function verifyAdmin() {
   if ($('adminPass').value === ADMIN_PASSWORD) {
@@ -780,6 +793,8 @@ async function loadDB() {
         }
       }
     }
+    // Sort dbData by name A to Z
+    dbData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     updateStats(); renderCurrent();
   } catch(e) { toast('❌ Erreur chargement'); }
 }
@@ -813,7 +828,7 @@ function updateStats() {
   $('headerSub').textContent = `${dbData.length} professionnels`;
 }
 
-// ==================== REPERTOIRE FILTERS ====================
+// ==================== REPERTOIRE FILTERS (FIXED) ====================
 function getFilteredRepertoire() {
   let filtered = [...dbData];
   if (repertoireFilters.type && repertoireFilters.type !== 'null') {
@@ -830,15 +845,27 @@ function getFilteredRepertoire() {
   }
   if (repertoireFilters.search && repertoireFilters.search !== '') {
     const q = repertoireFilters.search.toLowerCase();
-    filtered = filtered.filter(d => 
-      (d.name||'').toLowerCase().includes(q) ||
-      (d.domaine||'').toLowerCase().includes(q) ||
-      (d.ville||'').toLowerCase().includes(q) ||
-      (d.specialite||'').toLowerCase().includes(q) ||
-      (d.phone||'').includes(q) ||
-      (d.email||'').toLowerCase().includes(q)
-    );
+    filtered = filtered.filter(d => {
+      // Recherche dans le nom
+      if ((d.name||'').toLowerCase().includes(q)) return true;
+      // Recherche dans le domaine
+      if ((d.domaine||'').toLowerCase().includes(q)) return true;
+      // Recherche dans la ville
+      if ((d.ville||'').toLowerCase().includes(q)) return true;
+      // Recherche dans la spécialité
+      if ((d.specialite||'').toLowerCase().includes(q)) return true;
+      // Recherche dans l'email
+      if ((d.email||'').toLowerCase().includes(q)) return true;
+      // Recherche dans le téléphone (avec normalisation)
+      if (d.phone) {
+        const normalizedPhone = normalizePhoneForSearch(d.phone);
+        if (normalizedPhone.includes(q) || d.phone.includes(q)) return true;
+      }
+      return false;
+    });
   }
+  // Sort by name A to Z
+  filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   return filtered;
 }
 
@@ -847,7 +874,7 @@ function getAvailableRepertoireVilles() {
   if (repertoireFilters.type && repertoireFilters.type !== 'null') filtered = filtered.filter(d => d.type === repertoireFilters.type);
   if (repertoireFilters.cat && repertoireFilters.cat !== 'null') filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
   if (repertoireFilters.domaine && repertoireFilters.domaine !== 'null') filtered = filtered.filter(d => d.domaine === repertoireFilters.domaine);
-  return [...new Set(filtered.map(d=>d.ville).filter(v=>v&&v!=='null'))].sort();
+  return [...new Set(filtered.map(d=>d.ville).filter(v=>v&&v!=='null'))].sort((a,b)=>a.localeCompare(b));
 }
 
 function getAvailableRepertoireDomaines() {
@@ -855,7 +882,7 @@ function getAvailableRepertoireDomaines() {
   if (repertoireFilters.type && repertoireFilters.type !== 'null') filtered = filtered.filter(d => d.type === repertoireFilters.type);
   if (repertoireFilters.cat && repertoireFilters.cat !== 'null') filtered = filtered.filter(d => d.categorie === repertoireFilters.cat);
   if (repertoireFilters.ville && repertoireFilters.ville !== 'null') filtered = filtered.filter(d => d.ville === repertoireFilters.ville);
-  return [...new Set(filtered.map(d=>d.domaine).filter(v=>v&&v!=='null'))].sort();
+  return [...new Set(filtered.map(d=>d.domaine).filter(v=>v&&v!=='null'))].sort((a,b)=>a.localeCompare(b));
 }
 
 function resetRepertoireFilters() {
@@ -880,11 +907,15 @@ function getFilteredFournisseurs() {
   let filtered = [...csvFournisseurs];
   if (fourFilters.ville && fourFilters.ville !== 'null') filtered = filtered.filter(f => f.ville === fourFilters.ville);
   if (fourFilters.domaine && fourFilters.domaine !== 'null') filtered = filtered.filter(f => f.domaine === fourFilters.domaine);
-  if (fourFilters.search && fourFilters.search !== '') filtered = filtered.filter(f => f.name.toLowerCase().includes(fourFilters.search.toLowerCase()));
+  if (fourFilters.search && fourFilters.search !== '') {
+    const q = fourFilters.search.toLowerCase();
+    filtered = filtered.filter(f => (f.name||'').toLowerCase().includes(q));
+  }
+  filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   return filtered;
 }
-function getAvailableFourVilles() { let filtered = [...csvFournisseurs]; if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine); return [...new Set(filtered.map(f=>f.ville).filter(v=>v))].sort(); }
-function getAvailableFourDomaines() { let filtered = [...csvFournisseurs]; if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville); return [...new Set(filtered.map(f=>f.domaine).filter(d=>d))].sort(); }
+function getAvailableFourVilles() { let filtered = [...csvFournisseurs]; if (fourFilters.domaine) filtered = filtered.filter(f => f.domaine === fourFilters.domaine); return [...new Set(filtered.map(f=>f.ville).filter(v=>v))].sort((a,b)=>a.localeCompare(b)); }
+function getAvailableFourDomaines() { let filtered = [...csvFournisseurs]; if (fourFilters.ville) filtered = filtered.filter(f => f.ville === fourFilters.ville); return [...new Set(filtered.map(f=>f.domaine).filter(d=>d))].sort((a,b)=>a.localeCompare(b)); }
 function resetFourFilters() { fourFilters = { ville: null, domaine: null, search: '' }; if ($('fourSearch')) $('fourSearch').value = ''; document.querySelectorAll('#fournisseursSection .fchip').forEach(c => c.classList.remove('active')); renderFournisseurs(); }
 function setFourFilter(key, value) { fourFilters[key] = value; if (key === 'ville') $('fourVilleBtn')?.classList.toggle('active', !!value); if (key === 'domaine') $('fourDomaineBtn')?.classList.toggle('active', !!value); renderFournisseurs(); }
 
@@ -892,11 +923,15 @@ function getFilteredExperts() {
   let filtered = [...csvExperts];
   if (expFilters.ville && expFilters.ville !== 'null') filtered = filtered.filter(e => e.ville === expFilters.ville);
   if (expFilters.domaine && expFilters.domaine !== 'null') filtered = filtered.filter(e => e.domaine === expFilters.domaine);
-  if (expFilters.search && expFilters.search !== '') filtered = filtered.filter(e => e.name.toLowerCase().includes(expFilters.search.toLowerCase()));
+  if (expFilters.search && expFilters.search !== '') {
+    const q = expFilters.search.toLowerCase();
+    filtered = filtered.filter(e => (e.name||'').toLowerCase().includes(q));
+  }
+  filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   return filtered;
 }
-function getAvailableExpVilles() { let filtered = [...csvExperts]; if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine); return [...new Set(filtered.map(e=>e.ville).filter(v=>v))].sort(); }
-function getAvailableExpDomaines() { let filtered = [...csvExperts]; if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville); return [...new Set(filtered.map(e=>e.domaine).filter(d=>d))].sort(); }
+function getAvailableExpVilles() { let filtered = [...csvExperts]; if (expFilters.domaine) filtered = filtered.filter(e => e.domaine === expFilters.domaine); return [...new Set(filtered.map(e=>e.ville).filter(v=>v))].sort((a,b)=>a.localeCompare(b)); }
+function getAvailableExpDomaines() { let filtered = [...csvExperts]; if (expFilters.ville) filtered = filtered.filter(e => e.ville === expFilters.ville); return [...new Set(filtered.map(e=>e.domaine).filter(d=>d))].sort((a,b)=>a.localeCompare(b)); }
 function resetExpFilters() { expFilters = { ville: null, domaine: null, search: '' }; if ($('expSearch')) $('expSearch').value = ''; document.querySelectorAll('#expertsSection .fchip').forEach(c => c.classList.remove('active')); renderExperts(); }
 function setExpFilter(key, value) { expFilters[key] = value; if (key === 'ville') $('expVilleBtn')?.classList.toggle('active', !!value); if (key === 'domaine') $('expDomaineBtn')?.classList.toggle('active', !!value); renderExperts(); }
 
@@ -976,13 +1011,11 @@ function openDetailModal(encodedItem, isCSV = false) {
   const hasEmail = item.email && item.email !== 'null';
   const hasWeb = item.web && item.web !== 'null' && item.web.startsWith('http');
 
-  // Avatar
   $('modalAvatar').style.background = color;
   $('modalAvatar').textContent = initials;
   $('modalName').textContent = item.name;
   $('modalType').textContent = item.domaine || (item.type === 'fournisseurs' ? 'Fournisseur' : 'Expert');
 
-  // Badges
   let badgesHtml = '';
   if (item.type) badgesHtml += `<span class="cbadge ${item.type==='fournisseurs'?'cb-green':'cb-teal'}" style="font-size:0.6rem;padding:5px 12px;">${item.type==='fournisseurs'?'Fournisseur':'Expert'}</span>`;
   if (item.categorie && catNameMap[item.categorie]) {
@@ -991,7 +1024,6 @@ function openDetailModal(encodedItem, isCSV = false) {
   if (isCSV) badgesHtml += `<span class="cbadge cb-teal" style="font-size:0.6rem;padding:5px 12px;">CSV</span>`;
   $('modalBadges').innerHTML = badgesHtml;
 
-  // Body rows
   const rows = [
     item.domaine && { icon:'fa-folder', label:'Domaine', value:item.domaine },
     item.specialite && item.specialite !== 'Général' && { icon:'fa-cog', label:'Spécialité', value:item.specialite },
@@ -1009,33 +1041,21 @@ function openDetailModal(encodedItem, isCSV = false) {
     </div>
   </div>`).join('');
 
-  // Action buttons: WhatsApp, Appeler, Email, Enregistrer
   let actionsHtml = '';
-  
-  // WhatsApp
   if (hasPhone) {
     const waNumber = item.phone.replace(/[^0-9]/g, '');
     actionsHtml += `<button class="modal-action-btn wa" onclick="window.open('https://wa.me/${waNumber}', '_blank')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>`;
-  }
-  
-  // Appeler
-  if (hasPhone) {
     actionsHtml += `<button class="modal-action-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>Appeler</span></button>`;
   }
-  
-  // Email
   if (hasEmail) {
     actionsHtml += `<button class="modal-action-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
   }
-  
-  // Enregistrer dans les contacts (VCF)
   if (hasPhone) {
     actionsHtml += `<button class="modal-action-btn save" onclick="saveContactVCF('${item.name}', '${item.phone}', '${item.email || ''}', '${item.web || ''}')"><i class="fas fa-save"></i><span>Enregistrer</span></button>`;
   }
   
   $('modalActions').innerHTML = actionsHtml;
   
-  // Admin actions (Modifier/Supprimer) - only for non-CSV and admin mode
   if (isAdmin && !isCSV && item.id) {
     const adminHtml = `<div style="display:flex; justify-content:center; gap:12px; margin-top:8px; padding-top:12px; border-top:1px solid var(--divider);">
       <button class="modal-action-btn" onclick="closeDetailModal(); openEditModal('${item.id}')"><i class="fas fa-pen"></i><span>Modifier</span></button>
@@ -1051,7 +1071,6 @@ function closeDetailModal() {
   $('detailModal').classList.remove('show');
 }
 
-// Save contact as VCF file
 function saveContactVCF(name, phone, email, web) {
   const vcfData = `BEGIN:VCARD
 VERSION:3.0
@@ -1101,7 +1120,8 @@ function renderExplorer() {
     const type = explorerStack[0].type;
     const domaine = explorerStack[1].domaine;
     const specialite = explorerStack[2].specialite;
-    const items = dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
+    let items = dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
+    items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     container.innerHTML = items.map(i => buildContactRow(i, false)).join('');
   }
 }
@@ -1111,7 +1131,7 @@ function explorerSelectType(type) { explorerStack.push({ label: type === 'fourni
 function explorerSelectDomain(domaine) { explorerStack.push({ label: domaine, domaine }); renderExplorer(); }
 function explorerSelectSpecialite(specialite) { explorerStack.push({ label: specialite, specialite }); renderExplorer(); }
 
-// ==================== FILTER MODALS ====================
+// ==================== FILTER MODALS (FIXED) ====================
 function showList(title, items, onSelect) {
   $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${title}`;
   $('listItems').innerHTML = `<div class="menu-item" onclick="onSelect(null);closeModal('listModal')"><div class="menu-icon" style="background:var(--green-dim);color:var(--green)"><i class="fas fa-undo"></i></div><span class="menu-label">Tous</span></div>` +
@@ -1119,14 +1139,86 @@ function showList(title, items, onSelect) {
   $('listModal').classList.add('show');
 }
 
-function showTypeFilter() { showList('Type', ['Fournisseurs', 'Experts'], function(selected) { if (selected === 'Fournisseurs') setRepertoireFilter('type', 'fournisseurs'); else if (selected === 'Experts') setRepertoireFilter('type', 'experts'); else setRepertoireFilter('type', null); closeModal('listModal'); }); }
-function showCatFilter() { showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], function(selected) { let catVal = null; if (selected === 'Services') catVal = 'services'; else if (selected === 'Produits') catVal = 'products'; else if (selected === 'Maqaola') catVal = 'maqola'; else if (selected === 'Yad Amila') catVal = 'yad-amila'; setRepertoireFilter('cat', catVal); closeModal('listModal'); }); }
-function showRepertoireVilleFilter() { const villes = getAvailableRepertoireVilles(); if (villes.length) { showList('Villes', villes, function(v) { setRepertoireFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
-function showRepertoireDomaineFilter() { const domaines = getAvailableRepertoireDomaines(); if (domaines.length) { showList('Domaines', domaines, function(d) { setRepertoireFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
-function showFourVilleFilter() { const villes = getAvailableFourVilles(); if (villes.length) { showList('Villes Fournisseurs', villes, function(v) { setFourFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
-function showFourDomaineFilter() { const domaines = getAvailableFourDomaines(); if (domaines.length) { showList('Domaines Fournisseurs', domaines, function(d) { setFourFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
-function showExpVilleFilter() { const villes = getAvailableExpVilles(); if (villes.length) { showList('Villes Experts', villes, function(v) { setExpFilter('ville', v); closeModal('listModal'); }); } else toast('⚠️ Aucune ville'); }
-function showExpDomaineFilter() { const domaines = getAvailableExpDomaines(); if (domaines.length) { showList('Domaines Experts', domaines, function(d) { setExpFilter('domaine', d); closeModal('listModal'); }); } else toast('⚠️ Aucun domaine'); }
+function showTypeFilter() { 
+  showList('Type', ['Fournisseurs', 'Experts'], function(selected) { 
+    if (selected === 'Fournisseurs') setRepertoireFilter('type', 'fournisseurs'); 
+    else if (selected === 'Experts') setRepertoireFilter('type', 'experts'); 
+    else setRepertoireFilter('type', null); 
+    closeModal('listModal'); 
+  }); 
+}
+
+function showCatFilter() { 
+  showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], function(selected) { 
+    let catVal = null; 
+    if (selected === 'Services') catVal = 'services'; 
+    else if (selected === 'Produits') catVal = 'products'; 
+    else if (selected === 'Maqaola') catVal = 'maqola'; 
+    else if (selected === 'Yad Amila') catVal = 'yad-amila'; 
+    setRepertoireFilter('cat', catVal); 
+    closeModal('listModal'); 
+  }); 
+}
+
+function showRepertoireVilleFilter() { 
+  const villes = getAvailableRepertoireVilles(); 
+  if (villes.length) { 
+    showList('Villes', villes, function(v) { 
+      setRepertoireFilter('ville', v); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucune ville'); 
+}
+
+function showRepertoireDomaineFilter() { 
+  const domaines = getAvailableRepertoireDomaines(); 
+  if (domaines.length) { 
+    showList('Domaines', domaines, function(d) { 
+      setRepertoireFilter('domaine', d); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucun domaine'); 
+}
+
+function showFourVilleFilter() { 
+  const villes = getAvailableFourVilles(); 
+  if (villes.length) { 
+    showList('Villes Fournisseurs', villes, function(v) { 
+      setFourFilter('ville', v); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucune ville'); 
+}
+
+function showFourDomaineFilter() { 
+  const domaines = getAvailableFourDomaines(); 
+  if (domaines.length) { 
+    showList('Domaines Fournisseurs', domaines, function(d) { 
+      setFourFilter('domaine', d); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucun domaine'); 
+}
+
+function showExpVilleFilter() { 
+  const villes = getAvailableExpVilles(); 
+  if (villes.length) { 
+    showList('Villes Experts', villes, function(v) { 
+      setExpFilter('ville', v); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucune ville'); 
+}
+
+function showExpDomaineFilter() { 
+  const domaines = getAvailableExpDomaines(); 
+  if (domaines.length) { 
+    showList('Domaines Experts', domaines, function(d) { 
+      setExpFilter('domaine', d); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucun domaine'); 
+}
 
 // ==================== STAT CLICK (Apply filter) ====================
 function applyStatFilter(statType) {
@@ -1142,8 +1234,29 @@ function applyStatFilter(statType) {
 }
 
 // ==================== CRUD ====================
-function openAddModal() { if(!isAdmin){toast('⚠️ Accès réservé');return;} $('editTitle').innerHTML='Ajouter'; ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value=''); $('editType').value='fournisseurs'; $('editCat').value='services'; $('editModal').classList.add('show'); }
-function openEditModal(id) { const item = dbData.find(i=>i.id===id); if(!item) return; $('editTitle').innerHTML='Modifier'; $('editId').value=item.id; $('editName').value=item.name; $('editType').value=item.type; $('editCat').value=item.categorie; $('editDomaine').value=item.domaine||''; $('editSpecialite').value=item.specialite||''; $('editVille').value=item.ville||''; $('editPhone').value=item.phone||''; $('editEmail').value=item.email||''; $('editWeb').value=item.web||''; $('editModal').classList.add('show'); }
+function openAddModal() { 
+  $('editTitle').innerHTML='Ajouter'; 
+  ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value=''); 
+  $('editType').value='fournisseurs'; 
+  $('editCat').value='services'; 
+  $('editModal').classList.add('show'); 
+}
+function openEditModal(id) { 
+  const item = dbData.find(i=>i.id===id); 
+  if(!item) return; 
+  $('editTitle').innerHTML='Modifier'; 
+  $('editId').value=item.id; 
+  $('editName').value=item.name; 
+  $('editType').value=item.type; 
+  $('editCat').value=item.categorie; 
+  $('editDomaine').value=item.domaine||''; 
+  $('editSpecialite').value=item.specialite||''; 
+  $('editVille').value=item.ville||''; 
+  $('editPhone').value=item.phone||''; 
+  $('editEmail').value=item.email||''; 
+  $('editWeb').value=item.web||''; 
+  $('editModal').classList.add('show'); 
+}
 async function saveItem() {
   const id = $('editId').value;
   const itemData = { id: id || `${Date.now()}_${Math.random().toString(36).slice(2)}`, name: $('editName').value, type: $('editType').value, categorie: $('editCat').value, domaine: $('editDomaine').value||'Autre', specialite: $('editSpecialite').value||'Général', ville: $('editVille').value||'', phone: formatPhone($('editPhone').value), email: $('editEmail').value||'', web: $('editWeb').value||'' };
@@ -1280,8 +1393,14 @@ $('expVilleBtn').onclick = showExpVilleFilter;
 $('expDomaineBtn').onclick = showExpDomaineFilter;
 $('expResetBtn').onclick = () => { resetExpFilters(); renderExperts(); toast('Filtres effacés'); };
 
-document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { btn.onclick = () => handleSectionClick(btn.dataset.sec); });
-document.querySelectorAll('.stat-card[data-stat]').forEach(card => card.onclick = () => applyStatFilter(card.dataset.stat));
+document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { 
+  btn.onclick = () => handleSectionClick(btn.dataset.sec); 
+});
+
+document.querySelectorAll('.stat-card[data-stat]').forEach(card => {
+  card.onclick = () => applyStatFilter(card.dataset.stat);
+});
+
 document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('show'); }));
 
 window.addEventListener('popstate', (e) => { handleBackButton(); e.preventDefault(); });
