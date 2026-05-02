@@ -12,6 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
+/* ==================== STYLES ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -68,7 +69,8 @@ body {
 }
 .header-logo { display: flex; align-items: center; gap: 12px; flex: 1; }
 .header-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 40px; height: 40px;
+  border-radius: 50%;
   background: linear-gradient(135deg, var(--green), #00cf9d);
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; color: #111;
@@ -78,7 +80,8 @@ body {
 .header-sub { font-size: 0.68rem; color: rgba(255,255,255,0.7); }
 .header-actions { display: flex; align-items: center; gap: 4px; }
 .hbtn {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 40px; height: 40px;
+  border-radius: 50%;
   background: transparent; border: none;
   cursor: pointer; color: #fff;
   display: flex; align-items: center; justify-content: center;
@@ -269,7 +272,7 @@ body.admin-mode .tab-admin { display: flex; }
 .cb-green { background: var(--green-dim); color: var(--green); }
 .cb-teal { background: var(--teal-dim); color: var(--teal); }
 
-/* DETAIL OVERLAY - PERMANENT STYLE */
+/* DETAIL OVERLAY */
 .detail-overlay {
   position: fixed; inset: 0;
   background: var(--bg-primary);
@@ -283,8 +286,7 @@ body.admin-mode .tab-admin { display: flex; }
 .detail-header {
   background: var(--bg-header);
   height: var(--nav-h);
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   padding: 0 12px;
   gap: 12px;
   flex-shrink: 0;
@@ -372,8 +374,8 @@ body.admin-mode .tab-admin { display: flex; }
   font-size: 1.2rem;
 }
 .da-btn:hover { background: var(--bg-hover); transform: scale(0.96); color: var(--green); }
-.da-btn.danger:hover { color: #f43f5e; }
 .da-btn.warning:hover { color: #f59e0b; }
+.da-btn.danger:hover { color: #f43f5e; }
 
 /* EXPLORER TREE */
 .breadcrumb {
@@ -878,12 +880,11 @@ function resetRepertoireFilters() {
 }
 
 function setRepertoireFilter(key, value) {
-  repertoireFilters[key] = value;
-  // Update active state on chips
-  if (key === 'type') $('filterTypeBtn')?.classList.toggle('active', !!value);
-  if (key === 'cat') $('filterCatBtn')?.classList.toggle('active', !!value);
-  if (key === 'ville') $('filterVilleBtn')?.classList.toggle('active', !!value);
-  if (key === 'domaine') $('filterDomaineBtn')?.classList.toggle('active', !!value);
+  if (key === 'type') repertoireFilters.type = value;
+  else if (key === 'cat') repertoireFilters.cat = value;
+  else if (key === 'ville') repertoireFilters.ville = value;
+  else if (key === 'domaine') repertoireFilters.domaine = value;
+  else if (key === 'search') repertoireFilters.search = value;
   renderRepertoire();
 }
 
@@ -961,6 +962,12 @@ function renderRepertoire() {
     resultDiv.style.display = 'none';
   }
   $('repertoireList').innerHTML = filtered.length ? filtered.map(i => buildContactRow(i, false)).join('') : `<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">Aucun résultat</div></div>`;
+  
+  // Update active classes on filter chips
+  if ($('filterTypeBtn')) $('filterTypeBtn').classList.toggle('active', !!repertoireFilters.type);
+  if ($('filterCatBtn')) $('filterCatBtn').classList.toggle('active', !!repertoireFilters.cat);
+  if ($('filterVilleBtn')) $('filterVilleBtn').classList.toggle('active', !!repertoireFilters.ville);
+  if ($('filterDomaineBtn')) $('filterDomaineBtn').classList.toggle('active', !!repertoireFilters.domaine);
 }
 
 function renderFournisseurs() {
@@ -1021,15 +1028,10 @@ function openDetail(encodedItem, isCSV = false) {
   // Actions: ICONS ONLY
   let actionsHtml = '';
   
-  // Appeler
   if (hasPhone) actionsHtml += `<button class="da-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i></button>`;
-  // Email
   if (hasEmail) actionsHtml += `<button class="da-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
-  // Partager
   actionsHtml += `<button class="da-btn" onclick="shareItem('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-share-alt"></i></button>`;
-  // QR Code PDF
   actionsHtml += `<button class="da-btn" onclick="exportToPDF('${encodeURIComponent(JSON.stringify(item))}')"><i class="fas fa-qrcode"></i></button>`;
-  // Copier
   if (hasPhone) actionsHtml += `<button class="da-btn" onclick="navigator.clipboard.writeText('${item.phone}').then(()=>toast('📋 Copié'))"><i class="fas fa-copy"></i></button>`;
   
   // Modifier & Supprimer - UNIQUEMENT pour Répertoire (non CSV) et en mode admin
@@ -1082,7 +1084,7 @@ function explorerSelectType(type) { explorerStack.push({ label: type === 'fourni
 function explorerSelectDomain(domaine) { explorerStack.push({ label: domaine, domaine }); renderExplorer(); }
 function explorerSelectSpecialite(specialite) { explorerStack.push({ label: specialite, specialite }); renderExplorer(); }
 
-// ==================== FILTER MODALS ====================
+// ==================== FILTER MODALS (FIXED) ====================
 function showList(title, items, onSelect) {
   $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${title}`;
   $('listItems').innerHTML = `<div class="menu-item" onclick="onSelect(null);closeModal('listModal')"><div class="menu-icon" style="background:var(--green-dim);color:var(--green)"><i class="fas fa-undo"></i></div><span class="menu-label">Tous</span></div>` +
@@ -1090,14 +1092,90 @@ function showList(title, items, onSelect) {
   $('listModal').classList.add('show');
 }
 
-function showTypeFilter() { showList('Type', ['Fournisseurs', 'Experts'], val => { setRepertoireFilter('type', val === 'Fournisseurs' ? 'fournisseurs' : val === 'Experts' ? 'experts' : null); }); }
-function showCatFilter() { showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], val => { setRepertoireFilter('cat', val ? {Services:'services',Produits:'products',Maqaola:'maqola','Yad Amila':'yad-amila'}[val] : null); }); }
-function showRepertoireVilleFilter() { const villes = getAvailableRepertoireVilles(); if(villes.length) showList('Villes', villes, v => { setRepertoireFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
-function showRepertoireDomaineFilter() { const domaines = getAvailableRepertoireDomaines(); if(domaines.length) showList('Domaines', domaines, d => { setRepertoireFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
-function showFourVilleFilter() { const villes = getAvailableFourVilles(); if(villes.length) showList('Villes Fournisseurs', villes, v => { setFourFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
-function showFourDomaineFilter() { const domaines = getAvailableFourDomaines(); if(domaines.length) showList('Domaines Fournisseurs', domaines, d => { setFourFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
-function showExpVilleFilter() { const villes = getAvailableExpVilles(); if(villes.length) showList('Villes Experts', villes, v => { setExpFilter('ville', v); }); else toast('⚠️ Aucune ville'); }
-function showExpDomaineFilter() { const domaines = getAvailableExpDomaines(); if(domaines.length) showList('Domaines Experts', domaines, d => { setExpFilter('domaine', d); }); else toast('⚠️ Aucun domaine'); }
+function showTypeFilter() {
+  showList('Type', ['Fournisseurs', 'Experts'], function(selected) {
+    if (selected === 'Fournisseurs') setRepertoireFilter('type', 'fournisseurs');
+    else if (selected === 'Experts') setRepertoireFilter('type', 'experts');
+    else setRepertoireFilter('type', null);
+    closeModal('listModal');
+  });
+}
+
+function showCatFilter() {
+  showList('Catégorie', ['Services', 'Produits', 'Maqaola', 'Yad Amila'], function(selected) {
+    let catValue = null;
+    if (selected === 'Services') catValue = 'services';
+    else if (selected === 'Produits') catValue = 'products';
+    else if (selected === 'Maqaola') catValue = 'maqola';
+    else if (selected === 'Yad Amila') catValue = 'yad-amila';
+    setRepertoireFilter('cat', catValue);
+    closeModal('listModal');
+  });
+}
+
+function showRepertoireVilleFilter() {
+  const villes = getAvailableRepertoireVilles();
+  if (villes.length) {
+    showList('Villes', villes, function(selected) {
+      setRepertoireFilter('ville', selected);
+      closeModal('listModal');
+    });
+  } else {
+    toast('⚠️ Aucune ville disponible');
+  }
+}
+
+function showRepertoireDomaineFilter() {
+  const domaines = getAvailableRepertoireDomaines();
+  if (domaines.length) {
+    showList('Domaines', domaines, function(selected) {
+      setRepertoireFilter('domaine', selected);
+      closeModal('listModal');
+    });
+  } else {
+    toast('⚠️ Aucun domaine disponible');
+  }
+}
+
+function showFourVilleFilter() { 
+  const villes = getAvailableFourVilles(); 
+  if (villes.length) { 
+    showList('Villes Fournisseurs', villes, function(v) { 
+      setFourFilter('ville', v); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucune ville'); 
+}
+
+function showFourDomaineFilter() { 
+  const domaines = getAvailableFourDomaines(); 
+  if (domaines.length) { 
+    showList('Domaines Fournisseurs', domaines, function(d) { 
+      setFourFilter('domaine', d); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucun domaine'); 
+}
+
+function showExpVilleFilter() { 
+  const villes = getAvailableExpVilles(); 
+  if (villes.length) { 
+    showList('Villes Experts', villes, function(v) { 
+      setExpFilter('ville', v); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucune ville'); 
+}
+
+function showExpDomaineFilter() { 
+  const domaines = getAvailableExpDomaines(); 
+  if (domaines.length) { 
+    showList('Domaines Experts', domaines, function(d) { 
+      setExpFilter('domaine', d); 
+      closeModal('listModal'); 
+    }); 
+  } else toast('⚠️ Aucun domaine'); 
+}
 
 // ==================== STAT CLICK ====================
 function applyStatFilter(statType) {
@@ -1215,19 +1293,15 @@ function showSection(id, reset=true) {
   else if(id==='experts') renderExperts();
   window.scrollTo({top:0,behavior:'smooth'});
   
-  // Reset back button counter when navigating
   backPressCount = 0;
   if (backPressTimer) clearTimeout(backPressTimer);
 }
 
 function handleSectionClick(id) {
   if (currentSection === id) {
-    // Same section clicked
     if (window.scrollY > 10) {
-      // Scroll to top if scrolled down
       window.scrollTo({top: 0, behavior: 'smooth'});
     } else {
-      // Reset filters and search
       if (id === 'repertoire') {
         resetRepertoireFilters();
         toast('🔍 Filtres réinitialisés');
@@ -1255,7 +1329,6 @@ function renderCurrent() {
   else if(currentSection==='experts') renderExperts();
 }
 
-// Handle back button on phone
 function handleBackButton() {
   if (backPressTimer) clearTimeout(backPressTimer);
   
@@ -1276,7 +1349,6 @@ function handleBackButton() {
     return true;
   }
   
-  // Exit the app
   window.close();
   return false;
 }
@@ -1290,7 +1362,7 @@ $('filterTypeBtn').onclick = showTypeFilter;
 $('filterCatBtn').onclick = showCatFilter;
 $('filterVilleBtn').onclick = showRepertoireVilleFilter;
 $('filterDomaineBtn').onclick = showRepertoireDomaineFilter;
-$('filterResetBtn').onclick = () => { resetRepertoireFilters(); renderRepertoire(); toast('Filtres effacés'); };
+$('filterResetBtn').onclick = () => { resetRepertoireFilters(); toast('Filtres effacés'); };
 $('repertoireSearch').addEventListener('input', e => { setRepertoireFilter('search', e.target.value); $('repertoireClear').style.display=e.target.value?'flex':'none'; });
 $('repertoireClear').onclick = () => { setRepertoireFilter('search', ''); $('repertoireSearch').value=''; $('repertoireClear').style.display='none'; };
 $('fourSearch').addEventListener('input', e => { fourFilters.search=e.target.value; renderFournisseurs(); });
@@ -1306,11 +1378,9 @@ document.querySelectorAll('.tab-btn[data-sec]').forEach(btn => { btn.onclick = (
 document.querySelectorAll('.stat-card[data-stat]').forEach(card => card.onclick = () => applyStatFilter(card.dataset.stat));
 document.querySelectorAll('.overlay').forEach(ov => ov.addEventListener('click', e => { if(e.target===ov) ov.classList.remove('show'); }));
 
-// Back button handling
 window.addEventListener('popstate', (e) => { handleBackButton(); e.preventDefault(); });
 history.pushState(null, null, location.href);
 
-// Exit confirmation on beforeunload
 window.addEventListener('beforeunload', (e) => {
   if (backPressCount >= 1) {
     e.preventDefault();
@@ -1327,7 +1397,6 @@ $('themeBtn').onclick = toggleTheme;
 function updateClock(){$('appTime').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 setInterval(updateClock,1000); updateClock();
 
-// GLOBALS
 window.closeModal = closeModal;
 window.closeDetail = closeDetail;
 window.verifyAdmin = verifyAdmin;
@@ -1343,7 +1412,6 @@ window.confirmDeleteItem = confirmDeleteItem;
 window.shareItem = shareItem;
 window.exportToPDF = exportToPDF;
 
-// INIT
 async function init() { showLoading(true); checkAdminStatus(); const [experts,fours] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]); csvExperts=experts; csvFournisseurs=fours; await loadDB(); setTimeout(()=>showLoading(false),600); }
 init();
 </script>
