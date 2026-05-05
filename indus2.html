@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
@@ -130,31 +130,6 @@ body{
 .admin-only{display:none!important;}
 body.admin-mode .admin-only{display:flex!important;}
 
-/* Floating Action Button for Sync */
-.fab-sync{
-  position:fixed;
-  bottom:80px;
-  right:16px;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  background:var(--accent);
-  color:white;
-  border:none;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.3rem;
-  box-shadow:0 4px 12px rgba(37,211,102,0.4);
-  z-index:200;
-  transition:all 0.2s;
-}
-.fab-sync:active{transform:scale(0.92);}
-.fab-sync i{margin-right:0;}
-.admin-only-fab{display:none;}
-body.admin-mode .admin-only-fab{display:flex;}
-
 /* Main */
 .main{
   padding-top:calc(var(--hdr-h) + env(safe-area-inset-top) + 4px);
@@ -205,6 +180,46 @@ body.admin-mode .admin-only-fab{display:flex;}
 .stat-icon.purple{background:rgba(155,79,150,0.15);color:var(--purple);}
 .stat-num{font-size:1.3rem;font-weight:700;color:var(--text);line-height:1;}
 .stat-lbl{font-size:0.55rem;color:var(--text2);margin-top:2px;text-transform:uppercase;}
+
+/* Sync Button on Home */
+.sync-home-card{
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:var(--radius-md);
+  padding:16px;
+  margin-bottom:20px;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.sync-home-card:active{transform:scale(0.98);}
+.sync-home-card .sync-info{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.sync-home-card .sync-info i{
+  font-size:1.5rem;
+  color:white;
+}
+.sync-home-card .sync-info div{
+  display:flex;
+  flex-direction:column;
+}
+.sync-home-card .sync-info div span:first-child{
+  font-size:0.75rem;
+  font-weight:600;
+  color:white;
+}
+.sync-home-card .sync-info div span:last-child{
+  font-size:0.55rem;
+  color:rgba(255,255,255,0.8);
+}
+.sync-home-card i.fa-chevron-right{
+  color:white;
+  font-size:0.8rem;
+}
 
 .sec-title{
   font-size:0.65rem;font-weight:600;color:var(--text2);
@@ -504,7 +519,6 @@ body.admin-mode .admin-only-fab{display:flex;}
   .quick-grid{grid-template-columns:repeat(2,1fr);}
   .toast{white-space:normal;max-width:85%;text-align:center;}
   .banner-title{font-size:1.2rem;}
-  .fab-sync{bottom:70px;width:48px;height:48px;font-size:1.1rem;}
 }
 </style>
 </head>
@@ -534,11 +548,6 @@ body.admin-mode .admin-only-fab{display:flex;}
   <button class="nav-item admin-only" data-sec="csv"><i class="fas fa-file-csv"></i><span>CSV</span></button>
 </nav>
 
-<!-- Floating Action Button for Sync (Admin only) -->
-<button class="fab-sync admin-only-fab" id="fabSyncBtn" title="Synchroniser CSV vers Firebase">
-  <i class="fas fa-cloud-upload-alt"></i>
-</button>
-
 <main class="main">
   <!-- HOME -->
   <div id="homeSection" class="section active">
@@ -547,6 +556,19 @@ body.admin-mode .admin-only-fab{display:flex;}
       <div class="banner-title">Le Hub B2B<br>du Maroc Industriel</div>
       <div class="banner-sub">Connectez-vous avec les meilleurs fournisseurs, experts et prestataires industriels du royaume.</div>
     </div>
+    
+    <!-- Sync Button on Home (Admin only) -->
+    <div id="syncHomeCard" class="sync-home-card admin-only" onclick="syncToFirebase()" style="display:none;">
+      <div class="sync-info">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <div>
+          <span>Synchroniser les données CSV</span>
+          <span>Mettre à jour Firebase depuis les fichiers CSV</span>
+        </div>
+      </div>
+      <i class="fas fa-chevron-right"></i>
+    </div>
+    
     <div class="sec-title">Vue d'ensemble</div>
     <div class="stats-grid">
       <div class="stat-card" onclick="filterByType('fournisseurs')">
@@ -616,12 +638,6 @@ body.admin-mode .admin-only-fab{display:flex;}
 
   <!-- CSV SECTION (Admin only) -->
   <div id="csvSection" class="section">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div class="sec-title" style="margin:0;">Données CSV</div>
-      <button class="btn btn-primary" id="syncCsvBtn" style="padding:6px 14px;font-size:0.65rem;">
-        <i class="fas fa-cloud-upload-alt"></i> Sync
-      </button>
-    </div>
     <div class="search-bar" style="padding-top:0;">
       <div class="search-wrap">
         <i class="fas fa-search"></i>
@@ -709,9 +725,39 @@ updateClock(); setInterval(updateClock, 1000);
 
 // ==================== ADMIN ====================
 function openAdminModal() { if (isAdmin) { logoutAdmin(); } else { $('adminPass').value = ''; $('adminModal').classList.add('show'); } }
-function verifyAdmin() { if ($('adminPass').value === ADMIN_PASSWORD) { isAdmin = true; sessionStorage.setItem('adminMode', 'true'); document.body.classList.add('admin-mode'); closeModal('adminModal'); toast('✅ Mode Admin activé'); renderCurrent(); } else { toast('❌ Mot de passe incorrect'); } }
-function logoutAdmin() { isAdmin = false; sessionStorage.removeItem('adminMode'); document.body.classList.remove('admin-mode'); toast('👤 Mode utilisateur'); renderCurrent(); }
-function checkAdmin() { if (sessionStorage.getItem('adminMode') === 'true') { isAdmin = true; document.body.classList.add('admin-mode'); } }
+function verifyAdmin() { 
+  if ($('adminPass').value === ADMIN_PASSWORD) { 
+    isAdmin = true; 
+    sessionStorage.setItem('adminMode', 'true'); 
+    document.body.classList.add('admin-mode'); 
+    // Show sync button on home
+    const syncHome = $('syncHomeCard');
+    if (syncHome) syncHome.style.display = 'flex';
+    closeModal('adminModal'); 
+    toast('✅ Mode Admin activé'); 
+    renderCurrent(); 
+  } else { 
+    toast('❌ Mot de passe incorrect'); 
+  } 
+}
+function logoutAdmin() { 
+  isAdmin = false; 
+  sessionStorage.removeItem('adminMode'); 
+  document.body.classList.remove('admin-mode'); 
+  // Hide sync button on home
+  const syncHome = $('syncHomeCard');
+  if (syncHome) syncHome.style.display = 'none';
+  toast('👤 Mode utilisateur'); 
+  renderCurrent(); 
+}
+function checkAdmin() { 
+  if (sessionStorage.getItem('adminMode') === 'true') { 
+    isAdmin = true; 
+    document.body.classList.add('admin-mode');
+    const syncHome = $('syncHomeCard');
+    if (syncHome) syncHome.style.display = 'flex';
+  } 
+}
 
 // ==================== DATA HELPERS ====================
 function getVilles() { return [...new Set(dbData.map(d => d.ville).filter(v => v && v !== 'null' && v.trim()))]; }
@@ -1004,7 +1050,6 @@ async function syncToFirebase() {
       "EXPERTS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] }
     };
     
-    // Ajouter les fournisseurs CSV
     csvFournisseurs.forEach((item, i) => {
       structure["FOURNISSEURS"]["SERVICES"].push({
         id: `four_${Date.now()}_${i}_${Math.random().toString(36).slice(2)}`,
@@ -1018,7 +1063,6 @@ async function syncToFirebase() {
       });
     });
     
-    // Ajouter les experts CSV
     csvExperts.forEach((item, i) => {
       structure["EXPERTS"]["YAD AMILA"].push({
         id: `exp_${Date.now()}_${i}_${Math.random().toString(36).slice(2)}`,
@@ -1138,8 +1182,6 @@ $('csvFilterDomaineBtn').onclick = showCSVDomaineFilter;
 $('csvFilterResetBtn').onclick = () => { resetCSVFilters(); renderCSV(); toast('🔄 Filtres CSV effacés'); };
 $('csvSearchInput').addEventListener('input', e => { csvFilters.search = e.target.value; updateCSVFilterUI(); renderCSV(); });
 $('csvSearchClear').onclick = () => { csvFilters.search = ''; $('csvSearchInput').value = ''; updateCSVFilterUI(); renderCSV(); };
-$('syncCsvBtn').onclick = syncToFirebase;
-$('fabSyncBtn').onclick = syncToFirebase;
 
 document.querySelectorAll('.nav-item[data-sec]').forEach(btn => { btn.onclick = () => handleSectionClick(btn.dataset.sec); });
 document.querySelectorAll('.sheet-overlay, .overlay').forEach(ov => { ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); }); });
