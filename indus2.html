@@ -134,24 +134,13 @@ body.admin-mode .admin-only{display:flex!important;}
 .section.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
-/* Banner */
+/* Banner (Simplified) */
 .whatsapp-banner{
   background:linear-gradient(135deg, var(--whatsapp-green), var(--whatsapp-teal));
   margin:-16px -12px 16px -12px;
-  padding:20px 16px 24px;
+  padding:20px 16px;
   position:relative;
 }
-.banner-tag{
-  display:inline-flex;align-items:center;gap:4px;
-  background:rgba(255,255,255,0.15);
-  border-radius:var(--radius-full);padding:3px 8px;
-  font-size:0.45rem;color:white;margin-bottom:8px;
-}
-.banner-title{
-  font-size:1.1rem;font-weight:700;color:white;
-  line-height:1.2;margin-bottom:5px;
-}
-.banner-sub{font-size:0.55rem;color:rgba(255,255,255,0.8);max-width:260px;}
 
 /* Stats */
 .stats-grid{
@@ -391,7 +380,7 @@ body.admin-mode .admin-only{display:flex!important;}
   color:var(--accent);font-size:0.7rem;
 }
 .modal-row-lbl{font-size:0.45rem;color:var(--text2);margin-bottom:1px;}
-.modal-row-val{font-size:0.6rem;color:var(--text);}
+.modal-row-val{font-size:0.6rem;color:var(--text);word-break:break-word;}
 .modal-actions{
   display:flex;justify-content:center;gap:8px;
   padding:12px;border-top:1px solid var(--border);flex-wrap:wrap;
@@ -517,7 +506,6 @@ body.admin-mode .admin-only{display:flex!important;}
   .stats-grid{grid-template-columns:1fr;gap:6px;}
   .quick-grid{grid-template-columns:repeat(2,1fr);gap:6px;}
   .toast{white-space:normal;max-width:85%;text-align:center;}
-  .banner-title{font-size:1rem;}
   .contact-avatar{width:36px;height:36px;font-size:0.7rem;}
   .modal-box{max-width:280px;}
 }
@@ -550,13 +538,9 @@ body.admin-mode .admin-only{display:flex!important;}
 </nav>
 
 <main class="main">
-  <!-- HOME -->
+  <!-- HOME (with simplified banner) -->
   <div id="homeSection" class="section active">
-    <div class="whatsapp-banner">
-      <div class="banner-tag"><i class="fas fa-bolt"></i> Active Network</div>
-      <div class="banner-title">The B2B Hub<br>of Moroccan Industry</div>
-      <div class="banner-sub">Connect with the best suppliers, experts and industrial service providers in the kingdom.</div>
-    </div>
+    <div class="whatsapp-banner"></div>
     
     <!-- Sync Button on Home (Admin only) -->
     <div id="syncHomeCard" class="sync-home-card admin-only" onclick="syncToFirebase()" style="display:none;">
@@ -799,7 +783,7 @@ function updateStats() {
   $('statYadAmila').textContent = dbData.filter(d => d.categorie === 'yad-amila').length;
 }
 
-// ==================== HOME FILTER FUNCTIONS (Navigate to Directory) ====================
+// ==================== HOME FILTER FUNCTIONS ====================
 function filterByTypeFromHome(type) {
   resetRepFilters();
   repFilters.type = type;
@@ -925,9 +909,17 @@ function buildContactItem(item) {
   </div>`;
 }
 
-// ==================== DETAIL MODAL ====================
+// ==================== DETAIL MODAL (Unified for both DB and CSV) ====================
 function openDetailModal(enc) {
   const item = JSON.parse(decodeURIComponent(enc));
+  showItemDetails(item, true);
+}
+
+function openCSVDetailModal(item) {
+  showItemDetails(item, false);
+}
+
+function showItemDetails(item, fromDB) {
   const color = getColor(item.name);
   $('modalAvatar').style.background = color;
   $('modalAvatar').textContent = getInitials(item.name);
@@ -941,30 +933,34 @@ function openDetailModal(enc) {
   if (item.domaine && item.domaine !== 'Autre') rows.push({ icon: 'fa-folder', label: 'Sector', value: item.domaine });
   if (item.specialite && item.specialite !== 'Général') rows.push({ icon: 'fa-cog', label: 'Specialty', value: item.specialite });
   if (item.ville) rows.push({ icon: 'fa-map-marker-alt', label: 'City', value: item.ville });
-  if (item.phone) rows.push({ icon: 'fa-phone-alt', label: 'Phone', value: item.phone });
-  if (item.email) rows.push({ icon: 'fa-envelope', label: 'Email', value: item.email });
-  if (item.web && item.web.startsWith('http')) rows.push({ icon: 'fa-globe', label: 'Website', value: item.web });
+  if (item.phone && item.phone !== 'null' && item.phone.trim()) rows.push({ icon: 'fa-phone-alt', label: 'Phone', value: item.phone });
+  if (item.email && item.email !== 'null' && item.email.trim()) rows.push({ icon: 'fa-envelope', label: 'Email', value: item.email });
+  if (item.web && item.web !== 'null' && item.web.startsWith('http')) rows.push({ icon: 'fa-globe', label: 'Website', value: item.web });
   
   $('modalBody').innerHTML = rows.map(r => `<div class="modal-row"><div class="modal-row-icon"><i class="fas ${r.icon}"></i></div><div><div class="modal-row-lbl">${r.label}</div><div class="modal-row-val">${escHtml(r.value)}</div></div></div>`).join('');
   if (!rows.length) $('modalBody').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:0.55rem">No information available</div>';
   
   let actions = '';
-  if (item.phone) {
+  if (item.phone && item.phone !== 'null' && item.phone.trim()) {
     let wa = item.phone.replace(/[^0-9+]/g, '');
     if (wa.startsWith('0')) wa = '212' + wa.substring(1);
     if (wa.startsWith('+')) wa = wa.substring(1);
     actions += `<button class="action-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>Call</span></button>`;
     actions += `<button class="action-btn" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>`;
   }
-  if (item.email) actions += `<button class="action-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
-  if (item.web && item.web.startsWith('http')) actions += `<button class="action-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>Website</span></button>`;
-  if (isAdmin && item.id) {
+  if (item.email && item.email !== 'null' && item.email.trim()) actions += `<button class="action-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
+  if (item.web && item.web !== 'null' && item.web.startsWith('http')) actions += `<button class="action-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>Website</span></button>`;
+  
+  // Admin actions only for DB items (not for CSV)
+  if (fromDB && isAdmin && item.id) {
     actions += `<button class="action-btn" onclick="closeDetailModal();openEditModal('${item.id}')"><i class="fas fa-pen"></i><span>Edit</span></button>`;
     actions += `<button class="action-btn" onclick="closeDetailModal();openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i><span>Delete</span></button>`;
   }
+  
   $('modalActions').innerHTML = actions;
   $('detailModal').classList.add('show');
 }
+
 function closeDetailModal() { $('detailModal').classList.remove('show'); }
 
 // ==================== FILTER MODALS ====================
@@ -1269,41 +1265,6 @@ function buildCSVItem(item) {
       <div class="contact-badges"><span class="badge ${badge}">${badgeText}</span></div>
     </div>
   </div>`;
-}
-
-function openCSVDetailModal(item) {
-  const color = getColor(item.name);
-  $('modalAvatar').style.background = color;
-  $('modalAvatar').textContent = getInitials(item.name);
-  $('modalName').textContent = item.name;
-  $('modalType').textContent = item.domaine || (item.type === 'fournisseurs' ? 'Supplier' : 'Expert');
-  const badge = item.type === 'fournisseurs' ? 'b-fourn' : 'b-expert';
-  const badgeText = item.type === 'fournisseurs' ? 'Supplier' : 'Expert';
-  $('modalBadges').innerHTML = `<span class="badge ${badge}">${badgeText}</span>`;
-  
-  const rows = [];
-  if (item.domaine && item.domaine !== 'Autre') rows.push({ icon: 'fa-folder', label: 'Sector', value: item.domaine });
-  if (item.specialite && item.specialite !== 'Général') rows.push({ icon: 'fa-cog', label: 'Specialty', value: item.specialite });
-  if (item.ville) rows.push({ icon: 'fa-map-marker-alt', label: 'City', value: item.ville });
-  if (item.phone) rows.push({ icon: 'fa-phone-alt', label: 'Phone', value: item.phone });
-  if (item.email) rows.push({ icon: 'fa-envelope', label: 'Email', value: item.email });
-  if (item.web && item.web.startsWith('http')) rows.push({ icon: 'fa-globe', label: 'Website', value: item.web });
-  
-  $('modalBody').innerHTML = rows.map(r => `<div class="modal-row"><div class="modal-row-icon"><i class="fas ${r.icon}"></i></div><div><div class="modal-row-lbl">${r.label}</div><div class="modal-row-val">${escHtml(r.value)}</div></div></div>`).join('');
-  if (!rows.length) $('modalBody').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:0.55rem">No information available</div>';
-  
-  let actions = '';
-  if (item.phone) {
-    let wa = item.phone.replace(/[^0-9+]/g, '');
-    if (wa.startsWith('0')) wa = '212' + wa.substring(1);
-    if (wa.startsWith('+')) wa = wa.substring(1);
-    actions += `<button class="action-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>Call</span></button>`;
-    actions += `<button class="action-btn" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>`;
-  }
-  if (item.email) actions += `<button class="action-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
-  if (item.web && item.web.startsWith('http')) actions += `<button class="action-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>Website</span></button>`;
-  $('modalActions').innerHTML = actions;
-  $('detailModal').classList.add('show');
 }
 
 function showCSVTypeFilter() { 
