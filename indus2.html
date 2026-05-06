@@ -6,11 +6,14 @@
 <meta name="theme-color" content="#075E54">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Connect Industry · Premium B2B Network Morocco v2</title>
+<title>Connect Industry · Premium B2B Network Morocco v3</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 
@@ -68,7 +71,7 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 
-/* ── Animated mesh background ── */
+/* Animated mesh background */
 body::before{
   content:'';
   position:fixed;top:0;left:0;right:0;bottom:0;
@@ -78,7 +81,7 @@ body::before{
   pointer-events:none;z-index:0;
 }
 
-/* ── HEADER ── */
+/* HEADER */
 .hdr{
   position:fixed;top:0;left:0;right:0;
   background:linear-gradient(135deg,var(--g1),var(--g2));
@@ -113,6 +116,39 @@ body::before{
 .hdr-btn.gold{background:rgba(201,162,39,0.2);color:var(--gold-light);}
 .hdr-clock{font-size:0.5rem;color:rgba(255,255,255,0.7);font-family:var(--ff-head);font-weight:600;}
 
+/* Export Dropdown */
+.export-menu{
+  position:relative;
+}
+.export-dropdown{
+  position:absolute;
+  top:40px;
+  right:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  box-shadow:var(--sh2);
+  z-index:600;
+  min-width:140px;
+  display:none;
+}
+.export-dropdown.show{display:block;}
+.export-dropdown button{
+  width:100%;
+  padding:10px 14px;
+  background:transparent;
+  border:none;
+  text-align:left;
+  color:var(--text);
+  font-size:0.65rem;
+  cursor:pointer;
+  transition:.2s ease;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.export-dropdown button:hover{background:var(--gold-pale);color:var(--gold);}
+
 /* Notification dot */
 .notif-dot{
   position:relative;
@@ -125,7 +161,7 @@ body::before{
 }
 @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.7;transform:scale(1.3);}}
 
-/* ── BOTTOM NAV ── */
+/* BOTTOM NAV */
 .nav{
   position:fixed;bottom:0;left:0;right:0;
   background:rgba(15,45,37,0.97);
@@ -156,7 +192,7 @@ body.light .nav{background:rgba(255,255,255,0.97);}
 .admin-only{display:none!important;}
 body.admin-mode .admin-only{display:flex!important;}
 
-/* ── MAIN ── */
+/* MAIN */
 .main{
   padding-top:calc(var(--hdr-h) + env(safe-area-inset-top) + 10px);
   padding-bottom:calc(var(--nav-h) + max(6px,var(--safe-b)) + 16px);
@@ -166,7 +202,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .section.active{display:block;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 
-/* ── WELCOME CARD ── */
+/* WELCOME CARD WITH ANIMATED NUMBERS */
 .welcome-card{
   background:linear-gradient(135deg,var(--g2),var(--g3));
   border-radius:var(--r3);
@@ -181,28 +217,20 @@ body.admin-mode .admin-only{display:flex!important;}
   border-radius:50%;
   background:radial-gradient(circle,rgba(201,162,39,0.12),transparent 70%);
 }
-.welcome-card::after{
-  content:'';position:absolute;bottom:-30px;left:-20px;
-  width:120px;height:120px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(60,201,139,0.08),transparent 70%);
-}
 .welcome-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .welcome-greeting{
   font-family:var(--ff-head);font-size:1rem;font-weight:800;
   background:linear-gradient(135deg,#fff,var(--gold-light));
   -webkit-background-clip:text;background-clip:text;color:transparent;
 }
-.welcome-sub{font-size:0.52rem;color:rgba(255,255,255,0.55);margin-top:3px;font-weight:400;}
+.welcome-sub{font-size:0.52rem;color:rgba(255,255,255,0.55);margin-top:3px;}
 .welcome-badge{
   background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.35);
   border-radius:var(--r1);padding:6px 10px;text-align:center;
 }
 .welcome-badge span:first-child{font-family:var(--ff-head);font-size:1.1rem;font-weight:800;color:var(--gold-light);display:block;}
 .welcome-badge span:last-child{font-size:0.38rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:.5px;}
-.welcome-bar{
-  display:flex;gap:8px;
-}
+.welcome-bar{display:flex;gap:8px;}
 .welcome-pill{
   flex:1;background:rgba(255,255,255,0.07);border-radius:var(--r1);
   padding:8px 10px;display:flex;align-items:center;gap:8px;
@@ -212,7 +240,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .welcome-pill div span:first-child{font-family:var(--ff-head);font-size:0.78rem;font-weight:700;color:#fff;display:block;}
 .welcome-pill div span:last-child{font-size:0.4rem;color:rgba(255,255,255,0.45);text-transform:uppercase;}
 
-/* ── STATS ── */
+/* STATS CARDS WITH ANIMATED NUMBERS */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
 .stat-card{
   background:var(--card);border-radius:var(--r2);
@@ -242,7 +270,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .stat-lbl{font-size:0.42rem;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;}
 .stat-trend{font-size:0.4rem;margin-top:2px;color:var(--success);}
 
-/* ── CHART / ANALYTICS ── */
+/* ANALYTICS CARD WITH CHART.JS */
 .analytics-card{
   background:var(--card);border:1px solid var(--border);border-radius:var(--r2);
   padding:16px;margin-bottom:16px;
@@ -252,29 +280,18 @@ body.admin-mode .admin-only{display:flex!important;}
   color:var(--gold);text-transform:uppercase;letter-spacing:.8px;
   margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;
 }
-.analytics-title span{font-size:0.45rem;color:var(--text2);font-family:var(--ff-body);text-transform:none;letter-spacing:0;}
-.bar-chart{display:flex;align-items:flex-end;gap:6px;height:80px;}
-.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
-.bar{
-  width:100%;border-radius:6px 6px 0 0;
-  background:linear-gradient(180deg,var(--gold),rgba(201,162,39,.35));
-  min-height:4px;
-  transition:height .8s cubic-bezier(.4,0,.2,1);
-  cursor:pointer;position:relative;
+.chart-container{
+  position:relative;
+  height:180px;
+  width:100%;
 }
-.bar.blue{background:linear-gradient(180deg,var(--info),rgba(74,143,232,.35));}
-.bar.teal{background:linear-gradient(180deg,var(--success),rgba(60,201,139,.35));}
-.bar.orange{background:linear-gradient(180deg,var(--warn),rgba(232,146,74,.35));}
-.bar:hover::after{
-  content:attr(data-val);
-  position:absolute;top:-20px;left:50%;transform:translateX(-50%);
-  background:var(--gold);color:var(--g1);
-  font-size:0.4rem;font-weight:700;padding:2px 5px;border-radius:4px;
-  white-space:nowrap;
+.chart-wrapper{
+  position:relative;
+  height:180px;
+  width:100%;
 }
-.bar-lbl{font-size:0.38rem;color:var(--text2);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
 
-/* ── SECTION TITLE ── */
+/* SECTION TITLE */
 .sec-ttl{
   font-family:var(--ff-head);font-size:0.55rem;font-weight:700;
   color:var(--gold);text-transform:uppercase;letter-spacing:1px;
@@ -287,7 +304,7 @@ body.admin-mode .admin-only{display:flex!important;}
   border:1px solid rgba(201,162,39,0.2);margin-left:-5px;
 }
 
-/* ── QUICK GRID ── */
+/* QUICK GRID */
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
 .quick-item{
   background:var(--card);border:1px solid var(--border);
@@ -301,7 +318,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .quick-item span{font-size:0.42rem;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
 .quick-num{font-family:var(--ff-head);font-size:0.72rem;font-weight:700;color:var(--gold-light);}
 
-/* ── SYNC CARD ── */
+/* SYNC CARD */
 .sync-card{
   background:linear-gradient(135deg,#7A5A10,var(--gold));
   border-radius:var(--r2);padding:12px 16px;margin-bottom:16px;
@@ -318,7 +335,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .sync-card .left div span:last-child{font-size:0.42rem;color:rgba(255,255,255,.7);display:block;margin-top:1px;}
 .sync-card .chevron{color:rgba(255,255,255,.7);font-size:0.7rem;}
 
-/* ── RECENT ── */
+/* RECENT SCROLL */
 .recent-scroll{
   display:flex;gap:10px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none;margin:0 -14px;padding:2px 14px 8px;
 }
@@ -341,8 +358,10 @@ body.admin-mode .admin-only{display:flex!important;}
   display:inline-block;margin-top:5px;
   font-size:0.38rem;padding:2px 6px;border-radius:var(--rf);font-weight:600;
 }
+.b-fourn{background:linear-gradient(135deg,#7A5A10,var(--gold));color:#fff;}
+.b-expert{background:linear-gradient(135deg,#0E6644,#26A676);color:#fff;}
 
-/* ── SEARCH ── */
+/* SEARCH BAR */
 .search-bar{
   padding:8px 0;
   position:sticky;top:calc(var(--hdr-h) + env(safe-area-inset-top));
@@ -360,14 +379,11 @@ body.admin-mode .admin-only{display:flex!important;}
 }
 .search-wrap i{color:var(--text2);font-size:0.7rem;}
 .search-wrap input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:0.68rem;font-family:var(--ff-body);}
-.search-wrap input::placeholder{color:var(--text3);}
 .search-clear{
   width:18px;height:18px;border-radius:50%;background:var(--text3);
   border:none;cursor:pointer;color:white;display:none;
   font-size:0.45rem;align-items:center;justify-content:center;
-  transition:.15s ease;
 }
-.search-clear:hover{background:var(--danger);}
 .search-active .search-clear{display:flex;}
 
 /* View toggle */
@@ -383,7 +399,24 @@ body.admin-mode .admin-only{display:flex!important;}
 }
 .view-btn.active{background:var(--gold);color:var(--g1);}
 
-/* ── FILTER CHIPS ── */
+/* Export button */
+.export-btn{
+  background:var(--gold-pale);
+  border:1px solid rgba(201,162,39,0.3);
+  border-radius:var(--r1);
+  padding:6px 10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:0.5rem;
+  font-weight:600;
+  color:var(--gold);
+  cursor:pointer;
+  transition:.2s ease;
+}
+.export-btn:hover{background:rgba(201,162,39,0.2);}
+
+/* FILTER CHIPS */
 .filter-row{display:flex;gap:6px;padding:8px 0;overflow-x:auto;scrollbar-width:none;}
 .filter-row::-webkit-scrollbar{display:none;}
 .chip{
@@ -391,11 +424,10 @@ body.admin-mode .admin-only{display:flex!important;}
   background:var(--card);border:1px solid var(--border);
   border-radius:var(--rf);padding:5px 12px;cursor:pointer;
   color:var(--text2);font-size:0.5rem;font-weight:600;white-space:nowrap;
-  flex-shrink:0;transition:.2s ease;font-family:var(--ff-head);letter-spacing:.3px;
+  flex-shrink:0;transition:.2s ease;
 }
 .chip:hover{border-color:rgba(201,162,39,.35);color:var(--gold);}
 .chip.active{background:linear-gradient(135deg,#7A5A10,var(--gold));color:#fff;border-color:transparent;box-shadow:var(--sh-gold);}
-.chip.active i{color:rgba(255,255,255,.8);}
 .active-filters{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0;}
 .f-tag{
   background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.25);
@@ -407,7 +439,7 @@ body.admin-mode .admin-only{display:flex!important;}
 .result-count{font-size:0.52rem;color:var(--text2);display:none;padding:5px 0;}
 .result-count.visible{display:flex;align-items:center;gap:5px;}
 
-/* ── CONTACTS ── */
+/* CONTACT ITEMS */
 .contact-item{
   display:flex;align-items:center;padding:11px 0;
   border-bottom:1px solid var(--border);cursor:pointer;gap:11px;
@@ -417,7 +449,6 @@ body.admin-mode .admin-only{display:flex!important;}
   background:rgba(201,162,39,.04);
   margin:0 -14px;padding:11px 14px;border-radius:var(--r1);
 }
-.contact-item:active{opacity:.8;}
 .c-avatar{
   width:42px;height:42px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
@@ -430,28 +461,30 @@ body.admin-mode .admin-only{display:flex!important;}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .c-meta{font-size:0.48rem;color:var(--text2);margin-bottom:3px;}
 .c-badges{display:flex;gap:4px;flex-wrap:wrap;}
-.badge{font-size:0.36rem;padding:2px 7px;border-radius:var(--rf);font-weight:700;letter-spacing:.3px;}
-.b-fourn{background:linear-gradient(135deg,#7A5A10,var(--gold));color:#fff;}
-.b-expert{background:linear-gradient(135deg,#0E6644,#26A676);color:#fff;}
-.b-service{background:rgba(60,201,139,.12);color:var(--success);}
-.b-product{background:rgba(232,146,74,.12);color:var(--warn);}
+.badge{font-size:0.36rem;padding:2px 7px;border-radius:var(--rf);font-weight:700;}
 .c-bookmark{
   width:28px;height:28px;border-radius:8px;
   background:transparent;border:1px solid var(--border);
   cursor:pointer;color:var(--text3);font-size:0.7rem;
   transition:.2s ease;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
 }
 .c-bookmark:hover{background:var(--gold-pale);border-color:rgba(201,162,39,.3);color:var(--gold);}
 .c-bookmark.bookmarked{background:var(--gold-pale);border-color:rgba(201,162,39,.3);color:var(--gold);}
+.c-share{
+  width:28px;height:28px;border-radius:8px;
+  background:transparent;border:1px solid var(--border);
+  cursor:pointer;color:var(--text3);font-size:0.7rem;
+  transition:.2s ease;display:flex;align-items:center;justify-content:center;
+}
+.c-share:hover{background:var(--gold-pale);border-color:rgba(201,162,39,.3);color:var(--gold);}
 
-/* Compact view */
+/* COMPACT VIEW */
 .view-compact .contact-item{padding:7px 0;}
 .view-compact .c-avatar{width:34px;height:34px;border-radius:9px;font-size:0.7rem;}
 .view-compact .c-name{font-size:0.68rem;}
 .view-compact .c-badges{display:none;}
 
-/* Section letter */
+/* ALPHA LETTER */
 .alpha-letter{
   font-family:var(--ff-head);font-size:0.55rem;font-weight:700;
   color:var(--gold);letter-spacing:1px;margin:8px 0 2px;
@@ -459,10 +492,13 @@ body.admin-mode .admin-only{display:flex!important;}
 }
 .alpha-letter::after{content:'';flex:1;height:1px;background:var(--border);}
 
-/* ── BOOKMARKS SECTION ── */
-#bookmarksSection .empty-state{padding:40px 20px;}
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:44px 20px;}
+.empty-icon{font-size:1.8rem;color:var(--text3);margin-bottom:10px;opacity:.5;}
+.empty-title{font-family:var(--ff-head);font-size:0.7rem;font-weight:700;color:var(--text2);}
+.empty-sub{font-size:0.52rem;color:var(--text3);margin-top:3px;}
 
-/* ── EXPLORER ── */
+/* EXPLORER */
 .breadcrumb{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:8px 0;}
 .bc-item{
   font-size:0.55rem;color:var(--text2);cursor:pointer;
@@ -483,15 +519,14 @@ body.admin-mode .admin-only{display:flex!important;}
   width:40px;height:40px;border-radius:11px;
   background:linear-gradient(135deg,#7A5A10,var(--gold));
   display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:0.85rem;flex-shrink:0;transition:.25s ease;
+  color:#fff;font-size:0.85rem;flex-shrink:0;
 }
-.exp-item:hover .exp-icon{transform:scale(1.05);}
 .exp-name{font-weight:600;font-size:0.72rem;color:var(--text);}
 .exp-count{font-size:0.47rem;color:var(--text2);margin-top:2px;}
 .exp-arrow{color:var(--text3);margin-left:auto;font-size:0.6rem;transition:.25s ease;}
 .exp-item:hover .exp-arrow{transform:translateX(3px);color:var(--gold);}
 
-/* ── MODAL ── */
+/* MODAL */
 .overlay{
   position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);
   z-index:800;display:flex;align-items:center;justify-content:center;
@@ -516,7 +551,6 @@ body.admin-mode .admin-only{display:flex!important;}
   width:26px;height:26px;border-radius:50%;
   background:rgba(255,255,255,.12);border:none;cursor:pointer;
   color:#fff;font-size:0.65rem;transition:.2s ease;
-  display:flex;align-items:center;justify-content:center;
 }
 .modal-close:hover{background:rgba(255,255,255,.22);transform:rotate(90deg);}
 .modal-av{
@@ -537,7 +571,7 @@ body.admin-mode .admin-only{display:flex!important;}
   display:flex;align-items:center;justify-content:center;
   color:var(--gold);font-size:0.7rem;
 }
-.m-lbl{font-size:0.43rem;color:var(--text2);margin-bottom:2px;letter-spacing:.4px;}
+.m-lbl{font-size:0.43rem;color:var(--text2);margin-bottom:2px;}
 .m-val{font-size:0.62rem;color:var(--text);font-weight:500;word-break:break-word;}
 .modal-actions{
   display:flex;justify-content:center;gap:8px;padding:12px 14px;
@@ -552,9 +586,9 @@ body.admin-mode .admin-only{display:flex!important;}
 }
 .act-btn:hover{background:var(--gold-pale);border-color:rgba(201,162,39,.35);color:var(--gold);transform:translateY(-2px);}
 .act-btn i{font-size:0.78rem;}
-.act-btn span{font-size:0.38rem;font-weight:700;font-family:var(--ff-head);}
+.act-btn span{font-size:0.38rem;font-weight:700;}
 
-/* ── SHEETS ── */
+/* SHEETS */
 .sheet-ov{
   position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
   z-index:700;display:flex;align-items:flex-end;justify-content:center;
@@ -581,22 +615,25 @@ body.admin-mode .admin-only{display:flex!important;}
   width:26px;height:26px;border-radius:50%;
   background:var(--gold-pale);border:none;cursor:pointer;
   color:var(--text2);font-size:0.65rem;transition:.2s ease;
-  display:flex;align-items:center;justify-content:center;
 }
 .sh-close:hover{background:rgba(201,162,39,.25);transform:rotate(90deg);}
 .sh-body{padding:16px;}
 
-/* ── FORMS ── */
+/* FORMS */
 .form-group{margin-bottom:12px;}
-.form-group label{font-family:var(--ff-head);font-size:0.5rem;font-weight:700;color:var(--gold);margin-bottom:5px;display:block;letter-spacing:.5px;}
+.form-group label{font-family:var(--ff-head);font-size:0.5rem;font-weight:700;color:var(--gold);margin-bottom:5px;display:block;}
 .form-input{
   width:100%;background:rgba(15,45,37,.6);border:1px solid var(--border);
   border-radius:var(--r1);padding:9px 13px;color:var(--text);
-  font-size:0.68rem;outline:none;transition:.25s ease;font-family:var(--ff-body);
+  font-size:0.68rem;outline:none;transition:.25s ease;
 }
 body.light .form-input{background:rgba(240,244,242,.8);}
 .form-input:focus{border-color:rgba(201,162,39,.6);box-shadow:0 0 0 3px rgba(201,162,39,.1);}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:var(--r1);cursor:pointer;font-weight:600;border:none;font-size:0.58rem;transition:.25s ease;font-family:var(--ff-head);letter-spacing:.3px;}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 15px;
+  border-radius:var(--r1);cursor:pointer;font-weight:600;border:none;
+  font-size:0.58rem;transition:.25s ease;
+}
 .btn-primary{background:linear-gradient(135deg,#7A5A10,var(--gold));color:#fff;box-shadow:var(--sh-gold);}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,162,39,.3);}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2);}
@@ -604,7 +641,7 @@ body.light .form-input{background:rgba(240,244,242,.8);}
 .btn-danger{background:linear-gradient(135deg,#A83232,var(--danger));color:#fff;}
 .btn-full{width:100%;justify-content:center;}
 
-/* ── MENU ITEMS ── */
+/* MENU ITEMS */
 .menu-item{
   display:flex;align-items:center;gap:11px;padding:11px 16px;
   cursor:pointer;border-bottom:1px solid var(--border);transition:.15s ease;
@@ -617,19 +654,19 @@ body.light .form-input{background:rgba(240,244,242,.8);}
 }
 .menu-label{font-size:0.68rem;color:var(--text);font-weight:500;}
 
-/* ── TOAST ── */
+/* TOAST */
 .toast{
   position:fixed;bottom:calc(var(--nav-h) + 14px);left:50%;
   transform:translateX(-50%);
   background:linear-gradient(135deg,var(--g2),var(--g3));
   color:#fff;border-radius:var(--rf);padding:8px 18px;font-size:0.58rem;
   z-index:9000;opacity:0;visibility:hidden;transition:.3s ease;
-  white-space:nowrap;box-shadow:var(--sh2);border:1px solid rgba(201,162,39,.15);
-  font-family:var(--ff-head);font-weight:600;letter-spacing:.3px;
+  white-space:nowrap;box-shadow:var(--sh2);
+  font-family:var(--ff-head);font-weight:600;
 }
 .toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-6px);}
 
-/* ── LOADING ── */
+/* LOADING */
 .loading-screen{
   position:fixed;inset:0;
   background:linear-gradient(135deg,var(--g1),var(--g2));
@@ -645,30 +682,13 @@ body.light .form-input{background:rgba(240,244,242,.8);}
   animation:logoGlow 1.8s ease infinite;box-shadow:var(--sh-gold);
 }
 @keyframes logoGlow{0%,100%{box-shadow:0 0 20px rgba(201,162,39,.3);}50%{box-shadow:0 0 50px rgba(201,162,39,.6);}}
-.loading-brand{font-family:var(--ff-head);font-size:0.85rem;font-weight:800;color:#fff;letter-spacing:1px;}
-.loading-sub{font-size:0.5rem;color:rgba(255,255,255,.5);letter-spacing:.8px;}
-.loading-track{width:110px;height:2px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;margin-top:4px;}
+.loading-brand{font-family:var(--ff-head);font-size:0.85rem;font-weight:800;color:#fff;}
+.loading-sub{font-size:0.5rem;color:rgba(255,255,255,.5);}
+.loading-track{width:110px;height:2px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
 .loading-fill{height:100%;background:linear-gradient(90deg,var(--gold),#fff);animation:lfill 1s ease infinite;}
 @keyframes lfill{0%{transform:translateX(-100%);}100%{transform:translateX(250%);}}
 
-/* ── EMPTY ── */
-.empty-state{text-align:center;padding:44px 20px;}
-.empty-icon{font-size:1.8rem;color:var(--text3);margin-bottom:10px;opacity:.5;}
-.empty-title{font-family:var(--ff-head);font-size:0.7rem;font-weight:700;color:var(--text2);}
-.empty-sub{font-size:0.52rem;color:var(--text3);margin-top:3px;}
-
-/* ── BOOKMARKS BUTTON state ── */
-.bm-count-tag{
-  display:inline-flex;align-items:center;gap:4px;
-  background:var(--gold-pale);border:1px solid rgba(201,162,39,.2);
-  padding:3px 8px;border-radius:var(--rf);
-  font-size:0.42rem;color:var(--gold);font-weight:700;
-}
-
-/* ── HIGHLIGHT match ── */
-mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;padding:0 1px;}
-
-/* ── Responsive ── */
+/* RESPONSIVE */
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr;}
   .quick-grid{grid-template-columns:repeat(2,1fr);}
@@ -691,9 +711,16 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
   </div>
   <div class="hdr-right">
     <span class="hdr-clock" id="appTime"></span>
-    <button class="hdr-btn" id="themeBtn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
-    <button class="hdr-btn gold notif-dot" id="bookmarkHdrBtn" onclick="showSection('bookmarks')" title="Bookmarks"><i class="fas fa-bookmark"></i></button>
-    <button class="hdr-btn" id="adminBtn" onclick="openAdminModal()" title="Admin"><i class="fas fa-shield-alt"></i></button>
+    <div class="export-menu">
+      <button class="hdr-btn gold" id="exportBtn" onclick="toggleExportMenu()"><i class="fas fa-download"></i></button>
+      <div class="export-dropdown" id="exportDropdown">
+        <button onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel (.xlsx)</button>
+        <button onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> PDF Report</button>
+      </div>
+    </div>
+    <button class="hdr-btn" id="themeBtn" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+    <button class="hdr-btn gold notif-dot" id="bookmarkHdrBtn" onclick="showSection('bookmarks')"><i class="fas fa-bookmark"></i></button>
+    <button class="hdr-btn" id="adminBtn" onclick="openAdminModal()"><i class="fas fa-shield-alt"></i></button>
   </div>
 </header>
 
@@ -708,10 +735,8 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
 
 <main class="main">
 
-  <!-- ── HOME ── -->
+  <!-- HOME -->
   <div id="homeSection" class="section active">
-
-    <!-- Welcome card -->
     <div class="welcome-card">
       <div class="welcome-row">
         <div>
@@ -724,97 +749,63 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
         </div>
       </div>
       <div class="welcome-bar">
-        <div class="welcome-pill">
-          <i class="fas fa-industry"></i>
-          <div><span id="wFour">0</span><span>Suppliers</span></div>
-        </div>
-        <div class="welcome-pill">
-          <i class="fas fa-microchip"></i>
-          <div><span id="wExp">0</span><span>Experts</span></div>
-        </div>
-        <div class="welcome-pill">
-          <i class="fas fa-city"></i>
-          <div><span id="wCities">0</span><span>Cities</span></div>
-        </div>
+        <div class="welcome-pill"><i class="fas fa-industry"></i><div><span id="wFour">0</span><span>Suppliers</span></div></div>
+        <div class="welcome-pill"><i class="fas fa-microchip"></i><div><span id="wExp">0</span><span>Experts</span></div></div>
+        <div class="welcome-pill"><i class="fas fa-city"></i><div><span id="wCities">0</span><span>Cities</span></div></div>
       </div>
     </div>
 
-    <!-- Sync (admin) -->
     <div id="syncHomeCard" class="sync-card admin-only" onclick="syncToFirebase()" style="display:none;">
-      <div class="left">
-        <i class="fas fa-sync-alt"></i>
-        <div><span>SYNC CSV TO FIREBASE</span><span>Replace existing database data</span></div>
-      </div>
+      <div class="left"><i class="fas fa-sync-alt"></i><div><span>SYNC CSV TO FIREBASE</span><span>Replace existing database data</span></div></div>
       <i class="fas fa-chevron-right chevron"></i>
     </div>
 
-    <!-- Stats -->
     <div class="sec-ttl">BY TYPE</div>
     <div class="stats-grid">
       <div class="stat-card" onclick="filterByTypeFromHome('fournisseurs')">
         <div class="stat-icon si-gold"><i class="fas fa-industry"></i></div>
-        <div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">SUPPLIERS</div></div>
+        <div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">SUPPLIERS</div><div class="stat-trend"><i class="fas fa-arrow-up"></i> +12%</div></div>
       </div>
       <div class="stat-card" onclick="filterByTypeFromHome('experts')">
         <div class="stat-icon si-teal"><i class="fas fa-microchip"></i></div>
-        <div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">EXPERTS</div></div>
+        <div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">EXPERTS</div><div class="stat-trend"><i class="fas fa-arrow-up"></i> +8%</div></div>
       </div>
       <div class="stat-card" onclick="filterByCityFromHome()">
         <div class="stat-icon si-orange"><i class="fas fa-map-marker-alt"></i></div>
-        <div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">CITIES</div></div>
+        <div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">CITIES</div><div class="stat-trend"><i class="fas fa-globe"></i> Nationwide</div></div>
       </div>
       <div class="stat-card" onclick="filterBySectorFromHome()">
         <div class="stat-icon si-blue"><i class="fas fa-layer-group"></i></div>
-        <div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">SECTORS</div></div>
+        <div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">SECTORS</div><div class="stat-trend"><i class="fas fa-chart-line"></i> Active</div></div>
       </div>
     </div>
 
-    <!-- Analytics Chart -->
+    <!-- Chart.js Section -->
     <div class="analytics-card">
       <div class="analytics-title">CATEGORY BREAKDOWN <span id="chartDate"></span></div>
-      <div class="bar-chart" id="analyticsChart"></div>
+      <div class="chart-container">
+        <canvas id="categoryChart"></canvas>
+      </div>
     </div>
 
-    <!-- By Category -->
     <div class="sec-ttl">BY CATEGORY</div>
     <div class="quick-grid">
-      <div class="quick-item" onclick="filterByCategorieFromHome('services')">
-        <i class="fas fa-cogs"></i><span>SERVICES</span>
-        <div class="quick-num" id="statServices">0</div>
-      </div>
-      <div class="quick-item" onclick="filterByCategorieFromHome('products')">
-        <i class="fas fa-boxes"></i><span>PRODUCTS</span>
-        <div class="quick-num" id="statProduits">0</div>
-      </div>
-      <div class="quick-item" onclick="filterByCategorieFromHome('maqola')">
-        <i class="fas fa-hard-hat"></i><span>MAQAOLA</span>
-        <div class="quick-num" id="statMaqola">0</div>
-      </div>
-      <div class="quick-item" onclick="filterByCategorieFromHome('yad-amila')">
-        <i class="fas fa-hands"></i><span>YAD AMILA</span>
-        <div class="quick-num" id="statYadAmila">0</div>
-      </div>
+      <div class="quick-item" onclick="filterByCategorieFromHome('services')"><i class="fas fa-cogs"></i><span>SERVICES</span><div class="quick-num" id="statServices">0</div></div>
+      <div class="quick-item" onclick="filterByCategorieFromHome('products')"><i class="fas fa-boxes"></i><span>PRODUCTS</span><div class="quick-num" id="statProduits">0</div></div>
+      <div class="quick-item" onclick="filterByCategorieFromHome('maqola')"><i class="fas fa-hard-hat"></i><span>MAQAOLA</span><div class="quick-num" id="statMaqola">0</div></div>
+      <div class="quick-item" onclick="filterByCategorieFromHome('yad-amila')"><i class="fas fa-hands"></i><span>YAD AMILA</span><div class="quick-num" id="statYadAmila">0</div></div>
     </div>
 
-    <!-- Recently Added -->
     <div class="sec-ttl">RECENTLY ADDED <span class="count-pill" id="recentCountPill">0</span></div>
     <div class="recent-scroll" id="recentScroll"></div>
 
-    <!-- Top Sectors -->
     <div class="sec-ttl">TOP SECTORS</div>
     <div id="topSectors"></div>
-
   </div>
 
-  <!-- ── EXPLORER ── -->
+  <!-- EXPLORER -->
   <div id="explorerSection" class="section">
-    <div class="search-bar" id="expSearchWrap">
-      <div class="search-wrap">
-        <i class="fas fa-search"></i>
-        <input type="text" id="expSearchInput" placeholder="Search in explorer...">
-        <button class="search-clear" id="expSearchClear"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
+    <div class="search-bar" id="expSearchWrap"><div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="expSearchInput" placeholder="Search in explorer..."><button class="search-clear" id="expSearchClear"><i class="fas fa-times"></i></button></div></div>
     <div class="filter-row">
       <div class="chip" id="expFilterTypeBtn"><i class="fas fa-tag"></i> TYPE</div>
       <div class="chip" id="expFilterCatBtn"><i class="fas fa-layer-group"></i> CATEGORY</div>
@@ -828,20 +819,11 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
     <div id="explorerContent"></div>
   </div>
 
-  <!-- ── DIRECTORY ── -->
+  <!-- DIRECTORY -->
   <div id="repertoireSection" class="section">
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0 0;">
-      <div class="search-bar" style="flex:1;padding:8px 0 0;" id="repSearchWrap">
-        <div class="search-wrap">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Search directory...">
-          <button class="search-clear" id="searchClear"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-      <div class="view-toggle" style="flex-shrink:0;">
-        <button class="view-btn active" id="viewList" onclick="setView('list')" title="List view"><i class="fas fa-list"></i></button>
-        <button class="view-btn" id="viewCompact" onclick="setView('compact')" title="Compact view"><i class="fas fa-bars"></i></button>
-      </div>
+      <div class="search-bar" style="flex:1;padding:8px 0 0;" id="repSearchWrap"><div class="search-wrap"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search directory..."><button class="search-clear" id="searchClear"><i class="fas fa-times"></i></button></div></div>
+      <div class="view-toggle"><button class="view-btn active" id="viewList" onclick="setView('list')"><i class="fas fa-list"></i></button><button class="view-btn" id="viewCompact" onclick="setView('compact')"><i class="fas fa-bars"></i></button></div>
     </div>
     <div class="filter-row">
       <div class="chip" id="filterTypeBtn"><i class="fas fa-tag"></i> TYPE</div>
@@ -855,12 +837,10 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
     <div id="contactList"></div>
   </div>
 
-  <!-- ── BOOKMARKS ── -->
+  <!-- BOOKMARKS -->
   <div id="bookmarksSection" class="section">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0 6px;">
-      <div style="font-family:var(--ff-head);font-size:0.7rem;font-weight:700;color:var(--text);">
-        <i class="fas fa-bookmark" style="color:var(--gold);margin-right:6px;"></i>SAVED CONTACTS
-      </div>
+      <div style="font-family:var(--ff-head);font-size:0.7rem;font-weight:700;color:var(--text);"><i class="fas fa-bookmark" style="color:var(--gold);margin-right:6px;"></i>SAVED CONTACTS</div>
       <span class="bm-count-tag"><i class="fas fa-layer-group"></i> <span id="bmCount">0</span> saved</span>
     </div>
     <div id="bookmarkList"></div>
@@ -868,675 +848,603 @@ mark{background:rgba(201,162,39,.25);color:var(--gold-light);border-radius:2px;p
 
 </main>
 
-<!-- Modals -->
-<div class="sheet-ov" id="adminModal">
-  <div class="sheet"><div class="sh-handle"></div>
-    <div class="sh-hdr"><h3><i class="fas fa-shield-alt"></i> ADMIN ACCESS</h3><button class="sh-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div>
-    <div class="sh-body">
-      <div class="form-group"><label>PASSWORD</label><input type="password" id="adminPass" class="form-input" placeholder="Enter admin password"></div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary" onclick="verifyAdmin()" style="flex:1"><i class="fas fa-unlock"></i> LOGIN</button>
-        <button class="btn btn-ghost" onclick="closeModal('adminModal')">CANCEL</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- MODALS -->
+<div class="sheet-ov" id="adminModal"><div class="sheet"><div class="sh-handle"></div><div class="sh-hdr"><h3><i class="fas fa-shield-alt"></i> ADMIN ACCESS</h3><button class="sh-close" onclick="closeModal('adminModal')"><i class="fas fa-times"></i></button></div><div class="sh-body"><div class="form-group"><label>PASSWORD</label><input type="password" id="adminPass" class="form-input" placeholder="Enter admin password"></div><div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary" onclick="verifyAdmin()" style="flex:1"><i class="fas fa-unlock"></i> LOGIN</button><button class="btn btn-ghost" onclick="closeModal('adminModal')">CANCEL</button></div></div></div></div>
 
-<div class="overlay" id="detailModal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <button class="modal-close" onclick="closeDetailModal()"><i class="fas fa-times"></i></button>
-      <div class="modal-av" id="modalAvatar"></div>
-      <div class="modal-name" id="modalName"></div>
-      <div class="modal-sub" id="modalType"></div>
-      <div class="modal-badges" id="modalBadges"></div>
-    </div>
-    <div class="modal-body" id="modalBody"></div>
-    <div class="modal-actions" id="modalActions"></div>
-  </div>
-</div>
+<div class="overlay" id="detailModal"><div class="modal-box"><div class="modal-head"><button class="modal-close" onclick="closeDetailModal()"><i class="fas fa-times"></i></button><div class="modal-av" id="modalAvatar"></div><div class="modal-name" id="modalName"></div><div class="modal-sub" id="modalType"></div><div class="modal-badges" id="modalBadges"></div></div><div class="modal-body" id="modalBody"></div><div class="modal-actions" id="modalActions"></div></div></div>
 
-<div class="sheet-ov" id="listModal">
-  <div class="sheet"><div class="sh-handle"></div>
-    <div class="sh-hdr"><h3 id="listTitle">SELECT</h3><button class="sh-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div>
-    <div id="listItems" style="max-height:55vh;overflow-y:auto;"></div>
-  </div>
-</div>
+<div class="sheet-ov" id="listModal"><div class="sheet"><div class="sh-handle"></div><div class="sh-hdr"><h3 id="listTitle">SELECT</h3><button class="sh-close" onclick="closeModal('listModal')"><i class="fas fa-times"></i></button></div><div id="listItems" style="max-height:55vh;overflow-y:auto;"></div></div></div>
 
-<div class="sheet-ov" id="editModal">
-  <div class="sheet"><div class="sh-handle"></div>
-    <div class="sh-hdr"><h3 id="editTitle">ADD PROFILE</h3><button class="sh-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div>
-    <div class="sh-body">
-      <input type="hidden" id="editId">
-      <div class="form-group"><label>NAME *</label><input type="text" id="editName" class="form-input" placeholder="Company name"></div>
-      <div class="form-group"><label>TYPE</label><select id="editType" class="form-input"><option value="fournisseurs">Supplier</option><option value="experts">Expert</option></select></div>
-      <div class="form-group"><label>CATEGORY</label><select id="editCat" class="form-input"><option value="services">Services</option><option value="products">Products</option><option value="maqola">Maqaola</option><option value="yad-amila">Yad Amila</option></select></div>
-      <div class="form-group"><label>SECTOR</label><input type="text" id="editDomaine" class="form-input" placeholder="e.g., Electrical"></div>
-      <div class="form-group"><label>SPECIALTY</label><input type="text" id="editSpecialite" class="form-input" placeholder="e.g., Automation"></div>
-      <div class="form-group"><label>CITY</label><input type="text" id="editVille" class="form-input" placeholder="Casablanca"></div>
-      <div class="form-group"><label>PHONE</label><input type="tel" id="editPhone" class="form-input" placeholder="+212 6xx xxx xxx"></div>
-      <div class="form-group"><label>EMAIL</label><input type="email" id="editEmail" class="form-input" placeholder="contact@example.com"></div>
-      <div class="form-group"><label>WEBSITE</label><input type="url" id="editWeb" class="form-input" placeholder="https://"></div>
-      <button class="btn btn-primary btn-full" onclick="saveItem()"><i class="fas fa-save"></i> SAVE</button>
-    </div>
-  </div>
-</div>
+<div class="sheet-ov" id="editModal"><div class="sheet"><div class="sh-handle"></div><div class="sh-hdr"><h3 id="editTitle">ADD PROFILE</h3><button class="sh-close" onclick="closeModal('editModal')"><i class="fas fa-times"></i></button></div><div class="sh-body"><input type="hidden" id="editId"><div class="form-group"><label>NAME *</label><input type="text" id="editName" class="form-input" placeholder="Company name"></div><div class="form-group"><label>TYPE</label><select id="editType" class="form-input"><option value="fournisseurs">Supplier</option><option value="experts">Expert</option></select></div><div class="form-group"><label>CATEGORY</label><select id="editCat" class="form-input"><option value="services">Services</option><option value="products">Products</option><option value="maqola">Maqaola</option><option value="yad-amila">Yad Amila</option></select></div><div class="form-group"><label>SECTOR</label><input type="text" id="editDomaine" class="form-input" placeholder="e.g., Electrical"></div><div class="form-group"><label>SPECIALTY</label><input type="text" id="editSpecialite" class="form-input" placeholder="e.g., Automation"></div><div class="form-group"><label>CITY</label><input type="text" id="editVille" class="form-input" placeholder="Casablanca"></div><div class="form-group"><label>PHONE</label><input type="tel" id="editPhone" class="form-input" placeholder="+212 6xx xxx xxx"></div><div class="form-group"><label>EMAIL</label><input type="email" id="editEmail" class="form-input" placeholder="contact@example.com"></div><div class="form-group"><label>WEBSITE</label><input type="url" id="editWeb" class="form-input" placeholder="https://"></div><button class="btn btn-primary btn-full" onclick="saveItem()"><i class="fas fa-save"></i> SAVE</button></div></div></div>
 
-<div class="sheet-ov" id="deleteModal">
-  <div class="sheet"><div class="sh-handle"></div>
-    <div class="sh-hdr"><h3><i class="fas fa-trash-alt" style="color:var(--danger)"></i> CONFIRM DELETE</h3><button class="sh-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div>
-    <div class="sh-body"><p id="deleteMsg" style="font-size:.65rem;color:var(--text2);margin-bottom:14px;"></p><button class="btn btn-danger btn-full" onclick="confirmDeleteItem()"><i class="fas fa-trash-alt"></i> DELETE PERMANENTLY</button></div>
-  </div>
-</div>
+<div class="sheet-ov" id="deleteModal"><div class="sheet"><div class="sh-handle"></div><div class="sh-hdr"><h3><i class="fas fa-trash-alt" style="color:var(--danger)"></i> CONFIRM DELETE</h3><button class="sh-close" onclick="closeModal('deleteModal')"><i class="fas fa-times"></i></button></div><div class="sh-body"><p id="deleteMsg"></p><button class="btn btn-danger btn-full" onclick="confirmDeleteItem()"><i class="fas fa-trash-alt"></i> DELETE</button></div></div></div>
 
 <div class="toast" id="toast"></div>
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo"><i class="fas fa-industry"></i></div>
-  <div class="loading-brand">CONNECT INDUSTRY</div>
-  <div class="loading-sub">PREMIUM B2B NETWORK · MOROCCO</div>
-  <div class="loading-track"><div class="loading-fill"></div></div>
-</div>
+<div class="loading-screen" id="loadingScreen"><div class="loading-logo"><i class="fas fa-industry"></i></div><div class="loading-brand">CONNECT INDUSTRY</div><div class="loading-sub">PREMIUM B2B NETWORK · MOROCCO</div><div class="loading-track"><div class="loading-fill"></div></div></div>
 
 <script>
-// ── CONFIG ──
+// FIREBASE CONFIG
 const CSV_EXPERTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
 const CSV_FOURNISSEURS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
 const ADMIN_PASSWORD = "admin123";
-const AVATAR_COLORS = ['#8C6A10','#0E6644','#A84F10','#1A4FA8','#7A2080','#0E6670','#8C3A30','#1E5580'];
 
 const firebaseConfig = {
-  apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
-  authDomain:"said-rahil-default-rtdb.firebaseio.com",
-  databaseURL:"https://said-rahil-default-rtdb.firebaseio.com/",
-  projectId:"said-rahil",
-  storageBucket:"said-rahil.firebasestorage.app"
+  apiKey: "AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
+  authDomain: "said-rahil-default-rtdb.firebaseio.com",
+  databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/",
+  projectId: "said-rahil",
+  storageBucket: "said-rahil.firebasestorage.app"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ── STATE ──
-let csvExperts=[], csvFournisseurs=[], dbData=[];
-let isAdmin=false, currentSection='home';
-let explorerStack=[];
-let pendingDelete=null;
-let listCallback=null;
-let currentView='list'; // 'list' | 'compact'
-let bookmarks=JSON.parse(localStorage.getItem('ci_bookmarks')||'[]');
-let currentDetailItem=null;
+// STATE
+let csvExperts = [], csvFournisseurs = [], dbData = [];
+let isAdmin = false, currentSection = 'home';
+let explorerStack = [];
+let pendingDelete = null;
+let listCallback = null;
+let currentView = 'list';
+let bookmarks = JSON.parse(localStorage.getItem('ci_bookmarks') || '[]');
+let categoryChart = null;
 
-let repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
-let expFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
+let repFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
+let expFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' };
 
-// ── UTILS ──
-const $=id=>document.getElementById(id);
-const esc=s=>String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
-const matches=(v,q)=>v&&q&&norm(String(v)).includes(norm(q));
-function formatPhone(p){if(!p)return'';let c=String(p).replace(/[\s\-\(\)\.]/g,'');if(c.startsWith('00'))c='+'+c.slice(2);else if(c.startsWith('0'))c='+212'+c.slice(1);return c;}
-function getInitials(n){return(n||'').trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase()||'?';}
-function getColor(n){const code=Array.from(n||'').reduce((a,c)=>a+c.charCodeAt(0),0);return AVATAR_COLORS[code%AVATAR_COLORS.length];}
-function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
-function showLoading(v){v?$('loadingScreen').classList.remove('hide'):$('loadingScreen').classList.add('hide');}
-function closeModal(id){$(id).classList.remove('show');}
+// UTILS
+const $ = id => document.getElementById(id);
+const esc = s => String(s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+const matches = (v, q) => v && q && norm(String(v)).includes(norm(q));
+function formatPhone(p) { if (!p) return ''; let c = String(p).replace(/[\s\-\(\)\.]/g, ''); if (c.startsWith('00')) c = '+' + c.slice(2); else if (c.startsWith('0')) c = '+212' + c.slice(1); return c; }
+function getInitials(n) { return (n || '').trim().split(/\s+/).slice(0, 2).map(p => p[0] || '').join('').toUpperCase() || '?'; }
+const AVATAR_COLORS = ['#8C6A10', '#0E6644', '#A84F10', '#1A4FA8', '#7A2080', '#0E6670'];
+function getColor(n) { const code = Array.from(n || '').reduce((a, c) => a + c.charCodeAt(0), 0); return AVATAR_COLORS[code % AVATAR_COLORS.length]; }
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600); }
+function showLoading(v) { v ? $('loadingScreen').classList.remove('hide') : $('loadingScreen').classList.add('hide'); }
+function closeModal(id) { $(id).classList.remove('show'); }
 
-// Highlight search term
-function highlight(text,q){
-  if(!q||!q.trim())return esc(text);
-  const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
-  return esc(text).replace(re,'<mark>$1</mark>');
+// ANIMATED NUMBER COUNTER
+function animateNumber(element, target, duration = 800) {
+  if (!element) return;
+  const start = 0;
+  const increment = target / (duration / 16);
+  let current = 0;
+  const timer = setInterval(() => {
+    current += increment;
+    if (current >= target) {
+      element.textContent = target;
+      clearInterval(timer);
+    } else {
+      element.textContent = Math.floor(current);
+    }
+  }, 16);
 }
 
-// ── THEME ──
-function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('theme',document.body.classList.contains('light')?'light':'dark');}
-if(localStorage.getItem('theme')==='light')document.body.classList.add('light');
-$('themeBtn').onclick=toggleTheme;
+// THEME
+function toggleTheme() { document.body.classList.toggle('light'); localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark'); }
+if (localStorage.getItem('theme') === 'light') document.body.classList.add('light');
 
-// ── CLOCK & GREETING ──
-function updateClock(){
-  const now=new Date();
-  $('appTime').textContent=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-  const h=now.getHours();
-  const g=h<12?'Good Morning ☀️':h<17?'Good Afternoon 🌤️':'Good Evening 🌙';
-  const el=$('welcomeGreeting');if(el)el.textContent=g;
-  const cd=$('chartDate');if(cd)cd.textContent=now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+// CLOCK & GREETING
+function updateClock() {
+  const now = new Date();
+  $('appTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const h = now.getHours();
+  const g = h < 12 ? 'Good Morning ☀️' : h < 17 ? 'Good Afternoon 🌤️' : 'Good Evening 🌙';
+  const el = $('welcomeGreeting'); if (el) el.textContent = g;
+  const cd = $('chartDate'); if (cd) cd.textContent = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
-updateClock();setInterval(updateClock,1000);
+updateClock(); setInterval(updateClock, 1000);
 
-// ── ADMIN ──
-function openAdminModal(){if(isAdmin){logoutAdmin();}else{$('adminPass').value='';$('adminModal').classList.add('show');}}
-function verifyAdmin(){
-  if($('adminPass').value===ADMIN_PASSWORD){
-    isAdmin=true;sessionStorage.setItem('adminMode','true');document.body.classList.add('admin-mode');
-    const s=$('syncHomeCard');if(s)s.style.display='flex';
-    closeModal('adminModal');toast('✅ Admin mode activated');renderCurrent();
-  }else{toast('❌ Incorrect password');}
+// ADMIN
+function openAdminModal() { if (isAdmin) { logoutAdmin(); } else { $('adminPass').value = ''; $('adminModal').classList.add('show'); } }
+function verifyAdmin() {
+  if ($('adminPass').value === ADMIN_PASSWORD) {
+    isAdmin = true; sessionStorage.setItem('adminMode', 'true'); document.body.classList.add('admin-mode');
+    const s = $('syncHomeCard'); if (s) s.style.display = 'flex';
+    closeModal('adminModal'); toast('✅ Admin mode activated'); renderCurrent();
+  } else { toast('❌ Incorrect password'); }
 }
-function logoutAdmin(){
-  isAdmin=false;sessionStorage.removeItem('adminMode');document.body.classList.remove('admin-mode');
-  const s=$('syncHomeCard');if(s)s.style.display='none';
-  toast('👤 User mode');renderCurrent();
+function logoutAdmin() {
+  isAdmin = false; sessionStorage.removeItem('adminMode'); document.body.classList.remove('admin-mode');
+  const s = $('syncHomeCard'); if (s) s.style.display = 'none';
+  toast('👤 User mode'); renderCurrent();
 }
-function checkAdmin(){
-  if(sessionStorage.getItem('adminMode')==='true'){
-    isAdmin=true;document.body.classList.add('admin-mode');
-    const s=$('syncHomeCard');if(s)s.style.display='flex';
+function checkAdmin() {
+  if (sessionStorage.getItem('adminMode') === 'true') {
+    isAdmin = true; document.body.classList.add('admin-mode');
+    const s = $('syncHomeCard'); if (s) s.style.display = 'flex';
   }
 }
 
-// ── DATA ──
-function getVilles(){return[...new Set(dbData.map(d=>d.ville).filter(v=>v&&v!=='null'&&v.trim()))];}
-function getDomaines(){return[...new Set(dbData.map(d=>d.domaine).filter(d=>d&&d!=='null'&&d.trim()))];}
-function getCategories(){return[...new Set(dbData.map(d=>d.categorie).filter(c=>c))];}
+// DATA HELPERS
+function getVilles() { return [...new Set(dbData.map(d => d.ville).filter(v => v && v !== 'null' && v.trim()))]; }
+function getDomaines() { return [...new Set(dbData.map(d => d.domaine).filter(d => d && d !== 'null' && d.trim()))]; }
+function getCategories() { return [...new Set(dbData.map(d => d.categorie).filter(c => c))]; }
 
-// ── BOOKMARKS ──
-function isBookmarked(id){return bookmarks.includes(id);}
-function toggleBookmark(id,e){
-  if(e){e.stopPropagation();}
-  if(isBookmarked(id)){bookmarks=bookmarks.filter(b=>b!==id);toast('🗑️ Removed from saved');}
-  else{bookmarks.push(id);toast('⭐ Saved to bookmarks');}
-  localStorage.setItem('ci_bookmarks',JSON.stringify(bookmarks));
+// BOOKMARKS
+function isBookmarked(id) { return bookmarks.includes(id); }
+function toggleBookmark(id, e) {
+  if (e) e.stopPropagation();
+  if (isBookmarked(id)) { bookmarks = bookmarks.filter(b => b !== id); toast('🗑️ Removed from saved'); }
+  else { bookmarks.push(id); toast('⭐ Saved to bookmarks'); }
+  localStorage.setItem('ci_bookmarks', JSON.stringify(bookmarks));
   updateBMCount();
-  // Update button state in DOM
-  document.querySelectorAll(`[data-bm="${id}"]`).forEach(btn=>{
-    btn.classList.toggle('bookmarked',isBookmarked(id));
-    btn.innerHTML=isBookmarked(id)?'<i class="fas fa-bookmark"></i>':'<i class="far fa-bookmark"></i>';
+  document.querySelectorAll(`[data-bm="${id}"]`).forEach(btn => {
+    btn.classList.toggle('bookmarked', isBookmarked(id));
+    btn.innerHTML = isBookmarked(id) ? '<i class="fas fa-bookmark"></i>' : '<i class="far fa-bookmark"></i>';
   });
-  if(currentSection==='bookmarks')renderBookmarks();
+  if (currentSection === 'bookmarks') renderBookmarks();
 }
-function updateBMCount(){
-  const c=bookmarks.length;
-  const el=$('bmCount');if(el)el.textContent=c;
-  // show/hide dot on header bookmark btn
-  $('bookmarkHdrBtn').classList.toggle('notif-dot',c>0);
+function updateBMCount() { const c = bookmarks.length; const el = $('bmCount'); if (el) el.textContent = c; $('bookmarkHdrBtn').classList.toggle('notif-dot', c > 0); }
+
+// EXPORT FUNCTIONS
+function toggleExportMenu() { $('exportDropdown').classList.toggle('show'); setTimeout(() => { window.addEventListener('click', function closeExport(e) { if (!e.target.closest('.export-menu')) { $('exportDropdown').classList.remove('show'); window.removeEventListener('click', closeExport); } }); }, 100); }
+function exportToExcel() {
+  const data = dbData.map(item => ({
+    'Name': item.name,
+    'Type': item.type === 'fournisseurs' ? 'Supplier' : 'Expert',
+    'Category': item.categorie,
+    'Sector': item.domaine,
+    'Specialty': item.specialite,
+    'City': item.ville,
+    'Phone': item.phone,
+    'Email': item.email,
+    'Website': item.web
+  }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ConnectIndustry');
+  XLSX.writeFile(wb, `connect_industry_${new Date().toISOString().slice(0,19)}.xlsx`);
+  toast('📊 Exported to Excel');
+}
+async function exportToPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text('Connect Industry - Directory Report', 14, 20);
+  doc.setFontSize(10);
+  doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+  doc.text(`Total Profiles: ${dbData.length}`, 14, 40);
+  let y = 50;
+  dbData.slice(0, 20).forEach((item, i) => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.text(`${i + 1}. ${item.name} - ${item.type === 'fournisseurs' ? 'Supplier' : 'Expert'}${item.ville ? ` (${item.ville})` : ''}`, 14, y);
+    y += 8;
+  });
+  if (dbData.length > 20) doc.text(`... and ${dbData.length - 20} more profiles`, 14, y);
+  doc.save(`connect_industry_report_${new Date().toISOString().slice(0,19)}.pdf`);
+  toast('📄 PDF Report generated');
 }
 
-// ── STATS ──
-function updateStats(){
-  const f=dbData.filter(d=>d.type==='fournisseurs').length;
-  const e=dbData.filter(d=>d.type==='experts').length;
-  const total=dbData.length;
-  $('statFour').textContent=f;
-  $('statExp').textContent=e;
-  $('statVilles').textContent=getVilles().length;
-  $('statDomaines').textContent=getDomaines().length;
-  $('statServices').textContent=dbData.filter(d=>d.categorie==='services').length;
-  $('statProduits').textContent=dbData.filter(d=>d.categorie==='products').length;
-  $('statMaqola').textContent=dbData.filter(d=>d.categorie==='maqola').length;
-  $('statYadAmila').textContent=dbData.filter(d=>d.categorie==='yad-amila').length;
-  const wt=$('wTotalProfs');if(wt)wt.textContent=total;
-  const wf=$('wFour');if(wf)wf.textContent=f;
-  const we=$('wExp');if(we)we.textContent=e;
-  const wc=$('wCities');if(wc)wc.textContent=getVilles().length;
+// SHARE FUNCTION
+function shareProfile(item) {
+  const text = `📌 ${item.name}\n${item.type === 'fournisseurs' ? '🏭 Supplier' : '🔬 Expert'}\n📍 ${item.ville || 'Morocco'}\n📂 ${item.domaine || ''}\n📞 ${item.phone || ''}\n🔗 Powered by Connect Industry`;
+  if (navigator.share) { navigator.share({ title: item.name, text: text }).catch(() => {}); }
+  else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); }
+}
+
+// STATS WITH ANIMATION
+function updateStats() {
+  const f = dbData.filter(d => d.type === 'fournisseurs').length;
+  const e = dbData.filter(d => d.type === 'experts').length;
+  const total = dbData.length;
+  animateNumber($('statFour'), f);
+  animateNumber($('statExp'), e);
+  animateNumber($('statVilles'), getVilles().length);
+  animateNumber($('statDomaines'), getDomaines().length);
+  animateNumber($('statServices'), dbData.filter(d => d.categorie === 'services').length);
+  animateNumber($('statProduits'), dbData.filter(d => d.categorie === 'products').length);
+  animateNumber($('statMaqola'), dbData.filter(d => d.categorie === 'maqola').length);
+  animateNumber($('statYadAmila'), dbData.filter(d => d.categorie === 'yad-amila').length);
+  animateNumber($('wTotalProfs'), total);
+  animateNumber($('wFour'), f);
+  animateNumber($('wExp'), e);
+  animateNumber($('wCities'), getVilles().length);
   updateBMCount();
-  renderAnalytics();
+  renderAnalyticsChart();
   renderRecentProfiles();
   renderTopSectors();
 }
 
-// ── ANALYTICS CHART ──
-function renderAnalytics(){
-  const chart=$('analyticsChart');
-  if(!chart)return;
-  const cats=[
-    {key:'services',label:'Services',cls:''},
-    {key:'products',label:'Products',cls:'blue'},
-    {key:'maqola',label:'Maqaola',cls:'teal'},
-    {key:'yad-amila',label:'Yad Amila',cls:'orange'},
-  ];
-  const counts=cats.map(c=>dbData.filter(d=>d.categorie===c.key).length);
-  const max=Math.max(...counts,1);
-  chart.innerHTML=cats.map((c,i)=>{
-    const pct=Math.round((counts[i]/max)*100);
-    return`<div class="bar-wrap" onclick="filterByCategorieFromHome('${c.key}')">
-      <div class="bar ${c.cls}" data-val="${counts[i]}" style="height:${Math.max(pct*0.7,4)}px"></div>
-      <div class="bar-lbl">${c.label}</div>
-    </div>`;
-  }).join('');
+// CHART.JS
+function renderAnalyticsChart() {
+  const services = dbData.filter(d => d.categorie === 'services').length;
+  const products = dbData.filter(d => d.categorie === 'products').length;
+  const maqola = dbData.filter(d => d.categorie === 'maqola').length;
+  const yadAmila = dbData.filter(d => d.categorie === 'yad-amila').length;
+  const ctx = document.getElementById('categoryChart').getContext('2d');
+  if (categoryChart) categoryChart.destroy();
+  categoryChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Services', 'Products', 'Maqaola', 'Yad Amila'],
+      datasets: [{
+        data: [services, products, maqola, yadAmila],
+        backgroundColor: ['#C9A227', '#3CC98B', '#E8924A', '#4A8FE8'],
+        borderWidth: 0,
+        borderRadius: 10,
+        spacing: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: 'var(--text2)', font: { size: 10 } } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} profiles (${Math.round(ctx.raw / dbData.length * 100)}%)` } }
+      },
+      cutout: '60%'
+    }
+  });
 }
 
-// ── RECENT PROFILES ──
-function renderRecentProfiles(){
-  const scroll=$('recentScroll');
-  const cp=$('recentCountPill');
-  if(!scroll)return;
-  const recent=[...dbData].slice(0,10);
-  if(!recent.length){scroll.innerHTML='<div style="font-size:.55rem;color:var(--text3);padding:10px 0;">No data loaded</div>';return;}
-  if(cp)cp.textContent=recent.length;
-  scroll.innerHTML=recent.map(item=>{
-    const init=getInitials(item.name);
-    const col=getColor(item.name);
-    const badgeCls=item.type==='fournisseurs'?'b-fourn':'b-expert';
-    const badgeTxt=item.type==='fournisseurs'?'Supplier':'Expert';
-    const enc=encodeURIComponent(JSON.stringify(item));
-    return`<div class="recent-card" onclick="openDetailModal('${enc}')">
+// RECENT PROFILES
+function renderRecentProfiles() {
+  const scroll = $('recentScroll');
+  const cp = $('recentCountPill');
+  if (!scroll) return;
+  const recent = [...dbData].slice(0, 10);
+  if (!recent.length) { scroll.innerHTML = '<div style="font-size:.55rem;color:var(--text3);padding:10px 0;">No data loaded</div>'; return; }
+  if (cp) cp.textContent = recent.length;
+  scroll.innerHTML = recent.map(item => {
+    const init = getInitials(item.name);
+    const col = getColor(item.name);
+    const badgeCls = item.type === 'fournisseurs' ? 'b-fourn' : 'b-expert';
+    const badgeTxt = item.type === 'fournisseurs' ? 'Supplier' : 'Expert';
+    const enc = encodeURIComponent(JSON.stringify(item));
+    return `<div class="recent-card" onclick="openDetailModal('${enc}')">
       <div class="rc-avatar" style="background:linear-gradient(135deg,${col},${col}bb)">${init}</div>
       <div class="rc-name">${esc(item.name)}</div>
-      <div class="rc-meta">${esc(item.ville||item.domaine||'')}</div>
+      <div class="rc-meta">${esc(item.ville || item.domaine || '')}</div>
       <span class="rc-badge ${badgeCls}">${badgeTxt}</span>
     </div>`;
   }).join('');
 }
 
-// ── TOP SECTORS ──
-function renderTopSectors(){
-  const el=$('topSectors');
-  if(!el)return;
-  const counts={};
-  dbData.forEach(d=>{if(d.domaine&&d.domaine!=='Autre'&&d.domaine!=='null')counts[d.domaine]=(counts[d.domaine]||0)+1;});
-  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  if(!sorted.length){el.innerHTML='';return;}
-  const max=sorted[0][1];
-  el.innerHTML=sorted.map(([name,cnt])=>`
-    <div style="margin-bottom:10px;cursor:pointer;" onclick="filterBySectorDirect('${esc(name)}')">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:.6rem;color:var(--text);font-weight:500;">${esc(name)}</span>
-        <span style="font-size:.52rem;color:var(--gold);font-family:var(--ff-head);font-weight:700;">${cnt}</span>
-      </div>
-      <div style="background:var(--border);border-radius:4px;height:4px;overflow:hidden;">
-        <div style="height:100%;border-radius:4px;width:${Math.round((cnt/max)*100)}%;background:linear-gradient(90deg,#7A5A10,var(--gold));transition:width .8s ease;"></div>
-      </div>
-    </div>
-  `).join('');
+// TOP SECTORS
+function renderTopSectors() {
+  const el = $('topSectors');
+  if (!el) return;
+  const counts = {};
+  dbData.forEach(d => { if (d.domaine && d.domaine !== 'Autre' && d.domaine !== 'null') counts[d.domaine] = (counts[d.domaine] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (!sorted.length) { el.innerHTML = ''; return; }
+  const max = sorted[0][1];
+  el.innerHTML = sorted.map(([name, cnt]) => `<div style="margin-bottom:10px;cursor:pointer;" onclick="filterBySectorDirect('${esc(name)}')">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:.6rem;color:var(--text);font-weight:500;">${esc(name)}</span><span style="font-size:.52rem;color:var(--gold);font-weight:700;">${cnt}</span></div>
+    <div style="background:var(--border);border-radius:4px;height:4px;overflow:hidden;"><div style="height:100%;border-radius:4px;width:${Math.round((cnt / max) * 100)}%;background:linear-gradient(90deg,#7A5A10,var(--gold));transition:width .8s ease;"></div></div>
+  </div>`).join('');
 }
-function filterBySectorDirect(name){
-  resetRepFilters();repFilters.domaine=name;
-  showSection('repertoire');renderRepertoire();toast(`🔍 ${name}`);
-}
+function filterBySectorDirect(name) { resetRepFilters(); repFilters.domaine = name; showSection('repertoire'); renderRepertoire(); toast(`🔍 ${name}`); }
 
-// ── HOME FILTER SHORTCUTS ──
-function filterByTypeFromHome(type){resetRepFilters();repFilters.type=type;showSection('repertoire');renderRepertoire();toast(`🔍 ${type==='fournisseurs'?'Suppliers':'Experts'}`);}
-function filterByCategorieFromHome(cat){resetRepFilters();repFilters.categorie=cat;showSection('repertoire');renderRepertoire();toast(`🔍 ${cat}`);}
-function filterByCityFromHome(){const v=getVilles().sort();if(!v.length){toast('⚠️ No cities');return;}showListModal('Select City',v,val=>{if(val){resetRepFilters();repFilters.ville=val;showSection('repertoire');renderRepertoire();toast(`🔍 ${val}`);}});}
-function filterBySectorFromHome(){const d=getDomaines().sort();if(!d.length){toast('⚠️ No sectors');return;}showListModal('Select Sector',d,val=>{if(val){resetRepFilters();repFilters.domaine=val;showSection('repertoire');renderRepertoire();toast(`🔍 ${val}`);}});}
+// HOME FILTERS
+function filterByTypeFromHome(type) { resetRepFilters(); repFilters.type = type; showSection('repertoire'); renderRepertoire(); toast(`🔍 ${type === 'fournisseurs' ? 'Suppliers' : 'Experts'}`); }
+function filterByCategorieFromHome(cat) { resetRepFilters(); repFilters.categorie = cat; showSection('repertoire'); renderRepertoire(); toast(`🔍 ${cat}`); }
+function filterByCityFromHome() { const v = getVilles().sort(); if (!v.length) { toast('⚠️ No cities'); return; } showListModal('Select City', v, val => { if (val) { resetRepFilters(); repFilters.ville = val; showSection('repertoire'); renderRepertoire(); toast(`🔍 ${val}`); } }); }
+function filterBySectorFromHome() { const d = getDomaines().sort(); if (!d.length) { toast('⚠️ No sectors'); return; } showListModal('Select Sector', d, val => { if (val) { resetRepFilters(); repFilters.domaine = val; showSection('repertoire'); renderRepertoire(); toast(`🔍 ${val}`); } }); }
 
-// ── VIEW TOGGLE ──
-function setView(v){
-  currentView=v;
-  $('viewList').classList.toggle('active',v==='list');
-  $('viewCompact').classList.toggle('active',v==='compact');
-  const cl=$('contactList');
-  if(cl){cl.classList.toggle('view-compact',v==='compact');}
-}
+// VIEW TOGGLE
+function setView(v) { currentView = v; $('viewList').classList.toggle('active', v === 'list'); $('viewCompact').classList.toggle('active', v === 'compact'); const cl = $('contactList'); if (cl) cl.classList.toggle('view-compact', v === 'compact'); }
 
-// ── DIRECTORY ──
-function getFilteredData(filters){
-  let data=[...dbData];
-  if(filters.type)data=data.filter(d=>d.type===filters.type);
-  if(filters.categorie)data=data.filter(d=>d.categorie===filters.categorie);
-  if(filters.ville)data=data.filter(d=>(d.ville||'').toLowerCase()===filters.ville.toLowerCase());
-  if(filters.domaine)data=data.filter(d=>(d.domaine||'').toLowerCase()===filters.domaine.toLowerCase());
-  if(filters.search&&filters.search.trim()){const q=filters.search.trim();data=data.filter(d=>matches(d.name,q)||matches(d.domaine,q)||matches(d.ville,q));}
-  return data.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+// DIRECTORY
+function getFilteredData(filters) {
+  let data = [...dbData];
+  if (filters.type) data = data.filter(d => d.type === filters.type);
+  if (filters.categorie) data = data.filter(d => d.categorie === filters.categorie);
+  if (filters.ville) data = data.filter(d => (d.ville || '').toLowerCase() === filters.ville.toLowerCase());
+  if (filters.domaine) data = data.filter(d => (d.domaine || '').toLowerCase() === filters.domaine.toLowerCase());
+  if (filters.search && filters.search.trim()) { const q = filters.search.trim(); data = data.filter(d => matches(d.name, q) || matches(d.domaine, q) || matches(d.ville, q)); }
+  return data.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 }
-function resetRepFilters(){
-  repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
-  const si=$('searchInput');if(si){si.value='';$('repSearchWrap').classList.remove('search-active');}
-  updateRepFilterUI();renderRepertoire();
+function resetRepFilters() { repFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' }; const si = $('searchInput'); if (si) { si.value = ''; $('repSearchWrap').classList.remove('search-active'); } updateRepFilterUI(); renderRepertoire(); }
+function updateRepFilterUI() {
+  $('filterTypeBtn').classList.toggle('active', !!repFilters.type);
+  $('filterCatBtn').classList.toggle('active', !!repFilters.categorie);
+  $('filterVilleBtn').classList.toggle('active', !!repFilters.ville);
+  $('filterDomaineBtn').classList.toggle('active', !!repFilters.domaine);
+  const con = $('activeFilters'); if (!con) return;
+  let h = '';
+  if (repFilters.type) h += `<div class="f-tag"><i class="fas fa-tag"></i>${repFilters.type === 'fournisseurs' ? 'Suppliers' : 'Experts'}<button onclick="removeRepFilter('type')">✕</button></div>`;
+  if (repFilters.categorie) h += `<div class="f-tag"><i class="fas fa-layer-group"></i>${esc(repFilters.categorie)}<button onclick="removeRepFilter('categorie')">✕</button></div>`;
+  if (repFilters.ville) h += `<div class="f-tag"><i class="fas fa-map-marker-alt"></i>${esc(repFilters.ville)}<button onclick="removeRepFilter('ville')">✕</button></div>`;
+  if (repFilters.domaine) h += `<div class="f-tag"><i class="fas fa-folder"></i>${esc(repFilters.domaine)}<button onclick="removeRepFilter('domaine')">✕</button></div>`;
+  if (repFilters.search) h += `<div class="f-tag"><i class="fas fa-search"></i>"${esc(repFilters.search)}"<button onclick="removeRepFilter('search')">✕</button></div>`;
+  con.innerHTML = h;
 }
-function updateRepFilterUI(){
-  $('filterTypeBtn').classList.toggle('active',!!repFilters.type);
-  $('filterCatBtn').classList.toggle('active',!!repFilters.categorie);
-  $('filterVilleBtn').classList.toggle('active',!!repFilters.ville);
-  $('filterDomaineBtn').classList.toggle('active',!!repFilters.domaine);
-  const con=$('activeFilters');if(!con)return;
-  let h='';
-  if(repFilters.type)h+=`<div class="f-tag"><i class="fas fa-tag"></i>${repFilters.type==='fournisseurs'?'Suppliers':'Experts'}<button onclick="removeRepFilter('type')">✕</button></div>`;
-  if(repFilters.categorie)h+=`<div class="f-tag"><i class="fas fa-layer-group"></i>${esc(repFilters.categorie)}<button onclick="removeRepFilter('categorie')">✕</button></div>`;
-  if(repFilters.ville)h+=`<div class="f-tag"><i class="fas fa-map-marker-alt"></i>${esc(repFilters.ville)}<button onclick="removeRepFilter('ville')">✕</button></div>`;
-  if(repFilters.domaine)h+=`<div class="f-tag"><i class="fas fa-folder"></i>${esc(repFilters.domaine)}<button onclick="removeRepFilter('domaine')">✕</button></div>`;
-  if(repFilters.search)h+=`<div class="f-tag"><i class="fas fa-search"></i>"${esc(repFilters.search)}"<button onclick="removeRepFilter('search')">✕</button></div>`;
-  con.innerHTML=h;
-}
-function removeRepFilter(key){
-  if(key==='search'){repFilters.search='';const si=$('searchInput');if(si){si.value='';$('repSearchWrap').classList.remove('search-active');}}
-  else repFilters[key]=null;
-  updateRepFilterUI();renderRepertoire();
-}
-function renderRepertoire(){
-  const data=getFilteredData(repFilters);
-  const has=Object.values(repFilters).some(v=>v&&v!=='');
-  const ri=$('resultInfo');
-  if(has){ri.innerHTML=`<i class="fas fa-filter"></i> ${data.length} result(s)`;ri.classList.add('visible');}else{ri.classList.remove('visible');}
-  if(!data.length){$('contactList').innerHTML=`<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">No results found</div><div class="empty-sub">Try different filters</div></div>`;return;}
-  const grouped={};
-  data.forEach(item=>{const l=(item.name||'#')[0].toUpperCase();if(!grouped[l])grouped[l]=[];grouped[l].push(item);});
-  let h='';
-  Object.keys(grouped).sort().forEach(letter=>{
-    h+=`<div class="alpha-letter">${letter}</div>`;
-    h+=grouped[letter].map(item=>buildContactItem(item,repFilters.search)).join('');
-  });
-  const cl=$('contactList');
-  cl.innerHTML=h;
-  cl.classList.toggle('view-compact',currentView==='compact');
+function removeRepFilter(key) { if (key === 'search') { repFilters.search = ''; const si = $('searchInput'); if (si) { si.value = ''; $('repSearchWrap').classList.remove('search-active'); } } else repFilters[key] = null; updateRepFilterUI(); renderRepertoire(); }
+function renderRepertoire() {
+  const data = getFilteredData(repFilters);
+  const has = Object.values(repFilters).some(v => v && v !== '');
+  const ri = $('resultInfo');
+  if (has) { ri.innerHTML = `<i class="fas fa-filter"></i> ${data.length} result(s)`; ri.classList.add('visible'); } else { ri.classList.remove('visible'); }
+  if (!data.length) { $('contactList').innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">No results found</div><div class="empty-sub">Try different filters</div></div>`; return; }
+  const grouped = {};
+  data.forEach(item => { const l = (item.name || '#')[0].toUpperCase(); if (!grouped[l]) grouped[l] = []; grouped[l].push(item); });
+  let h = '';
+  Object.keys(grouped).sort().forEach(letter => { h += `<div class="alpha-letter">${letter}</div>`; h += grouped[letter].map(item => buildContactItem(item, repFilters.search)).join(''); });
+  const cl = $('contactList');
+  cl.innerHTML = h;
+  cl.classList.toggle('view-compact', currentView === 'compact');
   updateRepFilterUI();
 }
-function buildContactItem(item,searchQ=''){
-  const init=getInitials(item.name);
-  const col=getColor(item.name);
-  const enc=encodeURIComponent(JSON.stringify(item));
-  const badge=item.type==='fournisseurs'?'b-fourn':'b-expert';
-  const badgeTxt=item.type==='fournisseurs'?'Supplier':'Expert';
-  let details=[];
-  if(item.domaine&&item.domaine!=='Autre')details.push(item.domaine);
-  if(item.ville)details.push(item.ville);
-  const bmk=isBookmarked(item.id);
-  const nameHl=searchQ?highlight(item.name,searchQ):esc(item.name);
-  return`<div class="contact-item">
+function buildContactItem(item, searchQ = '') {
+  const init = getInitials(item.name);
+  const col = getColor(item.name);
+  const enc = encodeURIComponent(JSON.stringify(item));
+  const badge = item.type === 'fournisseurs' ? 'b-fourn' : 'b-expert';
+  const badgeTxt = item.type === 'fournisseurs' ? 'Supplier' : 'Expert';
+  let details = [];
+  if (item.domaine && item.domaine !== 'Autre') details.push(item.domaine);
+  if (item.ville) details.push(item.ville);
+  const bmk = isBookmarked(item.id);
+  const nameHl = searchQ ? highlight(item.name, searchQ) : esc(item.name);
+  return `<div class="contact-item">
     <div class="c-avatar" style="background:linear-gradient(135deg,${col},${col}bb)" onclick="openDetailModal('${enc}')">${init}</div>
     <div class="c-info" onclick="openDetailModal('${enc}')">
       <div class="c-name">${nameHl}</div>
-      <div class="c-meta">${details.length?esc(details.join(' · ')):'No info'}</div>
+      <div class="c-meta">${details.length ? esc(details.join(' · ')) : 'No info'}</div>
       <div class="c-badges"><span class="badge ${badge}">${badgeTxt}</span></div>
     </div>
-    <button class="c-bookmark ${bmk?'bookmarked':''}" data-bm="${item.id}" onclick="toggleBookmark('${item.id}',event)" title="${bmk?'Remove':'Save'}">
-      <i class="${bmk?'fas':'far'} fa-bookmark"></i>
-    </button>
+    <button class="c-bookmark ${bmk ? 'bookmarked' : ''}" data-bm="${item.id}" onclick="toggleBookmark('${item.id}',event)" title="${bmk ? 'Remove' : 'Save'}"><i class="${bmk ? 'fas' : 'far'} fa-bookmark"></i></button>
+    <button class="c-share" onclick="shareProfile(${JSON.stringify(item).replace(/'/g, "&#39;")}, event)" title="Share"><i class="fas fa-share-alt"></i></button>
   </div>`;
 }
+function highlight(text, q) { if (!q || !q.trim()) return esc(text); const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'); return esc(text).replace(re, '<mark>$1</mark>'); }
 
-// ── BOOKMARKS ──
-function renderBookmarks(){
-  const saved=dbData.filter(d=>bookmarks.includes(d.id));
-  updateBMCount();
-  if(!saved.length){
-    $('bookmarkList').innerHTML=`<div class="empty-state"><div class="empty-icon"><i class="far fa-bookmark"></i></div><div class="empty-title">No saved contacts</div><div class="empty-sub">Tap the bookmark icon on any contact to save it</div></div>`;
-    return;
+// DETAIL MODAL
+function openDetailModal(enc) {
+  const item = JSON.parse(decodeURIComponent(enc));
+  const init = getInitials(item.name);
+  const col = getColor(item.name);
+  $('modalAvatar').textContent = init;
+  $('modalAvatar').style.background = `linear-gradient(135deg,${col},${col}bb)`;
+  $('modalName').textContent = item.name;
+  $('modalType').textContent = item.domaine || (item.type === 'fournisseurs' ? 'Supplier' : 'Expert');
+  const badge = item.type === 'fournisseurs' ? 'b-fourn' : 'b-expert';
+  $('modalBadges').innerHTML = `<span class="badge ${badge}">${item.type === 'fournisseurs' ? 'Supplier' : 'Expert'}</span>`;
+  const rows = [];
+  if (item.domaine && item.domaine !== 'Autre') rows.push({ icon: 'fa-folder', label: 'Sector', value: item.domaine });
+  if (item.specialite && item.specialite !== 'Général') rows.push({ icon: 'fa-cog', label: 'Specialty', value: item.specialite });
+  if (item.ville) rows.push({ icon: 'fa-map-marker-alt', label: 'City', value: item.ville });
+  if (item.phone && item.phone !== 'null' && item.phone.trim()) rows.push({ icon: 'fa-phone-alt', label: 'Phone', value: item.phone });
+  if (item.email && item.email !== 'null' && item.email.trim()) rows.push({ icon: 'fa-envelope', label: 'Email', value: item.email });
+  if (item.web && item.web !== 'null' && item.web.startsWith('http')) rows.push({ icon: 'fa-globe', label: 'Website', value: item.web });
+  $('modalBody').innerHTML = rows.map(r => `<div class="m-row"><div class="m-icon"><i class="fas ${r.icon}"></i></div><div><div class="m-lbl">${r.label}</div><div class="m-val">${esc(r.value)}</div></div></div>`).join('');
+  if (!rows.length) $('modalBody').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2);font-size:.55rem">No information available</div>';
+  let acts = '';
+  if (item.phone && item.phone !== 'null' && item.phone.trim()) {
+    let wa = item.phone.replace(/[^0-9+]/g, ''); if (wa.startsWith('0')) wa = '212' + wa.substring(1); if (wa.startsWith('+')) wa = wa.substring(1);
+    acts += `<button class="act-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>CALL</span></button>`;
+    acts += `<button class="act-btn" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i><span>WHATSAPP</span></button>`;
   }
-  $('bookmarkList').innerHTML=saved.map(item=>buildContactItem(item)).join('');
-}
-
-// ── DETAIL MODAL ──
-function openDetailModal(enc){
-  const item=JSON.parse(decodeURIComponent(enc));
-  currentDetailItem=item;
-  const init=getInitials(item.name);
-  const col=getColor(item.name);
-  $('modalAvatar').textContent=init;
-  $('modalAvatar').style.background=`linear-gradient(135deg,${col},${col}bb)`;
-  $('modalName').textContent=item.name;
-  $('modalType').textContent=item.domaine||(item.type==='fournisseurs'?'Supplier':'Expert');
-  const badge=item.type==='fournisseurs'?'b-fourn':'b-expert';
-  $('modalBadges').innerHTML=`<span class="badge ${badge}">${item.type==='fournisseurs'?'Supplier':'Expert'}</span>`;
-  const rows=[];
-  if(item.domaine&&item.domaine!=='Autre')rows.push({icon:'fa-folder',label:'Sector',value:item.domaine});
-  if(item.specialite&&item.specialite!=='Général')rows.push({icon:'fa-cog',label:'Specialty',value:item.specialite});
-  if(item.ville)rows.push({icon:'fa-map-marker-alt',label:'City',value:item.ville});
-  if(item.phone&&item.phone!=='null'&&item.phone.trim())rows.push({icon:'fa-phone-alt',label:'Phone',value:item.phone});
-  if(item.email&&item.email!=='null'&&item.email.trim())rows.push({icon:'fa-envelope',label:'Email',value:item.email});
-  if(item.web&&item.web!=='null'&&item.web.startsWith('http'))rows.push({icon:'fa-globe',label:'Website',value:item.web});
-  $('modalBody').innerHTML=rows.map(r=>`<div class="m-row"><div class="m-icon"><i class="fas ${r.icon}"></i></div><div><div class="m-lbl">${r.label}</div><div class="m-val">${esc(r.value)}</div></div></div>`).join('');
-  if(!rows.length)$('modalBody').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.55rem">No information available</div>';
-  let acts='';
-  if(item.phone&&item.phone!=='null'&&item.phone.trim()){
-    let wa=item.phone.replace(/[^0-9+]/g,'');
-    if(wa.startsWith('0'))wa='212'+wa.substring(1);
-    if(wa.startsWith('+'))wa=wa.substring(1);
-    acts+=`<button class="act-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>CALL</span></button>`;
-    acts+=`<button class="act-btn" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i><span>WHATSAPP</span></button>`;
+  if (item.email && item.email !== 'null' && item.email.trim()) acts += `<button class="act-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>EMAIL</span></button>`;
+  if (item.web && item.web !== 'null' && item.web.startsWith('http')) acts += `<button class="act-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>WEBSITE</span></button>`;
+  const bmk = isBookmarked(item.id);
+  acts += `<button class="act-btn" id="modalBmBtn" onclick="toggleBookmarkFromModal('${item.id}')"><i class="${bmk ? 'fas' : 'far'} fa-bookmark"></i><span>${bmk ? 'SAVED' : 'SAVE'}</span></button>`;
+  acts += `<button class="act-btn" onclick="shareProfile(${JSON.stringify(item).replace(/'/g, "&#39;")})"><i class="fas fa-share-alt"></i><span>SHARE</span></button>`;
+  if (isAdmin && item.id) {
+    acts += `<button class="act-btn" onclick="closeDetailModal();openEditModal('${item.id}')"><i class="fas fa-pen"></i><span>EDIT</span></button>`;
+    acts += `<button class="act-btn" onclick="closeDetailModal();openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i><span>DELETE</span></button>`;
   }
-  if(item.email&&item.email!=='null'&&item.email.trim())acts+=`<button class="act-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>EMAIL</span></button>`;
-  if(item.web&&item.web!=='null'&&item.web.startsWith('http'))acts+=`<button class="act-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>WEBSITE</span></button>`;
-  const bmk=isBookmarked(item.id);
-  acts+=`<button class="act-btn ${bmk?'bookmarked':''}" id="modalBmBtn" onclick="toggleBookmarkFromModal('${item.id}')"><i class="${bmk?'fas':'far'} fa-bookmark"></i><span>${bmk?'SAVED':'SAVE'}</span></button>`;
-  if(isAdmin&&item.id){
-    acts+=`<button class="act-btn" onclick="closeDetailModal();openEditModal('${item.id}')"><i class="fas fa-pen"></i><span>EDIT</span></button>`;
-    acts+=`<button class="act-btn" onclick="closeDetailModal();openDeleteModal('${item.id}')"><i class="fas fa-trash-alt"></i><span>DELETE</span></button>`;
-  }
-  $('modalActions').innerHTML=acts;
+  $('modalActions').innerHTML = acts;
   $('detailModal').classList.add('show');
 }
-function toggleBookmarkFromModal(id){
-  toggleBookmark(id,null);
-  const btn=$('modalBmBtn');
-  if(btn){
-    const bm=isBookmarked(id);
-    btn.classList.toggle('bookmarked',bm);
-    btn.innerHTML=`<i class="${bm?'fas':'far'} fa-bookmark"></i><span>${bm?'SAVED':'SAVE'}</span>`;
-  }
-}
-function closeDetailModal(){$('detailModal').classList.remove('show');}
+function toggleBookmarkFromModal(id) { toggleBookmark(id, null); const btn = $('modalBmBtn'); if (btn) { const bm = isBookmarked(id); btn.classList.toggle('bookmarked', bm); btn.innerHTML = `<i class="${bm ? 'fas' : 'far'} fa-bookmark"></i><span>${bm ? 'SAVED' : 'SAVE'}</span>`; } }
+function closeDetailModal() { $('detailModal').classList.remove('show'); }
+function shareProfile(item, e) { if (e) e.stopPropagation(); const text = `📌 ${item.name}\n${item.type === 'fournisseurs' ? '🏭 Supplier' : '🔬 Expert'}\n📍 ${item.ville || 'Morocco'}\n📂 ${item.domaine || ''}\n📞 ${item.phone || ''}\n🔗 Powered by Connect Industry`; if (navigator.share) { navigator.share({ title: item.name, text: text }).catch(() => {}); } else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank'); } }
 
-// ── LIST MODAL ──
-function showListModal(title,items,callback){
-  $('listTitle').innerHTML=`<i class="fas fa-list"></i> ${title}`;
-  listCallback=callback;
-  $('listItems').innerHTML=`<div class="menu-item" onclick="listCallback(null);closeModal('listModal')"><div class="menu-icon"><i class="fas fa-undo"></i></div><span class="menu-label">All</span></div>`+items.map(item=>`<div class="menu-item" onclick="listCallback('${esc(item)}');closeModal('listModal')"><div class="menu-icon"><i class="fas fa-tag"></i></div><span class="menu-label">${esc(item)}</span></div>`).join('');
+// LIST MODAL
+function showListModal(title, items, callback) {
+  $('listTitle').innerHTML = `<i class="fas fa-list"></i> ${title}`;
+  listCallback = callback;
+  $('listItems').innerHTML = `<div class="menu-item" onclick="listCallback(null);closeModal('listModal')"><div class="menu-icon"><i class="fas fa-undo"></i></div><span class="menu-label">All</span></div>` + items.map(item => `<div class="menu-item" onclick="listCallback('${esc(item)}');closeModal('listModal')"><div class="menu-icon"><i class="fas fa-tag"></i></div><span class="menu-label">${esc(item)}</span></div>`).join('');
   $('listModal').classList.add('show');
 }
-function showTypeFilter(){showListModal('Type',['Suppliers','Experts'],v=>{if(v==='Suppliers')repFilters.type='fournisseurs';else if(v==='Experts')repFilters.type='experts';else repFilters.type=null;renderRepertoire();});}
-function showCatFilter(){const cats=getCategories();if(!cats.length){toast('⚠️ No categories');return;}const names=cats.map(c=>c==='services'?'Services':c==='products'?'Products':c==='maqola'?'Maqaola':'Yad Amila');showListModal('Category',names,v=>{const m={'Services':'services','Products':'products','Maqaola':'maqola','Yad Amila':'yad-amila'};repFilters.categorie=v?m[v]:null;renderRepertoire();});}
-function showVilleFilter(){const v=getVilles().sort();if(!v.length){toast('⚠️ No cities');return;}showListModal('Cities',v,val=>{repFilters.ville=val;renderRepertoire();});}
-function showDomaineFilter(){const d=getDomaines().sort();if(!d.length){toast('⚠️ No sectors');return;}showListModal('Sectors',d,val=>{repFilters.domaine=val;renderRepertoire();});}
+function showTypeFilter() { showListModal('Type', ['Suppliers', 'Experts'], v => { if (v === 'Suppliers') repFilters.type = 'fournisseurs'; else if (v === 'Experts') repFilters.type = 'experts'; else repFilters.type = null; renderRepertoire(); }); }
+function showCatFilter() { const cats = getCategories(); if (!cats.length) { toast('⚠️ No categories'); return; } const names = cats.map(c => c === 'services' ? 'Services' : c === 'products' ? 'Products' : c === 'maqola' ? 'Maqaola' : 'Yad Amila'); showListModal('Category', names, v => { const m = { 'Services': 'services', 'Products': 'products', 'Maqaola': 'maqola', 'Yad Amila': 'yad-amila' }; repFilters.categorie = v ? m[v] : null; renderRepertoire(); }); }
+function showVilleFilter() { const v = getVilles().sort(); if (!v.length) { toast('⚠️ No cities'); return; } showListModal('Cities', v, val => { repFilters.ville = val; renderRepertoire(); }); }
+function showDomaineFilter() { const d = getDomaines().sort(); if (!d.length) { toast('⚠️ No sectors'); return; } showListModal('Sectors', d, val => { repFilters.domaine = val; renderRepertoire(); }); }
 
-// ── EXPLORER ──
-function getFilteredDataForExplorer(){
-  let data=[...dbData];
-  if(expFilters.type)data=data.filter(d=>d.type===expFilters.type);
-  if(expFilters.categorie)data=data.filter(d=>d.categorie===expFilters.categorie);
-  if(expFilters.ville)data=data.filter(d=>(d.ville||'').toLowerCase()===expFilters.ville.toLowerCase());
-  if(expFilters.domaine)data=data.filter(d=>(d.domaine||'').toLowerCase()===expFilters.domaine.toLowerCase());
-  if(expFilters.search&&expFilters.search.trim()){const q=expFilters.search.trim();data=data.filter(d=>matches(d.name,q)||matches(d.domaine,q)||matches(d.ville,q));}
-  return data.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+// EXPLORER
+function getFilteredDataForExplorer() {
+  let data = [...dbData];
+  if (expFilters.type) data = data.filter(d => d.type === expFilters.type);
+  if (expFilters.categorie) data = data.filter(d => d.categorie === expFilters.categorie);
+  if (expFilters.ville) data = data.filter(d => (d.ville || '').toLowerCase() === expFilters.ville.toLowerCase());
+  if (expFilters.domaine) data = data.filter(d => (d.domaine || '').toLowerCase() === expFilters.domaine.toLowerCase());
+  if (expFilters.search && expFilters.search.trim()) { const q = expFilters.search.trim(); data = data.filter(d => matches(d.name, q) || matches(d.domaine, q) || matches(d.ville, q)); }
+  return data.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 }
-function resetExpFilters(){expFilters={type:null,categorie:null,ville:null,domaine:null,search:''};const si=$('expSearchInput');if(si){si.value='';$('expSearchWrap').classList.remove('search-active');}explorerStack=[];updateExpFilterUI();renderExplorer();}
-function updateExpFilterUI(){
-  $('expFilterTypeBtn').classList.toggle('active',!!expFilters.type);
-  $('expFilterCatBtn').classList.toggle('active',!!expFilters.categorie);
-  $('expFilterVilleBtn').classList.toggle('active',!!expFilters.ville);
-  $('expFilterDomaineBtn').classList.toggle('active',!!expFilters.domaine);
-  const con=$('expActiveFilters');if(!con)return;
-  let h='';
-  if(expFilters.type)h+=`<div class="f-tag"><i class="fas fa-tag"></i>${expFilters.type==='fournisseurs'?'Suppliers':'Experts'}<button onclick="removeExpFilter('type')">✕</button></div>`;
-  if(expFilters.categorie)h+=`<div class="f-tag"><i class="fas fa-layer-group"></i>${esc(expFilters.categorie)}<button onclick="removeExpFilter('categorie')">✕</button></div>`;
-  if(expFilters.ville)h+=`<div class="f-tag"><i class="fas fa-map-marker-alt"></i>${esc(expFilters.ville)}<button onclick="removeExpFilter('ville')">✕</button></div>`;
-  if(expFilters.domaine)h+=`<div class="f-tag"><i class="fas fa-folder"></i>${esc(expFilters.domaine)}<button onclick="removeExpFilter('domaine')">✕</button></div>`;
-  if(expFilters.search)h+=`<div class="f-tag"><i class="fas fa-search"></i>"${esc(expFilters.search)}"<button onclick="removeExpFilter('search')">✕</button></div>`;
-  con.innerHTML=h;
-  const ri=$('expResultInfo');
-  const has=Object.values(expFilters).some(v=>v&&v!=='');
-  const cnt=getFilteredDataForExplorer().length;
-  if(has){ri.innerHTML=`<i class="fas fa-filter"></i> ${cnt} result(s)`;ri.classList.add('visible');}else{ri.classList.remove('visible');}
+function resetExpFilters() { expFilters = { type: null, categorie: null, ville: null, domaine: null, search: '' }; const si = $('expSearchInput'); if (si) { si.value = ''; $('expSearchWrap').classList.remove('search-active'); } explorerStack = []; updateExpFilterUI(); renderExplorer(); }
+function updateExpFilterUI() {
+  $('expFilterTypeBtn').classList.toggle('active', !!expFilters.type);
+  $('expFilterCatBtn').classList.toggle('active', !!expFilters.categorie);
+  $('expFilterVilleBtn').classList.toggle('active', !!expFilters.ville);
+  $('expFilterDomaineBtn').classList.toggle('active', !!expFilters.domaine);
+  const con = $('expActiveFilters'); if (!con) return;
+  let h = '';
+  if (expFilters.type) h += `<div class="f-tag"><i class="fas fa-tag"></i>${expFilters.type === 'fournisseurs' ? 'Suppliers' : 'Experts'}<button onclick="removeExpFilter('type')">✕</button></div>`;
+  if (expFilters.categorie) h += `<div class="f-tag"><i class="fas fa-layer-group"></i>${esc(expFilters.categorie)}<button onclick="removeExpFilter('categorie')">✕</button></div>`;
+  if (expFilters.ville) h += `<div class="f-tag"><i class="fas fa-map-marker-alt"></i>${esc(expFilters.ville)}<button onclick="removeExpFilter('ville')">✕</button></div>`;
+  if (expFilters.domaine) h += `<div class="f-tag"><i class="fas fa-folder"></i>${esc(expFilters.domaine)}<button onclick="removeExpFilter('domaine')">✕</button></div>`;
+  if (expFilters.search) h += `<div class="f-tag"><i class="fas fa-search"></i>"${esc(expFilters.search)}"<button onclick="removeExpFilter('search')">✕</button></div>`;
+  con.innerHTML = h;
+  const ri = $('expResultInfo');
+  const has = Object.values(expFilters).some(v => v && v !== '');
+  const cnt = getFilteredDataForExplorer().length;
+  if (has) { ri.innerHTML = `<i class="fas fa-filter"></i> ${cnt} result(s)`; ri.classList.add('visible'); } else { ri.classList.remove('visible'); }
 }
-function removeExpFilter(key){if(key==='search'){expFilters.search='';const si=$('expSearchInput');if(si){si.value='';$('expSearchWrap').classList.remove('search-active');}}else expFilters[key]=null;updateExpFilterUI();renderExplorer();}
-function renderExplorer(){
-  const all=getFilteredDataForExplorer();
-  const bc=$('explorerBreadcrumb');
-  let bh=`<div class="bc-item" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> HOME</div>`;
-  explorerStack.forEach((item,idx)=>{const label=item.type==='fournisseurs'?'Suppliers':item.type==='experts'?'Experts':item.domaine||item.specialite||'';bh+=`<span class="bc-sep">›</span><div class="bc-item ${idx===explorerStack.length-1?'current':''}" onclick="goExplorerLevel(${idx+1})">${esc(label)}</div>`;});
-  bc.innerHTML=bh;
-  const con=$('explorerContent');
-  if(explorerStack.length===0){
-    const fC=all.filter(d=>d.type==='fournisseurs').length;
-    const eC=all.filter(d=>d.type==='experts').length;
-    con.innerHTML=`<div class="exp-item" onclick="explorerNavigateTo('type','fournisseurs')"><div class="exp-icon"><i class="fas fa-industry"></i></div><div><div class="exp-name">Suppliers</div><div class="exp-count">${fC} profiles</div></div><i class="fas fa-chevron-right exp-arrow"></i></div><div class="exp-item" onclick="explorerNavigateTo('type','experts')"><div class="exp-icon"><i class="fas fa-microchip"></i></div><div><div class="exp-name">Experts</div><div class="exp-count">${eC} profiles</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`;
-  }else if(explorerStack.length===1){
-    const type=explorerStack[0].type;
-    const domaines={};
-    all.filter(d=>d.type===type).forEach(i=>{const d=i.domaine||'Other';domaines[d]=(domaines[d]||0)+1;});
-    con.innerHTML=Object.entries(domaines).sort().map(([d,cnt])=>`<div class="exp-item" onclick="explorerNavigateTo('domaine','${esc(d)}')"><div class="exp-icon"><i class="fas fa-folder"></i></div><div><div class="exp-name">${esc(d)}</div><div class="exp-count">${cnt} entries</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`).join('');
-  }else if(explorerStack.length===2){
-    const type=explorerStack[0].type,domaine=explorerStack[1].domaine;
-    const specs={};
-    all.filter(d=>d.type===type&&(d.domaine||'Other')===domaine).forEach(i=>{const s=i.specialite||'General';specs[s]=(specs[s]||0)+1;});
-    con.innerHTML=Object.entries(specs).sort().map(([s,cnt])=>`<div class="exp-item" onclick="explorerNavigateTo('specialite','${esc(s)}')"><div class="exp-icon"><i class="fas fa-cog"></i></div><div><div class="exp-name">${esc(s)}</div><div class="exp-count">${cnt} specialists</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`).join('');
-  }else{
-    const type=explorerStack[0].type,domaine=explorerStack[1].domaine,specialite=explorerStack[2].specialite;
-    const items=all.filter(d=>d.type===type&&(d.domaine||'Other')===domaine&&(d.specialite||'General')===specialite);
-    con.innerHTML=items.map(i=>buildContactItem(i)).join('');
+function removeExpFilter(key) { if (key === 'search') { expFilters.search = ''; const si = $('expSearchInput'); if (si) { si.value = ''; $('expSearchWrap').classList.remove('search-active'); } } else expFilters[key] = null; updateExpFilterUI(); renderExplorer(); }
+function renderExplorer() {
+  const all = getFilteredDataForExplorer();
+  const bc = $('explorerBreadcrumb');
+  let bh = `<div class="bc-item" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> HOME</div>`;
+  explorerStack.forEach((item, idx) => { const label = item.type === 'fournisseurs' ? 'Suppliers' : item.type === 'experts' ? 'Experts' : item.domaine || item.specialite || ''; bh += `<span class="bc-sep">›</span><div class="bc-item ${idx === explorerStack.length - 1 ? 'current' : ''}" onclick="goExplorerLevel(${idx + 1})">${esc(label)}</div>`; });
+  bc.innerHTML = bh;
+  const con = $('explorerContent');
+  if (explorerStack.length === 0) {
+    const fC = all.filter(d => d.type === 'fournisseurs').length;
+    const eC = all.filter(d => d.type === 'experts').length;
+    con.innerHTML = `<div class="exp-item" onclick="explorerNavigateTo('type','fournisseurs')"><div class="exp-icon"><i class="fas fa-industry"></i></div><div><div class="exp-name">Suppliers</div><div class="exp-count">${fC} profiles</div></div><i class="fas fa-chevron-right exp-arrow"></i></div><div class="exp-item" onclick="explorerNavigateTo('type','experts')"><div class="exp-icon"><i class="fas fa-microchip"></i></div><div><div class="exp-name">Experts</div><div class="exp-count">${eC} profiles</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`;
+  } else if (explorerStack.length === 1) {
+    const type = explorerStack[0].type;
+    const domaines = {};
+    all.filter(d => d.type === type).forEach(i => { const d = i.domaine || 'Other'; domaines[d] = (domaines[d] || 0) + 1; });
+    con.innerHTML = Object.entries(domaines).sort().map(([d, cnt]) => `<div class="exp-item" onclick="explorerNavigateTo('domaine','${esc(d)}')"><div class="exp-icon"><i class="fas fa-folder"></i></div><div><div class="exp-name">${esc(d)}</div><div class="exp-count">${cnt} entries</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`).join('');
+  } else if (explorerStack.length === 2) {
+    const type = explorerStack[0].type, domaine = explorerStack[1].domaine;
+    const specs = {};
+    all.filter(d => d.type === type && (d.domaine || 'Other') === domaine).forEach(i => { const s = i.specialite || 'General'; specs[s] = (specs[s] || 0) + 1; });
+    con.innerHTML = Object.entries(specs).sort().map(([s, cnt]) => `<div class="exp-item" onclick="explorerNavigateTo('specialite','${esc(s)}')"><div class="exp-icon"><i class="fas fa-cog"></i></div><div><div class="exp-name">${esc(s)}</div><div class="exp-count">${cnt} specialists</div></div><i class="fas fa-chevron-right exp-arrow"></i></div>`).join('');
+  } else {
+    const type = explorerStack[0].type, domaine = explorerStack[1].domaine, specialite = explorerStack[2].specialite;
+    const items = all.filter(d => d.type === type && (d.domaine || 'Other') === domaine && (d.specialite || 'General') === specialite);
+    con.innerHTML = items.map(i => buildContactItem(i)).join('');
   }
   updateExpFilterUI();
 }
-function goExplorerLevel(l){explorerStack=explorerStack.slice(0,l);renderExplorer();}
-function explorerNavigateTo(t,v){if(t==='type')explorerStack=[{type:v}];else if(t==='domaine')explorerStack.push({domaine:v});else if(t==='specialite')explorerStack.push({specialite:v});renderExplorer();}
-function showExpTypeFilter(){showListModal('Type',['Suppliers','Experts'],v=>{if(v==='Suppliers')expFilters.type='fournisseurs';else if(v==='Experts')expFilters.type='experts';else expFilters.type=null;explorerStack=[];updateExpFilterUI();renderExplorer();});}
-function showExpCatFilter(){const cats=getCategories();if(!cats.length){toast('⚠️ No categories');return;}const names=cats.map(c=>c==='services'?'Services':c==='products'?'Products':c==='maqola'?'Maqaola':'Yad Amila');showListModal('Category',names,v=>{const m={'Services':'services','Products':'products','Maqaola':'maqola','Yad Amila':'yad-amila'};expFilters.categorie=v?m[v]:null;explorerStack=[];updateExpFilterUI();renderExplorer();});}
-function showExpVilleFilter(){const v=[...new Set(dbData.filter(d=>!expFilters.type||d.type===expFilters.type).map(d=>d.ville).filter(v=>v&&v!=='null'&&v.trim()))].sort();if(!v.length){toast('⚠️ No cities');return;}showListModal('Cities',v,val=>{expFilters.ville=val;explorerStack=[];updateExpFilterUI();renderExplorer();});}
-function showExpDomaineFilter(){const d=[...new Set(dbData.filter(d=>!expFilters.type||d.type===expFilters.type).map(d=>d.domaine).filter(d=>d&&d!=='null'&&d.trim()))].sort();if(!d.length){toast('⚠️ No sectors');return;}showListModal('Sectors',d,val=>{expFilters.domaine=val;explorerStack=[];updateExpFilterUI();renderExplorer();});}
+function goExplorerLevel(l) { explorerStack = explorerStack.slice(0, l); renderExplorer(); }
+function explorerNavigateTo(t, v) { if (t === 'type') explorerStack = [{ type: v }]; else if (t === 'domaine') explorerStack.push({ domaine: v }); else if (t === 'specialite') explorerStack.push({ specialite: v }); renderExplorer(); }
+function showExpTypeFilter() { showListModal('Type', ['Suppliers', 'Experts'], v => { if (v === 'Suppliers') expFilters.type = 'fournisseurs'; else if (v === 'Experts') expFilters.type = 'experts'; else expFilters.type = null; explorerStack = []; updateExpFilterUI(); renderExplorer(); }); }
+function showExpCatFilter() { const cats = getCategories(); if (!cats.length) { toast('⚠️ No categories'); return; } const names = cats.map(c => c === 'services' ? 'Services' : c === 'products' ? 'Products' : c === 'maqola' ? 'Maqaola' : 'Yad Amila'); showListModal('Category', names, v => { const m = { 'Services': 'services', 'Products': 'products', 'Maqaola': 'maqola', 'Yad Amila': 'yad-amila' }; expFilters.categorie = v ? m[v] : null; explorerStack = []; updateExpFilterUI(); renderExplorer(); }); }
+function showExpVilleFilter() { const v = [...new Set(dbData.filter(d => !expFilters.type || d.type === expFilters.type).map(d => d.ville).filter(v => v && v !== 'null' && v.trim()))].sort(); if (!v.length) { toast('⚠️ No cities'); return; } showListModal('Cities', v, val => { expFilters.ville = val; explorerStack = []; updateExpFilterUI(); renderExplorer(); }); }
+function showExpDomaineFilter() { const d = [...new Set(dbData.filter(d => !expFilters.type || d.type === expFilters.type).map(d => d.domaine).filter(d => d && d !== 'null' && d.trim()))].sort(); if (!d.length) { toast('⚠️ No sectors'); return; } showListModal('Sectors', d, val => { expFilters.domaine = val; explorerStack = []; updateExpFilterUI(); renderExplorer(); }); }
 
-// ── CRUD ──
-function openAddModal(){if(!isAdmin){toast('⚠️ Admin required');return;}$('editTitle').innerHTML='ADD PROFILE';['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value='');$('editType').value='fournisseurs';$('editCat').value='services';$('editModal').classList.add('show');}
-function openEditModal(id){if(!isAdmin){toast('⚠️ Admin required');return;}const item=dbData.find(i=>i.id===id);if(!item)return;$('editTitle').innerHTML='EDIT PROFILE';$('editId').value=item.id;$('editName').value=item.name;$('editType').value=item.type;$('editCat').value=item.categorie;$('editDomaine').value=item.domaine||'';$('editSpecialite').value=item.specialite||'';$('editVille').value=item.ville||'';$('editPhone').value=item.phone||'';$('editEmail').value=item.email||'';$('editWeb').value=item.web||'';$('editModal').classList.add('show');}
-async function saveItem(){
-  if(!isAdmin){toast('⚠️ Admin required');return;}
-  const id=$('editId').value;
-  const data={id:id||Date.now()+'_'+Math.random().toString(36).slice(2),name:$('editName').value.trim(),type:$('editType').value,categorie:$('editCat').value,domaine:$('editDomaine').value.trim()||'Autre',specialite:$('editSpecialite').value.trim()||'Général',ville:$('editVille').value.trim(),phone:formatPhone($('editPhone').value),email:$('editEmail').value.trim(),web:$('editWeb').value.trim()};
-  if(!data.name){toast('⚠️ Name required');return;}
-  showLoading(true);
-  try{
-    const typeKey=data.type==='fournisseurs'?'FOURNISSEURS':'EXPERTS';
-    const catKey=data.categorie==='services'?'SERVICES':data.categorie==='products'?'PRODUITS':data.categorie==='maqola'?'MAQAOLA':'YAD AMILA';
-    const path=`professionals/${typeKey}/${catKey}`;
-    const snap=await db.ref(path).once('value');
-    let arr=snap.val()||[];
-    const idx=arr.findIndex(i=>i.id===id);
-    if(idx!==-1)arr[idx]=data;else arr.push(data);
-    await db.ref(path).set(arr);
-    toast(id?'✅ Updated':'✅ Added');
-    closeModal('editModal');await loadDB();resetRepFilters();resetExpFilters();
-  }catch(e){toast('❌ Error: '+e.message);}
-  showLoading(false);
+// BOOKMARKS RENDER
+function renderBookmarks() {
+  const saved = dbData.filter(d => bookmarks.includes(d.id));
+  updateBMCount();
+  if (!saved.length) { $('bookmarkList').innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="far fa-bookmark"></i></div><div class="empty-title">No saved contacts</div><div class="empty-sub">Tap the bookmark icon on any contact to save it</div></div>`; return; }
+  $('bookmarkList').innerHTML = saved.map(item => buildContactItem(item)).join('');
 }
-function openDeleteModal(id){if(!isAdmin){toast('⚠️ Admin required');return;}const item=dbData.find(i=>i.id===id);if(!item)return;pendingDelete=item;$('deleteMsg').innerHTML=`Delete <strong>${esc(item.name)}</strong>? This cannot be undone.`;$('deleteModal').classList.add('show');}
-async function confirmDeleteItem(){if(!isAdmin||!pendingDelete)return;showLoading(true);try{const typeKey=pendingDelete.type==='fournisseurs'?'FOURNISSEURS':'EXPERTS';const catKey=pendingDelete.categorie==='services'?'SERVICES':pendingDelete.categorie==='products'?'PRODUITS':pendingDelete.categorie==='maqola'?'MAQAOLA':'YAD AMILA';const path=`professionals/${typeKey}/${catKey}`;const snap=await db.ref(path).once('value');await db.ref(path).set((snap.val()||[]).filter(i=>i.id!==pendingDelete.id));toast('🗑️ Deleted');closeModal('deleteModal');pendingDelete=null;await loadDB();resetRepFilters();resetExpFilters();}catch(e){toast('❌ Error');}showLoading(false);}
 
-// ── SYNC CSV ──
-async function syncToFirebase(){
-  if(!isAdmin){toast('⚠️ Admin required');return;}
-  if(!confirm('⚠️ Sync all CSV data to Firebase?\nThis will replace existing data.'))return;
+// CRUD
+function openAddModal() { if (!isAdmin) { toast('⚠️ Admin required'); return; } $('editTitle').innerHTML = 'ADD PROFILE'; ['editId', 'editName', 'editDomaine', 'editSpecialite', 'editVille', 'editPhone', 'editEmail', 'editWeb'].forEach(id => $(id).value = ''); $('editType').value = 'fournisseurs'; $('editCat').value = 'services'; $('editModal').classList.add('show'); }
+function openEditModal(id) { if (!isAdmin) { toast('⚠️ Admin required'); return; } const item = dbData.find(i => i.id === id); if (!item) return; $('editTitle').innerHTML = 'EDIT PROFILE'; $('editId').value = item.id; $('editName').value = item.name; $('editType').value = item.type; $('editCat').value = item.categorie; $('editDomaine').value = item.domaine || ''; $('editSpecialite').value = item.specialite || ''; $('editVille').value = item.ville || ''; $('editPhone').value = item.phone || ''; $('editEmail').value = item.email || ''; $('editWeb').value = item.web || ''; $('editModal').classList.add('show'); }
+async function saveItem() { if (!isAdmin) { toast('⚠️ Admin required'); return; } const id = $('editId').value; const data = { id: id || Date.now() + '_' + Math.random().toString(36).slice(2), name: $('editName').value.trim(), type: $('editType').value, categorie: $('editCat').value, domaine: $('editDomaine').value.trim() || 'Autre', specialite: $('editSpecialite').value.trim() || 'Général', ville: $('editVille').value.trim(), phone: formatPhone($('editPhone').value), email: $('editEmail').value.trim(), web: $('editWeb').value.trim() }; if (!data.name) { toast('⚠️ Name required'); return; } showLoading(true); try { const typeKey = data.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS'; const catKey = data.categorie === 'services' ? 'SERVICES' : data.categorie === 'products' ? 'PRODUITS' : data.categorie === 'maqola' ? 'MAQAOLA' : 'YAD AMILA'; const path = `professionals/${typeKey}/${catKey}`; const snap = await db.ref(path).once('value'); let arr = snap.val() || []; const idx = arr.findIndex(i => i.id === id); if (idx !== -1) arr[idx] = data; else arr.push(data); await db.ref(path).set(arr); toast(id ? '✅ Updated' : '✅ Added'); closeModal('editModal'); await loadDB(); resetRepFilters(); resetExpFilters(); } catch (e) { toast('❌ Error: ' + e.message); } showLoading(false); }
+function openDeleteModal(id) { if (!isAdmin) { toast('⚠️ Admin required'); return; } const item = dbData.find(i => i.id === id); if (!item) return; pendingDelete = item; $('deleteMsg').innerHTML = `Delete <strong>${esc(item.name)}</strong>? This cannot be undone.`; $('deleteModal').classList.add('show'); }
+async function confirmDeleteItem() { if (!isAdmin || !pendingDelete) return; showLoading(true); try { const typeKey = pendingDelete.type === 'fournisseurs' ? 'FOURNISSEURS' : 'EXPERTS'; const catKey = pendingDelete.categorie === 'services' ? 'SERVICES' : pendingDelete.categorie === 'products' ? 'PRODUITS' : pendingDelete.categorie === 'maqola' ? 'MAQAOLA' : 'YAD AMILA'; const path = `professionals/${typeKey}/${catKey}`; const snap = await db.ref(path).once('value'); await db.ref(path).set((snap.val() || []).filter(i => i.id !== pendingDelete.id)); toast('🗑️ Deleted'); closeModal('deleteModal'); pendingDelete = null; await loadDB(); resetRepFilters(); resetExpFilters(); } catch (e) { toast('❌ Error'); } showLoading(false); }
+
+// SYNC CSV
+async function syncToFirebase() {
+  if (!isAdmin) { toast('⚠️ Admin required'); return; }
+  if (!confirm('⚠️ Sync all CSV data to Firebase?\nThis will replace existing data.')) return;
   showLoading(true);
-  try{
-    const structure={"FOURNISSEURS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]},"EXPERTS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]}};
-    csvFournisseurs.forEach((item,i)=>{structure["FOURNISSEURS"]["SERVICES"].push({id:`four_${Date.now()}_${i}`,name:item.name||'',domaine:item.domaine||'Autre',specialite:item.specialite||'Général',ville:item.ville||'',phone:item.phone||'',email:item.email||'',web:item.web||''});});
-    csvExperts.forEach((item,i)=>{structure["EXPERTS"]["YAD AMILA"].push({id:`exp_${Date.now()}_${i}`,name:item.name||'',domaine:item.domaine||'Autre',specialite:item.specialite||'Général',ville:item.ville||'',phone:item.phone||'',email:item.email||'',web:item.web||''});});
+  try {
+    const structure = { "FOURNISSEURS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] }, "EXPERTS": { "SERVICES": [], "PRODUITS": [], "MAQAOLA": [], "YAD AMILA": [] } };
+    csvFournisseurs.forEach((item, i) => { structure["FOURNISSEURS"]["SERVICES"].push({ id: `four_${Date.now()}_${i}`, name: item.name || '', domaine: item.domaine || 'Autre', specialite: item.specialite || 'Général', ville: item.ville || '', phone: item.phone || '', email: item.email || '', web: item.web || '' }); });
+    csvExperts.forEach((item, i) => { structure["EXPERTS"]["YAD AMILA"].push({ id: `exp_${Date.now()}_${i}`, name: item.name || '', domaine: item.domaine || 'Autre', specialite: item.specialite || 'Général', ville: item.ville || '', phone: item.phone || '', email: item.email || '', web: item.web || '' }); });
     await db.ref('professionals').set(structure);
-    toast('✅ Sync completed!');await loadDB();resetRepFilters();resetExpFilters();
-  }catch(e){toast('❌ Error: '+e.message);}
+    toast('✅ Sync completed!'); await loadDB(); resetRepFilters(); resetExpFilters();
+  } catch (e) { toast('❌ Error: ' + e.message); }
   showLoading(false);
 }
 
-// ── LOAD DATA ──
-async function loadCSV(url){
-  try{
-    const res=await fetch(url);const text=await res.text();
-    const lines=text.split(/\r?\n/);const data=[];
-    for(let i=1;i<lines.length;i++){
-      const cols=lines[i].split(',');
-      if(cols[1]&&cols[1].trim()){data.push({name:cols[1]?.replace(/["']/g,'').trim()||'',domaine:cols[2]?.replace(/["']/g,'').trim()||'Autre',specialite:cols[3]?.replace(/["']/g,'').trim()||'Général',ville:cols[4]?.replace(/["']/g,'').trim()||'',phone:formatPhone(cols[5]?.replace(/["']/g,'').trim()),email:cols[6]?.replace(/["']/g,'').trim()||'',web:cols[7]?.replace(/["']/g,'').trim()||''});}
+// LOAD DATA
+async function loadCSV(url) {
+  try {
+    const res = await fetch(url); const text = await res.text();
+    const lines = text.split(/\r?\n/); const data = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',');
+      if (cols[1] && cols[1].trim()) { data.push({ name: cols[1]?.replace(/["']/g, '').trim() || '', domaine: cols[2]?.replace(/["']/g, '').trim() || 'Autre', specialite: cols[3]?.replace(/["']/g, '').trim() || 'Général', ville: cols[4]?.replace(/["']/g, '').trim() || '', phone: formatPhone(cols[5]?.replace(/["']/g, '').trim()), email: cols[6]?.replace(/["']/g, '').trim() || '', web: cols[7]?.replace(/["']/g, '').trim() || '' }); }
     }
     return data;
-  }catch(e){return[];}
+  } catch (e) { return []; }
 }
-async function loadDB(){
-  try{
-    const snap=await db.ref('professionals').once('value');
-    const data=snap.val();dbData=[];
-    if(data){
-      for(const[typeKey,categories]of Object.entries(data)){
-        const type=typeKey==='FOURNISSEURS'?'fournisseurs':'experts';
-        for(const[catKey,items]of Object.entries(categories)){
-          let categorie=catKey==='SERVICES'?'services':catKey==='PRODUITS'?'products':catKey==='MAQAOLA'?'maqola':'yad-amila';
-          if(Array.isArray(items)){for(const item of items){if(item?.name)dbData.push({...item,type,categorie,id:item.id||`${type}_${Date.now()}_${Math.random()}`});}}
+async function loadDB() {
+  try {
+    const snap = await db.ref('professionals').once('value');
+    const data = snap.val(); dbData = [];
+    if (data) {
+      for (const [typeKey, categories] of Object.entries(data)) {
+        const type = typeKey === 'FOURNISSEURS' ? 'fournisseurs' : 'experts';
+        for (const [catKey, items] of Object.entries(categories)) {
+          let categorie = catKey === 'SERVICES' ? 'services' : catKey === 'PRODUITS' ? 'products' : catKey === 'MAQAOLA' ? 'maqola' : 'yad-amila';
+          if (Array.isArray(items)) { for (const item of items) { if (item?.name) dbData.push({ ...item, type, categorie, id: item.id || `${type}_${Date.now()}_${Math.random()}` }); } }
         }
       }
     }
-    dbData.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-    updateStats();renderCurrent();
-  }catch(e){toast('❌ Loading error: '+e.message);}
+    dbData.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    updateStats(); renderCurrent(); renderBookmarks();
+  } catch (e) { toast('❌ Loading error: ' + e.message); }
 }
 
-// ── NAVIGATION ──
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  $(id+'Section').classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const btn=document.querySelector(`.nav-item[data-sec="${id}"]`);
-  if(btn)btn.classList.add('active');
-  currentSection=id;
-  if(id==='repertoire')renderRepertoire();
-  else if(id==='explorer')renderExplorer();
-  else if(id==='bookmarks')renderBookmarks();
+// NAVIGATION
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  $(id + 'Section').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const btn = document.querySelector(`.nav-item[data-sec="${id}"]`);
+  if (btn) btn.classList.add('active');
+  currentSection = id;
+  if (id === 'repertoire') renderRepertoire();
+  else if (id === 'explorer') renderExplorer();
+  else if (id === 'bookmarks') renderBookmarks();
   else updateStats();
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function handleSectionClick(id){
-  if(currentSection===id){
-    if(window.scrollY>10)window.scrollTo({top:0});
-    else if(id==='repertoire'){resetRepFilters();toast('🔄 Filters reset');}
-    else if(id==='explorer'){resetExpFilters();toast('🔄 Explorer reset');}
-  }else showSection(id);
+function handleSectionClick(id) {
+  if (currentSection === id) { if (window.scrollY > 10) window.scrollTo({ top: 0 }); else if (id === 'repertoire') { resetRepFilters(); toast('🔄 Filters reset'); } else if (id === 'explorer') { resetExpFilters(); toast('🔄 Explorer reset'); } } else showSection(id);
 }
-function renderCurrent(){
-  if(currentSection==='repertoire')renderRepertoire();
-  else if(currentSection==='explorer')renderExplorer();
-  else if(currentSection==='bookmarks')renderBookmarks();
-  else updateStats();
-}
+function renderCurrent() { if (currentSection === 'repertoire') renderRepertoire(); else if (currentSection === 'explorer') renderExplorer(); else if (currentSection === 'bookmarks') renderBookmarks(); else updateStats(); }
 
-// ── EVENTS ──
-$('addBtn').onclick=openAddModal;
-$('filterTypeBtn').onclick=showTypeFilter;
-$('filterCatBtn').onclick=showCatFilter;
-$('filterVilleBtn').onclick=showVilleFilter;
-$('filterDomaineBtn').onclick=showDomaineFilter;
-$('filterResetBtn').onclick=()=>{resetRepFilters();toast('🔍 Filters cleared');};
-$('searchInput').addEventListener('input',e=>{repFilters.search=e.target.value;$('repSearchWrap').classList.toggle('search-active',!!e.target.value);renderRepertoire();updateRepFilterUI();});
-$('searchClear').onclick=()=>{repFilters.search='';$('searchInput').value='';$('repSearchWrap').classList.remove('search-active');renderRepertoire();updateRepFilterUI();};
-$('expFilterTypeBtn').onclick=showExpTypeFilter;
-$('expFilterCatBtn').onclick=showExpCatFilter;
-$('expFilterVilleBtn').onclick=showExpVilleFilter;
-$('expFilterDomaineBtn').onclick=showExpDomaineFilter;
-$('expFilterResetBtn').onclick=()=>{resetExpFilters();toast('🔍 Explorer cleared');};
-$('expSearchInput').addEventListener('input',e=>{expFilters.search=e.target.value;$('expSearchWrap').classList.toggle('search-active',!!e.target.value);updateExpFilterUI();renderExplorer();});
-$('expSearchClear').onclick=()=>{expFilters.search='';$('expSearchInput').value='';$('expSearchWrap').classList.remove('search-active');updateExpFilterUI();renderExplorer();};
-document.querySelectorAll('.nav-item[data-sec]').forEach(btn=>{btn.onclick=()=>handleSectionClick(btn.dataset.sec);});
-document.querySelectorAll('.sheet-ov,.overlay').forEach(ov=>{ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('show');});});
+// EVENT BINDINGS
+$('addBtn').onclick = openAddModal;
+$('filterTypeBtn').onclick = showTypeFilter;
+$('filterCatBtn').onclick = showCatFilter;
+$('filterVilleBtn').onclick = showVilleFilter;
+$('filterDomaineBtn').onclick = showDomaineFilter;
+$('filterResetBtn').onclick = () => { resetRepFilters(); toast('🔍 Filters cleared'); };
+$('searchInput').addEventListener('input', e => { repFilters.search = e.target.value; $('repSearchWrap').classList.toggle('search-active', !!e.target.value); renderRepertoire(); updateRepFilterUI(); });
+$('searchClear').onclick = () => { repFilters.search = ''; $('searchInput').value = ''; $('repSearchWrap').classList.remove('search-active'); renderRepertoire(); updateRepFilterUI(); };
+$('expFilterTypeBtn').onclick = showExpTypeFilter;
+$('expFilterCatBtn').onclick = showExpCatFilter;
+$('expFilterVilleBtn').onclick = showExpVilleFilter;
+$('expFilterDomaineBtn').onclick = showExpDomaineFilter;
+$('expFilterResetBtn').onclick = () => { resetExpFilters(); toast('🔍 Explorer cleared'); };
+$('expSearchInput').addEventListener('input', e => { expFilters.search = e.target.value; $('expSearchWrap').classList.toggle('search-active', !!e.target.value); updateExpFilterUI(); renderExplorer(); });
+$('expSearchClear').onclick = () => { expFilters.search = ''; $('expSearchInput').value = ''; $('expSearchWrap').classList.remove('search-active'); updateExpFilterUI(); renderExplorer(); };
+document.querySelectorAll('.nav-item[data-sec]').forEach(btn => { btn.onclick = () => handleSectionClick(btn.dataset.sec); });
+document.querySelectorAll('.sheet-ov, .overlay').forEach(ov => { ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); }); });
 
-// ── GLOBALS ──
-window.closeModal=closeModal;
-window.closeDetailModal=closeDetailModal;
-window.openDetailModal=openDetailModal;
-window.openEditModal=openEditModal;
-window.openDeleteModal=openDeleteModal;
-window.saveItem=saveItem;
-window.confirmDeleteItem=confirmDeleteItem;
-window.removeRepFilter=removeRepFilter;
-window.removeExpFilter=removeExpFilter;
-window.filterByTypeFromHome=filterByTypeFromHome;
-window.filterByCategorieFromHome=filterByCategorieFromHome;
-window.filterByCityFromHome=filterByCityFromHome;
-window.filterBySectorFromHome=filterBySectorFromHome;
-window.filterBySectorDirect=filterBySectorDirect;
-window.goExplorerLevel=goExplorerLevel;
-window.explorerNavigateTo=explorerNavigateTo;
-window.verifyAdmin=verifyAdmin;
-window.openAdminModal=openAdminModal;
-window.syncToFirebase=syncToFirebase;
-window.toggleBookmark=toggleBookmark;
-window.toggleBookmarkFromModal=toggleBookmarkFromModal;
-window.setView=setView;
+// GLOBALS
+window.closeModal = closeModal;
+window.closeDetailModal = closeDetailModal;
+window.openDetailModal = openDetailModal;
+window.openEditModal = openEditModal;
+window.openDeleteModal = openDeleteModal;
+window.saveItem = saveItem;
+window.confirmDeleteItem = confirmDeleteItem;
+window.removeRepFilter = removeRepFilter;
+window.removeExpFilter = removeExpFilter;
+window.filterByTypeFromHome = filterByTypeFromHome;
+window.filterByCategorieFromHome = filterByCategorieFromHome;
+window.filterByCityFromHome = filterByCityFromHome;
+window.filterBySectorFromHome = filterBySectorFromHome;
+window.filterBySectorDirect = filterBySectorDirect;
+window.goExplorerLevel = goExplorerLevel;
+window.explorerNavigateTo = explorerNavigateTo;
+window.verifyAdmin = verifyAdmin;
+window.openAdminModal = openAdminModal;
+window.syncToFirebase = syncToFirebase;
+window.toggleBookmark = toggleBookmark;
+window.toggleBookmarkFromModal = toggleBookmarkFromModal;
+window.setView = setView;
+window.toggleTheme = toggleTheme;
+window.toggleExportMenu = toggleExportMenu;
+window.exportToExcel = exportToExcel;
+window.exportToPDF = exportToPDF;
+window.shareProfile = shareProfile;
 
-// ── INIT ──
-async function init(){
-  showLoading(true);checkAdmin();updateBMCount();
-  const[experts,fours]=await Promise.all([loadCSV(CSV_EXPERTS),loadCSV(CSV_FOURNISSEURS)]);
-  csvExperts=experts;csvFournisseurs=fours;
-  await loadDB();
-  setTimeout(()=>showLoading(false),700);
-}
+// INIT
+async function init() { showLoading(true); checkAdmin(); updateBMCount(); const [experts, fours] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]); csvExperts = experts; csvFournisseurs = fours; await loadDB(); setTimeout(() => showLoading(false), 700); }
 init();
 
-// ── PWA ──
+// PWA
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
-  setTimeout(()=>{
-    const btn=document.createElement('button');
-    btn.innerHTML='<i class="fas fa-download"></i> INSTALL';
-    btn.style.cssText='position:fixed;bottom:80px;right:16px;background:linear-gradient(135deg,#7A5A10,#C9A227);color:white;border:none;border-radius:50px;padding:8px 16px;z-index:200;font-size:.58rem;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);font-weight:700;font-family:\'Syne\',sans-serif;';
-    btn.onclick=()=>{deferredPrompt.prompt();btn.remove();};
-    document.body.appendChild(btn);
-  },2000);
-});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; setTimeout(() => { const btn = document.createElement('button'); btn.innerHTML = '<i class="fas fa-download"></i> INSTALL APP'; btn.style.cssText = 'position:fixed;bottom:80px;right:16px;background:linear-gradient(135deg,#7A5A10,#C9A227);color:white;border:none;border-radius:50px;padding:8px 16px;z-index:200;font-size:.58rem;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);font-weight:700;font-family:\'Syne\',sans-serif;'; btn.onclick = () => { deferredPrompt.prompt(); btn.remove(); }; document.body.appendChild(btn); }, 2000); });
 </script>
 </body>
 </html>
