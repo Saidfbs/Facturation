@@ -148,19 +148,18 @@
             background: rgba(255,255,255,0.1);
             border: none;
             color: #cbd5e1;
-            width: 34px; height: 34px;
+            width: 38px; height: 38px;
             border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: var(--transition);
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             position: relative;
         }
         .toolbar-btn:hover { background: rgba(255,255,255,0.2); color: white; }
         .toolbar-btn:active { transform: scale(0.95); }
-        .toolbar-btn.active { background: var(--accent-blue); color: white; }
 
         .notification-badge {
             position: absolute;
@@ -239,64 +238,6 @@
         .tab-content { display: none; animation: tabFadeIn 0.3s ease; }
         .tab-content.active { display: block; }
         @keyframes tabFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ========== لوحة المعلومات الإحصائية ========== */
-        .dashboard-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        @media (min-width: 640px) { .dashboard-stats { grid-template-columns: repeat(4, 1fr); } }
-
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            padding: 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            transition: var(--transition);
-            cursor: pointer;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid rgba(0,0,0,0.03);
-        }
-        .stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-        .stat-icon {
-            width: 48px; height: 48px;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
-            flex-shrink: 0;
-        }
-        .stat-icon.blue { background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); }
-        .stat-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .stat-icon.orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
-        .stat-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-
-        .stat-info { flex: 1; min-width: 0; }
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            line-height: 1.1;
-            font-variant-numeric: tabular-nums;
-        }
-        .stat-label {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 2px;
-        }
 
         /* ========== البطاقات العامة ========== */
         .card {
@@ -918,30 +859,6 @@
         .section-info h3 { margin: 0 0 3px 0; font-size: 0.95rem; font-weight: 700; }
         .section-info p { margin: 0; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4; }
 
-        /* ========== أزرار التبديل ========== */
-        .toggle-switch {
-            position: relative;
-            width: 52px; height: 28px;
-            background: #d1d5db;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            border: none;
-            outline: none;
-        }
-        .toggle-switch.active { background: var(--accent-blue); }
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px; left: 3px;
-            width: 22px; height: 22px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .toggle-switch.active::after { transform: translateX(24px); }
-
         /* ========== تخصيص الواجهة ========== */
         .ui-control-row {
             display: flex;
@@ -1040,31 +957,308 @@
         .scroll-top-btn.show { display: flex; }
         .scroll-top-btn:hover { background: var(--accent-blue-hover); transform: translateY(-3px); }
 
+        /* ========== القائمة الجانبية المنبثقة ========== */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 1998;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-menu {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            height: 100vh;
+            background: var(--card-bg);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.15);
+            z-index: 1999;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .sidebar-menu.show {
+            right: 0;
+        }
+
+        /* رأس القائمة */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--window-bg);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo i {
+            font-size: 1.75rem;
+            color: var(--accent-blue);
+            background: rgba(33, 150, 243, 0.1);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-md);
+        }
+
+        .sidebar-logo-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+        }
+
+        .sidebar-logo-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .sidebar-close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .sidebar-close-btn:hover {
+            background: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
+        }
+
+        /* محتوى القائمة */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 12px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0 10px 10px;
+        }
+
+        /* عناصر القائمة */
+        .sidebar-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 10px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-item:hover {
+            background: var(--window-bg);
+            border-color: var(--border-light);
+        }
+
+        .sidebar-item:active {
+            transform: scale(0.98);
+        }
+
+        .sidebar-item.active {
+            background: rgba(33, 150, 243, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .sidebar-item.danger:hover {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: var(--accent-red);
+        }
+
+        .sidebar-item-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .sidebar-item-icon.blue { background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%); }
+        .sidebar-item-icon.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .sidebar-item-icon.orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); }
+        .sidebar-item-icon.purple { background: linear-gradient(135deg, #8661c5 0%, #6d28d9 100%); }
+        .sidebar-item-icon.teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+        .sidebar-item-icon.gray { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+        .sidebar-item-icon.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
+        .sidebar-item-content {
+            flex: 1;
+            min-width: 0;
+            text-align: right;
+        }
+
+        .sidebar-item-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-item-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .sidebar-item-arrow {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            opacity: 0.4;
+            transition: var(--transition);
+        }
+
+        .sidebar-item:hover .sidebar-item-arrow {
+            opacity: 1;
+            color: var(--accent-blue);
+            transform: translateX(-3px);
+        }
+
+        .sidebar-item.danger:hover .sidebar-item-arrow {
+            color: var(--accent-red);
+        }
+
+        /* تذييل القائمة */
+        .sidebar-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--window-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-footer-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-footer-info i {
+            font-size: 0.55rem;
+            color: var(--accent-red);
+        }
+
+        .sidebar-footer-info i.connected {
+            color: var(--accent-green);
+        }
+
+        .sidebar-footer-version {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            background: var(--border-light);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* شارة الإشعارات على الزر */
+        #notification-center-btn {
+            position: relative;
+        }
+
+        /* الوضع الليلي */
+        .dark .sidebar-menu {
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
         /* ========== الاستجابة ========== */
         @media (max-width: 768px) {
             body { padding: 12px; }
             .window-content { padding: 20px 18px 24px; }
             .dashboard-title { font-size: 1.35rem; }
-            .dashboard-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-            .stat-icon { width: 40px; height: 40px; font-size: 1rem; }
-            .stat-value { font-size: 1.2rem; }
             .industrial-button { width: 75px; height: 75px; }
             .indicator-light { width: 56px; height: 56px; }
             .do-icon { font-size: 1.4rem; }
             .tab-button { min-width: 90px; font-size: 0.75rem; padding: 0.55rem 0.5rem; }
             .tab-button span { display: none; }
             .notification-center { left: 12px; width: calc(100vw - 24px); }
+            .sidebar-menu { width: 340px; }
         }
 
         @media (max-width: 480px) {
-            .dashboard-stats { grid-template-columns: repeat(2, 1fr); }
             .industrial-button { width: 68px; height: 68px; }
             .indicator-light { width: 50px; height: 50px; }
             .do-icon { font-size: 1.2rem; }
             .section-toggle-buttons { flex-direction: column; }
             .section-toggle-btn-modal { min-width: auto; }
             .firebase-cloud-icon { width: 52px; height: 52px; font-size: 1.5rem; }
+            .sidebar-menu { width: 100%; max-width: 100%; }
+            .sidebar-item-icon { width: 38px; height: 38px; font-size: 0.9rem; }
         }
+
+        /* ========== وضع التركيز ========== */
+        body.focus-mode .tabs-container { display: none !important; }
     </style>
 </head>
 <body>
@@ -1087,6 +1281,124 @@
         </div>
     </div>
 
+    <!-- ========== القائمة الجانبية المنبثقة ========== -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <aside id="sidebar-menu" class="sidebar-menu">
+        <!-- رأس القائمة -->
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-microchip"></i>
+                <div>
+                    <div class="sidebar-logo-title">ESP32</div>
+                    <div class="sidebar-logo-subtitle">IoT Dashboard</div>
+                </div>
+            </div>
+            <button id="sidebar-close-btn" class="sidebar-close-btn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- محتوى القائمة -->
+        <nav class="sidebar-nav">
+            <!-- قسم الأدوات -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">الأدوات</div>
+                
+                <button class="sidebar-item" data-action="customize-ui">
+                    <div class="sidebar-item-icon blue"><i class="fas fa-sliders-h"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">تخصيص الواجهة</div>
+                        <div class="sidebar-item-desc">اختيار العناصر المعروضة</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+
+                <button class="sidebar-item" data-action="focus-mode">
+                    <div class="sidebar-item-icon purple"><i class="fas fa-compress"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">وضع التركيز</div>
+                        <div class="sidebar-item-desc">إخفاء العناصر الثانوية</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+            </div>
+
+            <!-- قسم الإعدادات -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">الإعدادات</div>
+
+                <button class="sidebar-item" data-action="system-settings">
+                    <div class="sidebar-item-icon gray"><i class="fas fa-cog"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">إعدادات النظام</div>
+                        <div class="sidebar-item-desc">الاتصال بـ Firebase</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+
+                <button class="sidebar-item" data-action="toggle-theme">
+                    <div class="sidebar-item-icon orange"><i class="fas fa-moon"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">تبديل الثيم</div>
+                        <div class="sidebar-item-desc" id="theme-status-text">الوضع الفاتح</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+
+                <button class="sidebar-item" data-action="toggle-notifications">
+                    <div class="sidebar-item-icon green"><i class="fas fa-bell"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">الإشعارات</div>
+                        <div class="sidebar-item-desc" id="notifications-status-text">مفعّلة</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+            </div>
+
+            <!-- قسم البيانات -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">البيانات</div>
+
+                <button class="sidebar-item" data-action="export-settings">
+                    <div class="sidebar-item-icon teal"><i class="fas fa-download"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">تصدير الإعدادات</div>
+                        <div class="sidebar-item-desc">حفظ نسخة احتياطية</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+
+                <button class="sidebar-item" data-action="import-settings">
+                    <div class="sidebar-item-icon teal"><i class="fas fa-upload"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">استيراد الإعدادات</div>
+                        <div class="sidebar-item-desc">استعادة من نسخة احتياطية</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+
+                <button class="sidebar-item danger" data-action="reset-all">
+                    <div class="sidebar-item-icon red"><i class="fas fa-undo-alt"></i></div>
+                    <div class="sidebar-item-content">
+                        <div class="sidebar-item-title">إعادة تعيين الكل</div>
+                        <div class="sidebar-item-desc">حذف جميع الإعدادات</div>
+                    </div>
+                    <i class="fas fa-chevron-left sidebar-item-arrow"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- تذييل القائمة -->
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-info">
+                <i class="fas fa-circle" id="sidebar-connection-dot"></i>
+                <span id="sidebar-connection-text">غير متصل</span>
+            </div>
+            <div class="sidebar-footer-version">v2.0</div>
+        </div>
+    </aside>
+
     <!-- إطار النافذة الرئيسي -->
     <div class="window-frame">
         <!-- شريط العنوان -->
@@ -1097,15 +1409,16 @@
                 <span class="window-control green"></span>
             </div>
             <div class="toolbar-buttons">
-                <button id="rename-all-btn" class="toolbar-btn" title="إعادة تعيين الكل"><i class="fas fa-undo-alt"></i></button>
-                <button id="theme-toggle-btn" class="toolbar-btn" title="تبديل الثيم"><i class="fas fa-moon"></i></button>
-                <button id="notification-toggle-btn" class="toolbar-btn" title="تفعيل/إيقاف الإشعارات"><i class="fas fa-bell"></i></button>
-                <button id="notification-center-btn" class="toolbar-btn" title="مركز الإشعارات"><i class="fas fa-inbox"></i></button>
-                <button id="focus-mode-btn" class="toolbar-btn" title="وضع التركيز"><i class="fas fa-compress"></i></button>
-                <button id="open-system-settings-btn" class="toolbar-btn" title="إعدادات النظام"><i class="fas fa-cog"></i></button>
-                <button id="customize-ui-btn" class="toolbar-btn" title="تخصيص الواجهة"><i class="fas fa-sliders-h"></i></button>
-                <button id="export-settings-btn" class="toolbar-btn" title="تصدير الإعدادات"><i class="fas fa-download"></i></button>
-                <button id="import-settings-btn" class="toolbar-btn" title="استيراد الإعدادات"><i class="fas fa-upload"></i></button>
+                <!-- مركز الإشعارات -->
+                <button id="notification-center-btn" class="toolbar-btn" title="مركز الإشعارات">
+                    <i class="fas fa-bell"></i>
+                </button>
+                
+                <!-- زر القائمة الجانبية -->
+                <button id="sidebar-toggle-btn" class="toolbar-btn" title="القائمة">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
                 <input type="file" id="import-settings-input" accept=".json" style="display: none;">
             </div>
         </div>
@@ -1151,26 +1464,6 @@
 
             <!-- تبويب لوحة التحكم -->
             <div id="tab-dashboard" class="tab-content active">
-                <!-- لوحة المعلومات السريعة -->
-                <div class="dashboard-stats" id="dashboard-stats">
-                    <div class="stat-card" onclick="document.querySelector('[data-tab=charts]').click()">
-                        <div class="stat-icon blue"><i class="fas fa-toggle-on"></i></div>
-                        <div class="stat-info"><div class="stat-value" id="stat-active-do">0</div><div class="stat-label">مخارج نشطة</div></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon green"><i class="fas fa-wave-square"></i></div>
-                        <div class="stat-info"><div class="stat-value" id="stat-avg-ai">0.0</div><div class="stat-label">متوسط AI</div></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon orange"><i class="fas fa-bolt"></i></div>
-                        <div class="stat-info"><div class="stat-value" id="stat-active-di">0</div><div class="stat-label">مداخل نشطة</div></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon red"><i class="fas fa-sign-out-alt"></i></div>
-                        <div class="stat-info"><div class="stat-value" id="stat-avg-ao">0.0</div><div class="stat-label">متوسط AO</div></div>
-                    </div>
-                </div>
-
                 <main class="space-y-6">
                     <section id="outputs-section" class="section-visible">
                         <div class="section-title-header">المخارج</div>
@@ -1488,42 +1781,6 @@
             if (lastBtn) lastBtn.click();
         }
 
-        // ========== لوحة المعلومات ==========
-        let dashboardStats = { activeDO: 0, activeDI: 0, avgAI: 0, avgAO: 0 };
-        function updateDashboardStats() {
-            const elDO = document.getElementById('stat-active-do');
-            const elDI = document.getElementById('stat-active-di');
-            const elAI = document.getElementById('stat-avg-ai');
-            const elAO = document.getElementById('stat-avg-ao');
-            if (elDO) elDO.textContent = dashboardStats.activeDO;
-            if (elDI) elDI.textContent = dashboardStats.activeDI;
-            if (elAI) elAI.textContent = dashboardStats.avgAI.toFixed(1);
-            if (elAO) elAO.textContent = dashboardStats.avgAO.toFixed(1);
-        }
-
-        function recalculateStats(data) {
-            let activeDO = 0, activeDI = 0, sumAI = 0, countAI = 0, sumAO = 0, countAO = 0;
-            if (data.DO) Object.values(data.DO).forEach(v => { if (v === 1) activeDO++; });
-            if (data.DI) Object.values(data.DI).forEach(v => { if (v === 1) activeDI++; });
-            if (data.AI) {
-                Object.entries(data.AI).forEach(([id, v]) => {
-                    const config = controlsConfig.AI.find(c => c.id === id);
-                    if (config) { sumAI += scaleValue(v, id); countAI++; }
-                });
-            }
-            if (data.AO) {
-                Object.entries(data.AO).forEach(([id, v]) => {
-                    const config = controlsConfig.AO.find(c => c.id === id);
-                    if (config) { sumAO += scaleValue(v, id); countAO++; }
-                });
-            }
-            dashboardStats.activeDO = activeDO;
-            dashboardStats.activeDI = activeDI;
-            dashboardStats.avgAI = countAI > 0 ? sumAI / countAI : 0;
-            dashboardStats.avgAO = countAO > 0 ? sumAO / countAO : 0;
-            updateDashboardStats();
-        }
-
         // ========== سجل الأحداث ==========
         let eventLog = JSON.parse(localStorage.getItem('eventLog')) || [];
         function addEvent(type, message) {
@@ -1820,20 +2077,31 @@
         }
 
         function updateNotificationButton() {
-            const btn = document.getElementById('notification-toggle-btn');
-            if (!btn) return;
-            const icon = btn.querySelector('i');
-            if (notificationsEnabled) { icon.classList.remove('fa-bell-slash'); icon.classList.add('fa-bell'); }
-            else { icon.classList.remove('fa-bell'); icon.classList.add('fa-bell-slash'); }
+            const icon = document.querySelector('.sidebar-item[data-action="toggle-notifications"] .sidebar-item-icon i');
+            if (icon) {
+                if (notificationsEnabled) {
+                    icon.classList.remove('fa-bell-slash');
+                    icon.classList.add('fa-bell');
+                } else {
+                    icon.classList.remove('fa-bell');
+                    icon.classList.add('fa-bell-slash');
+                }
+            }
+            updateSidebarStatus();
         }
 
         function updateThemeButton() {
-            const btn = document.getElementById('theme-toggle-btn');
-            if (btn) {
-                const icon = btn.querySelector('i');
-                if (document.documentElement.classList.contains('dark')) { icon.classList.remove('fa-moon'); icon.classList.add('fa-sun'); }
-                else { icon.classList.remove('fa-sun'); icon.classList.add('fa-moon'); }
+            const themeItem = document.querySelector('.sidebar-item[data-action="toggle-theme"] .sidebar-item-icon i');
+            if (themeItem) {
+                if (document.documentElement.classList.contains('dark')) {
+                    themeItem.classList.remove('fa-moon');
+                    themeItem.classList.add('fa-sun');
+                } else {
+                    themeItem.classList.remove('fa-sun');
+                    themeItem.classList.add('fa-moon');
+                }
             }
+            updateSidebarStatus();
         }
 
         function updateChartsTheme() {
@@ -1860,7 +2128,7 @@
             return ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
         }
 
-        // ========== العداد الدائري الجديد (بنمط الصورة) ==========
+        // ========== العداد الدائري ==========
         function createGauge(chartId, value, config) {
             const canvas = document.getElementById(`${chartId}-gauge`);
             if (!canvas) return null;
@@ -1896,11 +2164,6 @@
                         borderWidth: 0,
                         borderRadius: 20,
                         spacing: 2
-                    }, {
-                        data: [100],
-                        backgroundColor: getCssVariable('--border-color') || '#e5e7eb',
-                        borderWidth: 0,
-                        borderRadius: 20
                     }]
                 },
                 options: {
@@ -2402,18 +2665,19 @@
             if (!deviceRef) return;
             firebase.database().ref('.info/connected').on('value', snapshot => {
                 const bar = document.getElementById('connection-status-bar');
-                if (snapshot.val() === true) {
+                const isConnected = snapshot.val() === true;
+                if (isConnected) {
                     bar.classList.remove('status-disconnected');
                     bar.classList.add('status-connected');
                 } else {
                     bar.classList.remove('status-connected');
                     bar.classList.add('status-disconnected');
                 }
+                updateSidebarConnection(isConnected);
             });
             deviceRef.on('value', snapshot => {
                 const data = snapshot.val();
                 if (!data) return;
-                recalculateStats(data);
                 ['DO', 'DI'].forEach(type => {
                     if (data[type]) {
                         Object.keys(data[type]).forEach(id => {
@@ -2602,6 +2866,110 @@
             showMessage(isFocus ? 'تم تفعيل وضع التركيز' : 'تم إلغاء وضع التركيز');
         }
 
+        // ========== التحكم بالقائمة الجانبية ==========
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar-menu');
+            const overlay = document.getElementById('sidebar-overlay');
+            const toggleBtn = document.getElementById('sidebar-toggle-btn');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+
+            const openSidebar = () => {
+                sidebar.classList.add('show');
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+                document.body.style.overflow = '';
+            };
+
+            toggleBtn?.addEventListener('click', openSidebar);
+            closeBtn?.addEventListener('click', closeSidebar);
+            overlay?.addEventListener('click', closeSidebar);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    closeSidebar();
+                }
+            });
+
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const action = item.dataset.action;
+                    handleSidebarAction(action, closeSidebar);
+                });
+            });
+        }
+
+        function handleSidebarAction(action, closeSidebar) {
+            switch (action) {
+                case 'customize-ui':
+                    renderCustomizeUiModal();
+                    updateSectionButtonsInModal();
+                    openModal('customizeUiModal');
+                    break;
+                case 'focus-mode':
+                    toggleFocusMode();
+                    break;
+                case 'system-settings':
+                    document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
+                    document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
+                    openModal('systemSettingsModal');
+                    break;
+                case 'toggle-theme': {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                    updateThemeButton();
+                    updateChartsTheme();
+                    break;
+                }
+                case 'toggle-notifications':
+                    toggleNotifications();
+                    break;
+                case 'export-settings':
+                    exportAllSettings();
+                    break;
+                case 'import-settings':
+                    document.getElementById('import-settings-input').click();
+                    break;
+                case 'reset-all':
+                    document.getElementById('confirm-title').textContent = translations[currentLanguage].confirmResetTitle;
+                    document.getElementById('confirm-message').textContent = translations[currentLanguage].confirmResetMessage;
+                    document.getElementById('confirm-action-btn').dataset.action = 'resetAll';
+                    openModal('confirmationModal');
+                    break;
+            }
+            if (closeSidebar) closeSidebar();
+        }
+
+        function updateSidebarStatus() {
+            const themeText = document.getElementById('theme-status-text');
+            if (themeText) {
+                themeText.textContent = document.documentElement.classList.contains('dark') ? 'الوضع الليلي' : 'الوضع الفاتح';
+            }
+
+            const notifText = document.getElementById('notifications-status-text');
+            if (notifText) {
+                notifText.textContent = notificationsEnabled ? 'مفعّلة' : 'معطّلة';
+            }
+        }
+
+        function updateSidebarConnection(isConnected) {
+            const dot = document.getElementById('sidebar-connection-dot');
+            const text = document.getElementById('sidebar-connection-text');
+            if (dot && text) {
+                if (isConnected) {
+                    dot.classList.add('connected');
+                    text.textContent = 'متصل';
+                } else {
+                    dot.classList.remove('connected');
+                    text.textContent = 'غير متصل';
+                }
+            }
+        }
+
         // ========== Event Listeners ==========
         document.addEventListener('click', event => {
             const target = event.target.closest('button, [data-id], .custom-checkbox-container, .section-option, .section-title');
@@ -2618,16 +2986,6 @@
             else if (target.id === 'toggle-ai-btn-modal') toggleSection('sectionAI');
             else if (target.id === 'toggle-ao-data-btn-modal') toggleSection('sectionAODATA');
             else if (target.id === 'toggle-ai-data-btn-modal') toggleSection('sectionAIDATA');
-            else if (target.id === 'open-system-settings-btn') {
-                document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
-                document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
-                openModal('systemSettingsModal');
-            }
-            else if (target.id === 'customize-ui-btn') {
-                renderCustomizeUiModal();
-                updateSectionButtonsInModal();
-                openModal('customizeUiModal');
-            }
             else if (target.id === 'save-settings-btn') {
                 const url = document.getElementById('db_url').value.trim();
                 const dev = document.getElementById('db_device').value.trim();
@@ -2715,24 +3073,8 @@
                 const btn = target.closest('.time-range-btn');
                 updateTimeRange(parseInt(btn.dataset.timeIndex), btn.getAttribute('data-id'));
             }
-            else if (target.id === 'theme-toggle-btn') {
-                const isDark = document.documentElement.classList.toggle('dark');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                updateThemeButton();
-                updateChartsTheme();
-            }
-            else if (target.id === 'notification-toggle-btn') toggleNotifications();
             else if (target.id === 'notification-center-btn') toggleNotificationCenter();
             else if (target.id === 'close-notification-center') toggleNotificationCenter();
-            else if (target.id === 'focus-mode-btn') toggleFocusMode();
-            else if (target.id === 'export-settings-btn') exportAllSettings();
-            else if (target.id === 'import-settings-btn') document.getElementById('import-settings-input').click();
-            else if (target.id === 'rename-all-btn') {
-                document.getElementById('confirm-title').textContent = translations[currentLanguage].confirmResetTitle;
-                document.getElementById('confirm-message').textContent = translations[currentLanguage].confirmResetMessage;
-                document.getElementById('confirm-action-btn').dataset.action = 'resetAll';
-                openModal('confirmationModal');
-            }
             else if (target.closest('.export-chart-data-btn')) {
                 exportChartDataAsFile(target.closest('.export-chart-data-btn').getAttribute('data-id'));
             }
@@ -2801,6 +3143,9 @@
             updateSectionButtonsInModal();
             initTabs();
             initScrollTop();
+            initSidebar();
+            updateSidebarStatus();
+            updateSidebarConnection(false);
             renderEventLog();
             renderNotificationCenter();
             notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
