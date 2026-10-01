@@ -32,6 +32,8 @@ body{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:
 .ib:hover{background:var(--panel2)}
 .ib:focus-visible,.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ib.danger{color:var(--off);border-color:color-mix(in srgb,var(--off) 45%,var(--line))}
+.ib.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ib.primary:hover{filter:brightness(1.08)}
 .ib:disabled{opacity:.5;cursor:not-allowed}
 .wrap{max-width:1180px;margin:0 auto;padding:16px}
 .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
@@ -42,12 +44,14 @@ body{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:
 .chip span{font-size:11.5px;color:var(--mute)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .sec{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
+.top{margin-bottom:16px}
+.col{display:grid;gap:16px;align-content:start}
 .sec-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);border-inline-start:4px solid var(--c)}
 .sec-h h2{font-size:14.5px;font-weight:600;flex:1}
 .sec-h small{font-size:11.5px;color:var(--mute);direction:ltr}
 .cnt{font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);font-variant-numeric:tabular-nums}
 .sec-b{padding:14px;display:grid;gap:10px}
-.sec.do{--c:var(--out)} .sec.ao{--c:var(--ana)} .sec.di{--c:var(--inp)} .sec.ai{--c:var(--ana)}
+.sec.do{--c:var(--out)} .sec.ao{--c:var(--ana)} .sec.di{--c:var(--inp)} .sec.ai{--c:var(--ana)} .sec.cfg{--c:var(--accent)}
 .tiles{grid-template-columns:repeat(3,1fr)}
 .tile{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 8px;text-align:center;font:inherit;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s,border-color .15s}
 button.tile{cursor:pointer}
@@ -74,6 +78,23 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 input[type=range]:disabled{opacity:.4}
 .meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;direction:ltr}
 .meter i{display:block;height:100%;width:0;background:var(--c);border-radius:4px;transition:width .4s}
+
+/* ── Sync interval ── */
+.cfg-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cfg-line label{font-size:13px;font-weight:600}
+.num{width:96px;height:36px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;font:inherit;font-size:15px;font-weight:600;text-align:center;direction:ltr;font-variant-numeric:tabular-nums}
+.num:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num:disabled{opacity:.5}
+.unit{font-size:12.5px;color:var(--mute)}
+.presets{display:flex;gap:8px;flex-wrap:wrap}
+.pre{height:30px;padding:0 12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:99px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;font-variant-numeric:tabular-nums}
+.pre:hover{border-color:var(--accent)}
+.pre.act{background:color-mix(in srgb,var(--accent) 14%,transparent);border-color:var(--accent);color:var(--accent)}
+.pre:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:var(--mute)}
+.curr{margin-inline-start:auto;font-size:12.5px;color:var(--mute)}
+.curr b{color:var(--accent);font-size:15px;font-variant-numeric:tabular-nums}
+
 .foot{text-align:center;color:var(--mute);font-size:11.5px;padding:18px 0 6px;font-variant-numeric:tabular-nums}
 .toast{position:fixed;bottom:20px;inset-inline:16px;margin:auto;max-width:360px;padding:11px 16px;background:var(--text);color:var(--bg);border-radius:8px;font-size:13px;opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;z-index:300;text-align:center}
 .toast.show{opacity:1;transform:none}
@@ -106,26 +127,46 @@ input[type=range]:disabled{opacity:.4}
     <div class="chip" id="cNtp"><i></i><div><b>NTP</b><span>--</span></div></div>
   </div>
 
+  <div class="top">
+    <section class="sec cfg full">
+      <div class="sec-h"><h2>مدة المزامنة</h2><small>config/sync_interval</small></div>
+      <div class="sec-b">
+        <div class="cfg-line">
+          <label for="syncInp">المدة</label>
+          <input class="num" type="number" id="syncInp" min="5" max="600" step="1" inputmode="numeric" value="30">
+          <span class="unit">ثانية</span>
+          <button class="ib primary" id="syncSave">حفظ</button>
+          <span class="curr">القيمة الحالية في القاعدة: <b id="syncCur">--</b> ث</span>
+        </div>
+        <div class="presets" id="presets"></div>
+        <div class="hint">من 5 إلى 600 ثانية. يطبّقها الجهاز في بداية المزامنة التالية، وتعود إلى 30 ثانية عند إعادة تشغيله.</div>
+      </div>
+    </section>
+  </div>
+
   <div class="grid">
+    <div class="col">
     <section class="sec do">
       <div class="sec-h"><h2>المخارج الرقمية</h2><small>DO</small><span class="cnt" id="doCnt">0/6</span></div>
       <div class="sec-b tiles" id="doGrid"></div>
-    </section>
-
-    <section class="sec ao">
-      <div class="sec-h"><h2>المخارج التناظرية</h2><small>AO</small></div>
-      <div class="sec-b" id="aoBox"></div>
     </section>
 
     <section class="sec di">
       <div class="sec-h"><h2>المداخل الرقمية</h2><small>DI</small><span class="cnt" id="diCnt">0/6</span></div>
       <div class="sec-b tiles" id="diGrid"></div>
     </section>
+    </div>
+    <div class="col">
+    <section class="sec ao">
+      <div class="sec-h"><h2>المخارج التناظرية</h2><small>AO</small></div>
+      <div class="sec-b" id="aoBox"></div>
+    </section>
 
     <section class="sec ai">
       <div class="sec-h"><h2>المداخل التناظرية</h2><small>AI</small></div>
       <div class="sec-b" id="aiBox"></div>
     </section>
+    </div>
   </div>
 
   <div class="foot" id="last">آخر تحديث: --:--:--</div>
@@ -144,6 +185,7 @@ const $ = id => document.getElementById(id);
 const haptic = () => navigator.vibrate && navigator.vibrate(10);
 const st = { DI:{}, DO:{}, AI:{}, AO:{} };
 let restarting = false, allOk = false;
+const SYNC_MIN = 5, SYNC_MAX = 600, PRESETS = [10, 20, 30, 60, 120];
 
 function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 function stamp(){ $('last').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-MA-u-nu-latn'); }
@@ -175,6 +217,43 @@ for (let i=1;i<=4;i++){
     <div class="meter"><i id="aiB${i}"></i></div></div>`);
 }
 
+// ── Sync interval ──
+let syncCurrent = null;
+PRESETS.forEach(v=>{
+  const b=document.createElement('button');
+  b.className='pre'; b.type='button'; b.dataset.v=v; b.textContent=v+' ث';
+  b.onclick=()=>{ $('syncInp').value=v; saveSync(); };
+  $('presets').appendChild(b);
+});
+function markPreset(){
+  document.querySelectorAll('.pre').forEach(b=>b.classList.toggle('act', Number(b.dataset.v)===syncCurrent));
+}
+async function saveSync(){
+  if(restarting) return;
+  const raw=$('syncInp').value.trim();
+  const v=Number(raw);
+  if(raw===''||!Number.isInteger(v)||v<SYNC_MIN||v>SYNC_MAX){
+    toast(`أدخل رقماً صحيحاً بين ${SYNC_MIN} و ${SYNC_MAX}`); return;
+  }
+  haptic();
+  const btn=$('syncSave'); btn.disabled=true;
+  try{
+    await set(ref(db,`${BASE}/config/sync_interval`), v);
+    toast(`تم الحفظ: ${v} ثانية`);
+  }catch(e){ console.error(e); toast('تعذّر الحفظ'); }
+  btn.disabled=false;
+}
+$('syncSave').onclick=saveSync;
+$('syncInp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); saveSync(); } });
+onValue(ref(db,`${BASE}/config/sync_interval`), s=>{
+  const v=Number(s.val());
+  if(s.val()===null||Number.isNaN(v)){ syncCurrent=null; $('syncCur').textContent='--'; markPreset(); return; }
+  syncCurrent=v;
+  $('syncCur').textContent=v;
+  if(document.activeElement!==$('syncInp')) $('syncInp').value=v;
+  markPreset();
+});
+
 // ── Render ──
 function renderDO(d){ let n=0; for(let i=1;i<=6;i++){ const on=d['DO'+i]===1; n+=on; const t=$('do'+i); t.classList.toggle('on',on); t.querySelector('.s').textContent=on?'مفتوح':'مغلق'; } $('doCnt').textContent=n+'/6'; }
 function renderDI(d){ let n=0; for(let i=1;i<=6;i++){ const on=d['DI'+i]===1; n+=on; const t=$('di'+i); t.classList.toggle('on',on); t.querySelector('.s').textContent=on?'نشط':'غير نشط'; } $('diCnt').textContent=n+'/6'; }
@@ -188,6 +267,8 @@ function chip(id,ok,txt){
 function setEnabled(on){
   for(let i=1;i<=6;i++) $('do'+i).classList.toggle('off',!on);
   for(let i=1;i<=2;i++) $('aoS'+i).disabled=!on;
+  $('syncInp').disabled=!on; $('syncSave').disabled=!on;
+  document.querySelectorAll('.pre').forEach(b=>b.disabled=!on);
 }
 function setConn(ok,txt){ $('conn').classList.toggle('ok',ok); $('connTxt').textContent=txt; $('sub').textContent=txt; }
 
