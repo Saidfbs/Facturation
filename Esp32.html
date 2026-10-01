@@ -1,3164 +1,922 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport">
-    <title>Panneau de contrôle KC868-A6</title>
-    <link rel="icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="https://s.svgbox.net/hero-solid.svg?ic=cog">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script>
-        // Adjust dark mode from local storage
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-color: #2563eb;
-            --primary-dark: #1e40af;
-            --primary-light: #3b82f6;
-            --secondary-color: #059669;
-            --danger-color: #dc2626;
-            --warning-color: #d97706;
-            --text-color: #1f2937;
-            --text-light: #f8fafc;
-            --text-gray: #6b7280;
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --card-bg-solid: #ffffff;
-            --border-color: #e5e7eb;
-            --success-color: #059669;
-            --pending-color: #d97706;
-            --digital-display-bg: rgba(255, 255, 255, 0.9);
-            --digital-display-text: #1e40af;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            --gradient-primary: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-            --gradient-success: linear-gradient(135deg, #059669 0%, #10b981 100%);
-            --gradient-warning: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
-            --gradient-danger: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-            --border-radius: 12px;
-            --border-radius-lg: 16px;
-            --border-radius-xl: 20px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .dark {
-            --primary-color: #3b82f6;
-            --primary-dark: #1e40af;
-            --primary-light: #60a5fa;
-            --secondary-color: #10b981;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-            --text-color: #f8fafc;
-            --text-light: #f8fafc;
-            --text-gray: #9ca3af;
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.9);
-            --card-bg-solid: #1e293b;
-            --border-color: #374151;
-            --success-color: #10b981;
-            --pending-color: #f59e0b;
-            --digital-display-bg: rgba(30, 41, 59, 0.8);
-            --digital-display-text: #60a5fa;
-            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-            --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
-            --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            --gradient-primary: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            --gradient-success: linear-gradient(135deg, #047857 0%, #10b981 100%);
-        }
-
-        /* أنماط جديدة لمخططات القياس */
-        .gauge-container {
-            position: relative;
-            width: 100%;
-            height: 220px;
-            margin: 1rem 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .gauge-chart {
-            width: 280px !important;
-            height: 280px !important;
-            max-width: 100%;
-        }
-
-        .gauge-value {
-            position: relative;
-            margin-top: 10px;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--text-color);
-            z-index: 10;
-            background: var(--card-bg);
-            padding: 5px 15px;
-            border-radius: var(--border-radius);
-            width: auto;
-            display: inline-block;
-        }
-
-        .gauge-min-max {
-            display: flex;
-            justify-content: space-between;
-            width: 80%;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: var(--text-gray);
-        }
-
-        .gauge-min, .gauge-max {
-            padding: 0 10px;
-        }
-
-        .title-container {
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            height: 30px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .scrolling-title {
-            white-space: nowrap;
-            position: absolute;
-            top: 0;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 0 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .scrolling-title.auto-scroll {
-            animation: scrollText 15s linear infinite;
-            left: 0;
-            transform: none;
-        }
-
-        @keyframes scrollText {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
-        }
-
-        .title-container::before,
-        .title-container::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            height: 100%;
-            width: 30px;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        .title-container::before {
-            right: 0;
-            background: linear-gradient(to left, var(--card-bg), transparent);
-        }
-
-        .title-container::after {
-            left: 0;
-            background: linear-gradient(to right, var(--card-bg), transparent);
-        }
-
-        .industrial-button {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            box-shadow: var(--shadow-medium);
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            transition: var(--transition);
-        }
-
-        .indicator-light {
-            width: 73px;
-            height: 73px;
-            border-radius: 50%;
-            background: var(--gradient-danger);
-            transition: var(--transition);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .indicator-light.active {
-            background: var(--gradient-success);
-            box-shadow: 
-                inset 0 2px 4px rgba(0, 0, 0, 0.2),
-                0 0 20px rgba(16, 185, 129, 0.4);
-        }
-
-        .indicator-light.pending {
-            background: var(--gradient-warning);
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(at 10% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
-                radial-gradient(at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-            color: var(--text-color);
-            line-height: 1.6;
-            transition: var(--transition);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            margin: 0;
-            width: 100vw;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 1200px;
-            padding-top: 0;
-        }
-
-        h1, h2, h3 {
-            font-weight: 700;
-            color: var(--text-color);
-        }
-
-        h2 {
-            font-size: clamp(1.5rem, 3.5vw, 1.75rem);
-            color: var(--text-color);
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-            padding-left: 1rem;
-            border-right: none;
-            padding-right: 0;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        h2:hover {
-            color: var(--primary-color);
-        }
-
-        h2 .toggle-icon {
-            margin-left: 1rem;
-            font-size: 1.2rem;
-            transition: var(--transition);
-        }
-
-        h2.collapsed .toggle-icon {
-            transform: rotate(-90deg);
-        }
-
-        .floating-menu-container {
-            position: relative;
-            top: unset;
-            bottom: unset;
-            left: unset;
-            transform: unset;
-            z-index: 100;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem;
-            background-color: transparent;
-            width: 100%;
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .floating-buttons {
-            display: flex;
-            flex-direction: row;
-            gap: 0.5rem;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            padding: 0.75rem 1rem;
-            box-shadow: var(--shadow-medium);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-color) transparent;
-            max-width: 100%;
-        }
-
-        .floating-buttons::-webkit-scrollbar {
-            height: 6px;
-        }
-
-        .floating-buttons::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 3px;
-        }
-
-        .floating-buttons::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 3px;
-        }
-
-        .floating-buttons::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
-
-        .section-toggle-btn {
-            padding: 0.75rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            transition: var(--transition);
-            border: 2px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 50px;
-            height: 50px;
-        }
-
-        .section-toggle-btn.active {
-            background: var(--gradient-primary);
-            color: white;
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .section-toggle-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-light);
-        }
-
-        .menu-handle {
-            display: none;
-        }
-
-        .floating-menu-container .icon-btn {
-            background: var(--gradient-primary);
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1.25rem;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-light);
-            flex-shrink: 0;
-        }
-
-        .floating-menu-container .icon-btn:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: var(--card-bg-solid);
-            border-radius: var(--border-radius-xl);
-            box-shadow: var(--shadow-large);
-            padding: 2rem;
-            max-width: 90%;
-            width: 500px;
-            position: relative;
-            border: 1px solid var(--border-color);
-        }
-
-        .close-btn {
-            background: var(--gradient-danger);
-            border: none;
-            color: white;
-            font-size: 1.25rem;
-            cursor: pointer;
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 40px;
-            height: 40px;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .close-btn:hover {
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        .notification-message {
-            position: fixed;
-            bottom: 2%;
-            left: 50%;
-            transform: translateX(-50%);
-            color: white;
-            padding: 1rem 2rem;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-large);
-            animation: slideIn 0.5s forwards, fadeOut 3s forwards 2s;
-            z-index: 2000;
-            font-weight: 600;
-            background: var(--gradient-success);
-        }
-
-        @keyframes slideIn {
-            from {
-                bottom: -50px;
-                opacity: 0;
-            }
-            to {
-                bottom: 2%;
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-            height: 100%;
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-primary);
-            transform: scaleX(0);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .control-label {
-            font-weight: 600;
-            color: var(--text-color);
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1.25rem;
-            color: var(--text-color);
-            width: 40px;
-            height: 40px;
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(10px);
-        }
-
-        .icon-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .industrial-button:hover {
-            border-color: var(--primary-color);
-            transform: scale(1.05);
-        }
-
-        .do-icon {
-            font-size: 2.5rem;
-            color: white;
-            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
-        }
-
-        /* إزالة الأنماط القديمة للعرض الرقمي */
-        .digital-display-container {
-            display: none;
-        }
-
-        .digital-display-text {
-            display: none;
-        }
-
-        input[type="range"] {
-            background: var(--border-color);
-            border: 1px solid var(--border-color);
-            height: 10px;
-            -webkit-appearance: none;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
-            background: var(--primary-color);
-            border: none;
-            border-radius: 50%;
-            box-shadow: var(--shadow-light);
-            transition: var(--transition);
-        }
-
-        input[type="range"]::-webkit-slider-thumb:hover {
-            background: var(--primary-dark);
-            transform: scale(1.2);
-        }
-
-        .status-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background-color: var(--danger-color);
-            z-index: 1000;
-            transition: var(--transition);
-        }
-
-        .status-connected {
-            background: var(--gradient-success);
-        }
-
-        .status-disconnected {
-            background: var(--gradient-danger);
-        }
-
-        .rename-label {
-            font-weight: 600;
-            font-size: 1.1rem;
-            color: var(--text-color);
-            margin-bottom: 0.25rem;
-        }
-
-        .action-button {
-            background: var(--gradient-primary);
-            border: none;
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            box-shadow: var(--shadow-medium);
-            color: white;
-            border-radius: var(--border-radius);
-        }
-
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-large);
-        }
-
-        .action-button:active {
-            transform: translateY(0);
-        }
-
-        .action-button-secondary {
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            padding: 1rem 1.5rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition);
-            color: var(--text-color);
-            border-radius: var(--border-radius);
-        }
-
-        .action-button-secondary:hover {
-            border-color: var(--primary-color);
-            background: rgba(37, 99, 235, 0.1);
-        }
-
-        .chart-main-container {
-            width: 100%;
-            height: 300px;
-            margin-top: 1rem;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .ai-grid {
-            display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .ai-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
-
-        .digital-control-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .digital-control-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-
-        .digital-control-card-wrapper {
-            flex-grow: 1;
-            flex-basis: 0;
-        }
-
-        .section-toggle-header {
-            cursor: default;
-            user-select: none;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            color: black;
-        }
-
-        .dark input[type="text"],
-        .dark input[type="number"] {
-            color: black;
-        }
-
-        .rename-label {
-            text-align: left;
-        }
-
-        .text-right {
-            text-align: left;
-        }
-
-        input[type="range"] {
-            direction: ltr;
-        }
-
-        .digital-display-text,
-        .rename-label {
-            direction: ltr;
-        }
-
-        .close-btn {
-            right: 1rem;
-            left: auto;
-        }
-
-        h2 {
-            border-left: 4px solid var(--primary-color);
-            border-right: none;
-            padding-right: 0;
-            padding-left: 1rem;
-        }
-
-        .ui-modal-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.5rem;
-        }
-
-        .ui-modal-header {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
-        }
-
-        .ui-modal-header .number-label {
-            width: 40px;
-            text-align: center;
-            font-weight: 600;
-            color: var(--text-color);
-            font-size: 1.1rem;
-        }
-
-        .ui-modal-header .spacer {
-            width: 40px;
-        }
-
-        .ui-control-row {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.5rem;
-        }
-
-        .ui-control-row .control-type-label {
-            width: 40px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-align: left;
-        }
-
-        .custom-checkbox-container {
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .custom-checkbox-container input {
-            position: absolute;
-            opacity: 0;
-            height: 0;
-            width: 0;
-        }
-
-        .custom-checkmark {
-            height: 35px;
-            width: 35px;
-            background-color: #d1d5db;
-            border-radius: 8px;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .custom-checkbox-container input:checked ~ .custom-checkmark {
-            background: var(--gradient-primary);
-        }
-
-        .custom-checkmark:after {
-            content: "\f00c";
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            display: none;
-        }
-
-        .custom-checkbox-container input:checked ~ .custom-checkmark:after {
-            display: block;
-        }
-
-        /* تحسين المسافات للهواتف */
-        @media (max-width: 768px) {
-            .digital-control-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-            
-            .floating-buttons {
-                padding: 0.5rem;
-                gap: 0.4rem;
-            }
-            
-            .section-toggle-btn,
-            .floating-menu-container .icon-btn {
-                width: 45px;
-                height: 45px;
-                min-width: 45px;
-            }
-            
-            .industrial-button {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .indicator-light {
-                width: 63px;
-                height: 63px;
-            }
-            
-            .do-icon {
-                font-size: 2rem;
-            }
-            
-            .gauge-container {
-                height: 200px;
-                margin-bottom: 1.5rem !important;
-            }
-            
-            .gauge-chart {
-                width: 260px !important;
-                height: 260px !important;
-            }
-            
-            .gauge-value {
-                font-size: 1.3rem;
-                padding: 4px 12px;
-                margin-bottom: 1.5rem !important;
-            }
-            
-            /* زيادة المسافة بين القيمة والسلايدر في المخارج التناظرية */
-            .card .mt-4 {
-                margin-top: 1.5rem !important;
-            }
-            
-            /* تحسين المسافات العامة للبطاقات */
-            .card .p-4 {
-                padding: 1.5rem 1rem !important;
-            }
-        }
-
-        /* تحسين إضافي للهواتف الصغيرة جداً */
-        @media (max-width: 480px) {
-            .gauge-value {
-                margin-bottom: 0.5rem !important;
-                font-size: 1.4rem !important;
-                padding: 8px 6px !important;
-            }
-            
-            .gauge-container {
-                margin-bottom: 2rem !important;
-            }
-            
-            /* زيادة المسافة بين المخطط والسلايدر */
-            .gauge-container + .mt-4 {
-                margin-top: 2.5rem !important;
-            }
-        }
-
-        /* إضافة أنماط جديدة للأقسام المخفية */
-        .section-hidden {
-            display: none !important;
-        }
-
-        .section-visible {
-            display: block;
-        }
-
-        .section-collapsed .section-content {
-            display: none;
-        }
-
-        .section-expanded .section-content {
-            display: block;
-        }
-
-        .first-visit-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            backdrop-filter: blur(10px);
-        }
-
-        .first-visit-modal {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--border-radius-xl);
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: var(--shadow-large);
-        }
-
-        .first-visit-modal h2 {
-            color: var(--text-color);
-            margin-bottom: 1rem;
-            border: none;
-            padding: 0;
-        }
-
-        .first-visit-modal p {
-            color: var(--text-color);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .section-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .section-option {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--card-bg);
-            border: 2px solid var(--border-color);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .section-option:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .section-option.selected {
-            border-color: var(--primary-color);
-            background: rgba(37, 99, 235, 0.1);
-        }
-
-        .section-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .section-option.selected .section-checkbox {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .section-option.selected .section-checkbox:after {
-            content: "✓";
-            color: white;
-            font-weight: bold;
-        }
-
-        .section-info {
-            flex: 1;
-            text-align: left;
-        }
-
-        .section-info h3 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1.1rem;
-        }
-
-        .section-info p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: var(--text-gray);
-        }
-
-        /* أنماط جديدة لأزرار الأقسام في نافذة التخصيص */
-        .section-toggle-container {
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-        }
-
-        .section-toggle-container h4 {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .section-toggle-buttons {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .section-toggle-btn-modal {
-            flex: 1;
-            min-width: 120px;
-            padding: 0.75rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            transition: var(--transition);
-            border: 2px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .section-toggle-btn-modal.active {
-            background: var(--gradient-primary);
-            color: white;
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-medium);
-        }
-
-        .section-toggle-btn-modal:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-light);
-        }
-
-        /* تحسين للأزرار في الشاشات الصغيرة */
-        @media (max-width: 768px) {
-            .section-toggle-buttons {
-                gap: 0.3rem;
-            }
-            
-            .section-toggle-btn-modal {
-                min-width: 100px;
-                padding: 0.6rem;
-                font-size: 0.9rem;
-            }
-            
-            .section-toggle-btn-modal i {
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .section-toggle-buttons {
-                flex-direction: column;
-            }
-            
-            .section-toggle-btn-modal {
-                min-width: auto;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0078D7">
+<title>KC868-A6 - Control</title>
+<style>
+  /* ═══════════════════════════════════════════════════
+     VARIABLES - STYLE WINDOWS 10
+     ═══════════════════════════════════════════════════ */
+  :root {
+    --win-blue: #0078D7;
+    --win-blue-hover: #106EBE;
+    --win-blue-light: #2B88D8;
+    --win-bg-dark: #1F1F1F;
+    --win-bg-panel: #2B2B2B;
+    --win-bg-card: #333333;
+    --win-bg-hover: #3D3D3D;
+    --win-bg-active: #464646;
+    --win-text: #FFFFFF;
+    --win-text-secondary: #B0B0B0;
+    --win-border: #3F3F3F;
+    --win-border-light: #4A4A4A;
+    --win-green: #107C10;
+    --win-red: #E81123;
+    --win-yellow: #FFB900;
+    --win-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  [data-theme="light"] {
+    --win-bg-dark: #F3F3F3;
+    --win-bg-panel: #FFFFFF;
+    --win-bg-card: #FAFAFA;
+    --win-bg-hover: #E5E5E5;
+    --win-bg-active: #D6D6D6;
+    --win-text: #000000;
+    --win-text-secondary: #616161;
+    --win-border: #D2D2D2;
+    --win-border-light: #E0E0E0;
+    --win-shadow: 0 2px 8px rgba(0,0,0,0.14);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RESET & BASE
+     ═══════════════════════════════════════════════════ */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--win-bg-dark);
+    color: var(--win-text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     TITLE BAR
+     ═══════════════════════════════════════════════════ */
+  .title-bar {
+    background: var(--win-bg-panel);
+    padding: 0 0.75rem;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--win-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+  }
+
+  .title-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .app-icon {
+    font-size: 1.4rem;
+    color: var(--win-blue);
+  }
+
+  .title-bar h1 {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--win-text);
+  }
+
+  .title-bar-controls {
+    display: flex;
+    gap: 0;
+    height: 48px;
+  }
+
+  .win-btn {
+    background: transparent;
+    border: none;
+    color: var(--win-text);
+    width: 46px;
+    height: 48px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+  }
+
+  .win-btn:hover {
+    background: var(--win-bg-hover);
+  }
+
+  .win-btn.close:hover {
+    background: var(--win-red);
+    color: white;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     CONTAINER
+     ═══════════════════════════════════════════════════ */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PANEL
+     ═══════════════════════════════════════════════════ */
+  .panel {
+    background: var(--win-bg-panel);
+    border: 1px solid var(--win-border);
+    padding: 1.25rem;
+    transition: all 0.2s;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--win-border);
+    color: var(--win-text);
+  }
+
+  .panel-header-icon {
+    font-size: 1.2rem;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     STATUS BAR
+     ═══════════════════════════════════════════════════ */
+  .status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 13px;
+    color: var(--win-text);
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--win-red);
+    position: relative;
+  }
+
+  .status-dot.online {
+    background: var(--win-green);
+    box-shadow: 0 0 8px var(--win-green);
+  }
+
+  .status-dot.online::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    border: 1px solid var(--win-green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  .online-badge {
+    margin-left: auto;
+    padding: 0.35rem 0.9rem;
+    font-size: 12px;
+    background: var(--win-green);
+    color: white;
+    font-weight: 500;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+  }
+
+  .online-badge.offline {
+    background: var(--win-red);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     IO GRID
+     ═══════════════════════════════════════════════════ */
+  .io-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .io-item {
+    background: var(--win-bg-card);
+    padding: 0.85rem 0.5rem;
+    text-align: center;
+    border: 1px solid var(--win-border);
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .io-item .io-label {
+    font-size: 12px;
+    color: var(--win-text-secondary);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .io-item .io-state {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    background: var(--win-bg-dark);
+    border: 2px solid var(--win-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.25s;
+    border-radius: 50%;
+  }
+
+  .io-item .io-state.on {
+    background: var(--win-blue);
+    border-color: var(--win-blue);
+    box-shadow: 0 0 12px var(--win-blue);
+  }
+
+  .io-item.clickable {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .io-item.clickable:hover {
+    background: var(--win-bg-hover);
+    border-color: var(--win-blue);
+  }
+
+  .io-item.clickable:active {
+    background: var(--win-bg-active);
+    transform: scale(0.97);
+  }
+
+  /* ═══════════════════════════════════════════════════
+     ANALOG
+     ═══════════════════════════════════════════════════ */
+  .analog-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .analog-label {
+    min-width: 50px;
+    font-weight: 600;
+    color: var(--win-text);
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+
+  .analog-bar {
+    flex: 1;
+    height: 20px;
+    background: var(--win-bg-dark);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--win-border);
+  }
+
+  .analog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--win-blue), var(--win-blue-light));
+    transition: width 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .analog-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .analog-value {
+    min-width: 95px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--win-blue-light);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* AO Slider */
+  .ao-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--win-bg-dark);
+    outline: none;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .ao-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--win-blue);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--win-text);
+    transition: all 0.15s;
+  }
+
+  .ao-slider::-webkit-slider-thumb:hover {
+    background: var(--win-blue-hover);
+    transform: scale(1.15);
+    box-shadow: 0 0 10px var(--win-blue);
+  }
+
+  .ao-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--win-blue);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--win-text);
+  }
+
+  /* FOOTER */
+  .footer-bar {
+    background: var(--win-bg-panel);
+    border-top: 1px solid var(--win-border);
+    padding: 0.75rem 1.5rem;
+    font-size: 12px;
+    color: var(--win-text-secondary);
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RESPONSIVE - TABLETTES
+     ═══════════════════════════════════════════════════ */
+  @media (max-width: 900px) {
+    .container {
+      padding: 1rem;
+    }
+    
+    .io-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RESPONSIVE - TÉLÉPHONES (⭐ 3 في الصف)
+     ═══════════════════════════════════════════════════ */
+  @media (max-width: 600px) {
+    /* Title bar */
+    .title-bar {
+      padding: 0 0.5rem;
+      height: 44px;
+    }
+    
+    .title-bar h1 {
+      font-size: 12px;
+    }
+    
+    .app-icon {
+      font-size: 1.1rem;
+    }
+    
+    .win-btn {
+      width: 40px;
+      height: 44px;
+      font-size: 11px;
+    }
+    
+    /* Container */
+    .container {
+      padding: 0.75rem;
+      gap: 0.75rem;
+    }
+    
+    /* Panels */
+    .panel {
+      padding: 0.75rem;
+    }
+    
+    .panel-header {
+      font-size: 13px;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .panel-header-icon {
+      font-size: 1rem;
+    }
+    
+    /* ⭐ IO GRID - 3 في الصف */
+    .io-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    
+    /* IO ITEMS أكبر */
+    .io-item {
+      padding: 0.75rem 0.4rem;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .io-item .io-label {
+      font-size: 11px;
+      margin-bottom: 0.4rem;
+    }
+    
+    .io-item .io-state {
+      width: 34px;
+      height: 34px;
+      font-size: 0.9rem;
+    }
+    
+    /* Status bar */
+    .status-bar {
+      gap: 0.75rem;
+    }
+    
+    .status-item {
+      font-size: 12px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+    }
+    
+    .online-badge {
+      padding: 0.3rem 0.7rem;
+      font-size: 11px;
+      width: 100%;
+      text-align: center;
+      margin-left: 0;
+      margin-top: 0.5rem;
+    }
+    
+    /* ANALOG ROWS */
+    .analog-row {
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: nowrap;
+    }
+    
+    .analog-label {
+      min-width: 36px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    
+    .analog-bar {
+      height: 24px;
+      flex: 1;
+      min-width: 60px;
+    }
+    
+    .analog-value {
+      min-width: 65px;
+      font-size: 11px;
+      text-align: right;
+    }
+    
+    /* AO Slider أكبر للمس */
+    .ao-slider {
+      height: 6px;
+      min-width: 60px;
+    }
+    
+    .ao-slider::-webkit-slider-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    
+    .ao-slider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    
+    /* Footer */
+    .footer-bar {
+      padding: 0.6rem 0.75rem;
+      font-size: 11px;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     RESPONSIVE - PETITS TÉLÉPHONES
+     ═══════════════════════════════════════════════════ */
+  @media (max-width: 380px) {
+    .container {
+      padding: 0.5rem;
+      gap: 0.5rem;
+    }
+    
+    .panel {
+      padding: 0.6rem;
+    }
+    
+    .io-grid {
+      gap: 0.4rem;
+    }
+    
+    .io-item {
+      padding: 0.6rem 0.3rem;
+      min-height: 70px;
+    }
+    
+    .io-item .io-state {
+      width: 30px;
+      height: 30px;
+    }
+    
+    .analog-label {
+      min-width: 32px;
+      font-size: 11px;
+    }
+    
+    .analog-value {
+      min-width: 58px;
+      font-size: 10px;
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════
+     PAYSAGE (أفقي)
+     ═══════════════════════════════════════════════════ */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .io-grid {
+      grid-template-columns: repeat(6, 1fr);
+    }
+    
+    .container {
+      gap: 0.5rem;
+    }
+    
+    .panel {
+      padding: 0.6rem;
+    }
+  }
+</style>
 </head>
 <body>
-    <div id="connection-status-bar" class="status-bar"></div>
-    
-    <!-- نافذة الترحيب الأولى -->
-    <div id="first-visit-overlay" class="first-visit-overlay" style="display: none;">
-        <div class="first-visit-modal">
-            <h2>مرحباً بك في لوحة التحكم</h2>
-            <p>يرجى اختيار الأقسام التي تريد عرضها في لوحة التحكم الخاصة بك:</p>
-            
-            <div class="section-selection">
-                <!-- المخارج -->
-                <div class="section-option" data-section="do">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>المخارج الرقمية</h3>
-                        <p>التحكم في المخارج الرقمية DO1, DO2, DO3, DO4, DO5, DO6</p>
-                    </div>
-                </div>
-                
-                <div class="section-option" data-section="ao">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>المخارج التناظرية</h3>
-                        <p>التحكم في المخارج التناظرية AO1, AO2</p>
-                    </div>
-                </div>
-                
-                <!-- المداخل -->
-                <div class="section-option" data-section="di">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>المداخل الرقمية</h3>
-                        <p>مراقبة المداخل الرقمية DI1, DI2, DI3, DI4, DI5, DI6</p>
-                    </div>
-                </div>
-                
-                <div class="section-option" data-section="ai">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>المداخل التناظرية</h3>
-                        <p>مراقبة المداخل التناظرية AI1, AI2, AI3, AI4</p>
-                    </div>
-                </div>
-                
-                <!-- بيانات -->
-                <div class="section-option" data-section="ao-data">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>بيانات المخارج التناظرية</h3>
-                        <p>الرسوم البيانية لبيانات المخارج التناظرية AO1, AO2</p>
-                    </div>
-                </div>
-                
-                <div class="section-option" data-section="ai-data">
-                    <div class="section-checkbox"></div>
-                    <div class="section-info">
-                        <h3>بيانات المداخل التناظرية</h3>
-                        <p>الرسوم البيانية لبيانات المداخل التناظرية AI1, AI2, AI3, AI4</p>
-                    </div>
-                </div>
-            </div>
-            
-            <button id="confirm-sections-btn" class="action-button w-full">
-                تأكيد الاختيار والمتابعة
-            </button>
-        </div>
+
+<!-- TITLE BAR -->
+<div class="title-bar">
+  <div class="title-bar-left">
+    <span class="app-icon">🏠</span>
+    <h1>KC868-A6 Control - Said</h1>
+  </div>
+  <div class="title-bar-controls">
+    <button class="win-btn" id="themeBtn" title="Thème">◐</button>
+    <button class="win-btn" id="refreshBtn" title="Actualiser">↻</button>
+    <button class="win-btn close" title="Fermer">✕</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="container">
+
+  <section class="panel">
+    <div class="panel-header">
+      <span class="panel-header-icon">📊</span>
+      <span>État Système</span>
     </div>
-
-    <header id="floating-menu-container" class="floating-menu-container">
-        <div id="floating-buttons" class="floating-buttons">
-            <!-- أزرار التحكم -->
-            <button id="rename-all-btn" class="icon-btn" aria-label="Réinitialiser tout" title="Réinitialiser tout">
-                <i class="fas fa-undo-alt"></i>
-            </button>
-            <button id="theme-toggle-btn" class="icon-btn" aria-label="Basculer le thème" title="Basculer le thème">
-                <i class="fas fa-moon"></i>
-            </button>
-            <button id="notification-toggle-btn" class="icon-btn" aria-label="Activer les notifications" title="Activer les notifications">
-                <i class="fas fa-bell-slash"></i>
-            </button>
-            <button id="open-system-settings-btn" class="icon-btn" aria-label="Paramètres système" title="Paramètres système">
-                <i class="fas fa-cog"></i>
-            </button>
-            <button id="customize-ui-btn" class="icon-btn" aria-label="Personnaliser l'interface" title="Personnaliser l'interface">
-                <i class="fas fa-sliders-h"></i>
-            </button>
-        </div>
-    </header>
-    <div id="menu-handle" class="menu-handle"></div>
-
-    <div class="main-container p-6">
-        <main class="space-y-6">
-            <!-- ========== الأقسام الرئيسية حسب النوع ========== -->
-            
-            <!-- قسم المخارج -->
-            <section id="outputs-section" class="section-visible">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow">
-                        <span>المخارج</span>
-                    </h2>
-                </div>
-                
-                <!-- المخارج الرقمية -->
-                <section id="do-section-container" class="section-hidden mb-6">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="do-section-title" data-section="do">
-                            <span>المخارج الرقمية (DO)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="do-section" class="section-content digital-control-grid"></div>
-                </section>
-
-                <!-- المخارج التناظرية -->
-                <section id="ao-section-container" class="section-hidden mb-6">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="ao-section-title" data-section="ao">
-                            <span>المخارج التناظرية (AO)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="ao-section" class="section-content ai-grid"></div>
-                </section>
-
-                <!-- بيانات المخارج التناظرية -->
-                <section id="ao-data-section-container" class="section-hidden">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="ao-data-section-title" data-section="ao-data">
-                            <span>بيانات المخارج التناظرية (AO)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="ao-data-section" class="section-content ai-grid"></div>
-                </section>
-            </section>
-
-            <!-- قسم المداخل -->
-            <section id="inputs-section" class="section-visible">
-                <div class="section-toggle-header flex justify-between items-center mb-4">
-                    <h2 class="font-semibold flex-grow">
-                        <span>المداخل</span>
-                    </h2>
-                </div>
-                
-                <!-- المداخل الرقمية -->
-                <section id="di-section-container" class="section-hidden mb-6">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="di-section-title" data-section="di">
-                            <span>المداخل الرقمية (DI)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="di-section" class="section-content digital-control-grid"></div>
-                </section>
-
-                <!-- المداخل التناظرية -->
-                <section id="ai-section-container" class="section-hidden mb-6">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="ai-section-title" data-section="ai">
-                            <span>المداخل التناظرية (AI)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="ai-section" class="section-content ai-grid"></div>
-                </section>
-
-                <!-- بيانات المداخل التناظرية -->
-                <section id="ai-data-section-container" class="section-hidden">
-                    <div class="section-toggle-header flex justify-between items-center mb-4">
-                        <h2 class="font-semibold flex-grow section-title" id="ai-data-section-title" data-section="ai-data">
-                            <span>بيانات المداخل التناظرية (AI)</span>
-                            <i class="toggle-icon fas fa-chevron-down"></i>
-                        </h2>
-                    </div>
-                    <div id="ai-data-section" class="section-content ai-grid"></div>
-                </section>
-            </section>
-        </main>
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-dot" id="wifiDot"></span>
+        <span>WiFi</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="fbDot"></span>
+        <span>Firebase</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="i2cDot"></span>
+        <span>I2C</span>
+      </div>
+      <div class="status-item">
+        <span class="status-dot" id="ntpDot"></span>
+        <span>NTP</span>
+      </div>
+      <span class="online-badge offline" id="onlineBadge">Hors ligne</span>
     </div>
+  </section>
 
-    <!-- باقي النماذج (Modals) -->
-    <div id="renameModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modal-title" class="text-2xl font-bold mb-4">Renommer</h3>
-            <button class="close-btn" data-modal-id="renameModal"><i class="fas fa-times"></i></button>
-            <p id="renameLabel" class="rename-label mb-4 text-left"></p>
-            <input type="text" id="renameInput" placeholder="Entrer un nouveau nom..."
-                class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-left">
-            <div id="unit-options-container" class="mt-4">
-                <label for="unitInput" class="block text-sm font-medium mb-2 text-left">Changer l'unité:</label>
-                <input type="text" id="unitInput" placeholder="Entrer l'unité (Ex: mA)"
-                    class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-left">
-            </div>
-            <div id="scaling-options-container" class="mt-4">
-                <label class="block text-sm font-medium mb-2 text-left">Échelle des valeurs:</label>
-                <div class="flex gap-2">
-                    <input type="number" id="minAnalogInput" placeholder="Valeur minimale"
-                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 text-left">
-                    <input type="number" id="maxAnalogInput" placeholder="Valeur maximale"
-                        class="p-2 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-1/2 text-left">
-                </div>
-            </div>
-            <div class="flex flex-col gap-2 mt-6">
-                <button id="saveRenameBtn" class="w-full action-button">Sauvegarder les modifications</button>
-            </div>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <span class="panel-header-icon">🔌</span>
+      <span>Entrées Digitales (DI)</span>
     </div>
+    <div class="io-grid" id="diGrid"></div>
+  </section>
 
-    <div id="confirmationModal" class="modal">
-        <div class="modal-content">
-            <h3 id="confirm-title" class="text-2xl font-bold mb-4">Confirmer l'action</h3>
-            <button class="close-btn" data-modal-id="confirmationModal"><i class="fas fa-times"></i></button>
-            <p id="confirm-message" class="text-lg mb-6 text-left"></p>
-            <div class="flex justify-between gap-4">
-                <button id="cancel-action-btn" class="w-full action-button-secondary">Annuler</button>
-                <button id="confirm-action-btn" class="w-full action-button bg-red-500">Confirmer</button>
-            </div>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <span class="panel-header-icon">💡</span>
+      <span>Sorties Digitales (DO) — Contrôle</span>
     </div>
+    <div class="io-grid" id="doGrid"></div>
+  </section>
 
-    <div id="systemSettingsModal" class="modal">
-        <div class="modal-content">
-            <h3 id="system-settings-title" class="text-2xl font-bold mb-4">Paramètres système</h3>
-            <button class="close-btn" data-modal-id="systemSettingsModal"><i class="fas fa-times"></i></button>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="flex flex-col">
-                    <label for="db_url" class="text-sm font-medium mb-2 text-left" id="db-url-label">URL de la base de données</label>
-                    <input type="text" id="db_url" placeholder="Ex: https://mon-projet.firebaseio.com"
-                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-left">
-                </div>
-                <div class="flex flex-col">
-                    <label for="db_device" class="text-sm font-medium mb-2 text-left" id="db-device-label">Nom de l'appareil</label>
-                    <input type="text" id="db_device" placeholder="Ex: mon-appareil"
-                        class="p-4 border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color w-full text-left">
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button id="save-settings-btn" class="w-full action-button">Sauvegarder les paramètres</button>
-                <button id="go-to-firebase-btn" class="w-full action-button">
-                    <i class="fas fa-database mr-2"></i>
-                    <span>Aller à la base de données</span>
-                </button>
-                <button id="go-to-firebase-rules-btn" class="w-full action-button">
-                    <i class="fas fa-gavel mr-2"></i>
-                    <span>Règles de la base de données</span>
-                </button>
-                <button id="copy-rules-btn" class="w-full action-button">
-                    <i class="fas fa-copy mr-2"></i>
-                    <span>Copier le code des règles</span>
-                </button>
-            </div>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <span class="panel-header-icon">📈</span>
+      <span>Entrées Analogiques (AI)</span>
     </div>
+    <div id="aiContainer"></div>
+  </section>
 
-    <div id="customizeUiModal" class="modal">
-        <div class="modal-content">
-            <h3 id="customize-ui-title" class="text-2xl font-bold mb-4">Personnaliser l'interface</h3>
-            <button class="close-btn" data-modal-id="customizeUiModal"><i class="fas fa-times"></i></button>
-            
-            <!-- قسم جديد لأزرار الأقسام -->
-            <div class="section-toggle-container">
-                <h4>الأقسام الرئيسية</h4>
-                <div class="section-toggle-buttons">
-                    <button id="toggle-do-btn-modal" class="section-toggle-btn-modal" title="المخارج الرقمية">
-                        <i class="fas fa-toggle-on"></i>
-                        <span>مخارج رقمية</span>
-                    </button>
-                    <button id="toggle-ao-btn-modal" class="section-toggle-btn-modal" title="المخارج التناظرية">
-                        <i class="fas fa-sliders-h"></i>
-                        <span>مخارج تناظرية</span>
-                    </button>
-                    <button id="toggle-di-btn-modal" class="section-toggle-btn-modal" title="المداخل الرقمية">
-                        <i class="fas fa-eye"></i>
-                        <span>مداخل رقمية</span>
-                    </button>
-                    <button id="toggle-ai-btn-modal" class="section-toggle-btn-modal" title="المداخل التناظرية">
-                        <i class="fas fa-wave-square"></i>
-                        <span>مداخل تناظرية</span>
-                    </button>
-                    <button id="toggle-ao-data-btn-modal" class="section-toggle-btn-modal" title="بيانات المخارج التناظرية">
-                        <i class="fas fa-chart-line"></i>
-                        <span>بيانات AO</span>
-                    </button>
-                    <button id="toggle-ai-data-btn-modal" class="section-toggle-btn-modal" title="بيانات المداخل التناظرية">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>بيانات AI</span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- تحديد العناصر الفردية -->
-            <div id="ui-options-container" class="space-y-4">
-            </div>
-            
-            <div class="flex flex-col gap-2 mt-6">
-                <button id="save-ui-settings-btn" class="w-full action-button">Sauvegarder les modifications</button>
-            </div>
-        </div>
+  <section class="panel">
+    <div class="panel-header">
+      <span class="panel-header-icon">🎛️</span>
+      <span>Sorties Analogiques (AO) — Contrôle</span>
     </div>
+    <div id="aoContainer"></div>
+  </section>
 
-    <script>
-        // الترجمات
-        const translations = {
-            fr: {
-                title: 'Panneau de contrôle KC868-A6',
-                doTitle: 'المخارج الرقمية (DO)',
-                diTitle: 'المداخل الرقمية (DI)',
-                aoTitle: 'المخارج التناظرية (AO)',
-                aiTitle: 'المداخل التناظرية (AI)',
-                aoDataTitle: 'بيانات المخارج التناظرية (AO)',
-                aiDataTitle: 'بيانات المداخل التناظرية (AI)',
-                renameAllBtn: 'Réinitialiser tout',
-                changeThemeBtn: 'Basculer le thème',
-                notificationsBtn: 'Activer les notifications',
-                settingsBtn: 'Paramètres système',
-                customizeUiBtn: 'Personnaliser l\'interface',
-                renameModalTitle: 'Renommer',
-                aiSettingsModalTitle: 'Paramètres du graphique',
-                renameLabel: 'Nouveau nom:',
-                renamePlaceholder: 'Entrer un nouveau nom...',
-                unitLabel: 'Changer l\'unité:',
-                unitPlaceholder: 'Entrer l\'unité (Ex: mA)',
-                scalingLabel: 'Échelle des valeurs:',
-                minValuePlaceholder: 'Valeur minimale',
-                maxValuePlaceholder: 'Valeur maximale',
-                saveBtn: 'Sauvegarder les modifications',
-                confirmAction: 'Confirmer l\'action',
-                confirmResetTitle: 'Confirmer la réinitialisation',
-                confirmResetMessage: 'Êtes-vous sûr de vouloir réinitialiser tous les noms, unités et échelles à leurs valeurs par défaut ? Cette action est irréversible.',
-                confirmDeleteTitle: 'Confirmer la suppression',
-                confirmDeleteMessage: 'Êtes-vous sûr de vouloir supprimer toutes les données de ce graphique ? Cette action est irréversible.',
-                cancelBtn: 'Annuler',
-                confirmBtn: 'Confirmer',
-                systemSettingsTitle: 'Paramètres système',
-                dbUrlLabel: 'URL de la base de données',
-                dbUrlPlaceholder: 'Ex: https://mon-projet.firebaseio.com',
-                dbDeviceLabel: 'Nom de l\'appareil',
-                dbDevicePlaceholder: 'Ex: mon-appareil',
-                saveSettingsBtn: 'Sauvegarder les paramètres',
-                goToDbBtn: 'Aller à la base de données',
-                goToRulesBtn: 'Règles de la base de données',
-                copyRulesBtn: 'Copier le code des règles',
-                copySuccess: 'Code copié avec succès !',
-                customizeUiTitle: 'Personnaliser l\'interface',
-                uiSettingsSaved: 'Paramètres d\'interface enregistrés !',
-                noDataToExport: 'Aucune donnée à exporter.',
-                exportSuccess: 'Données du graphique exportées avec succès !',
-                deleteSuccess: 'Données supprimées avec succès !',
-                deleteFail: 'Échec de la suppression des données. Veuillez réessayer.',
-                firebaseInitFail: 'Échec de l\'initialisation de Firebase. Veuillez vérifier l\'URL.',
-                requiredFields: 'Veuillez entrer l\'URL de la base de données et le nom de l\'appareil.',
-                settingsSaved: 'Paramètres enregistrés avec succès !',
-                renameSuccess: 'Modifications enregistrées avec succès !',
-                resetSuccess: 'Tous les paramètres ont été réinitialisés avec succès !',
-                notificationEnabled: 'Notifications activées !',
-                notificationDisabled: 'Notifications désactivées.',
-                stateChange: 'L\'état de "${name}" a changé pour : ${status}',
-                valueChange: 'La valeur de "${name}" a changé pour : ${value} ${unit}',
-                connected: 'Connecté',
-                disconnected: 'Déconnecté',
-                active: 'Actif',
-                inactive: 'Inactif',
-                value: 'Valeur',
-                status: 'Statut',
-                hour: 'Dernière heure',
-                hours24: 'Dernières 24 heures',
-                all: 'Tout',
-                doLabel1: 'Relais 1',
-                doLabel2: 'Relais 2',
-                doLabel3: 'Relais 3',
-                doLabel4: 'Relais 4',
-                doLabel5: 'Relais 5',
-                doLabel6: 'Relais 6',
-                diLabel1: 'Capteur d\'état 1',
-                diLabel2: 'Capteur d\'état 2',
-                diLabel3: 'Capteur d\'état 3',
-                diLabel4: 'Capteur d\'état 4',
-                diLabel5: 'Capteur d\'état 5',
-                diLabel6: 'Capteur d\'état 6',
-                aiLabel1: 'Capteur de courant 1',
-                aiLabel2: 'Capteur de courant 2',
-                aiLabel3: 'Capteur de courant 3',
-                aiLabel4: 'Capteur de courant 4',
-                aoLabel1: 'Sortie de courant 1',
-                aoLabel2: 'Sortie de courant 2',
-            }
-        };
+</main>
 
-        const currentLanguage = 'fr';
-        const controlsConfig = {
-            AI: [{
-                id: 'AI1',
-                label: 'aiLabel1',
-                type: 'slider',
-                min: 0,
-                max: 4096,
-                step: 1,
-                unit: 'mA',
-                realMin: 4,
-                realMax: 20,
-                icon: 'fas fa-chart-line'
-            }, {
-                id: 'AI2',
-                label: 'aiLabel2',
-                type: 'slider',
-                min: 0,
-                max: 4096,
-                step: 1,
-                unit: 'mA',
-                realMin: 4,
-                realMax: 20,
-                icon: 'fas fa-chart-line'
-            }, {
-                id: 'AI3',
-                label: 'aiLabel3',
-                type: 'slider',
-                min: 0,
-                max: 4096,
-                step: 1,
-                unit: 'mA',
-                realMin: 4,
-                realMax: 20,
-                icon: 'fas fa-chart-line'
-            }, {
-                id: 'AI4',
-                label: 'aiLabel4',
-                type: 'slider',
-                min: 0,
-                max: 4096,
-                step: 1,
-                unit: 'mA',
-                realMin: 4,
-                realMax: 20,
-                icon: 'fas fa-chart-line'
-            }],
-            DO: [{
-                id: 'DO1',
-                label: 'doLabel1',
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'DO2',
-                label: 'doLabel2',
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'DO3',
-                label: 'doLabel3',
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'DO4',
-                label: 'doLabel4',
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'DO5',
-                label: 'doLabel5',
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'DO6',
-                label: 'doLabel6',
-                icon: 'fas fa-sign-out-alt'
-            }],
-            DI: [{
-                id: 'DI1',
-                label: 'diLabel1',
-                icon: 'fas fa-sign-in-alt'
-            }, {
-                id: 'DI2',
-                label: 'diLabel2',
-                icon: 'fas fa-sign-in-alt'
-            }, {
-                id: 'DI3',
-                label: 'diLabel3',
-                icon: 'fas fa-sign-in-alt'
-            }, {
-                id: 'DI4',
-                label: 'diLabel4',
-                icon: 'fas fa-sign-in-alt'
-            }, {
-                id: 'DI5',
-                label: 'diLabel5',
-                icon: 'fas fa-sign-in-alt'
-            }, {
-                id: 'DI6',
-                label: 'diLabel6',
-                icon: 'fas fa-sign-in-alt'
-            }],
-            AO: [{
-                id: 'AO1',
-                label: 'aoLabel1',
-                type: 'slider',
-                min: 0,
-                max: 255,
-                step: 1,
-                unit: 'V',
-                realMin: 0,
-                realMax: 10,
-                icon: 'fas fa-sign-out-alt'
-            }, {
-                id: 'AO2',
-                label: 'aoLabel2',
-                type: 'slider',
-                min: 0,
-                max: 255,
-                step: 1,
-                unit: 'V',
-                realMin: 0,
-                realMax: 10,
-                icon: 'fas fa-sign-out-alt'
-            }]
-        };
+<div class="footer-bar">
+  🕐 Dernière mise à jour: <span id="lastUpdate">--:--:--</span>
+  &nbsp;·&nbsp; KC868-A6 v1.0
+</div>
 
-        // إعدادات الواجهة الموسعة
-        const initialUiSettings = {};
-        Object.keys(controlsConfig).forEach(type => {
-            controlsConfig[type].forEach(control => {
-                initialUiSettings[control.id] = true;
-            });
-        });
+<!-- FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+  import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
-        // إعدادات الأقسام الجديدة
-        const initialSectionSettings = {
-            sectionDO: false,             // المخارج الرقمية
-            sectionDI: false,             // المداخل الرقمية  
-            sectionAO: false,             // المخارج التناظرية (تحكم)
-            sectionAI: false,             // المداخل التناظرية (مراقبة)
-            sectionAODATA: false,         // بيانات المخارج التناظرية
-            sectionAIDATA: false,         // بيانات المداخل التناظرية
-            firstVisit: true
-        };
+  const firebaseConfig = {
+    databaseURL: "https://said-rahil-default-rtdb.firebaseio.com"
+  };
 
-        // إعدادات طي/فتح الأقسام
-        const initialSectionCollapseState = {
-            'do': false,
-            'di': false,
-            'ao': false,
-            'ai': false,
-            'ao-data': false,
-            'ai-data': false
-        };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-        const uiSettings = JSON.parse(localStorage.getItem('uiSettings')) || initialUiSettings;
-        const sectionSettings = JSON.parse(localStorage.getItem('sectionSettings')) || initialSectionSettings;
-        const sectionCollapseState = JSON.parse(localStorage.getItem('sectionCollapseState')) || initialSectionCollapseState;
-        const timeRanges = [60 * 60 * 1000, 24 * 60 * 60 * 1000, 'all'];
-        const timeRangeLabels = [translations[currentLanguage].hour, translations[currentLanguage].hours24, translations[currentLanguage].all];
-        const notificationSound = new Audio('https://s3.amazonaws.com/freecodecamp/relaxing-sounds-notification.mp3');
-        const unitMappings = JSON.parse(localStorage.getItem('unitMappings')) || {};
-        const renamedLabels = JSON.parse(localStorage.getItem('renamedLabels')) || {};
-        const scalingMappings = JSON.parse(localStorage.getItem('scalingMappings')) || {};
-        let notificationsEnabled = localStorage.getItem('notificationsEnabled') === 'true';
-        if (localStorage.getItem('notificationsEnabled') === null) {
-            notificationsEnabled = true;
-            localStorage.setItem('notificationsEnabled', 'true');
+  const DEVICE_NAME = "Said";
+  const BASE_PATH = `/${DEVICE_NAME}`;
+
+  let state = { DI: {}, DO: {}, AI: {}, AO: {} };
+
+  // ═══════════════════════════════════════════════════
+  // INIT UI
+  // ═══════════════════════════════════════════════════
+  function initUI() {
+    const diGrid = document.getElementById('diGrid');
+    for (let i = 1; i <= 6; i++) {
+      diGrid.innerHTML += `
+        <div class="io-item">
+          <div class="io-label">DI${i}</div>
+          <div class="io-state" id="di${i}State">⚫</div>
+        </div>
+      `;
+    }
+
+    const doGrid = document.getElementById('doGrid');
+    for (let i = 1; i <= 6; i++) {
+      doGrid.innerHTML += `
+        <div class="io-item clickable" onclick="toggleDO(${i})">
+          <div class="io-label">DO${i}</div>
+          <div class="io-state" id="do${i}State">⚫</div>
+        </div>
+      `;
+    }
+
+    const aiContainer = document.getElementById('aiContainer');
+    for (let i = 1; i <= 4; i++) {
+      aiContainer.innerHTML += `
+        <div class="analog-row">
+          <div class="analog-label">AI${i}</div>
+          <div class="analog-bar">
+            <div class="analog-fill" id="ai${i}Bar" style="width: 0%"></div>
+          </div>
+          <div class="analog-value" id="ai${i}Value">0% (0)</div>
+        </div>
+      `;
+    }
+
+    const aoContainer = document.getElementById('aoContainer');
+    for (let i = 1; i <= 2; i++) {
+      aoContainer.innerHTML += `
+        <div class="analog-row">
+          <div class="analog-label">AO${i}</div>
+          <input type="range" min="0" max="255" value="0" class="ao-slider" 
+                 id="ao${i}Slider" 
+                 oninput="updateAO(${i}, this.value)"
+                 onchange="sendAO(${i}, this.value)">
+          <div class="analog-value" id="ao${i}Value">0% (0)</div>
+        </div>
+      `;
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // CONTROLS
+  // ═══════════════════════════════════════════════════
+  window.toggleDO = function(numero) {
+    const current = state.DO[`DO${numero}`] || 0;
+    const newValue = current === 1 ? 0 : 1;
+    set(ref(db, `${BASE_PATH}/DO/DO${numero}`), newValue);
+  };
+
+  window.updateAO = function(numero, value) {
+    const pct = Math.round((value / 255) * 100);
+    document.getElementById(`ao${numero}Value`).textContent = `${pct}% (${value})`;
+  };
+
+  window.sendAO = function(numero, value) {
+    set(ref(db, `${BASE_PATH}/AO/AO${numero}`), parseInt(value));
+  };
+
+  // ═══════════════════════════════════════════════════
+  // UPDATE UI
+  // ═══════════════════════════════════════════════════
+  function updateDI(data) {
+    for (let i = 1; i <= 6; i++) {
+      const el = document.getElementById(`di${i}State`);
+      if (el) {
+        if (data[`DI${i}`] === 1) {
+          el.textContent = '⚫';
+          el.classList.add('on');
+        } else {
+          el.textContent = '⚪';
+          el.classList.remove('on');
         }
-        let firebaseInitialized = false;
-        let deviceRef = null;
-        const chartInstances = {};
-        const gaugeInstances = {};
-        const aiDataCache = {};
-        const notificationQueue = [];
-        let isShowingNotification = false;
+      }
+    }
+  }
 
-        // ========== الدوال الجديدة لطي وفتح الأقسام ==========
-
-        // تبديل حالة طي/فتح القسم
-        function toggleSectionCollapse(sectionId) {
-            sectionCollapseState[sectionId] = !sectionCollapseState[sectionId];
-            localStorage.setItem('sectionCollapseState', JSON.stringify(sectionCollapseState));
-            updateSectionCollapseState(sectionId);
+  function updateDO(data) {
+    for (let i = 1; i <= 6; i++) {
+      const el = document.getElementById(`do${i}State`);
+      if (el) {
+        if (data[`DO${i}`] === 1) {
+          el.textContent = '●';
+          el.classList.add('on');
+        } else {
+          el.textContent = '○';
+          el.classList.remove('on');
         }
+      }
+    }
+  }
 
-        // تحديث حالة القسم بناءً على الإعدادات المحفوظة
-        function updateSectionCollapseState(sectionId) {
-            const sectionContainer = document.getElementById(`${sectionId}-section-container`);
-            const sectionTitle = document.getElementById(`${sectionId}-section-title`);
-            
-            if (sectionContainer && sectionTitle) {
-                if (sectionCollapseState[sectionId]) {
-                    sectionContainer.classList.add('section-collapsed');
-                    sectionTitle.classList.add('collapsed');
-                } else {
-                    sectionContainer.classList.remove('section-collapsed');
-                    sectionTitle.classList.remove('collapsed');
-                }
-            }
-        }
+  function updateAI(data) {
+    for (let i = 1; i <= 4; i++) {
+      const value = data[`AI${i}`] || 0;
+      const pct = Math.round((value / 4095) * 100);
+      const bar = document.getElementById(`ai${i}Bar`);
+      const val = document.getElementById(`ai${i}Value`);
+      if (bar) bar.style.width = `${pct}%`;
+      if (val) val.textContent = `${pct}% (${value})`;
+    }
+  }
 
-        // تهيئة جميع حالات طي/فتح الأقسام
-        function initializeSectionCollapseStates() {
-            Object.keys(sectionCollapseState).forEach(sectionId => {
-                updateSectionCollapseState(sectionId);
-            });
-        }
+  function updateAO(data) {
+    for (let i = 1; i <= 2; i++) {
+      const value = data[`AO${i}`] || 0;
+      const pct = Math.round((value / 255) * 100);
+      const slider = document.getElementById(`ao${i}Slider`);
+      const val = document.getElementById(`ao${i}Value`);
+      if (slider && document.activeElement !== slider) slider.value = value;
+      if (val) val.textContent = `${pct}% (${value})`;
+    }
+  }
 
-        // ========== نهاية الدوال الجديدة ==========
+  function updateTime() {
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('fr-FR');
+  }
 
-        // دالة للتحقق مما إذا كان القسم يحتوي على عناصر معروضة
-        function checkSectionHasVisibleItems(sectionId) {
-            const sectionElement = document.getElementById(sectionId.replace('-container', ''));
-            if (!sectionElement) return false;
-            
-            const controlElements = sectionElement.querySelectorAll('.card, .digital-control-card-wrapper');
-            return controlElements.length > 0;
-        }
+  // ═══════════════════════════════════════════════════
+  // FIREBASE LISTEN
+  // ═══════════════════════════════════════════════════
+  function listenFirebase() {
+    const connectedRef = ref(db, '.info/connected');
+    onValue(connectedRef, (snap) => {
+      const online = snap.val() === true;
+      const badge = document.getElementById('onlineBadge');
+      const fbDot = document.getElementById('fbDot');
+      
+      if (online) {
+        badge.textContent = 'En ligne';
+        badge.classList.remove('offline');
+        fbDot.classList.add('online');
+        document.getElementById('wifiDot').classList.add('online');
+        document.getElementById('i2cDot').classList.add('online');
+        document.getElementById('ntpDot').classList.add('online');
+      } else {
+        badge.textContent = 'Hors ligne';
+        badge.classList.add('offline');
+        fbDot.classList.remove('online');
+      }
+      updateTime();
+    });
 
-        // تحديث إظهار/إخفاء الأقسام مع التحقق من العناصر
-        function updateSectionVisibility() {
-            const sections = {
-                'do-section-container': 'sectionDO',             // المخارج الرقمية
-                'di-section-container': 'sectionDI',             // المداخل الرقمية
-                'ao-section-container': 'sectionAO',             // المخارج التناظرية (تحكم)
-                'ai-section-container': 'sectionAI',             // المداخل التناظرية (مراقبة)
-                'ao-data-section-container': 'sectionAODATA',   // بيانات المخارج التناظرية
-                'ai-data-section-container': 'sectionAIDATA'    // بيانات المداخل التناظرية
-            };
+    onValue(ref(db, `${BASE_PATH}/DI`), (snap) => {
+      state.DI = snap.val() || {};
+      updateDI(state.DI);
+      updateTime();
+    });
 
-            for (const [sectionId, sectionKey] of Object.entries(sections)) {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    const hasVisibleItems = checkSectionHasVisibleItems(sectionId);
-                    
-                    if (sectionSettings[sectionKey] && hasVisibleItems) {
-                        section.classList.remove('section-hidden');
-                        section.classList.add('section-visible');
-                        // تأكد من تحديث حالة الطي/الفتح
-                        const sectionType = sectionId.split('-')[0] + (sectionId.includes('data') ? '-data' : '');
-                        updateSectionCollapseState(sectionType);
-                    } else {
-                        section.classList.remove('section-visible');
-                        section.classList.add('section-hidden');
-                    }
-                }
-            }
-        }
+    onValue(ref(db, `${BASE_PATH}/DO`), (snap) => {
+      state.DO = snap.val() || {};
+      updateDO(state.DO);
+      updateTime();
+    });
 
-        // تطبيق تأثير التمرير على العناوين الطويلة
-        function applyScrollingEffect() {
-            const titleContainers = document.querySelectorAll('.title-container');
-            
-            titleContainers.forEach(container => {
-                const title = container.querySelector('.scrolling-title');
-                if (title && title.scrollWidth > container.offsetWidth) {
-                    title.classList.add('auto-scroll');
-                    
-                    const textLength = title.textContent.length;
-                    const duration = Math.max(12, textLength * 0.3);
-                    title.style.animationDuration = `${duration}s`;
-                } else {
-                    title.classList.remove('auto-scroll');
-                    title.style.left = '50%';
-                    title.style.transform = 'translateX(-50%)';
-                }
-            });
-        }
+    onValue(ref(db, `${BASE_PATH}/AI`), (snap) => {
+      state.AI = snap.val() || {};
+      updateAI(state.AI);
+      updateTime();
+    });
 
-        window.addEventListener('resize', applyScrollingEffect);
-        window.addEventListener('load', applyScrollingEffect);
+    onValue(ref(db, `${BASE_PATH}/AO`), (snap) => {
+      state.AO = snap.val() || {};
+      updateAO(state.AO);
+      updateTime();
+    });
+  }
 
-        // تحديث أزرار الأقسام في النافذة
-        function updateSectionButtonsInModal() {
-            const buttons = {
-                'toggle-do-btn-modal': 'sectionDO',
-                'toggle-di-btn-modal': 'sectionDI',
-                'toggle-ao-btn-modal': 'sectionAO',
-                'toggle-ai-btn-modal': 'sectionAI',
-                'toggle-ao-data-btn-modal': 'sectionAODATA',
-                'toggle-ai-data-btn-modal': 'sectionAIDATA'
-            };
+  // ═══════════════════════════════════════════════════
+  // THEME
+  // ═══════════════════════════════════════════════════
+  function initTheme() {
+    const btn = document.getElementById('themeBtn');
+    const current = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', current);
 
-            for (const [buttonId, sectionKey] of Object.entries(buttons)) {
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    if (sectionSettings[sectionKey]) {
-                        button.classList.add('active');
-                    } else {
-                        button.classList.remove('active');
-                    }
-                }
-            }
-        }
+    btn.addEventListener('click', () => {
+      const now = document.documentElement.getAttribute('data-theme');
+      const next = now === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+  }
 
-        // تبديل حالة القسم مع تحديث الصفحة
-        function toggleSection(sectionKey) {
-            sectionSettings[sectionKey] = !sectionSettings[sectionKey];
-            localStorage.setItem('sectionSettings', JSON.stringify(sectionSettings));
-            updateSectionButtonsInModal();
-            updateSectionVisibility();
-        }
+  function initRefresh() {
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
 
-        // إظهار نافذة الاختيار الأولى
-        function showFirstVisitModal() {
-            if (sectionSettings.firstVisit) {
-                const overlay = document.getElementById('first-visit-overlay');
-                overlay.style.display = 'flex';
-                
-                // تحديد جميع الخيارات بشكل افتراضي
-                document.querySelectorAll('.section-option').forEach(option => {
-                    option.classList.add('selected');
-                });
-            }
-        }
+  // ═══════════════════════════════════════════════════
+  // START
+  // ═══════════════════════════════════════════════════
+  initUI();
+  initTheme();
+  initRefresh();
+  listenFirebase();
 
-        // تأكيد اختيار الأقسام
-        function confirmSectionSelection() {
-            const selectedSections = {
-                sectionDO: document.querySelector('.section-option[data-section="do"]').classList.contains('selected'),
-                sectionDI: document.querySelector('.section-option[data-section="di"]').classList.contains('selected'),
-                sectionAO: document.querySelector('.section-option[data-section="ao"]').classList.contains('selected'),
-                sectionAI: document.querySelector('.section-option[data-section="ai"]').classList.contains('selected'),
-                sectionAODATA: document.querySelector('.section-option[data-section="ao-data"]').classList.contains('selected'),
-                sectionAIDATA: document.querySelector('.section-option[data-section="ai-data"]').classList.contains('selected')
-            };
+  console.log('✅ KC868-A6 Control - Mobile Ready');
+</script>
 
-            // التأكد من اختيار قسم واحد على الأقل
-            const isValidSelection = Object.values(selectedSections).some(value => value === true);
-
-            if (!isValidSelection) {
-                showMessage('يرجى اختيار قسم واحد على الأقل', true);
-                return;
-            }
-
-            // حفظ جميع الإعدادات
-            Object.assign(sectionSettings, selectedSections);
-            sectionSettings.firstVisit = false;
-
-            localStorage.setItem('sectionSettings', JSON.stringify(sectionSettings));
-            
-            document.getElementById('first-visit-overlay').style.display = 'none';
-            updateSectionButtonsInModal();
-            updateSectionVisibility();
-            
-            showMessage('تم حفظ تفضيلات الأقسام بنجاح!');
-        }
-
-        // إعادة تعيين جميع الإعدادات (بما في ذلك الأقسام)
-        function resetAllSettings() {
-            localStorage.removeItem('renamedLabels');
-            localStorage.removeItem('unitMappings');
-            localStorage.removeItem('scalingMappings');
-            localStorage.removeItem('uiSettings');
-            localStorage.removeItem('sectionSettings');
-            localStorage.removeItem('sectionCollapseState');
-            
-            // إعادة تعيين إعدادات الأقسام إلى القيم الافتراضية (جميع الأقسام مرئية)
-            const defaultSectionSettings = {
-                sectionDO: true,
-                sectionDI: true,
-                sectionAO: true,
-                sectionAI: true,
-                sectionAODATA: true,
-                sectionAIDATA: true,
-                firstVisit: false
-            };
-            
-            localStorage.setItem('sectionSettings', JSON.stringify(defaultSectionSettings));
-            Object.assign(sectionSettings, defaultSectionSettings);
-            
-            // إعادة تعيين حالات الطي/الفتح
-            Object.keys(sectionCollapseState).forEach(key => {
-                sectionCollapseState[key] = false;
-            });
-            localStorage.setItem('sectionCollapseState', JSON.stringify(sectionCollapseState));
-            
-            showMessage(translations[currentLanguage].resetSuccess);
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
-        }
-
-        // الدوال المساعدة
-        function updateUIForLanguage(lang) {
-            const translation = translations[lang];
-            document.documentElement.lang = lang;
-            document.documentElement.dir = 'ltr';
-            document.title = translation.title;
-            document.getElementById('do-section-title').querySelector('span').textContent = translation.doTitle;
-            document.getElementById('di-section-title').querySelector('span').textContent = translation.diTitle;
-            document.getElementById('ao-section-title').querySelector('span').textContent = translation.aoTitle;
-            document.getElementById('ai-section-title').querySelector('span').textContent = translation.aiTitle;
-            document.getElementById('ao-data-section-title').querySelector('span').textContent = translation.aoDataTitle;
-            document.getElementById('ai-data-section-title').querySelector('span').textContent = translation.aiDataTitle;
-            document.getElementById('rename-all-btn').setAttribute('aria-label', translation.renameAllBtn);
-            document.getElementById('theme-toggle-btn').setAttribute('aria-label', translation.changeThemeBtn);
-            document.getElementById('notification-toggle-btn').setAttribute('aria-label', translation.notificationsBtn);
-            document.getElementById('open-system-settings-btn').setAttribute('aria-label', translation.settingsBtn);
-            document.getElementById('customize-ui-btn').setAttribute('aria-label', translation.customizeUiBtn);
-            document.getElementById('modal-title').textContent = translation.renameModalTitle;
-            document.getElementById('renameInput').setAttribute('placeholder', translation.renamePlaceholder);
-            document.getElementById('unit-options-container').querySelector('label').textContent = translation.unitLabel;
-            document.getElementById('unitInput').setAttribute('placeholder', translation.unitPlaceholder);
-            document.getElementById('scaling-options-container').querySelector('label').textContent = translation.scalingLabel;
-            document.getElementById('minAnalogInput').setAttribute('placeholder', translation.minValuePlaceholder);
-            document.getElementById('maxAnalogInput').setAttribute('placeholder', translation.maxValuePlaceholder);
-            document.getElementById('saveRenameBtn').textContent = translation.saveBtn;
-            document.getElementById('confirm-action-btn').textContent = translation.confirmBtn;
-            document.getElementById('system-settings-title').textContent = translation.systemSettingsTitle;
-            document.getElementById('db-url-label').textContent = translation.dbUrlLabel;
-            document.getElementById('db_url').setAttribute('placeholder', translation.dbUrlPlaceholder);
-            document.getElementById('db-device-label').textContent = translation.dbDeviceLabel;
-            document.getElementById('db_device').setAttribute('placeholder', translation.dbDevicePlaceholder);
-            document.getElementById('save-settings-btn').textContent = translation.saveSettingsBtn;
-            document.getElementById('go-to-firebase-btn').querySelector('span').textContent = translation.goToDbBtn;
-            document.getElementById('go-to-firebase-rules-btn').querySelector('span').textContent = translation.goToRulesBtn;
-            document.getElementById('copy-rules-btn').querySelector('span').textContent = translation.copyRulesBtn;
-            document.getElementById('customize-ui-title').textContent = translation.customizeUiTitle;
-            document.getElementById('save-ui-settings-btn').textContent = translation.saveBtn;
-            renderAllControls();
-        }
-
-        function getCssVariable(variable) {
-            return getComputedStyle(document.body).getPropertyValue(variable).trim();
-        }
-
-        function showMessage(message, isError = false) {
-            if (!notificationsEnabled) return;
-            notificationQueue.push({
-                message,
-                isError
-            });
-            if (!isShowingNotification) {
-                processNotificationQueue();
-            }
-        }
-
-        function processNotificationQueue() {
-            if (notificationQueue.length === 0) {
-                isShowingNotification = false;
-                return;
-            }
-            isShowingNotification = true;
-            const notification = notificationQueue.shift();
-            if (!notification.isError) {
-                notificationSound.play().catch(e => console.error("Error playing audio:", e));
-            }
-            const messageElement = document.createElement('div');
-            messageElement.className = `notification-message ${notification.isError ? 'bg-red-500' : 'bg-green-500'}`;
-            messageElement.textContent = notification.message;
-            document.body.appendChild(messageElement);
-            setTimeout(() => {
-                messageElement.remove();
-                processNotificationQueue();
-            }, 5000);
-        }
-
-        function toggleNotifications() {
-            notificationsEnabled = !notificationsEnabled;
-            localStorage.setItem('notificationsEnabled', notificationsEnabled);
-            updateNotificationButton();
-            if (notificationsEnabled) {
-                showMessage(translations[currentLanguage].notificationEnabled);
-            } else {
-                showMessage(translations[currentLanguage].notificationDisabled, true);
-            }
-        }
-
-        function updateNotificationButton() {
-            const btn = document.getElementById('notification-toggle-btn');
-            if (!btn) return;
-            const icon = btn.querySelector('i');
-            if (notificationsEnabled) {
-                icon.classList.replace('fa-bell-slash', 'fa-bell');
-            } else {
-                icon.classList.replace('fa-bell', 'fa-bell-slash');
-            }
-        }
-
-        function updateThemeButton() {
-            const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            const htmlElement = document.documentElement;
-            if (themeToggleBtn) {
-                const iconElement = themeToggleBtn.querySelector('i');
-                if (htmlElement.classList.contains('dark')) {
-                    iconElement.classList.replace('fa-moon', 'fa-sun');
-                } else {
-                    iconElement.classList.replace('fa-sun', 'fa-moon');
-                }
-            }
-        }
-
-        function updateChartsTheme() {
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            const newTextColor = getCssVariable('--text-color');
-            Object.values(chartInstances).forEach(chart => {
-                if (chart.options && chart.options.scales) {
-                    if (chart.options.scales.y && chart.options.scales.y.ticks) {
-                        chart.options.scales.y.ticks.color = newTextColor;
-                    }
-                    if (chart.options.scales.x && chart.options.scales.x.ticks) {
-                        chart.options.scales.x.ticks.color = newTextColor;
-                    }
-                }
-                if (chart.options && chart.options.plugins && chart.options.plugins.tooltip) {
-                    chart.options.plugins.tooltip.titleColor = newTextColor;
-                    chart.options.plugins.tooltip.bodyColor = newTextColor;
-                    chart.options.plugins.tooltip.backgroundColor = getCssVariable('--card-bg');
-                }
-                chart.update();
-            });
-        }
-
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function scaleValue(rawValue, controlId) {
-            const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
-            if (!config) return rawValue;
-            const { realMin, realMax } = scalingMappings[controlId] || config;
-            const scaledValue = ((rawValue - config.min) / (config.max - config.min)) * (realMax - realMin) + realMin;
-            return scaledValue;
-        }
-
-        function createOrUpdateChart(ctx, id, type, dataPoints = []) {
-            const isDigital = (type === 'DI' || type === 'DO');
-            const borderColor = isDigital ? getCssVariable('--success-color') : getCssVariable('--primary-color');
-            const currentUnit = unitMappings[id] || (controlsConfig.AI.find(c => c.id === id) || controlsConfig.AO.find(c => c.id === id) || {}).unit;
-            let yMin = 0;
-            let yMax = 4096;
-            if (id.startsWith('AI') || id.startsWith('AO')) {
-                const config = controlsConfig.AI.find(c => c.id === id) || controlsConfig.AO.find(c => c.id === id);
-                if (config) {
-                    const { realMin, realMax } = scalingMappings[id] || config;
-                    yMin = realMin;
-                    yMax = realMax;
-                }
-            }
-            
-            if (chartInstances[id]) {
-                const scaledDataPoints = dataPoints.map(p => ({
-                    x: p.x,
-                    y: scaleValue(p.y, id)
-                }));
-                chartInstances[id].data.datasets[0].data = scaledDataPoints;
-                chartInstances[id].options.scales.y.ticks.callback = isDigital ? (value) => value === 1 ? translations[currentLanguage].active : value === 0 ? translations[currentLanguage].inactive : '' : (value) => `${value.toFixed(2)} ${currentUnit}`;
-                chartInstances[id].options.scales.y.min = yMin;
-                chartInstances[id].options.scales.y.max = yMax;
-                chartInstances[id].update();
-            } else {
-                const scaledDataPoints = dataPoints.map(p => ({
-                    x: p.x,
-                    y: scaleValue(p.y, id)
-                }));
-                const chartConfig = {
-                    type: 'line',
-                    data: {
-                        datasets: [{
-                            label: isDigital ? translations[currentLanguage].status : translations[currentLanguage].value,
-                            data: scaledDataPoints,
-                            borderColor,
-                            fill: true,
-                            stepped: isDigital ? 'after' : false,
-                            tension: isDigital ? 0 : 0.4,
-                            pointRadius: 0,
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        font: {
-                            family: 'Cairo, sans-serif'
-                        },
-                        layout: {
-                            padding: {
-                                bottom: 40
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: false,
-                                title: {
-                                    display: false
-                                },
-                                min: isDigital ? -0.1 : yMin,
-                                max: isDigital ? 1.1 : yMax,
-                                ticks: {
-                                    font: {
-                                        size: 10,
-                                        family: 'Cairo, sans-serif'
-                                    },
-                                    color: getCssVariable('--text-color'),
-                                    maxTicksLimit: 5,
-                                    callback: isDigital ? (value) => value === 1 ? translations[currentLanguage].active : value === 0 ? translations[currentLanguage].inactive : '' : (value) => `${value.toFixed(2)} ${currentUnit}`
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            },
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'minute',
-                                    displayFormats: {
-                                        second: 'HH:mm:ss',
-                                        minute: 'HH:mm',
-                                        hour: 'HH:mm',
-                                        day: 'd MMM',
-                                        week: 'd MMM',
-                                        month: 'MMM yyyy'
-                                    },
-                                    tooltipFormat: 'dd/MM/yyyy HH:mm:ss'
-                                },
-                                title: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 10,
-                                        family: 'Cairo, sans-serif'
-                                    },
-                                    color: getCssVariable('--text-color'),
-                                    maxTicksLimit: 8,
-                                    callback: (value) => {
-                                        const date = new Date(value);
-                                        const day = date.getDate().toString().padStart(2, '0');
-                                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                                        const year = date.getFullYear();
-                                        const hours = date.getHours().toString().padStart(2, '0');
-                                        const minutes = date.getMinutes().toString().padStart(2, '0');
-                                        return [`${day}/${month}/${year}`, `${hours}:${minutes}`];
-                                    },
-                                    autoSkip: false
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                rtl: false,
-                                bodyFont: {
-                                    size: 12
-                                },
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                backgroundColor: getCssVariable('--card-bg'),
-                                titleColor: getCssVariable('--text-color'),
-                                bodyColor: getCssVariable('--text-color'),
-                                callbacks: {
-                                    title: (context) => new Date(context[0].parsed.x).toLocaleString(currentLanguage, {
-                                        dateStyle: 'short',
-                                        timeStyle: 'medium'
-                                    }),
-                                    label: (context) => {
-                                        if (context.dataset.label.includes(translations[currentLanguage].status)) {
-                                            return `${translations[currentLanguage].status}: ${context.raw.y === 1 ? translations[currentLanguage].active : translations[currentLanguage].inactive}`;
-                                        } else if (id.startsWith('AI') || id.startsWith('AO')) {
-                                            return `${translations[currentLanguage].value}: ${context.raw.y.toFixed(2)} ${currentUnit}`;
-                                        }
-                                        return `${translations[currentLanguage].value}: ${context.raw.y}`;
-                                    }
-                                }
-                            },
-                            zoom: {
-                                pan: {
-                                    enabled: true,
-                                    mode: 'x'
-                                },
-                                zoom: {
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    wheel: {
-                                        enabled: true
-                                    },
-                                    mode: 'x'
-                                }
-                            }
-                        }
-                    }
-                };
-                chartInstances[id] = new Chart(ctx, chartConfig);
-            }
-        }
-
-        function updateTimeRange(newIndex, chartId) {
-            localStorage.setItem(`lastTimeRangeIndex-${chartId}`, newIndex);
-            const buttonContainer = document.getElementById(`${chartId}-time-options`);
-            if (buttonContainer) {
-                const buttons = buttonContainer.querySelectorAll('button');
-                buttons.forEach(btn => btn.classList.toggle('bg-primary-color', parseInt(btn.dataset.timeIndex) === newIndex));
-                buttons.forEach(btn => btn.classList.toggle('text-white', parseInt(btn.dataset.timeIndex) === newIndex));
-                buttons.forEach(btn => btn.classList.toggle('text-gray-400', parseInt(btn.dataset.timeIndex) !== newIndex));
-            }
-            updateChartDisplay(chartId, newIndex);
-        }
-
-        function updateChartDisplay(chartId, newIndex) {
-            const dataPoints = aiDataCache[chartId];
-            if (!dataPoints || dataPoints.length === 0) return;
-            const now = Date.now();
-            const timeRange = timeRanges[newIndex];
-            const startTimestamp = timeRange === 'all' ? 0 : now - timeRange;
-            const filteredData = dataPoints.filter(point => point.x >= startTimestamp);
-            const ctx = document.getElementById(`${chartId}-chart`);
-            if (ctx) {
-                const controlType = chartId.startsWith('AI') ? 'AI' : 'AO';
-                createOrUpdateChart(ctx, chartId, controlType, filteredData);
-            }
-        }
-
-        // دالة لإنشاء مخطط قياس
-        function createGauge(chartId, value, config) {
-            const ctx = document.getElementById(`${chartId}-gauge`);
-            if (!ctx) return null;
-            
-            const currentUnit = unitMappings[chartId] || config.unit;
-            const { realMin, realMax } = scalingMappings[chartId] || config;
-            const scaledValue = scaleValue(value, chartId);
-            const percentage = Math.min(100, Math.max(0, ((scaledValue - realMin) / (realMax - realMin)) * 100));
-            
-            // تحديد الألوان حسب القيمة
-            let gaugeColor;
-            if (percentage < 30) {
-                gaugeColor = '#10b981'; // أخضر للقيم المنخفضة
-            } else if (percentage < 70) {
-                gaugeColor = '#f59e0b'; // أصفر للقيم المتوسطة
-            } else {
-                gaugeColor = '#ef4444'; // أحمر للقيم العالية
-            }
-
-            // إنشاء المخطط
-            const gauge = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [percentage, 100 - percentage],
-                        backgroundColor: [gaugeColor, 'rgba(200, 200, 200, 0.3)'],
-                        borderWidth: 0,
-                        circumference: 180,
-                        rotation: 270
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: false
-                        }
-                    },
-                    animation: {
-                        animateScale: true,
-                        animateRotate: true
-                    }
-                }
-            });
-
-            // حفظ المرجع للمخطط
-            gaugeInstances[chartId] = gauge;
-            return gauge;
-        }
-
-        // تحديث مخطط القياس
-        function updateGauge(chartId, value, config) {
-            const gaugeElement = document.getElementById(`${chartId}-gauge-value`);
-            if (gaugeElement) {
-                const scaledValue = scaleValue(value, chartId);
-                const currentUnit = unitMappings[chartId] || config.unit;
-                gaugeElement.textContent = `${scaledValue.toFixed(2)} ${currentUnit}`;
-            }
-
-            // تحديث المخطط إذا كان موجوداً
-            if (gaugeInstances[chartId]) {
-                const { realMin, realMax } = scalingMappings[chartId] || config;
-                const scaledValue = scaleValue(value, chartId);
-                const percentage = Math.min(100, Math.max(0, ((scaledValue - realMin) / (realMax - realMin)) * 100));
-                
-                let gaugeColor;
-                if (percentage < 30) {
-                    gaugeColor = '#10b981';
-                } else if (percentage < 70) {
-                    gaugeColor = '#f59e0b';
-                } else {
-                    gaugeColor = '#ef4444';
-                }
-
-                gaugeInstances[chartId].data.datasets[0].data = [percentage, 100 - percentage];
-                gaugeInstances[chartId].data.datasets[0].backgroundColor[0] = gaugeColor;
-                gaugeInstances[chartId].update();
-            } else {
-                // إنشاء المخطط إذا لم يكن موجوداً
-                createGauge(chartId, value, config);
-            }
-        }
-
-        // تهيئة جميع مخططات القياس
-        function initializeAllGauges() {
-            ['AI', 'AO'].forEach(type => {
-                controlsConfig[type].forEach(config => {
-                    if (uiSettings[config.id]) {
-                        // إنشاء مخطط افتراضي بقيمة 0
-                        createGauge(config.id, 0, config);
-                    }
-                });
-            });
-        }
-
-        async function toggleState(ref, type, id) {
-            const indicator = document.getElementById(`${id}-indicator`);
-            if (indicator && indicator.classList.contains('pending')) return;
-            try {
-                const snapshot = await ref.once('value');
-                const currentValue = snapshot.val();
-                const newValue = (currentValue === 1) ? 0 : 1;
-                if (currentValue !== newValue) {
-                    if (indicator) indicator.classList.add('pending');
-                    await ref.set(newValue);
-                } else {
-                    if (indicator) indicator.classList.remove('pending');
-                }
-            } catch (error) {
-                console.error("Failed to update value:", error);
-                showMessage(translations[currentLanguage].deleteFail, true);
-                if (indicator) indicator.classList.remove('pending');
-            }
-        }
-
-        function saveToArchive(id, value) {
-            if (!deviceRef) return;
-            const timestamp = firebase.database.ServerValue.TIMESTAMP;
-            const archiveRef = deviceRef.child('archive').child(id);
-            archiveRef.push({
-                value,
-                timestamp
-            });
-        }
-
-        async function setDefaultValues() {
-            if (!deviceRef) return;
-            const snapshot = await deviceRef.once('value');
-            if (snapshot.exists()) {
-                console.log("Database already contains data, no need to save default values.");
-                return;
-            }
-            const updates = {};
-            controlsConfig.DO.forEach(config => updates[`DO/${config.id}`] = 0);
-            controlsConfig.DI.forEach(config => updates[`DI/${config.id}`] = 0);
-            controlsConfig.AI.forEach(config => updates[`AI/${config.id}`] = 0);
-            controlsConfig.AO.forEach(config => updates[`AO/${config.id}`] = 0);
-            try {
-                await deviceRef.update(updates);
-                console.log("Default data saved successfully.");
-            } catch (error) {
-                console.error("Failed to save default data:", error);
-            }
-        }
-
-        function exportChartDataAsFile(chartId) {
-            const dataPoints = aiDataCache[chartId];
-            if (!dataPoints || dataPoints.length === 0) {
-                showMessage(translations[currentLanguage].noDataToExport, true);
-                return;
-            }
-            const renamedLabel = renamedLabels[chartId] || chartId;
-            let csvContent = "Date,Time,Value\n";
-            dataPoints.forEach(point => {
-                const dateObj = new Date(point.x);
-                const date = dateObj.toLocaleDateString('en-CA', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                }).replace(/\//g, '-');
-                const time = dateObj.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                });
-                const scaledValue = scaleValue(point.y, chartId);
-                csvContent += `${date},${time},${scaledValue.toFixed(2)}\n`;
-            });
-            const blob = new Blob([csvContent], {
-                type: 'text/csv;charset=utf-8;'
-            });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${renamedLabel}_data_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showMessage(translations[currentLanguage].exportSuccess);
-        }
-
-        async function deleteChartData(chartId) {
-            if (!deviceRef) {
-                showMessage(translations[currentLanguage].firebaseInitFail, true);
-                return;
-            }
-            try {
-                const archiveRef = deviceRef.child('archive').child(chartId);
-                await archiveRef.remove();
-                showMessage(translations[currentLanguage].deleteSuccess);
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-                
-            } catch (error) {
-                console.error("Failed to delete data:", error);
-                showMessage(translations[currentLanguage].deleteFail, true);
-            } finally {
-                closeModal('confirmationModal');
-            }
-        }
-
-        // وظائف إنشاء العناصر
-        function createDataCardElement(config, type) {
-            const controlId = config.id;
-            const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
-            const currentUnit = unitMappings[controlId] || config.unit;
-            const div = document.createElement('div');
-            div.className = 'card';
-            const currentTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${controlId}`)) || 0;
-            
-            div.innerHTML = `
-                <div class="p-4">
-                    <div class="flex items-center justify-center mb-2">
-                        <div class="flex items-center gap-2">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                            <button class="export-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="Exporter les données">
-                                <i class="fas fa-file-export"></i>
-                            </button>
-                            <button class="delete-chart-data-btn icon-btn text-xs" data-id="${controlId}" aria-label="Supprimer les données">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="title-container mb-2">
-                        <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
-                    </div>
-                    <div class="chart-main-container relative">
-                        <div id="${controlId}-time-options" class="flex flex-wrap justify-center items-center gap-2 mb-2">
-                            ${timeRangeLabels.map((label, index) => `
-                                <button
-                                    class="time-range-btn text-xs font-semibold px-2 py-1 rounded-full transition-colors ${index === currentTimeRangeIndex ? 'bg-primary-color text-white' : 'text-gray-400'}"
-                                    data-time-index="${index}"
-                                    data-id="${controlId}"
-                                >
-                                    ${label}
-                                </button>
-                            `).join('')}
-                        </div>
-                        <canvas id="${controlId}-chart"></canvas>
-                    </div>
-                </div>
-            `;
-            return div;
-        }
-
-        function createAnalogControlWithDisplay(config, type) {
-            const controlId = config.id;
-            const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
-            const currentUnit = unitMappings[controlId] || config.unit;
-            const isAO = type === 'AO';
-            const div = document.createElement('div');
-            div.className = 'card';
-            
-            div.innerHTML = `
-                <div class="p-4">
-                    <!-- 1. أزرار التحكم (أعلى) -->
-                    <div class="flex items-center justify-center mb-2">
-                        <div class="flex items-center gap-2">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 2. العنوان -->
-                    <div class="title-container mb-2">
-                        <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
-                    </div>
-                    
-                    <!-- 3. مخطط القياس -->
-                    <div class="gauge-container">
-                        <canvas id="${controlId}-gauge" class="gauge-chart"></canvas>
-                        
-                        <!-- 4. مجال القيم (أول عنصر تحت المخطط) -->
-                        <div class="gauge-min-max">
-                            <span class="gauge-min">${scalingMappings[controlId] ? scalingMappings[controlId].realMin : config.realMin} ${currentUnit}</span>
-                            <span class="gauge-max">${scalingMappings[controlId] ? scalingMappings[controlId].realMax : config.realMax} ${currentUnit}</span>
-                        </div>
-                        
-                        <!-- 5. القيمة الحالية (ثاني عنصر تحت المخطط) -->
-                        <div class="text-center mt-2">
-                            <div id="${controlId}-gauge-value" class="gauge-value">-- ${currentUnit}</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 6. السلايدر (ثالث عنصر - لـ AO فقط) -->
-                    ${isAO ? `
-                    <div class="mt-4 flex justify-center">
-                        <div class="w-4/5"> <!-- حاوية لتقليل العرض إلى 80% -->
-                            <input type="range" id="${controlId}-slider" min="${config.min}" max="${config.max}" step="${config.step}" class="w-full">
-                        </div>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-            return div;
-        }
-
-        function createDigitalControlElement(config, type) {
-            const controlId = config.id;
-            const controlName = renamedLabels[controlId] || translations[currentLanguage][config.label];
-            const cardWrapper = document.createElement('div');
-            cardWrapper.className = 'digital-control-card-wrapper';
-            
-            cardWrapper.innerHTML = `
-                <div class="card p-4">
-                    <div class="flex items-center justify-center mb-2">
-                        <div class="flex items-center gap-2">
-                            <button class="rename-btn icon-btn text-xs" data-id="${controlId}" data-type="${type}" aria-label="Renommer l'élément">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="title-container">
-                        <span class="scrolling-title control-label" id="${controlId}-title">${controlName}</span>
-                    </div>
-                    <div class="flex justify-center mt-4">
-                        <div class="industrial-button" data-id="${controlId}" data-type="${type}">
-                            <div id="${controlId}-indicator" class="indicator-light">
-                                <i id="${controlId}-icon" class="${config.icon} do-icon"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            return cardWrapper;
-        }
-
-        function renderDataSections() {
-            // قسم بيانات المخارج التناظرية (AO)
-            const aoDataSection = document.getElementById('ao-data-section');
-            aoDataSection.innerHTML = '';
-            
-            let hasAOCards = false;
-            controlsConfig.AO.forEach(config => {
-                if (uiSettings[config.id]) {
-                    const dataCard = createDataCardElement(config, 'AO');
-                    aoDataSection.appendChild(dataCard);
-                    hasAOCards = true;
-                }
-            });
-            
-            // قسم بيانات المداخل التناظرية (AI)
-            const aiDataSection = document.getElementById('ai-data-section');
-            aiDataSection.innerHTML = '';
-            
-            let hasAICards = false;
-            controlsConfig.AI.forEach(config => {
-                if (uiSettings[config.id]) {
-                    const dataCard = createDataCardElement(config, 'AI');
-                    aiDataSection.appendChild(dataCard);
-                    hasAICards = true;
-                }
-            });
-            
-            setTimeout(applyScrollingEffect, 100);
-            return { hasAOCards, hasAICards };
-        }
-
-        function renderAllControls() {
-            const sections = {
-                'do-section-container': 'DO',
-                'di-section-container': 'DI',
-                'ao-section-container': 'AO',
-                'ai-section-container': 'AI',
-                'ao-data-section-container': 'AODATA',
-                'ai-data-section-container': 'AIDATA'
-            };
-            
-            for (const sectionId in sections) {
-                const sectionContainer = document.getElementById(sectionId);
-                const sectionElement = sectionContainer.querySelector('[id$="-section"]');
-                const controlType = sections[sectionId];
-                sectionElement.innerHTML = '';
-                
-                if (controlType === 'AODATA' || controlType === 'AIDATA') {
-                    renderDataSections();
-                    continue;
-                }
-                
-                controlsConfig[controlType].forEach(config => {
-                    if (uiSettings[config.id]) {
-                        if (controlType === 'AI' || controlType === 'AO') {
-                            sectionElement.appendChild(createAnalogControlWithDisplay(config, controlType));
-                        } else {
-                            sectionElement.appendChild(createDigitalControlElement(config, controlType));
-                        }
-                    }
-                });
-            }
-            
-            setTimeout(() => {
-                applyScrollingEffect();
-                // تهيئة مخططات القياس
-                initializeAllGauges();
-                // تهيئة حالات طي/فتح الأقسام
-                initializeSectionCollapseStates();
-                // تحديث إظهار الأقسام بعد تحميل جميع العناصر
-                updateSectionVisibility();
-            }, 100);
-        }
-
-        function debounce(func, delay) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
-
-        const updateFirebaseAO = debounce((aoId, value) => {
-            if (!deviceRef) return;
-            deviceRef.child('AO').child(aoId).set(value)
-                .then(() => {
-                    const controlName = renamedLabels[aoId] || translations[currentLanguage][`aoLabel${aoId.substring(2)}`];
-                    const scaledValue = scaleValue(value, aoId);
-                    const currentUnit = unitMappings[aoId] || (controlsConfig.AO.find(c => c.id === aoId) || {}).unit;
-                    showMessage(translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit));
-                })
-                .catch(error => {
-                    console.error("Failed to update analog output value:", error);
-                    showMessage(translations[currentLanguage].deleteFail, true);
-                });
-            saveToArchive(aoId, value);
-        }, 500);
-
-        function copyTextToClipboard(text) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.left = '-9999px';
-            document.body.appendChild(textarea);
-            textarea.select();
-            try {
-                document.execCommand('copy');
-                showMessage(translations[currentLanguage].copySuccess);
-            } catch (err) {
-                console.error('Failed to copy text: ', err);
-                showMessage('Échec de la copie, veuillez le faire manuellement.', true);
-            }
-            document.body.removeChild(textarea);
-        }
-
-        // وظائف Firebase
-        function initFirebaseAndControls(url, deviceName) {
-            try {
-                if (!firebaseInitialized) {
-                    firebase.initializeApp({
-                        databaseURL: url
-                    });
-                    firebaseInitialized = true;
-                } else {
-                    firebase.database().goOffline();
-                    firebase.database().goOnline();
-                }
-                deviceRef = firebase.database().ref(deviceName);
-                updateUIForLanguage(currentLanguage);
-                setDefaultValues();
-                setupListeners();
-            } catch (error) {
-                console.error("Firebase initialization failed:", error);
-                showMessage(translations[currentLanguage].firebaseInitFail, true);
-            }
-        }
-
-        function setupListeners() {
-            if (!deviceRef) return;
-            firebase.database().ref('.info/connected').on('value', snapshot => {
-                const connectionStatusBar = document.getElementById('connection-status-bar');
-                if (snapshot.val() === true) {
-                    connectionStatusBar.classList.remove('status-disconnected');
-                    connectionStatusBar.classList.add('status-connected');
-                } else {
-                    connectionStatusBar.classList.remove('status-connected');
-                    connectionStatusBar.classList.add('status-disconnected');
-                }
-            });
-            deviceRef.on('value', snapshot => {
-                const data = snapshot.val();
-                if (!data) return;
-                ['DO', 'DI'].forEach(type => {
-                    if (data[type]) {
-                        Object.keys(data[type]).forEach(id => {
-                            const value = data[type][id];
-                            const lastValueKey = `${type}-${id}`;
-                            const lastKnownValue = localStorage.getItem(lastValueKey);
-                            if (lastKnownValue === null || parseInt(lastKnownValue) !== value) {
-                                const controlName = renamedLabels[id] || translations[currentLanguage][`doLabel${id.substring(2)}`] || translations[currentLanguage][`diLabel${id.substring(2)}`];
-                                const status = value === 1 ? translations[currentLanguage].active : translations[currentLanguage].inactive;
-                                const message = translations[currentLanguage].stateChange.replace('${name}', controlName).replace('${status}', status);
-                                showMessage(message);
-                            }
-                            localStorage.setItem(lastValueKey, value);
-                            const indicator = document.getElementById(`${id}-indicator`);
-                            if (indicator) {
-                                indicator.classList.toggle('active', value === 1);
-                                if (type === 'DO' || type === 'DI') indicator.classList.remove('pending');
-                            }
-                        });
-                    }
-                });
-                ['AI', 'AO'].forEach(type => {
-                    if (data[type]) {
-                        Object.keys(data[type]).forEach(id => {
-                            const value = data[type][id];
-                            const config = controlsConfig[type].find(c => c.id === id);
-                            if (!config) return;
-                            
-                            // تحديث مخطط القياس
-                            updateGauge(id, value, config);
-                            
-                            const labelValueRawElement = document.getElementById(`${id}-label-value-raw`);
-                            const slider = document.getElementById(`${id}-slider`);
-                            const lastValueKey = `${type}-${id}`;
-                            const lastKnownValue = localStorage.getItem(lastValueKey);
-                            if (lastKnownValue !== null && parseFloat(lastKnownValue) !== value) {
-                                const controlName = renamedLabels[id] || translations[currentLanguage][`${type.toLowerCase()}Label${id.substring(2)}`];
-                                const scaledValue = typeof value === 'number' ? scaleValue(value, id) : '--';
-                                const currentUnit = unitMappings[id] || config.unit;
-                                const message = translations[currentLanguage].valueChange.replace('${name}', controlName).replace('${value}', typeof scaledValue === 'number' ? scaledValue.toFixed(2) : '--').replace('${unit}', currentUnit);
-                                showMessage(message);
-                            }
-                            localStorage.setItem(lastValueKey, value);
-                            if (labelValueRawElement) {
-                                labelValueRawElement.textContent = `${value}`;
-                            }
-                            if (slider) slider.value = value;
-                        });
-                    }
-                });
-            });
-            ['AI', 'AO'].forEach(type => {
-                controlsConfig[type].forEach(config => {
-                    const archiveRef = deviceRef.child('archive').child(config.id);
-                    archiveRef.on('value', snapshot => {
-                        const dataPoints = [];
-                        snapshot.forEach(childSnapshot => {
-                            const val = childSnapshot.val();
-                            dataPoints.push({
-                                x: val.timestamp,
-                                y: val.value
-                            });
-                        });
-                        aiDataCache[config.id] = dataPoints;
-                        const lastTimeRangeIndex = parseInt(localStorage.getItem(`lastTimeRangeIndex-${config.id}`)) || 0;
-                        updateChartDisplay(config.id, lastTimeRangeIndex);
-                    });
-                });
-            });
-        }
-
-        function renderCustomizeUiModal() {
-            const uiOptionsContainer = document.getElementById('ui-options-container');
-            uiOptionsContainer.innerHTML = '';
-            
-            const controlTypes = ['DO', 'DI', 'AI', 'AO'];
-            const controlColors = {
-                DO: '#9333ea',
-                DI: '#f59e0b',
-                AI: '#3b82f6',
-                AO: '#ef4444'
-            };
-            
-            controlTypes.forEach(type => {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'ui-control-row';
-                const labelSpan = document.createElement('span');
-                labelSpan.textContent = type;
-                labelSpan.className = 'control-type-label';
-                rowDiv.appendChild(labelSpan);
-                const maxControls = controlsConfig[type].length;
-                for (let i = 1; i <= 6; i++) {
-                    const controlId = type + i;
-                    const isAvailable = i <= maxControls;
-                    const container = document.createElement('label');
-                    container.className = 'custom-checkbox-container';
-                    if (isAvailable) {
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.id = `ui-toggle-${controlId}`;
-                        checkbox.checked = uiSettings[controlId];
-                        const checkmark = document.createElement('span');
-                        checkmark.className = 'custom-checkmark';
-                        checkmark.style.backgroundColor = uiSettings[controlId] ? controlColors[type] : (document.documentElement.classList.contains('dark') ? '#4a5568' : '#e2e8f0');
-                        checkbox.addEventListener('change', (e) => {
-                            if (e.target.checked) {
-                                checkmark.style.backgroundColor = controlColors[type];
-                            } else {
-                                checkmark.style.backgroundColor = getCssVariable('--bg-color');
-                                if (document.documentElement.classList.contains('dark')) {
-                                    checkmark.style.backgroundColor = '#4a5568';
-                                }
-                            }
-                        });
-                        container.appendChild(checkbox);
-                        container.appendChild(checkmark);
-                    } else {
-                        const disabledSquare = document.createElement('span');
-                        disabledSquare.className = 'custom-checkmark';
-                        disabledSquare.style.backgroundColor = '#d1d5db';
-                        container.appendChild(disabledSquare);
-                    }
-                    rowDiv.appendChild(container);
-                }
-                uiOptionsContainer.appendChild(rowDiv);
-            });
-        }
-
-        function saveUiSettings() {
-            const allControlTypes = ['DO', 'DI', 'AI', 'AO'];
-            const newUiSettings = {};
-            
-            let isAnyControlVisible = false;
-            
-            allControlTypes.forEach(type => {
-                const maxControls = controlsConfig[type].length;
-                for (let i = 1; i <= maxControls; i++) {
-                    const controlId = type + i;
-                    const checkbox = document.getElementById(`ui-toggle-${controlId}`);
-                    if (checkbox) {
-                        newUiSettings[controlId] = checkbox.checked;
-                        if (checkbox.checked) {
-                            isAnyControlVisible = true;
-                        }
-                    }
-                }
-            });
-            
-            if (!isAnyControlVisible) {
-                showMessage('Vous devez avoir au moins un élément visible.', true);
-                return;
-            }
-            
-            localStorage.setItem('uiSettings', JSON.stringify(newUiSettings));
-            Object.assign(uiSettings, newUiSettings);
-            showMessage(translations[currentLanguage].uiSettingsSaved);
-            closeModal('customizeUiModal');
-            
-            // إعادة تحميل الواجهة مع تحديث إظهار الأقسام
-            setTimeout(() => {
-                renderAllControls();
-            }, 500);
-        }
-
-        // معالجات الأحداث
-        document.addEventListener('click', (event) => {
-            const target = event.target.closest('button, [data-id], .custom-checkbox-container, .section-checkbox-container, .section-option, .section-title');
-            if (!target) return;
-            const modalId = target.dataset.modalId;
-            const controlId = target.dataset.id;
-            
-            // التحقق مما إذا كان الضغط على عنوان قسم لطي/فتحه
-            if (target.classList.contains('section-title') || target.closest('.section-title')) {
-                const sectionTitle = target.classList.contains('section-title') ? target : target.closest('.section-title');
-                if (sectionTitle) {
-                    const sectionId = sectionTitle.dataset.section;
-                    toggleSectionCollapse(sectionId);
-                    return;
-                }
-            }
-            
-            if (target.id === 'toggle-do-btn-modal') {
-                toggleSection('sectionDO');
-            } else if (target.id === 'toggle-di-btn-modal') {
-                toggleSection('sectionDI');
-            } else if (target.id === 'toggle-ao-btn-modal') {
-                toggleSection('sectionAO');
-            } else if (target.id === 'toggle-ai-btn-modal') {
-                toggleSection('sectionAI');
-            } else if (target.id === 'toggle-ao-data-btn-modal') {
-                toggleSection('sectionAODATA');
-            } else if (target.id === 'toggle-ai-data-btn-modal') {
-                toggleSection('sectionAIDATA');
-            } else if (target.id === 'open-system-settings-btn') {
-                document.getElementById('db_url').value = localStorage.getItem('firebaseURL') || '';
-                document.getElementById('db_device').value = localStorage.getItem('firebaseDevice') || '';
-                openModal('systemSettingsModal');
-            } else if (target.id === 'customize-ui-btn') {
-                renderCustomizeUiModal();
-                updateSectionButtonsInModal();
-                openModal('customizeUiModal');
-            } else if (target.id === 'save-settings-btn') {
-                const newUrl = document.getElementById('db_url').value.trim();
-                const newDevice = document.getElementById('db_device').value.trim();
-                if (!newUrl || !newDevice) {
-                    showMessage(translations[currentLanguage].requiredFields, true);
-                    return;
-                }
-                localStorage.setItem('firebaseURL', newUrl);
-                localStorage.setItem('firebaseDevice', newDevice);
-                showMessage(translations[currentLanguage].settingsSaved);
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-                
-            } else if (target.id === 'save-ui-settings-btn') {
-                saveUiSettings();
-            } else if (target.id === 'saveRenameBtn') {
-                const currentControlId = document.getElementById('renameModal').dataset.id;
-                const newName = document.getElementById('renameInput').value.trim();
-                const newUnit = document.getElementById('unitInput').value.trim();
-                const minVal = parseFloat(document.getElementById('minAnalogInput').value);
-                const maxVal = parseFloat(document.getElementById('maxAnalogInput').value);
-                
-                if (newName) {
-                    renamedLabels[currentControlId] = newName;
-                } else {
-                    delete renamedLabels[currentControlId];
-                }
-                localStorage.setItem('renamedLabels', JSON.stringify(renamedLabels));
-                
-                if (currentControlId.startsWith('AI') || currentControlId.startsWith('AO')) {
-                    if (newUnit) {
-                        unitMappings[currentControlId] = newUnit;
-                    } else {
-                        delete unitMappings[currentControlId];
-                    }
-                    localStorage.setItem('unitMappings', JSON.stringify(unitMappings));
-                    
-                    if (!isNaN(minVal) && !isNaN(maxVal)) {
-                        scalingMappings[currentControlId] = {
-                            realMin: minVal,
-                            realMax: maxVal
-                        };
-                    } else {
-                        delete scalingMappings[currentControlId];
-                    }
-                    localStorage.setItem('scalingMappings', JSON.stringify(scalingMappings));
-                }
-                
-                showMessage(translations[currentLanguage].renameSuccess);
-                closeModal('renameModal');
-                
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-                
-            } else if (target.id === 'go-to-firebase-btn') {
-                const url = document.getElementById('db_url').value.trim();
-                const match = url ? url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/) : null;
-                const projectId = match ? match[1] : null;
-                const firebaseConsoleUrl = projectId ? `https://console.firebase.google.com/u/0/project/${projectId}/database/said-rahil-default-rtdb/data` : 'https://console.firebase.google.com/u/0/';
-                window.open(firebaseConsoleUrl, '_blank');
-            } else if (target.id === 'go-to-firebase-rules-btn') {
-                const url = document.getElementById('db_url').value.trim();
-                const match = url ? url.match(/https:\/\/(.*)-default-rtdb\.firebaseio\.com/) : null;
-                const projectId = match ? match[1] : null;
-                if (projectId) {
-                    window.open(`https://console.firebase.google.com/u/0/project/${projectId}/database/said-rahil-default-rtdb/rules`, '_blank');
-                } else {
-                    window.open('https://console.firebase.google.com/u/0/', '_blank');
-                }
-            } else if (target.id === 'copy-rules-btn') {
-                const rulesCode = `{
-                    "rules": {
-                        ".read": "true",
-                        ".write": "true"
-                    }
-                }`;
-                copyTextToClipboard(rulesCode);
-            } else if (target.closest('.close-btn')) {
-                const parentModal = target.closest('.modal');
-                if (parentModal) closeModal(parentModal.id);
-            } else if (target.closest('.rename-btn')) {
-                const btn = target.closest('.rename-btn');
-                const controlId = btn.getAttribute('data-id');
-                const controlType = controlId.substring(0, 2);
-                const config = controlsConfig.AI.find(c => c.id === controlId) || controlsConfig.DO.find(c => c.id === controlId) || controlsConfig.DI.find(c => c.id === controlId) || controlsConfig.AO.find(c => c.id === controlId);
-                const name = renamedLabels[controlId] || translations[currentLanguage][config.label];
-                document.getElementById('renameLabel').textContent = `${translations[currentLanguage].renameLabel} ${name}`;
-                document.getElementById('renameInput').value = name;
-                document.getElementById('renameModal').dataset.id = controlId;
-                const unitOptionsContainer = document.getElementById('unit-options-container');
-                const scalingOptionsContainer = document.getElementById('scaling-options-container');
-                if (controlType === 'AI' || controlType === 'AO') {
-                    unitOptionsContainer.style.display = 'block';
-                    scalingOptionsContainer.style.display = 'block';
-                    document.getElementById('modal-title').textContent = translations[currentLanguage].aiSettingsModalTitle;
-                    const currentUnit = unitMappings[controlId] || config.unit;
-                    document.getElementById('unitInput').value = currentUnit;
-                    const scaling = scalingMappings[controlId] || config;
-                    document.getElementById('minAnalogInput').value = scaling.realMin;
-                    document.getElementById('maxAnalogInput').value = scaling.realMax;
-                } else {
-                    unitOptionsContainer.style.display = 'none';
-                    scalingOptionsContainer.style.display = 'none';
-                    document.getElementById('modal-title').textContent = translations[currentLanguage].renameModalTitle;
-                }
-                openModal('renameModal');
-            } else if (target.closest('.industrial-button[data-type="DO"]')) {
-                const btn = target.closest('.industrial-button[data-type="DO"]');
-                const doId = btn.dataset.id;
-                toggleState(deviceRef.child('DO').child(doId), 'DO', doId);
-            } else if (target.closest('.industrial-button[data-type="DI"]')) {
-                const btn = target.closest('.industrial-button[data-type="DI"]');
-                const diId = btn.dataset.id;
-                toggleState(deviceRef.child('DI').child(diId), 'DI', diId);
-            } else if (target.closest('.time-range-btn')) {
-                const btn = target.closest('.time-range-btn');
-                const chartId = btn.getAttribute('data-id');
-                const newIndex = parseInt(btn.dataset.timeIndex);
-                updateTimeRange(newIndex, chartId);
-            } else if (target.id === 'theme-toggle-btn') {
-                const htmlElement = document.documentElement;
-                const isDarkMode = htmlElement.classList.toggle('dark');
-                if (isDarkMode) {
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    localStorage.setItem('theme', 'light');
-                }
-                updateThemeButton();
-                updateChartsTheme();
-            } else if (target.id === 'notification-toggle-btn') {
-                toggleNotifications();
-            } else if (target.id === 'rename-all-btn') {
-                document.getElementById('confirm-title').textContent = translations[currentLanguage].confirmResetTitle;
-                document.getElementById('confirm-message').textContent = translations[currentLanguage].confirmResetMessage;
-                document.getElementById('confirm-action-btn').dataset.action = 'resetAll';
-                openModal('confirmationModal');
-            } else if (target.closest('.export-chart-data-btn')) {
-                const btn = target.closest('.export-chart-data-btn');
-                const chartId = btn.getAttribute('data-id');
-                exportChartDataAsFile(chartId);
-            } else if (target.closest('.delete-chart-data-btn')) {
-                const btn = target.closest('.delete-chart-data-btn');
-                const chartId = btn.getAttribute('data-id');
-                document.getElementById('confirm-title').textContent = translations[currentLanguage].confirmDeleteTitle;
-                document.getElementById('confirm-message').textContent = translations[currentLanguage].confirmDeleteMessage;
-                document.getElementById('confirm-action-btn').dataset.action = 'deleteChartData';
-                document.getElementById('confirm-action-btn').dataset.id = chartId;
-                openModal('confirmationModal');
-            } else if (target.id === 'confirm-action-btn') {
-                const action = target.dataset.action;
-                if (action === 'deleteChartData') {
-                    const chartId = target.dataset.id;
-                    deleteChartData(chartId);
-                } else if (action === 'resetAll') {
-                    resetAllSettings();
-                }
-                closeModal('confirmationModal');
-            } else if (target.id === 'cancel-action-btn') {
-                closeModal('confirmationModal');
-            } else if (target.closest('.custom-checkbox-container')) {
-                const checkboxContainer = target.closest('.custom-checkbox-container');
-                const checkbox = checkboxContainer.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    const event = new Event('change');
-                    checkbox.dispatchEvent(event);
-                }
-            } else if (target.closest('.section-option')) {
-                const option = target.closest('.section-option');
-                option.classList.toggle('selected');
-            } else if (target.id === 'confirm-sections-btn') {
-                confirmSectionSelection();
-            }
-        });
-
-        document.addEventListener('change', (event) => {
-            if (event.target.matches('.custom-checkbox-container input')) {
-                const checkbox = event.target;
-                const checkmark = checkbox.nextElementSibling;
-                const controlType = checkbox.id.substring(10, 12);
-                const colors = {
-                    DO: '#9333ea',
-                    DI: '#f59e0b',
-                    AI: '#3b82f6',
-                    AO: '#ef4444'
-                };
-                if (checkbox.checked) {
-                    checkmark.style.backgroundColor = colors[controlType];
-                } else {
-                    checkmark.style.backgroundColor = getCssVariable('--bg-color');
-                    if (document.documentElement.classList.contains('dark')) {
-                        checkmark.style.backgroundColor = '#4a5568';
-                    }
-                }
-            }
-        });
-
-        document.addEventListener('input', (event) => {
-            if (event.target.matches('[id$="-slider"]')) {
-                const slider = event.target;
-                const rawValue = parseFloat(slider.value);
-                const controlId = slider.id.replace('-slider', '');
-                const config = controlsConfig.AO.find(c => c.id === controlId);
-                if (!config) return;
-                const labelValueRawElement = document.getElementById(`${controlId}-label-value-raw`);
-                if (labelValueRawElement) {
-                    labelValueRawElement.textContent = `${rawValue.toFixed(0)}`;
-                }
-                if (typeof rawValue === 'number') slider.value = rawValue;
-                if (controlId.startsWith('AO')) {
-                    updateFirebaseAO(controlId, rawValue);
-                }
-                
-                // تحديث مخطط القياس
-                updateGauge(controlId, rawValue, config);
-            }
-        });
-
-        // التهيئة عند تحميل الصفحة
-        window.addEventListener('load', () => {
-            updateUIForLanguage(currentLanguage);
-            const storedUrl = localStorage.getItem('firebaseURL');
-            const storedDevice = localStorage.getItem('firebaseDevice');
-            if (storedUrl && storedDevice) {
-                initFirebaseAndControls(storedUrl, storedDevice);
-            } else {
-                showMessage(translations[currentLanguage].requiredFields, false);
-            }
-            updateThemeButton();
-            updateNotificationButton();
-            updateSectionButtonsInModal();
-            
-            // تحديث إظهار الأقسام بعد تحميل جميع العناصر
-            setTimeout(() => {
-                updateSectionVisibility();
-            }, 200);
-            
-            // إظهار نافذة الاختيار الأولى إذا كانت هذه هي الزيارة الأولى
-            if (sectionSettings.firstVisit) {
-                showFirstVisitModal();
-            }
-        });
-    </script>
 </body>
 </html>
