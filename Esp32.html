@@ -10,57 +10,73 @@
 <style>
 :root{
   --bg:#eef1f5; --panel:#fff; --panel2:#f5f7fa; --line:#dde3ea; --text:#14202e; --mute:#6a7a8c;
-  --accent:#0b6bcb; --on:#12a150; --off:#d64545; --warn:#e8a317; --out:#0b6bcb; --inp:#7a4fd6; --ana:#e07a1f;
+  --accent:#0b6bcb; --accent-l:#e8f1fc; --on:#12a150; --off:#d64545; --warn:#e8a317;
+  --out:#0b6bcb; --inp:#7a4fd6; --ana:#e07a1f;
   --sh:0 1px 2px rgba(15,23,32,.06),0 4px 14px rgba(15,23,32,.05);
+  --sh-lg:0 8px 32px rgba(15,23,32,.12);
 }
 [data-theme=dark]{
   --bg:#0c121a; --panel:#141d29; --panel2:#1a2535; --line:#243247; --text:#e8eef6; --mute:#8ea0b6;
-  --accent:#4aa3ff; --on:#35c97a; --off:#ff6b6b; --out:#4aa3ff; --inp:#a58bff; --ana:#ffa24d; --sh:none;
+  --accent:#4aa3ff; --accent-l:#1a2a3f; --on:#35c97a; --off:#ff6b6b; --warn:#ffa24d;
+  --out:#4aa3ff; --inp:#a58bff; --ana:#ffa24d; --sh:none; --sh-lg:0 8px 32px rgba(0,0,0,.4);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0)}
+body{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding-bottom:env(safe-area-inset-bottom,0);overflow-x:hidden}
 :root{padding-top:env(safe-area-inset-top,0)}
 
+/* ═══════════════════════════════════════════════════════════
+   الشريط العلوي
+   ═══════════════════════════════════════════════════════════ */
 .bar{
   position:sticky;top:0;z-index:50;
   background:var(--panel);
   border-bottom:1px solid var(--line);
   padding:10px 16px;
   display:flex;align-items:center;gap:12px;
+  backdrop-filter:blur(10px);
 }
 .logo{
-  width:38px;height:38px;
-  border-radius:9px;
-  background:var(--accent);color:#fff;
+  width:42px;height:42px;
+  border-radius:11px;
+  background:linear-gradient(135deg,var(--accent),#0a5ba8);
+  color:#fff;
   display:grid;place-items:center;
-  font-weight:700;font-size:13px;
+  font-weight:700;font-size:14px;
   direction:ltr;cursor:pointer;
   border:none;font-family:inherit;
-  transition:all .15s;flex-shrink:0;
+  transition:all .2s;flex-shrink:0;
   position:relative;
+  box-shadow:0 2px 8px rgba(11,107,203,.25);
 }
-.logo:hover{filter:brightness(1.1);transform:scale(1.05)}
-.logo:active{transform:scale(.95)}
-.logo:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.logo:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(11,107,203,.35)}
+.logo:active{transform:translateY(0) scale(.95)}
 .logo::after{
   content:'';position:absolute;
-  bottom:-2px;inset-inline-end:-2px;
-  width:10px;height:10px;
+  bottom:-3px;inset-inline-end:-3px;
+  width:12px;height:12px;
   border-radius:50%;
-  background:var(--accent);
+  background:var(--on);
   border:2px solid var(--panel);
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 25%,transparent);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--on) 30%,transparent);
+  animation:pulse 2s infinite;
 }
-.brand{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.brand b{font-size:15px;white-space:nowrap}
+.logo.off::after{background:var(--off);animation:none}
+@keyframes pulse{
+  0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--on) 30%,transparent)}
+  50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--on) 10%,transparent)}
+}
+.brand{display:flex;flex-direction:column;gap:1px;flex-shrink:0}
+.brand b{font-size:15px;line-height:1.2}
+.brand span{font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
+
 .icons{display:flex;align-items:center;gap:6px;margin-inline-start:auto;flex-shrink:0}
 .ico{
-  position:relative;width:34px;height:34px;
+  position:relative;width:36px;height:36px;
   display:grid;place-items:center;
-  border-radius:9px;background:var(--panel2);
+  border-radius:10px;background:var(--panel2);
   border:1px solid var(--line);font-size:16px;
   cursor:help;transition:all .2s;
-  filter:grayscale(1) opacity(.5);
+  filter:grayscale(1) opacity(.4);
 }
 .ico.on{
   filter:none;
@@ -69,273 +85,462 @@ body{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:
 }
 .ico.on::after{
   content:'';position:absolute;
-  top:-2px;inset-inline-end:-2px;
-  width:8px;height:8px;border-radius:50%;
+  top:-3px;inset-inline-end:-3px;
+  width:9px;height:9px;border-radius:50%;
   background:var(--on);border:2px solid var(--panel);
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--on) 25%,transparent);
 }
-.ico.off{filter:grayscale(1) opacity(.5)}
+.ico.off{filter:grayscale(1) opacity(.4)}
 .ico::before{
   content:attr(data-tip);
-  position:absolute;top:calc(100% + 8px);inset-inline-end:0;
+  position:absolute;top:calc(100% + 10px);inset-inline-end:0;
   background:var(--text);color:var(--panel);
-  padding:6px 10px;border-radius:6px;
+  padding:7px 11px;border-radius:8px;
   font-size:11.5px;white-space:nowrap;
   opacity:0;pointer-events:none;
-  transform:translateY(-4px);transition:all .15s;
+  transform:translateY(-6px);transition:all .2s;
   z-index:100;direction:rtl;font-weight:500;
-  box-shadow:0 4px 12px rgba(0,0,0,.15);
+  box-shadow:var(--sh-lg);
 }
-.ico:hover::before,.ico:focus::before{opacity:1;transform:translateY(0)}
-.divider{width:1px;height:24px;background:var(--line);margin:0 4px;flex-shrink:0}
-.conn{
-  display:flex;align-items:center;gap:7px;
-  font-size:12.5px;font-weight:600;
-  padding:6px 12px;border-radius:99px;
-  background:var(--panel2);border:1px solid var(--line);
-  white-space:nowrap;flex-shrink:0;
-}
-.conn .dot{width:9px;height:9px;border-radius:50%;background:var(--off);flex-shrink:0}
-.conn.ok .dot{background:var(--on);box-shadow:0 0 0 4px color-mix(in srgb,var(--on) 25%,transparent)}
-.conn.ok{border-color:color-mix(in srgb,var(--on) 30%,var(--line));background:color-mix(in srgb,var(--on) 6%,var(--panel))}
+.ico:hover::before{opacity:1;transform:translateY(0)}
 
+.divider{width:1px;height:26px;background:var(--line);margin:0 4px;flex-shrink:0}
+
+.conn{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;font-weight:600;
+  padding:7px 13px;
+  border-radius:99px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  white-space:nowrap;flex-shrink:0;
+  transition:all .3s;
+}
+.conn .dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--off);flex-shrink:0;
+  transition:all .3s;
+}
+.conn.ok{
+  border-color:color-mix(in srgb,var(--on) 40%,var(--line));
+  background:color-mix(in srgb,var(--on) 8%,var(--panel));
+}
+.conn.ok .dot{
+  background:var(--on);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--on) 20%,transparent);
+}
+.conn.warn{
+  border-color:color-mix(in srgb,var(--warn) 40%,var(--line));
+  background:color-mix(in srgb,var(--warn) 8%,var(--panel));
+}
+.conn.warn .dot{background:var(--warn)}
+
+/* ═══════════════════════════════════════════════════════════
+   النافذة الجانبية
+   ═══════════════════════════════════════════════════════════ */
 .overlay{
   position:fixed;inset:0;
   background:rgba(8,12,18,.55);
-  backdrop-filter:blur(3px);
+  backdrop-filter:blur(4px);
   opacity:0;visibility:hidden;
-  transition:all .25s;z-index:90;
+  transition:all .3s;z-index:90;
 }
 .overlay.show{opacity:1;visibility:visible}
+
 .drawer{
   position:fixed;top:0;inset-inline-start:0;
-  width:min(340px,85vw);height:100vh;
+  width:min(360px,88vw);height:100vh;
   background:var(--panel);
-  border-inline-end:1px solid var(--line);
-  box-shadow:4px 0 24px rgba(0,0,0,.1);
+  box-shadow:var(--sh-lg);
   transform:translateX(-100%);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
   z-index:100;display:flex;flex-direction:column;
   padding-top:env(safe-area-inset-top,0);
   padding-bottom:env(safe-area-inset-bottom,0);
 }
-[dir=rtl] .drawer{transform:translateX(100%)}
+[dir=rtl] .drawer{transform:translateX(100%);border-inline-end:1px solid var(--line)}
 .drawer.show{transform:translateX(0)!important}
+
 .drawer-head{
   display:flex;align-items:center;gap:12px;
   padding:16px;border-bottom:1px solid var(--line);flex-shrink:0;
 }
-.drawer-head h2{font-size:15px;font-weight:600;flex:1;display:flex;align-items:center;gap:8px}
+.drawer-head h2{
+  font-size:16px;font-weight:600;flex:1;
+  display:flex;align-items:center;gap:8px;
+}
 .drawer-close{
-  width:32px;height:32px;border-radius:8px;
+  width:34px;height:34px;border-radius:9px;
   border:1px solid var(--line);background:var(--panel2);
   color:var(--text);cursor:pointer;
-  display:grid;place-items:center;font-size:16px;transition:all .15s;
+  display:grid;place-items:center;font-size:16px;
+  transition:all .2s;
 }
 .drawer-close:hover{background:var(--off);color:#fff;border-color:var(--off)}
-.drawer-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.drawer-close:active{transform:scale(.92)}
+
+.drawer-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
 .drawer-section{
-  border:1px solid var(--line);border-radius:12px;
-  padding:14px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:14px;
+  padding:16px;background:var(--panel2);
+  transition:all .2s;
 }
 .drawer-section h3{
-  font-size:13px;font-weight:600;color:var(--mute);
-  margin-bottom:10px;display:flex;align-items:center;gap:8px;
-  text-transform:uppercase;letter-spacing:.5px;
+  font-size:12px;font-weight:600;color:var(--mute);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+  text-transform:uppercase;letter-spacing:.6px;
 }
 .drawer-btn{
   width:100%;display:flex;align-items:center;gap:12px;
-  padding:12px 14px;border:1px solid var(--line);
-  border-radius:10px;background:var(--panel);
+  padding:13px 15px;border:1px solid var(--line);
+  border-radius:11px;background:var(--panel);
   color:var(--text);font:inherit;font-size:14px;font-weight:500;
-  cursor:pointer;transition:all .15s;text-align:start;
+  cursor:pointer;transition:all .2s;text-align:start;
 }
 .drawer-btn:hover{background:var(--panel2);border-color:var(--accent);transform:translateX(-2px)}
 [dir=rtl] .drawer-btn:hover{transform:translateX(2px)}
 .drawer-btn:active{transform:scale(.98)}
 .drawer-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .drawer-btn .ic{
-  font-size:20px;width:32px;height:32px;
+  font-size:20px;width:36px;height:36px;
   display:grid;place-items:center;
-  border-radius:8px;background:var(--panel2);flex-shrink:0;
+  border-radius:9px;background:var(--panel2);flex-shrink:0;
 }
 .drawer-btn .txt{flex:1}
-.drawer-btn .sub{font-size:11.5px;color:var(--mute);display:block;margin-top:2px;font-weight:400}
+.drawer-btn .sub{
+  font-size:11.5px;color:var(--mute);
+  display:block;margin-top:3px;font-weight:400;
+}
 .drawer-btn.danger{color:var(--off)}
 .drawer-btn.danger .ic{background:color-mix(in srgb,var(--off) 12%,transparent)}
 .drawer-btn.danger:hover{border-color:var(--off);background:color-mix(in srgb,var(--off) 8%,var(--panel))}
 
-.sync-group{display:flex;flex-direction:column;gap:10px}
+.sync-group{display:flex;flex-direction:column;gap:12px}
 .sync-row{display:flex;align-items:center;gap:10px}
 .sync-row label{font-size:13px;font-weight:600;flex-shrink:0}
 .sync-row .num{
-  flex:1;height:40px;border:1px solid var(--line);
+  flex:1;height:44px;border:1px solid var(--line);
   background:var(--panel);color:var(--text);
-  border-radius:10px;font:inherit;font-size:16px;font-weight:600;
+  border-radius:11px;font:inherit;font-size:17px;font-weight:600;
   text-align:center;direction:ltr;font-variant-numeric:tabular-nums;
+  transition:all .2s;
 }
-.sync-row .num:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sync-row .num:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
 .sync-row .num:disabled{opacity:.5}
 .sync-row .unit{font-size:12.5px;color:var(--mute);flex-shrink:0}
+
 .sync-save{
-  height:42px;border-radius:10px;
+  height:44px;border-radius:11px;
   background:var(--accent);color:#fff;border:none;
   font:inherit;font-size:14px;font-weight:600;
-  cursor:pointer;transition:all .15s;
+  cursor:pointer;transition:all .2s;
 }
-.sync-save:hover{filter:brightness(1.1)}
-.sync-save:active{transform:scale(.98)}
-.sync-save:disabled{opacity:.5;cursor:not-allowed}
+.sync-save:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.sync-save:active{transform:translateY(0) scale(.98)}
+.sync-save:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
 .presets{display:flex;gap:6px;flex-wrap:wrap}
 .pre{
-  height:32px;padding:0 12px;
+  height:34px;padding:0 14px;
   border:1px solid var(--line);background:var(--panel);
   color:var(--text);border-radius:99px;
   font:inherit;font-size:12.5px;font-weight:600;
-  cursor:pointer;font-variant-numeric:tabular-nums;transition:all .15s;
+  cursor:pointer;font-variant-numeric:tabular-nums;
+  transition:all .2s;
 }
-.pre:hover{border-color:var(--accent)}
-.pre.act{background:color-mix(in srgb,var(--accent) 14%,transparent);border-color:var(--accent);color:var(--accent)}
+.pre:hover{border-color:var(--accent);background:var(--accent-l)}
+.pre.act{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+}
 .pre:disabled{opacity:.5;cursor:not-allowed}
+
 .sync-info{
   font-size:12px;color:var(--mute);text-align:center;
-  padding:8px;background:var(--panel);border-radius:8px;
+  padding:10px;background:var(--panel);border-radius:10px;
   border:1px dashed var(--line);
 }
-.sync-info b{color:var(--accent);font-size:14px;font-variant-numeric:tabular-nums}
+.sync-info b{color:var(--accent);font-size:15px;font-variant-numeric:tabular-nums}
 .hint{font-size:11.5px;color:var(--mute);line-height:1.6}
 
+/* ═══════════════════════════════════════════════════════════
+   التبويبات
+   ═══════════════════════════════════════════════════════════ */
 .tabs{
-  display:flex;
-  gap:6px;
-  margin-bottom:16px;
-  padding:6px;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:12px;
-  box-shadow:var(--sh);
-  overflow-x:auto;
-  scrollbar-width:none;
+  display:flex;gap:6px;margin-bottom:16px;padding:6px;
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--sh);
+  overflow-x:auto;scrollbar-width:none;
 }
 .tabs::-webkit-scrollbar{display:none}
-
 .tab{
-  flex:1;
-  min-width:100px;
-  height:42px;
-  padding:0 16px;
-  border:none;
-  background:transparent;
-  color:var(--mute);
-  border-radius:8px;
-  font:inherit;
-  font-size:13.5px;
-  font-weight:600;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  transition:all .2s;
-  white-space:nowrap;
-  position:relative;
+  flex:1;min-width:110px;height:44px;padding:0 16px;
+  border:none;background:transparent;color:var(--mute);
+  border-radius:10px;font:inherit;font-size:13.5px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:8px;transition:all .25s;white-space:nowrap;
 }
 .tab:hover{background:var(--panel2);color:var(--text)}
 .tab.act{
-  background:var(--accent);
-  color:#fff;
-  box-shadow:0 2px 8px color-mix(in srgb,var(--accent) 30%,transparent);
+  background:var(--accent);color:#fff;
+  box-shadow:0 3px 12px color-mix(in srgb,var(--accent) 30%,transparent);
 }
 .tab .cnt-badge{
-  font-size:11px;
-  font-weight:700;
-  padding:2px 7px;
-  border-radius:99px;
-  background:color-mix(in srgb,currentColor 18%,transparent);
-  font-variant-numeric:tabular-nums;
-  min-width:24px;
-  text-align:center;
+  font-size:11px;font-weight:700;padding:2px 8px;
+  border-radius:99px;background:color-mix(in srgb,currentColor 18%,transparent);
+  font-variant-numeric:tabular-nums;min-width:26px;text-align:center;
 }
-.tab.act .cnt-badge{background:rgba(255,255,255,.25)}
+.tab.act .cnt-badge{background:rgba(255,255,255,.3)}
 .tab .ic{font-size:16px}
 
+/* ═══════════════════════════════════════════════════════════
+   الشبكة والبطاقات
+   ═══════════════════════════════════════════════════════════ */
+.wrap{max-width:1180px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;transition:all .3s}
 .grid[data-view="digital"] .sec.ao,
 .grid[data-view="digital"] .sec.ai{display:none}
 .grid[data-view="analog"] .sec.do,
 .grid[data-view="analog"] .sec.di{display:none}
-.grid[data-view="all"] .sec.do,
-.grid[data-view="all"] .sec.di,
-.grid[data-view="all"] .sec.ao,
-.grid[data-view="all"] .sec.ai{display:block}
 
-.wrap{max-width:1180px;margin:0 auto;padding:16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;transition:all .3s}
 .col{display:grid;gap:16px;align-content:start}
-.sec{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);overflow:hidden}
-.sec-h{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);border-inline-start:4px solid var(--c)}
+.sec{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--sh);overflow:hidden;
+  transition:all .3s;
+}
+.sec-h{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px;border-bottom:1px solid var(--line);
+  border-inline-start:4px solid var(--c);
+}
 .sec-h h2{font-size:14.5px;font-weight:600;flex:1}
-.sec-h small{font-size:11.5px;color:var(--mute);direction:ltr}
-.cnt{font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c);font-variant-numeric:tabular-nums}
-.sec-b{padding:14px;display:grid;gap:10px}
-.sec.do{--c:var(--out)} .sec.ao{--c:var(--ana)} .sec.di{--c:var(--inp)} .sec.ai{--c:var(--ana)}
+.sec-h small{font-size:11.5px;color:var(--mute);direction:ltr;font-weight:500}
+.cnt{
+  font-size:12px;font-weight:700;padding:3px 11px;
+  border-radius:99px;background:color-mix(in srgb,var(--c) 14%,transparent);
+  color:var(--c);font-variant-numeric:tabular-nums;
+}
+.sec-b{padding:16px;display:grid;gap:12px}
+.sec.do{--c:var(--out)}
+.sec.ao{--c:var(--ana)}
+.sec.di{--c:var(--inp)}
+.sec.ai{--c:var(--ana)}
+
+/* ═══════════════════════════════════════════════════════════
+   البلاطات (DO/DI)
+   ═══════════════════════════════════════════════════════════ */
 .tiles{grid-template-columns:repeat(3,1fr)}
-.tile{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 8px;text-align:center;font:inherit;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .15s,border-color .15s}
+.tile{
+  border:1px solid var(--line);background:var(--panel2);
+  border-radius:12px;padding:14px 10px;text-align:center;
+  font:inherit;color:var(--text);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:all .2s;
+}
 button.tile{cursor:pointer}
-button.tile:active{transform:scale(.97)}
-.tile .n{font-size:12px;font-weight:600;color:var(--mute);direction:ltr}
-.tile .s{font-size:12px;font-weight:600;color:var(--mute)}
-.sw{width:44px;height:24px;border-radius:99px;background:var(--line);position:relative;transition:background .2s}
-.sw::after{content:'';position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:inset-inline-start .2s}
+button.tile:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+button.tile:active{transform:translateY(0) scale(.97)}
+.tile .n{font-size:12px;font-weight:700;color:var(--mute);direction:ltr;letter-spacing:.5px}
+.tile .s{font-size:12px;font-weight:600;color:var(--mute);transition:color .2s}
+.sw{
+  width:48px;height:26px;border-radius:99px;
+  background:var(--line);position:relative;transition:background .25s;
+}
+.sw::after{
+  content:'';position:absolute;top:3px;inset-inline-start:3px;
+  width:20px;height:20px;border-radius:50%;background:#fff;
+  transition:inset-inline-start .25s;box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
 .tile.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 10%,var(--panel))}
 .tile.on .sw{background:var(--c)}
-.tile.on .sw::after{inset-inline-start:23px}
+.tile.on .sw::after{inset-inline-start:25px}
 .tile.on .s{color:var(--c)}
 .tile.off{opacity:.45;pointer-events:none}
-.led{width:22px;height:22px;border-radius:50%;background:var(--line);border:2px solid var(--line);transition:all .2s}
-.tile.on .led{background:var(--c);border-color:var(--c);box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent)}
-.row{border:1px solid var(--line);background:var(--panel2);border-radius:10px;padding:12px 14px}
-.row-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.row-h b{font-size:13px;direction:ltr}
-.val{font-size:22px;font-weight:700;color:var(--c);font-variant-numeric:tabular-nums}
-.val small{font-size:12px;color:var(--mute);margin-inline-start:2px}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--line);outline:none;direction:ltr;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--c);border:3px solid var(--panel);box-shadow:0 1px 4px rgba(0,0,0,.3)}
-input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--c);border:3px solid var(--panel)}
-input[type=range]:disabled{opacity:.4}
-.meter{height:8px;border-radius:4px;background:var(--line);overflow:hidden;direction:ltr}
-.meter i{display:block;height:100%;width:0;background:var(--c);border-radius:4px;transition:width .4s}
-.foot{text-align:center;color:var(--mute);font-size:11.5px;padding:18px 0 6px;font-variant-numeric:tabular-nums}
-.toast{position:fixed;bottom:20px;inset-inline:16px;margin:auto;max-width:360px;padding:11px 16px;background:var(--text);color:var(--bg);border-radius:8px;font-size:13px;opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;z-index:300;text-align:center}
-.toast.show{opacity:1;transform:none}
-.ov{position:fixed;inset:0;background:rgba(8,12,18,.65);backdrop-filter:blur(4px);display:none;place-items:center;z-index:400;padding:24px}
-.ov.show{display:grid}
-.ov div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;text-align:center;max-width:320px}
-.sp{width:42px;height:42px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:r .8s linear infinite;margin:0 auto 16px}
-@keyframes r{to{transform:rotate(360deg)}}
+.led{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--line);border:2px solid var(--line);
+  transition:all .3s;
+}
+.tile.on .led{
+  background:var(--c);border-color:var(--c);
+  box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 22%,transparent);
+}
 
+/* ═══════════════════════════════════════════════════════════
+   الشرائح (AO/AI)
+   ═══════════════════════════════════════════════════════════ */
+.row{
+  border:1px solid var(--line);background:var(--panel2);
+  border-radius:12px;padding:14px 16px;
+}
+.row-h{
+  display:flex;justify-content:space-between;align-items:baseline;
+  margin-bottom:12px;
+}
+.row-h b{font-size:13px;direction:ltr;letter-spacing:.5px}
+.val{
+  font-size:24px;font-weight:700;color:var(--c);
+  font-variant-numeric:tabular-nums;
+}
+.val small{font-size:12px;color:var(--mute);margin-inline-start:3px;font-weight:500}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:8px;border-radius:4px;
+  background:var(--line);outline:none;direction:ltr;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--c);border:3px solid var(--panel);
+  box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:grab;
+  transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--c);border:3px solid var(--panel);cursor:grab;
+}
+input[type=range]:disabled{opacity:.4}
+
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;direction:ltr}
+.meter i{display:block;height:100%;width:0;background:var(--c);border-radius:5px;transition:width .5s}
+
+/* ═══════════════════════════════════════════════════════════
+   التذييل
+   ═══════════════════════════════════════════════════════════ */
+.foot{
+  text-align:center;color:var(--mute);
+  font-size:11.5px;padding:20px 0 8px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Toast
+   ═══════════════════════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:20px;inset-inline:16px;margin:auto;
+  max-width:380px;padding:13px 18px;
+  background:var(--text);color:var(--bg);
+  border-radius:12px;font-size:13px;font-weight:500;
+  opacity:0;transform:translateY(16px);
+  transition:all .3s;pointer-events:none;
+  z-index:300;text-align:center;
+  box-shadow:var(--sh-lg);
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ═══════════════════════════════════════════════════════════
+   Modal للتأكيد
+   ═══════════════════════════════════════════════════════════ */
+.modal{
+  position:fixed;inset:0;
+  background:rgba(8,12,18,.65);
+  backdrop-filter:blur(4px);
+  display:none;place-items:center;
+  z-index:400;padding:24px;
+  opacity:0;transition:opacity .25s;
+}
+.modal.show{display:grid;opacity:1}
+.modal-card{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:28px;text-align:center;
+  max-width:360px;width:100%;
+  box-shadow:var(--sh-lg);
+  transform:scale(.95);transition:transform .25s;
+}
+.modal.show .modal-card{transform:scale(1)}
+.modal-icon{font-size:44px;margin-bottom:12px}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:8px}
+.modal-text{font-size:13.5px;color:var(--mute);line-height:1.6;margin-bottom:20px}
+.modal-actions{display:flex;gap:10px}
+.modal-btn{
+  flex:1;height:44px;border-radius:11px;
+  font:inherit;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;border:1px solid var(--line);
+  background:var(--panel);
+}
+.modal-btn.cancel{color:var(--text)}
+.modal-btn.cancel:hover{background:var(--panel2)}
+.modal-btn.confirm{
+  background:var(--off);color:#fff;border-color:var(--off);
+}
+.modal-btn.confirm:hover{filter:brightness(1.1)}
+.modal-btn:active{transform:scale(.97)}
+
+/* ═══════════════════════════════════════════════════════════
+   Overlay إعادة التشغيل
+   ═══════════════════════════════════════════════════════════ */
+.ov{
+  position:fixed;inset:0;
+  background:rgba(8,12,18,.72);
+  backdrop-filter:blur(6px);
+  display:none;place-items:center;
+  z-index:500;padding:24px;
+}
+.ov.show{display:grid}
+.ov-card{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:32px;
+  text-align:center;max-width:340px;
+  box-shadow:var(--sh-lg);
+}
+.sp{
+  width:48px;height:48px;
+  border:3px solid var(--line);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:r .8s linear infinite;
+  margin:0 auto 18px;
+}
+@keyframes r{to{transform:rotate(360deg)}}
+.ov-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.ov-text{font-size:12.5px;color:var(--mute)}
+
+/* ═══════════════════════════════════════════════════════════
+   التحميل
+   ═══════════════════════════════════════════════════════════ */
+.loading{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid currentColor;
+  border-top-color:transparent;
+  border-radius:50%;animation:r .7s linear infinite;
+  margin-inline-end:6px;vertical-align:middle;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   الجوال
+   ═══════════════════════════════════════════════════════════ */
 @media(max-width:820px){
   .grid{grid-template-columns:1fr}
-  .grid[data-view="digital"],
-  .grid[data-view="analog"]{grid-template-columns:1fr}
 }
 @media(max-width:520px){
   .bar{padding:8px 10px;gap:8px}
   .brand b{font-size:13px}
+  .brand span{font-size:10px}
   .conn span:not(.dot){display:none}
-  .conn{padding:6px 8px}
-  .ico{width:32px;height:32px;font-size:15px}
-  .logo{width:34px;height:34px;font-size:12px}
-  .tab{font-size:12.5px;padding:0 10px;height:40px;min-width:80px}
+  .conn{padding:7px 10px}
+  .ico{width:34px;height:34px;font-size:15px}
+  .logo{width:38px;height:38px;font-size:13px}
+  .tab{font-size:12.5px;padding:0 10px;height:42px;min-width:85px}
   .tab .ic{font-size:14px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .val{font-size:22px}
 }
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
 
+<!-- ═══════════════════════════════════════════════════════════
+     الشريط العلوي
+     ═══════════════════════════════════════════════════════════ -->
 <header class="bar">
-  <button class="logo" id="menuBtn" title="الإعدادات" aria-label="فتح الإعدادات">A6</button>
-  <div class="brand"><b>KC868-A6</b></div>
+  <button class="logo" id="menuBtn" aria-label="فتح الإعدادات">A6</button>
+  <div class="brand">
+    <b>KC868-A6</b>
+    <span id="lastUpdate">--:--:--</span>
+  </div>
 
   <div class="icons">
     <div class="ico off" id="icoWifi" data-tip="WiFi: غير متصل">📶</div>
@@ -352,6 +557,9 @@ input[type=range]:disabled{opacity:.4}
   </div>
 </header>
 
+<!-- ═══════════════════════════════════════════════════════════
+     النافذة الجانبية
+     ═══════════════════════════════════════════════════════════ -->
 <div class="overlay" id="overlay"></div>
 
 <aside class="drawer" id="drawer">
@@ -406,6 +614,9 @@ input[type=range]:disabled{opacity:.4}
   </div>
 </aside>
 
+<!-- ═══════════════════════════════════════════════════════════
+     المحتوى الرئيسي
+     ═══════════════════════════════════════════════════════════ -->
 <div class="wrap">
 
   <div class="tabs" role="tablist">
@@ -428,23 +639,38 @@ input[type=range]:disabled{opacity:.4}
   <div class="grid" id="mainGrid" data-view="all">
     <div class="col">
       <section class="sec do">
-        <div class="sec-h"><h2>المخارج الرقمية</h2><small>DO</small><span class="cnt" id="doCnt">0/6</span></div>
+        <div class="sec-h">
+          <h2>المخارج الرقمية</h2>
+          <small>DO</small>
+          <span class="cnt" id="doCnt">0/6</span>
+        </div>
         <div class="sec-b tiles" id="doGrid"></div>
       </section>
 
       <section class="sec di">
-        <div class="sec-h"><h2>المداخل الرقمية</h2><small>DI</small><span class="cnt" id="diCnt">0/6</span></div>
+        <div class="sec-h">
+          <h2>المداخل الرقمية</h2>
+          <small>DI</small>
+          <span class="cnt" id="diCnt">0/6</span>
+        </div>
         <div class="sec-b tiles" id="diGrid"></div>
       </section>
     </div>
+
     <div class="col">
       <section class="sec ao">
-        <div class="sec-h"><h2>المخارج التناظرية</h2><small>AO</small></div>
+        <div class="sec-h">
+          <h2>المخارج التناظرية</h2>
+          <small>AO</small>
+        </div>
         <div class="sec-b" id="aoBox"></div>
       </section>
 
       <section class="sec ai">
-        <div class="sec-h"><h2>المداخل التناظرية</h2><small>AI</small></div>
+        <div class="sec-h">
+          <h2>المداخل التناظرية</h2>
+          <small>AI</small>
+        </div>
         <div class="sec-b" id="aiBox"></div>
       </section>
     </div>
@@ -453,34 +679,83 @@ input[type=range]:disabled{opacity:.4}
   <div class="foot" id="last">آخر تحديث: --:--:--</div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     Toast
+     ═══════════════════════════════════════════════════════════ -->
 <div class="toast" id="toast"></div>
-<div class="ov" id="ov"><div><div class="sp"></div><b>جاري إعادة التشغيل...</b><p style="color:var(--mute);font-size:12.5px;margin-top:6px">يرجى الانتظار حتى يعود الجهاز</p></div></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Modal تأكيد
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal" id="confirmModal">
+  <div class="modal-card">
+    <div class="modal-icon">⚠️</div>
+    <div class="modal-title">إعادة تشغيل ESP32</div>
+    <div class="modal-text">
+      سيتم قطع الاتصال مؤقتاً حتى يعود الجهاز.<br>
+      هل أنت متأكد؟
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="modalCancel">إلغاء</button>
+      <button class="modal-btn confirm" id="modalConfirm">نعم، أعد التشغيل</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     Overlay إعادة التشغيل
+     ═══════════════════════════════════════════════════════════ -->
+<div class="ov" id="ov">
+  <div class="ov-card">
+    <div class="sp"></div>
+    <div class="ov-title">جاري إعادة التشغيل...</div>
+    <div class="ov-text">يرجى الانتظار حتى يعود الجهاز</div>
+  </div>
+</div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+import { getDatabase, ref, onValue, set } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
-const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
+// ═══════════════════════════════════════════════════════════
+// Firebase Init
+// ═══════════════════════════════════════════════════════════
+const db = getDatabase(initializeApp({
+  databaseURL: "https://said-rahil-default-rtdb.firebaseio.com"
+}));
+
 const BASE = "/Said";
 const $ = id => document.getElementById(id);
-const haptic = () => navigator.vibrate && navigator.vibrate(10);
-const st = { DI:{}, DO:{}, AI:{}, AO:{} };
-let restarting = false, allOk = false;
-const SYNC_MIN = 5, SYNC_MAX = 600, PRESETS = [5, 10, 30, 60, 120];
+const haptic = (ms = 10) => navigator.vibrate && navigator.vibrate(ms);
 
-function toast(m){
-  const t=$('toast');
-  t.textContent=m;
+const st = { DI: {}, DO: {}, AI: {}, AO: {} };
+let restarting = false;
+let allOk = false;
+
+const SYNC_MIN = 5;
+const SYNC_MAX = 600;
+const PRESETS = [5, 10, 30, 60, 120];
+
+// ═══════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════
+function toast(m, type = 'info'){
+  const t = $('toast');
+  t.textContent = m;
   t.classList.add('show');
   clearTimeout(t._t);
-  t._t=setTimeout(()=>t.classList.remove('show'),3000);
+  t._t = setTimeout(() => t.classList.remove('show'), 3000);
 }
-function stamp(){
-  $('last').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-MA-u-nu-latn');
+
+function updateTime(){
+  const now = new Date();
+  const time = now.toLocaleTimeString('ar-MA-u-nu-latn');
+  $('lastUpdate').textContent = time;
+  $('last').textContent = 'آخر تحديث: ' + time;
 }
 
 // ═══════════════════════════════════════════════════════════
-// ⭐ التبويبات
+// التبويبات
 // ═══════════════════════════════════════════════════════════
 const mainGrid = $('mainGrid');
 const tabs = document.querySelectorAll('.tab');
@@ -496,9 +771,7 @@ function switchView(view){
   haptic();
 }
 
-tabs.forEach(t => {
-  t.onclick = () => switchView(t.dataset.view);
-});
+tabs.forEach(t => t.onclick = () => switchView(t.dataset.view));
 
 let savedView = 'all';
 try{ savedView = localStorage.getItem('view') || 'all'; }catch(e){}
@@ -506,7 +779,7 @@ if(!['all','digital','analog'].includes(savedView)) savedView = 'all';
 switchView(savedView);
 
 // ═══════════════════════════════════════════════════════════
-// النافذة الجانبية
+// Drawer
 // ═══════════════════════════════════════════════════════════
 function openDrawer(){
   $('drawer').classList.add('show');
@@ -519,122 +792,196 @@ function closeDrawer(){
   $('overlay').classList.remove('show');
   document.body.style.overflow = '';
 }
+
 $('menuBtn').onclick = openDrawer;
 $('closeDrawer').onclick = closeDrawer;
 $('overlay').onclick = closeDrawer;
-document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawer(); });
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    if($('confirmModal').classList.contains('show')) closeConfirm();
+    else closeDrawer();
+  }
+});
 
 // ═══════════════════════════════════════════════════════════
 // بناء واجهة E/S
 // ═══════════════════════════════════════════════════════════
-for (let i=1;i<=6;i++){
-  const b=document.createElement('button');
-  b.className='tile'; b.id='do'+i;
-  b.innerHTML=`<span class="n">DO${i}</span><span class="sw"></span><span class="s">مغلق</span>`;
-  b.onclick=()=>{ if(restarting) return; haptic(); set(ref(db,`${BASE}/DO/DO${i}`), st.DO['DO'+i]===1?0:1); };
-  $('doGrid').appendChild(b);
 
-  const d=document.createElement('div');
-  d.className='tile'; d.id='di'+i;
-  d.innerHTML=`<span class="n">DI${i}</span><span class="led"></span><span class="s">غير نشط</span>`;
+// DO Buttons
+for (let i = 1; i <= 6; i++){
+  const b = document.createElement('button');
+  b.className = 'tile';
+  b.id = 'do' + i;
+  b.innerHTML = `<span class="n">DO${i}</span><span class="sw"></span><span class="s">مغلق</span>`;
+  b.onclick = async () => {
+    if(restarting) return;
+    haptic();
+    const newVal = st.DO['DO' + i] === 1 ? 0 : 1;
+    try{
+      await set(ref(db, `${BASE}/DO/DO${i}`), newVal);
+    }catch(e){
+      console.error(e);
+      toast('تعذّر الإرسال');
+    }
+  };
+  $('doGrid').appendChild(b);
+}
+
+// DI Indicators
+for (let i = 1; i <= 6; i++){
+  const d = document.createElement('div');
+  d.className = 'tile';
+  d.id = 'di' + i;
+  d.innerHTML = `<span class="n">DI${i}</span><span class="led"></span><span class="s">غير نشط</span>`;
   $('diGrid').appendChild(d);
 }
-for (let i=1;i<=2;i++){
-  $('aoBox').insertAdjacentHTML('beforeend',`
-    <div class="row"><div class="row-h"><b>AO${i}</b><span class="val"><span id="aoV${i}">0</span><small>%</small></span></div>
-    <input type="range" min="0" max="255" value="0" id="aoS${i}"></div>`);
-  const s=$('aoS'+i);
-  s.oninput=()=>$('aoV'+i).textContent=Math.round(s.value/255*100);
-  s.onchange=()=>{ if(restarting) return; haptic(); set(ref(db,`${BASE}/AO/AO${i}`), parseInt(s.value)); };
+
+// AO Sliders
+for (let i = 1; i <= 2; i++){
+  $('aoBox').insertAdjacentHTML('beforeend', `
+    <div class="row">
+      <div class="row-h">
+        <b>AO${i}</b>
+        <span class="val"><span id="aoV${i}">0</span><small>%</small></span>
+      </div>
+      <input type="range" min="0" max="255" value="0" id="aoS${i}">
+    </div>`);
+  const s = $('aoS' + i);
+  s.oninput = () => $('aoV' + i).textContent = Math.round(s.value / 255 * 100);
+  s.onchange = async () => {
+    if(restarting) return;
+    haptic();
+    try{
+      await set(ref(db, `${BASE}/AO/AO${i}`), parseInt(s.value));
+    }catch(e){
+      console.error(e);
+      toast('تعذّر الإرسال');
+    }
+  };
 }
-for (let i=1;i<=4;i++){
-  $('aiBox').insertAdjacentHTML('beforeend',`
-    <div class="row"><div class="row-h"><b>AI${i}</b><span class="val"><span id="aiV${i}">0</span><small>%</small></span></div>
-    <div class="meter"><i id="aiB${i}"></i></div></div>`);
+
+// AI Meters
+for (let i = 1; i <= 4; i++){
+  $('aiBox').insertAdjacentHTML('beforeend', `
+    <div class="row">
+      <div class="row-h">
+        <b>AI${i}</b>
+        <span class="val"><span id="aiV${i}">0</span><small>%</small></span>
+      </div>
+      <div class="meter"><i id="aiB${i}"></i></div>
+    </div>`);
 }
 
 // ═══════════════════════════════════════════════════════════
 // مدة المزامنة
 // ═══════════════════════════════════════════════════════════
 let syncCurrent = null;
-PRESETS.forEach(v=>{
-  const b=document.createElement('button');
-  b.className='pre'; b.type='button'; b.dataset.v=v; b.textContent=v+' ث';
-  b.onclick=()=>{ $('syncInp').value=v; saveSync(); };
+
+PRESETS.forEach(v => {
+  const b = document.createElement('button');
+  b.className = 'pre';
+  b.type = 'button';
+  b.dataset.v = v;
+  b.textContent = v + ' ث';
+  b.onclick = () => { $('syncInp').value = v; saveSync(); };
   $('presets').appendChild(b);
 });
+
 function markPreset(){
-  document.querySelectorAll('.pre').forEach(b=>b.classList.toggle('act', Number(b.dataset.v)===syncCurrent));
+  document.querySelectorAll('.pre').forEach(b => {
+    b.classList.toggle('act', Number(b.dataset.v) === syncCurrent);
+  });
 }
+
 async function saveSync(){
   if(restarting) return;
-  const raw=$('syncInp').value.trim();
-  const v=Number(raw);
-  if(raw===''||!Number.isInteger(v)||v<SYNC_MIN||v>SYNC_MAX){
-    toast(`أدخل رقماً صحيحاً بين ${SYNC_MIN} و ${SYNC_MAX}`); return;
+  const raw = $('syncInp').value.trim();
+  const v = Number(raw);
+  if(raw === '' || !Number.isInteger(v) || v < SYNC_MIN || v > SYNC_MAX){
+    toast(`أدخل رقماً بين ${SYNC_MIN} و ${SYNC_MAX}`);
+    return;
   }
   haptic();
-  const btn=$('syncSave'); btn.disabled=true;
+  const btn = $('syncSave');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>جاري الحفظ...';
   try{
-    // ⭐ المسار الجديد
-    await set(ref(db,`${BASE}/status/sync_interval`), v);
+    // ⭐ كتابة واحدة فقط على المسار الصحيح
+    await set(ref(db, `${BASE}/status/sync_interval`), v);
     toast(`تم الحفظ: ${v} ثانية`);
-  }catch(e){ console.error(e); toast('تعذّر الحفظ'); }
-  btn.disabled=false;
+  }catch(e){
+    console.error(e);
+    toast('تعذّر الحفظ');
+  }
+  btn.disabled = false;
+  btn.textContent = '💾 حفظ';
 }
-$('syncSave').onclick=saveSync;
-$('syncInp').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); saveSync(); } });
 
-// ⭐ المسار الجديد
-onValue(ref(db,`${BASE}/status/sync_interval`), s=>{
-  const v=Number(s.val());
-  if(s.val()===null||Number.isNaN(v)){ syncCurrent=null; $('syncCur').textContent='--'; markPreset(); return; }
-  syncCurrent=v;
-  $('syncCur').textContent=v;
-  if(document.activeElement!==$('syncInp')) $('syncInp').value=v;
+$('syncSave').onclick = saveSync;
+$('syncInp').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); saveSync(); }
+});
+
+onValue(ref(db, `${BASE}/status/sync_interval`), s => {
+  const v = Number(s.val());
+  if(s.val() === null || Number.isNaN(v)){
+    syncCurrent = null;
+    $('syncCur').textContent = '--';
+    markPreset();
+    return;
+  }
+  syncCurrent = v;
+  $('syncCur').textContent = v;
+  if(document.activeElement !== $('syncInp')){
+    $('syncInp').value = v;
+  }
   markPreset();
 });
 
 // ═══════════════════════════════════════════════════════════
-// العرض
+// Render functions
 // ═══════════════════════════════════════════════════════════
 function renderDO(d){
-  let n=0;
-  for(let i=1;i<=6;i++){
-    const on=d['DO'+i]===1;
-    n+=on;
-    const t=$('do'+i);
-    t.classList.toggle('on',on);
-    t.querySelector('.s').textContent=on?'مفتوح':'مغلق';
+  let n = 0;
+  for(let i = 1; i <= 6; i++){
+    const on = d['DO' + i] === 1;
+    n += on;
+    const t = $('do' + i);
+    t.classList.toggle('on', on);
+    t.querySelector('.s').textContent = on ? 'مفتوح' : 'مغلق';
   }
-  $('doCnt').textContent=n+'/6';
+  $('doCnt').textContent = n + '/6';
   updateTabBadges();
 }
+
 function renderDI(d){
-  let n=0;
-  for(let i=1;i<=6;i++){
-    const on=d['DI'+i]===1;
-    n+=on;
-    const t=$('di'+i);
-    t.classList.toggle('on',on);
-    t.querySelector('.s').textContent=on?'نشط':'غير نشط';
+  let n = 0;
+  for(let i = 1; i <= 6; i++){
+    const on = d['DI' + i] === 1;
+    n += on;
+    const t = $('di' + i);
+    t.classList.toggle('on', on);
+    t.querySelector('.s').textContent = on ? 'نشط' : 'غير نشط';
   }
-  $('diCnt').textContent=n+'/6';
+  $('diCnt').textContent = n + '/6';
   updateTabBadges();
 }
+
 function renderAO(d){
-  for(let i=1;i<=2;i++){
-    const v=d['AO'+i]||0, s=$('aoS'+i);
-    if(document.activeElement!==s) s.value=v;
-    $('aoV'+i).textContent=Math.round(v/255*100);
+  for(let i = 1; i <= 2; i++){
+    const v = d['AO' + i] || 0;
+    const s = $('aoS' + i);
+    if(document.activeElement !== s) s.value = v;
+    $('aoV' + i).textContent = Math.round(v / 255 * 100);
   }
   updateTabBadges();
 }
+
 function renderAI(d){
-  for(let i=1;i<=4;i++){
-    const p=Math.round((d['AI'+i]||0)/4095*100);
-    $('aiB'+i).style.width=p+'%';
-    $('aiV'+i).textContent=p;
+  for(let i = 1; i <= 4; i++){
+    const p = Math.round((d['AI' + i] || 0) / 4095 * 100);
+    $('aiB' + i).style.width = p + '%';
+    $('aiV' + i).textContent = p;
   }
   updateTabBadges();
 }
@@ -642,10 +989,10 @@ function renderAI(d){
 function updateTabBadges(){
   let digitalActive = 0;
   let analogActive = 0;
-  for(let i=1;i<=6;i++) if(st.DO['DO'+i]===1) digitalActive++;
-  for(let i=1;i<=6;i++) if(st.DI['DI'+i]===1) digitalActive++;
-  for(let i=1;i<=2;i++) if((st.AO['AO'+i]||0) > 0) analogActive++;
-  for(let i=1;i<=4;i++) if((st.AI['AI'+i]||0) > 0) analogActive++;
+  for(let i = 1; i <= 6; i++) if(st.DO['DO' + i] === 1) digitalActive++;
+  for(let i = 1; i <= 6; i++) if(st.DI['DI' + i] === 1) digitalActive++;
+  for(let i = 1; i <= 2; i++) if((st.AO['AO' + i] || 0) > 0) analogActive++;
+  for(let i = 1; i <= 4; i++) if((st.AI['AI' + i] || 0) > 0) analogActive++;
   $('tabCntDigital').textContent = digitalActive;
   $('tabCntAnalog').textContent = analogActive;
 }
@@ -655,69 +1002,118 @@ function updateIcon(id, ok, onlineText, offlineText){
   el.classList.toggle('on', ok && !restarting);
   el.classList.toggle('off', !ok || restarting);
   const prefix = el.dataset.tip.split(':')[0];
-  if (restarting) el.dataset.tip = prefix + ': إعادة تشغيل...';
-  else if (ok)    el.dataset.tip = prefix + ': ' + onlineText;
-  else            el.dataset.tip = prefix + ': ' + offlineText;
+  if(restarting) el.dataset.tip = prefix + ': إعادة تشغيل...';
+  else if(ok)    el.dataset.tip = prefix + ': ' + onlineText;
+  else           el.dataset.tip = prefix + ': ' + offlineText;
 }
 
 function setEnabled(on){
-  for(let i=1;i<=6;i++) $('do'+i).classList.toggle('off',!on);
-  for(let i=1;i<=2;i++) $('aoS'+i).disabled=!on;
-  $('syncInp').disabled=!on; $('syncSave').disabled=!on;
-  $('restartBtn').disabled=!on;
-  document.querySelectorAll('.pre').forEach(b=>b.disabled=!on);
+  for(let i = 1; i <= 6; i++) $('do' + i).classList.toggle('off', !on);
+  for(let i = 1; i <= 2; i++) $('aoS' + i).disabled = !on;
+  $('syncInp').disabled = !on;
+  $('syncSave').disabled = !on;
+  $('restartBtn').disabled = !on;
+  document.querySelectorAll('.pre').forEach(b => b.disabled = !on);
 }
-function setConn(ok,txt){ $('conn').classList.toggle('ok',ok); $('connTxt').textContent=txt; }
+
+function setConn(ok, txt){
+  const c = $('conn');
+  c.classList.toggle('ok', ok);
+  c.classList.remove('warn');
+  $('connTxt').textContent = txt;
+}
+
+// ═══════════════════════════════════════════════════════════
+// Modal تأكيد
+// ═══════════════════════════════════════════════════════════
+let pendingAction = null;
+
+function showConfirm(action){
+  pendingAction = action;
+  $('confirmModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeConfirm(){
+  $('confirmModal').classList.remove('show');
+  if(!$('drawer').classList.contains('show')){
+    document.body.style.overflow = '';
+  }
+  pendingAction = null;
+}
+
+$('modalCancel').onclick = closeConfirm;
+$('confirmModal').onclick = e => {
+  if(e.target === $('confirmModal')) closeConfirm();
+};
+
+$('modalConfirm').onclick = () => {
+  const action = pendingAction;
+  closeConfirm();
+  if(action) action();
+};
 
 // ═══════════════════════════════════════════════════════════
 // إعادة التشغيل
+// ⭐ لا نستخدم update() — فقط set()
 // ═══════════════════════════════════════════════════════════
-$('restartBtn').onclick = async ()=>{
-  if(restarting || !confirm('هل تريد إعادة تشغيل ESP32؟')) return;
-  haptic(); restarting=true;
+function executerRedemarrage(){
+  if(restarting) return;
+  haptic(20);
+  restarting = true;
   closeDrawer();
   $('ov').classList.add('show');
 
-  ['DO','DI','AO','AI'].forEach(k=>st[k]={});
-  renderDO({});renderDI({});renderAO({});renderAI({});
+  // تصفير القيم المحلية
+  ['DO','DI','AO','AI'].forEach(k => st[k] = {});
+  renderDO({}); renderDI({}); renderAO({}); renderAI({});
 
   updateIcon('icoWifi', false, '', '');
   updateIcon('icoFb', false, '', '');
   updateIcon('icoI2c', false, '', '');
   updateIcon('icoNtp', false, '', '');
-  setConn(false,'جاري إعادة التشغيل...');
+  setConn(false, 'جاري إعادة التشغيل...');
   setEnabled(false);
 
-  try{
-    // ⭐ تحديث حالة الأنظمة فقط (بدون حذف sync_interval أو restart)
-    await update(ref(db,`${BASE}/status`),{wifi:0,firebase:0,i2c:0,ntp:0});
-    // ⭐ المسار الجديد لأمر إعادة التشغيل
-    await set(ref(db,`${BASE}/status/restart`),"1");
-    setTimeout(()=>{
-      if(restarting){
-        restarting=false;
-        $('ov').classList.remove('show');
-        setEnabled(true);
-        toast('انتهت المهلة');
-      }
-    },45000);
-  }catch(e){
-    console.error(e); restarting=false;
-    $('ov').classList.remove('show');
-    setEnabled(true);
-    toast('خطأ في الإرسال');
-  }
+  // ⭐ كتابة restart فقط — لا update() مسبق
+  (async () => {
+    try{
+      await set(ref(db, `${BASE}/status/restart`), "1");
+      // انتظار 45 ثانية كحد أقصى
+      setTimeout(() => {
+        if(restarting){
+          restarting = false;
+          $('ov').classList.remove('show');
+          setEnabled(true);
+          toast('انتهت المهلة');
+        }
+      }, 45000);
+    }catch(e){
+      console.error(e);
+      restarting = false;
+      $('ov').classList.remove('show');
+      setEnabled(true);
+      toast('خطأ في الإرسال');
+    }
+  })();
+}
+
+$('restartBtn').onclick = () => {
+  if(restarting) return;
+  showConfirm(executerRedemarrage);
 };
 
 // ═══════════════════════════════════════════════════════════
-// Firebase
+// Firebase listeners
 // ═══════════════════════════════════════════════════════════
-onValue(ref(db,`${BASE}/status`), s=>{
-  const v=s.val()||{};
-  const wifiOK = v.wifi===1;
-  const fbOK   = v.firebase===1;
-  const i2cOK  = v.i2c===1;
-  const ntpOK  = v.ntp===1;
+
+// Status
+onValue(ref(db, `${BASE}/status`), s => {
+  const v = s.val() || {};
+  const wifiOK = v.wifi === 1;
+  const fbOK   = v.firebase === 1;
+  const i2cOK  = v.i2c === 1;
+  const ntpOK  = v.ntp === 1;
 
   updateIcon('icoWifi', wifiOK, 'الشبكة متصلة',  'الشبكة غير متصلة');
   updateIcon('icoFb',   fbOK,   'السحابة متصلة', 'السحابة غير متصلة');
@@ -725,46 +1121,70 @@ onValue(ref(db,`${BASE}/status`), s=>{
   updateIcon('icoNtp',  ntpOK,  'الوقت متزامن',  'الوقت غير متزامن');
 
   allOk = wifiOK && fbOK && i2cOK && ntpOK;
-  if(!restarting) setConn(allOk, allOk?'متصل — كل الأنظمة تعمل':'بعض الأنظمة غير متصلة');
-  stamp();
+  if(!restarting){
+    setConn(allOk,
+      allOk ? 'متصل — كل الأنظمة تعمل' : 'بعض الأنظمة غير متصلة');
+  }
+  updateTime();
 });
 
-// ⭐ المسار الجديد لأمر إعادة التشغيل
-onValue(ref(db,`${BASE}/status/restart`), s=>{
-  const v=s.val(), btn=$('restartBtn');
-  if(v==="1"||v===1){ btn.disabled=true; }
-  else if(v==="0"||v===0){
-    if(restarting) setTimeout(()=>{
-      restarting=false;
-      $('ov').classList.remove('show');
-      setEnabled(true);
-      toast('ESP32 جاهز');
-    },3000);
-    btn.disabled=false;
+// Restart command
+onValue(ref(db, `${BASE}/status/restart`), s => {
+  const v = s.val();
+  const btn = $('restartBtn');
+  if(v === "1" || v === 1){
+    btn.disabled = true;
+  } else if(v === "0" || v === 0){
+    if(restarting){
+      setTimeout(() => {
+        restarting = false;
+        $('ov').classList.remove('show');
+        setEnabled(true);
+        toast('ESP32 جاهز');
+      }, 3000);
+    }
+    btn.disabled = false;
   }
 });
 
-const bind=(k,fn)=>onValue(ref(db,`${BASE}/${k}`),s=>{ if(restarting) return; st[k]=s.val()||{}; fn(st[k]); stamp(); });
-bind('DO',renderDO); bind('DI',renderDI); bind('AO',renderAO); bind('AI',renderAI);
+// Bind E/S
+const bind = (k, fn) => onValue(ref(db, `${BASE}/${k}`), s => {
+  if(restarting) return;
+  st[k] = s.val() || {};
+  fn(st[k]);
+  updateTime();
+});
+
+bind('DO', renderDO);
+bind('DI', renderDI);
+bind('AO', renderAO);
+bind('AI', renderAI);
 
 // ═══════════════════════════════════════════════════════════
-// الوضع الليلي
+// Theme
 // ═══════════════════════════════════════════════════════════
-const root=document.documentElement;
+const root = document.documentElement;
+
 function theme(t){
-  root.setAttribute('data-theme',t);
+  root.setAttribute('data-theme', t);
   const isDark = t === 'dark';
   $('themeIcon').textContent = isDark ? '☀️' : '🌙';
-  $('themeSub').textContent = isDark ? 'اضغط للتبديل إلى النهاري' : 'اضغط للتبديل إلى الليلي';
-  try{localStorage.setItem('theme',t)}catch(e){}
+  $('themeSub').textContent = isDark
+    ? 'اضغط للتبديل إلى النهاري'
+    : 'اضغط للتبديل إلى الليلي';
+  try{ localStorage.setItem('theme', t); }catch(e){}
 }
-let saved='light';
-try{ saved=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light') }catch(e){}
-theme(saved);
 
-$('themeBtn').onclick=()=>{
+let savedTheme = 'light';
+try{
+  savedTheme = localStorage.getItem('theme')
+    || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+}catch(e){}
+theme(savedTheme);
+
+$('themeBtn').onclick = () => {
   haptic();
-  theme(root.getAttribute('data-theme')==='dark'?'light':'dark');
+  theme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 };
 </script>
 </body>
