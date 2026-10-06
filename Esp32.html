@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
-<title>KC868-A6 — لوحة التحكم v48.3</title>
+<title>KC868-A6 — لوحة التحكم v48.4</title>
 <link rel="manifest" href='data:application/json,{"name":"KC868-A6","short_name":"A6","start_url":".","display":"standalone","background_color":"%230b1220","theme_color":"%230b1220"}'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -256,25 +256,17 @@ body.offline .bar{border-bottom-color:var(--off);}
   border-color:var(--accent);
   color:var(--accent);
 }
-.ico.sync-toggle{
-  font-size:12px;font-weight:700;
-  font-variant-numeric:tabular-nums;
+.ico.settings-toggle{
+  font-size:18px;
   background:linear-gradient(135deg,var(--panel-2),var(--panel-3));
-  min-width:auto;
-  padding:0 10px;
-  gap:3px;
-  display:flex;align-items:center;justify-content:center;
 }
-.ico.sync-toggle span{position:relative;}
-.ico.sync-toggle span::after{
-  content:'s';font-size:9px;color:var(--mute);margin-inline-start:1px;
-  font-weight:500;
+.ico.settings-toggle:hover{
+  background:var(--accent-soft);
+  border-color:var(--accent);
+  color:var(--accent);
 }
-.ico.sync-toggle .sep{
-  opacity:.4;font-size:10px;margin:0 2px;
-}
-/* SSL indicator on sync button */
-.ico.sync-toggle.ssl-warn{
+/* SSL indicator on settings button */
+.ico.settings-toggle.ssl-warn{
   background:var(--warn-soft);
   border-color:var(--warn);
   color:var(--warn);
@@ -388,7 +380,7 @@ body.offline .bar{border-bottom-color:var(--off);}
   display:flex;align-items:center;gap:6px;
 }
 
-/* ── Settings sections (sync + oled) ── */
+/* ── Settings sections ── */
 .settings-section{
   display:flex;flex-direction:column;gap:10px;
   padding:12px;
@@ -435,7 +427,6 @@ body.offline .bar{border-bottom-color:var(--off);}
   box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 35%,transparent);
 }
 
-/* Custom input row */
 .dur-input{display:flex;gap:8px;}
 .dur-input .num{
   flex:1;height:42px;
@@ -645,7 +636,7 @@ button.tile:active{transform:translateY(0) scale(.97);}
 }
 
 /* ═══════════════════════════════════════════════════════
-   Rows (AI / AO)
+   Rows (AO / AI)
    ═══════════════════════════════════════════════════════ */
 .row{
   border:1px solid var(--line);
@@ -653,7 +644,8 @@ button.tile:active{transform:translateY(0) scale(.97);}
   border-radius:10px;
   padding:12px 14px;
   box-shadow:var(--sh-inset);
-  transition:border-color .2s;
+  transition:background .35s var(--ease),
+             border-color .35s var(--ease);
 }
 .row:hover{border-color:color-mix(in srgb,var(--c) 30%,var(--line));}
 .row-h{
@@ -671,6 +663,7 @@ button.tile:active{transform:translateY(0) scale(.97);}
   color:var(--c);
   font-variant-numeric:tabular-nums;
   line-height:1;
+  transition:color .35s var(--ease);
 }
 .val small{
   font-size:11.5px;color:var(--mute);
@@ -710,6 +703,8 @@ input[type=range]:focus::-webkit-slider-thumb{
   box-shadow:0 2px 6px rgba(0,0,0,.25),
              0 0 0 4px color-mix(in srgb,var(--c) 25%,transparent);
 }
+
+/* ── AI meter — dynamic colored ── */
 .meter{
   height:9px;border-radius:5px;
   background:var(--line);
@@ -723,8 +718,24 @@ input[type=range]:focus::-webkit-slider-thumb{
     color-mix(in srgb,var(--c) 70%,transparent),
     var(--c));
   border-radius:5px;
-  transition:width .5s var(--ease);
+  transition:width .5s var(--ease),
+             background .35s var(--ease);
   box-shadow:0 0 8px color-mix(in srgb,var(--c) 40%,transparent);
+}
+
+/* AI row uses dynamic --c and --bg (set by JS) */
+.ai-row{
+  background:var(--ai-row-bg, var(--panel-2));
+  border-color:var(--ai-row-border, var(--line));
+  transition:background .35s var(--ease),
+             border-color .35s var(--ease);
+}
+.ai-row .row-h b{
+  color:var(--ai-row-label, var(--text-2));
+  transition:color .35s var(--ease);
+}
+.ai-row .val{
+  color:var(--ai-row-text, var(--ai-c));
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -827,7 +838,6 @@ input[type=range]:focus::-webkit-slider-thumb{
 
 @media(max-width:440px){
   .brand-info{display:none;}
-  .ico.sync-toggle{padding:0 8px;}
 }
 
 @media(max-width:380px){
@@ -862,11 +872,7 @@ input[type=range]:focus::-webkit-slider-thumb{
   <div class="icons">
     <button class="ico view-toggle" id="btnView" type="button" data-tip="التبديل للتناظري" aria-label="تبديل العرض">📊</button>
     <button class="ico" id="btnTheme" type="button" data-tip="الوضع الليلي" aria-label="تبديل المظهر">🌙</button>
-    <button class="ico sync-toggle" id="btnSync" type="button" data-tip="الإعدادات (مزامنة + شاشة)" aria-label="الإعدادات">
-      <span id="syncMini">10</span>
-      <span class="sep">·</span>
-      <span id="oledMini">5</span>
-    </button>
+    <button class="ico settings-toggle" id="btnSettings" type="button" data-tip="الإعدادات" aria-label="الإعدادات">⏱️</button>
     <button class="ico action" id="btnRefresh" type="button" data-tip="تحديث" aria-label="تحديث">🔄</button>
   </div>
   <div class="brand">
@@ -1048,7 +1054,7 @@ const AI_MAX = 4095;
 const SYNC_MIN = 5;
 const SYNC_MAX = 600;
 
-// OLED cycle range (v48.3)
+// OLED cycle range
 const OLED_MIN = 2;
 const OLED_MAX = 30;
 
@@ -1061,6 +1067,43 @@ const numOr = (v, d = 0) => {
 
 const st = { DI: {}, DO: {}, AI: {}, AO: {}, status: {} };
 const sending = new Set();
+
+// ═══════════════════════════════════════════════════════
+// AI Color Gradient (v48.4)
+// ═══════════════════════════════════════════════════════
+// Hue interpolation: 140° (green) → 45° (yellow) → 0° (red)
+function getAiColors(pct){
+  const p = Math.max(0, Math.min(100, pct));
+
+  // When pct = 0, show neutral gray (no signal)
+  if (p === 0) {
+    return {
+      bg:     'var(--panel-2)',
+      border: 'var(--line)',
+      text:   'var(--mute)',
+      bar:    'var(--line-strong)',
+      label:  'var(--text-2)'
+    };
+  }
+
+  // Hue: 0→50: 140° → 45°; 50→100: 45° → 0°
+  let hue;
+  if (p <= 50) {
+    hue = 140 - (p / 50) * 95;   // 140 → 45
+  } else {
+    hue = 45 - ((p - 50) / 50) * 45;  // 45 → 0
+  }
+
+  const sat = 65;
+
+  return {
+    bg:     `hsl(${hue}, ${sat}%, 94%)`,
+    border: `hsl(${hue}, ${sat}%, 55%)`,
+    text:   `hsl(${hue}, ${sat}%, 35%)`,
+    bar:    `hsl(${hue}, ${sat}%, 55%)`,
+    label:  `hsl(${hue}, ${sat}%, 40%)`
+  };
+}
 
 // ═══════════════════════════════════════════════════════
 // Toast
@@ -1121,7 +1164,7 @@ btnView.addEventListener('click', () => {
 const statusPopup   = $('statusPopup');
 const settingsPopup = $('settingsPopup');
 const logoBtn       = $('logoBtn');
-const btnSync       = $('btnSync');
+const btnSettings   = $('btnSettings');
 
 function closeAllPopups(except){
   if(except !== 'status')   statusPopup.classList.remove('show');
@@ -1142,7 +1185,7 @@ logoBtn.addEventListener('click', e => {
   e.stopPropagation();
   togglePopup(statusPopup, 'status');
 });
-btnSync.addEventListener('click', e => {
+btnSettings.addEventListener('click', e => {
   e.stopPropagation();
   togglePopup(settingsPopup, 'settings');
 });
@@ -1153,7 +1196,7 @@ document.addEventListener('click', e => {
     statusPopup.classList.remove('show');
   }
   if(settingsPopup.classList.contains('show') &&
-     !settingsPopup.contains(e.target) && !btnSync.contains(e.target)){
+     !settingsPopup.contains(e.target) && !btnSettings.contains(e.target)){
     settingsPopup.classList.remove('show');
   }
 });
@@ -1228,6 +1271,7 @@ async function toggleDO(i){
 // ═══════════════════════════════════════════════════════
 const aoSliders = {};
 const aoValues  = {};
+const aiRows    = {};   // v48.4: full row element
 const aiBars    = {};
 const aiValues  = {};
 
@@ -1267,7 +1311,8 @@ for(let i = 1; i <= 2; i++){
 
 for(let i = 1; i <= 4; i++){
   const div = document.createElement('div');
-  div.className = 'row';
+  div.className = 'row ai-row';
+  div.id = 'aiRow' + i;
   div.innerHTML = `
     <div class="row-h">
       <b>AI${i}</b>
@@ -1276,12 +1321,13 @@ for(let i = 1; i <= 4; i++){
     <div class="meter"><i id="aiB${i}"></i></div>
   `;
   $('aiBox').appendChild(div);
+  aiRows[i]   = div;
   aiBars[i]   = $('aiB' + i);
   aiValues[i] = $('aiV' + i);
 }
 
 // ═══════════════════════════════════════════════════════
-// Sync Interval (from Firebase)
+// Sync Interval
 // ═══════════════════════════════════════════════════════
 let syncCurrent = null;
 
@@ -1337,19 +1383,16 @@ onValue(ref(db, `${BASE}/status/sync_interval`), s => {
   const raw = s.val();
   if(raw === null || raw === undefined){
     syncCurrent = null;
-    $('syncMini').textContent = '--';
     markSyncPreset();
     return;
   }
   const v = numOr(raw, NaN);
   if(!Number.isFinite(v)){
     syncCurrent = null;
-    $('syncMini').textContent = '--';
     markSyncPreset();
     return;
   }
   syncCurrent = v;
-  $('syncMini').textContent = v;
   if(document.activeElement !== $('syncInp')){
     $('syncInp').value = v;
   }
@@ -1357,7 +1400,7 @@ onValue(ref(db, `${BASE}/status/sync_interval`), s => {
 });
 
 // ═══════════════════════════════════════════════════════
-// OLED Cycle (from Firebase) — v48.3
+// OLED Cycle
 // ═══════════════════════════════════════════════════════
 let oledCurrent = null;
 
@@ -1413,19 +1456,16 @@ onValue(ref(db, `${BASE}/status/oled_cycle`), s => {
   const raw = s.val();
   if(raw === null || raw === undefined){
     oledCurrent = null;
-    $('oledMini').textContent = '--';
     markOledPreset();
     return;
   }
   const v = numOr(raw, NaN);
   if(!Number.isFinite(v)){
     oledCurrent = null;
-    $('oledMini').textContent = '--';
     markOledPreset();
     return;
   }
   oledCurrent = v;
-  $('oledMini').textContent = v;
   if(document.activeElement !== $('oledInp')){
     $('oledInp').value = v;
   }
@@ -1477,12 +1517,40 @@ function renderAO(d){
   }
 }
 
+// v48.4: AI with smooth gradient coloring
 function renderAI(d){
   for(let i = 1; i <= 4; i++){
     const raw = numOr(d['AI' + i], 0);
     const p = Math.round(raw / AI_MAX * 100);
-    if(aiBars[i])   aiBars[i].style.width = p + '%';
-    if(aiValues[i]) aiValues[i].textContent = p;
+
+    const row = aiRows[i];
+    const bar = aiBars[i];
+    const val = aiValues[i];
+    if(!row) continue;
+
+    // Compute color palette for this percentage
+    const colors = getAiColors(p);
+
+    // Apply CSS variables to the row
+    row.style.setProperty('--ai-row-bg',     colors.bg);
+    row.style.setProperty('--ai-row-border', colors.border);
+    row.style.setProperty('--ai-row-text',   colors.text);
+    row.style.setProperty('--ai-row-label',  colors.label);
+
+    // Bar (meter) — same hue family
+    if(bar){
+      bar.style.width = p + '%';
+      bar.style.background = `linear-gradient(90deg,
+        color-mix(in srgb, ${colors.bar} 70%, transparent),
+        ${colors.bar})`;
+      bar.style.boxShadow = `0 0 8px color-mix(in srgb, ${colors.bar} 40%, transparent)`;
+    }
+
+    // Value text (also set via CSS var, but explicit for smooth transition)
+    if(val){
+      val.textContent = p;
+      val.style.color = colors.text;
+    }
   }
 }
 
@@ -1528,14 +1596,13 @@ function renderStatus(v){
     $('scRssi').className = 'val ' + (rssi > -60 ? 'on' : rssi > -75 ? 'warn' : 'off');
   }
 
-  // SSL errors
   const ssl = numOr(v.ssl_errors, 0);
   $('scSsl').textContent = ssl;
   if(ssl === 0){
     $('scSsl').className = 'val on';
     $('scSslCard').classList.add('active');
     $('scSslCard').classList.remove('warn');
-    btnSync.classList.remove('ssl-warn');
+    btnSettings.classList.remove('ssl-warn');
     $('sslBanner').classList.remove('show');
   } else {
     $('scSsl').className = 'val ' + (ssl < 3 ? 'warn' : 'off');
@@ -1544,7 +1611,7 @@ function renderStatus(v){
 
     if(ssl !== lastSslCount){
       lastSslCount = ssl;
-      btnSync.classList.add('ssl-warn');
+      btnSettings.classList.add('ssl-warn');
       $('sslBanner').classList.add('show');
       clearTimeout(sslBannerTimer);
       sslBannerTimer = setTimeout(() => {
