@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
-<title>KC868-A6 — لوحة التحكم v48.2</title>
+<title>KC868-A6 — لوحة التحكم v48.3</title>
 <link rel="manifest" href='data:application/json,{"name":"KC868-A6","short_name":"A6","start_url":".","display":"standalone","background_color":"%230b1220","theme_color":"%230b1220"}'>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -260,11 +260,18 @@ body.offline .bar{border-bottom-color:var(--off);}
   font-size:12px;font-weight:700;
   font-variant-numeric:tabular-nums;
   background:linear-gradient(135deg,var(--panel-2),var(--panel-3));
+  min-width:auto;
+  padding:0 10px;
+  gap:3px;
+  display:flex;align-items:center;justify-content:center;
 }
 .ico.sync-toggle span{position:relative;}
 .ico.sync-toggle span::after{
   content:'s';font-size:9px;color:var(--mute);margin-inline-start:1px;
   font-weight:500;
+}
+.ico.sync-toggle .sep{
+  opacity:.4;font-size:10px;margin:0 2px;
 }
 /* SSL indicator on sync button */
 .ico.sync-toggle.ssl-warn{
@@ -348,7 +355,7 @@ body.offline .bar{border-bottom-color:var(--off);}
 .popup{
   position:fixed;
   top:calc(var(--bar-h) + 26px);
-  width:min(360px, calc(100vw - 20px));
+  width:min(380px, calc(100vw - 20px));
   background:var(--panel);
   border:1px solid var(--line);
   border-radius:var(--r-lg);
@@ -381,14 +388,34 @@ body.offline .bar{border-bottom-color:var(--off);}
   display:flex;align-items:center;gap:6px;
 }
 
-/* ── Sync duration popup ── */
+/* ── Settings sections (sync + oled) ── */
+.settings-section{
+  display:flex;flex-direction:column;gap:10px;
+  padding:12px;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  border-radius:var(--r-md);
+}
+.settings-section h4{
+  font-size:12.5px;font-weight:700;
+  color:var(--text-2);
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:2px;
+}
+.settings-section h4 .lbl-en{
+  font-size:10px;color:var(--mute);
+  font-weight:500;letter-spacing:.5px;
+  margin-inline-start:auto;
+}
+
+/* Presets */
 .dur-presets{
   display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
 }
 .dur-presets button{
-  height:44px;
+  height:42px;
   border:1px solid var(--line);
-  background:var(--panel-2);
+  background:var(--panel);
   color:var(--text);
   border-radius:var(--r-md);
   font-size:14px;font-weight:600;
@@ -407,11 +434,13 @@ body.offline .bar{border-bottom-color:var(--off);}
   color:#fff;border-color:var(--accent);
   box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 35%,transparent);
 }
+
+/* Custom input row */
 .dur-input{display:flex;gap:8px;}
 .dur-input .num{
-  flex:1;height:44px;
+  flex:1;height:42px;
   border:1px solid var(--line);
-  background:var(--panel-2);
+  background:var(--panel);
   color:var(--text);
   border-radius:var(--r-md);
   font-size:16px;font-weight:600;
@@ -425,7 +454,7 @@ body.offline .bar{border-bottom-color:var(--off);}
   box-shadow:0 0 0 3px var(--accent-soft);
 }
 .dur-input button{
-  flex-shrink:0;width:90px;height:44px;
+  flex-shrink:0;width:80px;height:42px;
   border-radius:var(--r-md);
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
   color:#fff;border:none;
@@ -793,10 +822,12 @@ input[type=range]:focus::-webkit-slider-thumb{
   .ico{font-size:15px;}
   .brand-info b{font-size:12.5px;}
   .popup{padding:12px;}
+  .settings-section{padding:10px;}
 }
 
 @media(max-width:440px){
   .brand-info{display:none;}
+  .ico.sync-toggle{padding:0 8px;}
 }
 
 @media(max-width:380px){
@@ -825,14 +856,16 @@ input[type=range]:focus::-webkit-slider-thumb{
 <body>
 
 <!-- ═══════════════════════════════════════════════════════
-     Top Bar (بدون زر الأوامر)
+     Top Bar
      ═══════════════════════════════════════════════════════ -->
 <header class="bar">
   <div class="icons">
     <button class="ico view-toggle" id="btnView" type="button" data-tip="التبديل للتناظري" aria-label="تبديل العرض">📊</button>
     <button class="ico" id="btnTheme" type="button" data-tip="الوضع الليلي" aria-label="تبديل المظهر">🌙</button>
-    <button class="ico sync-toggle" id="btnSync" type="button" data-tip="وقت المزامنة" aria-label="وقت المزامنة">
+    <button class="ico sync-toggle" id="btnSync" type="button" data-tip="الإعدادات (مزامنة + شاشة)" aria-label="الإعدادات">
       <span id="syncMini">10</span>
+      <span class="sep">·</span>
+      <span id="oledMini">5</span>
     </button>
     <button class="ico action" id="btnRefresh" type="button" data-tip="تحديث" aria-label="تحديث">🔄</button>
   </div>
@@ -903,18 +936,43 @@ input[type=range]:focus::-webkit-slider-thumb{
 </div>
 
 <!-- ═══════════════════════════════════════════════════════
-     Sync Popup
+     Settings Popup (sync + oled cycle)
      ═══════════════════════════════════════════════════════ -->
-<div class="popup right" id="syncPopup" role="dialog" aria-label="وقت المزامنة">
-  <h3>⏱️ وقت المزامنة (ثانية)</h3>
-  <div class="dur-presets">
-    <button type="button" data-dur="10">10</button>
-    <button type="button" data-dur="30">30</button>
-    <button type="button" data-dur="60">60</button>
+<div class="popup right" id="settingsPopup" role="dialog" aria-label="الإعدادات">
+  <h3>⚙️ الإعدادات</h3>
+
+  <!-- Section 1: Sync interval -->
+  <div class="settings-section">
+    <h4>
+      ⏱️ وقت المزامنة
+      <span class="lbl-en">SYNC</span>
+    </h4>
+    <div class="dur-presets" id="syncPresets">
+      <button type="button" data-dur="10">10</button>
+      <button type="button" data-dur="30">30</button>
+      <button type="button" data-dur="60">60</button>
+    </div>
+    <div class="dur-input">
+      <input class="num" type="number" id="syncInp" min="5" max="600" step="1" inputmode="numeric" placeholder="5-600" aria-label="قيمة مخصصة">
+      <button type="button" id="syncSave">💾 حفظ</button>
+    </div>
   </div>
-  <div class="dur-input">
-    <input class="num" type="number" id="syncInp" min="5" max="600" step="1" inputmode="numeric" placeholder="5-600" aria-label="قيمة مخصصة">
-    <button type="button" id="syncSave">💾 حفظ</button>
+
+  <!-- Section 2: OLED cycle -->
+  <div class="settings-section">
+    <h4>
+      🖥️ مدة تبديل الشاشة
+      <span class="lbl-en">OLED</span>
+    </h4>
+    <div class="dur-presets" id="oledPresets">
+      <button type="button" data-dur="2">2</button>
+      <button type="button" data-dur="5">5</button>
+      <button type="button" data-dur="10">10</button>
+    </div>
+    <div class="dur-input">
+      <input class="num" type="number" id="oledInp" min="2" max="30" step="1" inputmode="numeric" placeholder="2-30" aria-label="قيمة مخصصة">
+      <button type="button" id="oledSave">💾 حفظ</button>
+    </div>
   </div>
 </div>
 
@@ -985,8 +1043,14 @@ const db = getDatabase(initializeApp({
 
 const BASE = "/Said";
 const AI_MAX = 4095;
+
+// Sync interval range
 const SYNC_MIN = 5;
 const SYNC_MAX = 600;
+
+// OLED cycle range (v48.3)
+const OLED_MIN = 2;
+const OLED_MAX = 30;
 
 const $ = id => document.getElementById(id);
 const haptic = (ms = 10) => navigator.vibrate?.(ms);
@@ -1054,14 +1118,14 @@ btnView.addEventListener('click', () => {
 // ═══════════════════════════════════════════════════════
 // Popups Manager
 // ═══════════════════════════════════════════════════════
-const statusPopup = $('statusPopup');
-const syncPopup   = $('syncPopup');
-const logoBtn     = $('logoBtn');
-const btnSync     = $('btnSync');
+const statusPopup   = $('statusPopup');
+const settingsPopup = $('settingsPopup');
+const logoBtn       = $('logoBtn');
+const btnSync       = $('btnSync');
 
 function closeAllPopups(except){
-  if(except !== 'status') statusPopup.classList.remove('show');
-  if(except !== 'sync')   syncPopup.classList.remove('show');
+  if(except !== 'status')   statusPopup.classList.remove('show');
+  if(except !== 'settings') settingsPopup.classList.remove('show');
 }
 
 function togglePopup(popup, name){
@@ -1080,7 +1144,7 @@ logoBtn.addEventListener('click', e => {
 });
 btnSync.addEventListener('click', e => {
   e.stopPropagation();
-  togglePopup(syncPopup, 'sync');
+  togglePopup(settingsPopup, 'settings');
 });
 
 document.addEventListener('click', e => {
@@ -1088,9 +1152,9 @@ document.addEventListener('click', e => {
      !statusPopup.contains(e.target) && !logoBtn.contains(e.target)){
     statusPopup.classList.remove('show');
   }
-  if(syncPopup.classList.contains('show') &&
-     !syncPopup.contains(e.target) && !btnSync.contains(e.target)){
-    syncPopup.classList.remove('show');
+  if(settingsPopup.classList.contains('show') &&
+     !settingsPopup.contains(e.target) && !btnSync.contains(e.target)){
+    settingsPopup.classList.remove('show');
   }
 });
 
@@ -1217,11 +1281,11 @@ for(let i = 1; i <= 4; i++){
 }
 
 // ═══════════════════════════════════════════════════════
-// Sync Interval
+// Sync Interval (from Firebase)
 // ═══════════════════════════════════════════════════════
 let syncCurrent = null;
 
-document.querySelectorAll('.dur-presets button').forEach(b => {
+$('syncPresets').querySelectorAll('button').forEach(b => {
   b.addEventListener('click', async () => {
     const v = Number(b.dataset.dur);
     $('syncInp').value = v;
@@ -1230,8 +1294,8 @@ document.querySelectorAll('.dur-presets button').forEach(b => {
   });
 });
 
-function markPreset(){
-  document.querySelectorAll('.dur-presets button').forEach(b => {
+function markSyncPreset(){
+  $('syncPresets').querySelectorAll('button').forEach(b => {
     b.classList.toggle('act', Number(b.dataset.dur) === syncCurrent);
   });
 }
@@ -1249,8 +1313,7 @@ async function saveSync(forcedValue){
   btn.innerHTML = '<span class="loading"></span>';
   try{
     await set(ref(db, `${BASE}/status/sync_interval`), v);
-    toast(`تم الحفظ: ${v} ثانية`, 'success');
-    syncPopup.classList.remove('show');
+    toast(`تم حفظ المزامنة: ${v} ثانية`, 'success');
     return true;
   }catch(e){
     console.error(e);
@@ -1275,14 +1338,14 @@ onValue(ref(db, `${BASE}/status/sync_interval`), s => {
   if(raw === null || raw === undefined){
     syncCurrent = null;
     $('syncMini').textContent = '--';
-    markPreset();
+    markSyncPreset();
     return;
   }
   const v = numOr(raw, NaN);
   if(!Number.isFinite(v)){
     syncCurrent = null;
     $('syncMini').textContent = '--';
-    markPreset();
+    markSyncPreset();
     return;
   }
   syncCurrent = v;
@@ -1290,7 +1353,83 @@ onValue(ref(db, `${BASE}/status/sync_interval`), s => {
   if(document.activeElement !== $('syncInp')){
     $('syncInp').value = v;
   }
-  markPreset();
+  markSyncPreset();
+});
+
+// ═══════════════════════════════════════════════════════
+// OLED Cycle (from Firebase) — v48.3
+// ═══════════════════════════════════════════════════════
+let oledCurrent = null;
+
+$('oledPresets').querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', async () => {
+    const v = Number(b.dataset.dur);
+    $('oledInp').value = v;
+    haptic();
+    await saveOled(v);
+  });
+});
+
+function markOledPreset(){
+  $('oledPresets').querySelectorAll('button').forEach(b => {
+    b.classList.toggle('act', Number(b.dataset.dur) === oledCurrent);
+  });
+}
+
+async function saveOled(forcedValue){
+  const raw = forcedValue !== undefined ? forcedValue : $('oledInp').value.trim();
+  const v = Number(raw);
+  if(String(raw) === '' || !Number.isInteger(v) || v < OLED_MIN || v > OLED_MAX){
+    toast(`أدخل رقماً بين ${OLED_MIN} و ${OLED_MAX}`, 'error');
+    return false;
+  }
+  haptic();
+  const btn = $('oledSave');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>';
+  try{
+    await set(ref(db, `${BASE}/status/oled_cycle`), v);
+    toast(`تم حفظ الشاشة: ${v} ثانية`, 'success');
+    return true;
+  }catch(e){
+    console.error(e);
+    toast('تعذّر الحفظ', 'error');
+    return false;
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '💾 حفظ';
+  }
+}
+
+$('oledSave').addEventListener('click', () => saveOled());
+$('oledInp').addEventListener('keydown', async e => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    await saveOled();
+  }
+});
+
+onValue(ref(db, `${BASE}/status/oled_cycle`), s => {
+  const raw = s.val();
+  if(raw === null || raw === undefined){
+    oledCurrent = null;
+    $('oledMini').textContent = '--';
+    markOledPreset();
+    return;
+  }
+  const v = numOr(raw, NaN);
+  if(!Number.isFinite(v)){
+    oledCurrent = null;
+    $('oledMini').textContent = '--';
+    markOledPreset();
+    return;
+  }
+  oledCurrent = v;
+  $('oledMini').textContent = v;
+  if(document.activeElement !== $('oledInp')){
+    $('oledInp').value = v;
+  }
+  markOledPreset();
 });
 
 // ═══════════════════════════════════════════════════════
