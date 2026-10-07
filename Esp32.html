@@ -2,222 +2,1006 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1a2332">
-<title>KC868-A6 — Industrial HMI v58</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#008069" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#202c33" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>KC868-A6 — HMI v63</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden}
-:root{--bg:#0f1620;--main:#1a2332;--panel:#222d3d;--card:#2a3648;--inp:#1c2533;--bd:#3a4a5e;--bd2:#4d6180;
---t1:#e8eef7;--t2:#a8b5c8;--t3:#6b7a8f;--blue:#2c7be5;--cyan:#22d3ee;--green:#10b981;--lime:#00ff88;--yel:#fbbf24;--red:#ef4444;--red2:#ff3355;--r:6px;
---dig:'Orbitron',ui-monospace,monospace}
-body{font:13px/1.5 'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--t1);display:flex;flex-direction:column;height:100dvh;padding-top:env(safe-area-inset-top,0)}
-button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
-:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-.dig{font-family:var(--dig);font-variant-numeric:tabular-nums}
-/* header */
-header{flex:none;height:52px;display:flex;align-items:center;gap:12px;padding:0 16px;background:linear-gradient(#2c7be5,#1a4d8f);border-bottom:2px solid #0d2947;z-index:60}
-header h1{flex:1;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill{display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.15);border-radius:4px;font-size:11px;font-weight:600}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime)}
-.dot.warn{background:var(--yel);box-shadow:0 0 8px var(--yel)}.dot.off{background:var(--red2);box-shadow:0 0 8px var(--red2)}
-#clock{font-size:14px;font-weight:700}
-#offline{position:fixed;top:calc(52px + env(safe-area-inset-top,0));left:0;right:0;background:#b91c1c;text-align:center;padding:6px;font-weight:700;z-index:70;transform:translateY(-200%);transition:transform .3s}
-#offline.show{transform:none}
-/* layout */
-.layout{flex:1;min-height:0;display:flex}
-nav{flex:none;width:92px;background:var(--main);border-left:1px solid var(--bd);display:flex;flex-direction:column;gap:8px;padding:10px 8px;overflow-y:auto}
-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:72px;background:var(--card);border:2px solid var(--bd);border-radius:var(--r);color:var(--t2);font-size:10px;font-weight:700;transition:.2s}
-nav button span:first-child{font-size:24px;line-height:1}
-nav button.active{border-color:var(--cyan);color:var(--t1);background:linear-gradient(135deg,rgba(44,123,229,.2),rgba(34,211,238,.08));box-shadow:0 0 18px rgba(34,211,238,.2)}
-main{flex:1;min-width:0;overflow-y:auto;padding:14px}
-.page{display:none}.page.act{display:block;animation:fi .25s}
-@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-/* panels */
-.panel{background:var(--panel);border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.4);margin-bottom:14px;overflow:hidden}
-.ph{display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(rgba(44,123,229,.12),transparent);border-bottom:1px solid var(--bd)}
-.ph h2{flex:1;font-size:13px;font-weight:700}
-.badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:4px;background:var(--blue);color:#fff}
-.badge.g{background:var(--green)}.badge.y{background:var(--yel);color:#000}.badge.r{background:var(--red)}
-.pb{padding:14px}
-.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(var(--min,140px),1fr))}
-/* KPI + status cards */
-.card{background:var(--card);border:2px solid var(--bd);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:3px}
-.card::before{content:'';position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--c,var(--bd));box-shadow:0 0 8px var(--c,transparent)}
-.card.ok{--c:var(--lime)}.card.warn{--c:var(--yel)}.card.err{--c:var(--red2)}.card.info{--c:var(--cyan)}
-.card .lbl{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
-.card .val{font:700 14px var(--dig);direction:ltr;text-align:start;word-break:break-all;color:var(--c,var(--t1))}
-/* DO / DI */
-.ctrl{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;background:linear-gradient(#2f3d52,#232d3d);border:2px solid var(--bd);border-radius:var(--r);color:var(--t2);font-weight:700;font-size:11px;transition:.15s}
-.ctrl i{font-style:normal;font-size:26px;line-height:1}
-.ctrl small{font-size:10px;opacity:.7}
-.ctrl.on{background:linear-gradient(#0d5c3a,#084d2f);border-color:var(--lime);color:#fff;box-shadow:0 0 22px rgba(0,255,136,.35)}
-.ctrl.sending{pointer-events:none;opacity:.6}
-.led{background:var(--card);border:1px solid var(--bd);border-radius:4px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.led b{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#4a1e2a,#2a0e15);border:2px solid #3a1018;transition:.25s}
-.led.on b{background:radial-gradient(circle at 30% 30%,#00ff88,#059669);border-color:var(--lime);box-shadow:0 0 18px var(--lime)}
-.led span{font:700 11px var(--dig);color:var(--t3)}.led.on span{color:var(--lime)}
-.led small{font-size:10px;color:var(--t3)}
-/* gauges */
-.gauge{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.gauge .lbl{font-size:11px;font-weight:700;color:var(--t2)}
-.gw{position:relative;width:120px;height:120px;display:grid;place-items:center}
-.gw svg{width:100%;height:100%}
-.gw .bg,.gw .fg{fill:none;stroke-width:10;stroke-linecap:round}.gw .bg{stroke:var(--inp)}
-.gw .fg{transition:stroke-dashoffset .6s,stroke .3s;filter:drop-shadow(0 0 5px currentColor)}
-.gv{position:absolute;font:900 24px var(--dig);text-shadow:0 0 10px currentColor}
-.gv small{font-size:10px;color:var(--t3);text-shadow:none;margin-inline-start:2px}
-.chart{height:220px;background:var(--inp);border:1px solid var(--bd);border-radius:4px;overflow:hidden}
-.chart svg{width:100%;height:100%;display:block}
-.legend{display:flex;gap:14px;margin-top:10px;font-size:11px;font-weight:700;color:var(--t2)}
-.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-inline-end:5px;vertical-align:-2px}
-/* settings */
-.set{background:var(--card);border:1px solid var(--bd);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
-.set label{font-size:11px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between}
-.set label small{font:500 9px var(--dig);color:var(--t3)}
-.row{display:flex;gap:6px}
-input,select{height:36px;background:var(--inp);border:1px solid var(--bd);border-radius:4px;color:var(--cyan);font:700 14px var(--dig);text-align:center;direction:ltr;padding:0 8px;min-width:0;width:100%}
-input:focus,select:focus{outline:0;border-color:var(--cyan);box-shadow:0 0 10px rgba(34,211,238,.4)}
-input.bad{border-color:var(--red2)}
-.row .save{flex:none;width:42px;background:linear-gradient(#2c7be5,#1a4d8f);border:1px solid #0d2947;border-radius:4px}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;min-height:44px;background:linear-gradient(#2f3d52,#232d3d);border:2px solid var(--bd);border-radius:var(--r);color:var(--t2);font-size:12px;font-weight:700;transition:.15s}
-.btn:hover{border-color:var(--blue);color:#fff}.btn:active{transform:scale(.98)}
-.btn.pri{background:linear-gradient(#2c7be5,#1a4d8f);color:#fff;border-color:#0d2947}
-.btn.danger{border-color:var(--red);color:#ff8095}
-.btn.sending{pointer-events:none;opacity:.6}.btn.success{border-color:var(--lime);color:#fff}.btn.sm{min-height:32px;padding:4px 12px;font-size:11px}
-.mode.active{border-color:var(--cyan);color:#fff;background:linear-gradient(rgba(44,123,229,.3),rgba(26,77,143,.4))}
-.mode{flex-direction:column;min-height:90px;font-size:12px}.mode i{font-style:normal;font-size:30px}
-/* log + schedules */
-.log{background:var(--inp);border:1px solid var(--bd);border-radius:4px;padding:8px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
-.ev{display:grid;grid-template-columns:78px 1fr 26px;gap:8px;align-items:center;padding:7px 10px;background:var(--card);border:1px solid var(--bd);border-inline-start:3px solid var(--c,var(--bd));border-radius:4px;font-size:11.5px}
-.ev.info{--c:var(--cyan)}.ev.success{--c:var(--lime)}.ev.warn{--c:var(--yel)}.ev.error{--c:var(--red2)}
-.ev time{font:10.5px ui-monospace,monospace;color:var(--t3)}
-.ev button,.sd{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ff8095;border-radius:4px;height:24px}
-.sch{display:grid;grid-template-columns:1fr 46px 40px;gap:10px;align-items:center;padding:10px 12px;margin-bottom:8px;background:var(--card);border:1px solid var(--bd);border-inline-start:3px solid var(--t3);border-radius:4px}
-.sch.on{border-inline-start-color:var(--lime)}
-.sch b{font:700 12px ui-monospace,monospace;color:var(--cyan);display:block;direction:ltr;text-align:start}
-.sch small{font-size:10px;color:var(--t3)}
-.tg{width:44px;height:24px;background:var(--inp);border:1px solid var(--bd);border-radius:12px;position:relative}
-.tg::after{content:'';position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:var(--t3);transition:.25s}
-.sch.on .tg{border-color:var(--lime)}.sch.on .tg::after{right:22px;background:var(--lime)}
-.empty{text-align:center;color:var(--t3);padding:16px}
-/* toast + dialog */
-#toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0));left:50%;transform:translate(-50%,20px);padding:11px 22px;background:var(--panel);border:2px solid var(--blue);border-radius:var(--r);font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:400;max-width:calc(100vw - 32px);text-align:center}
-#toast.show{opacity:1;transform:translate(-50%,0)}
-#toast.success{border-color:var(--lime)}#toast.error{border-color:var(--red2)}#toast.warn{border-color:var(--yel)}
-dialog{margin:auto;background:var(--panel);color:var(--t1);border:2px solid var(--bd2);border-radius:10px;padding:18px;width:min(360px,92vw)}
-dialog::backdrop{background:rgba(0,0,0,.65)}
-dialog h3{margin-bottom:12px;font-size:15px}.dbody{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;color:var(--t2)}
-.dbtn{display:flex;gap:8px}.dbtn .btn{flex:1}
-/* mobile: bottom tab bar */
-@media(max-width:700px){
-  .layout{flex-direction:column-reverse}
-  nav{width:100%;flex-direction:row;gap:4px;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0));border-left:0;border-top:1px solid var(--bd);overflow:visible}
-  nav button{flex:1;min-height:52px;border-width:1px;font-size:9px}nav button span:first-child{font-size:20px}
-  main{padding:8px}.pb{padding:10px}header{padding:0 10px}header h1{font-size:12px}#clock{font-size:12px}
-  .mode-grid{grid-template-columns:1fr!important}
+html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+
+/* ══════════ WHATSAPP COLOR SYSTEM ══════════ */
+:root{
+  /* Light mode */
+  --bg:#efeae2;
+  --bg-pattern:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='%23000' fill-opacity='0.03'><circle cx='10' cy='10' r='1.5'/><circle cx='30' cy='20' r='1'/><circle cx='50' cy='15' r='1.5'/><circle cx='70' cy='30' r='1'/><circle cx='15' cy='50' r='1.5'/><circle cx='40' cy='60' r='1'/><circle cx='65' cy='55' r='1.5'/><circle cx='25' cy='75' r='1'/></g></svg>");
+  --header:#008069;
+  --header-dk:#075e54;
+  --primary:#00a884;
+  --primary-dk:#008069;
+  --accent:#25d366;
+  --bubble-out:#d9fdd3;
+  --bubble-in:#ffffff;
+  --panel:#f0f2f5;
+  --search-bg:#f0f2f5;
+  --text:#111b21;
+  --text2:#667781;
+  --text3:#8696a0;
+  --divider:#e9edef;
+  --border:#d1d7db;
+  --hover:#f5f6f6;
+  --press:#e9edef;
+  --tick:#53bdeb;
+  --red:#ea0038;
+  --yellow:#ffbc38;
+  --green:#00a884;
+  --shadow:0 1px 0.5px rgba(11,20,26,.13);
+  --shadow-lg:0 2px 6px rgba(11,20,26,.15);
+  --r-bubble:7.5px;
+  --r-sm:8px;
+  --r-md:12px;
+  --r-lg:18px;
+  --r-full:999px;
+  --font:'Inter','IBM Plex Sans Arabic',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:'SF Mono',Monaco,Consolas,monospace;
 }
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#0b141a;
+    --bg-pattern:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='%23fff' fill-opacity='0.02'><circle cx='10' cy='10' r='1.5'/><circle cx='30' cy='20' r='1'/><circle cx='50' cy='15' r='1.5'/><circle cx='70' cy='30' r='1'/><circle cx='15' cy='50' r='1.5'/><circle cx='40' cy='60' r='1'/><circle cx='65' cy='55' r='1.5'/><circle cx='25' cy='75' r='1'/></g></svg>");
+    --header:#202c33;
+    --header-dk:#111b21;
+    --primary:#00a884;
+    --primary-dk:#005c4b;
+    --accent:#25d366;
+    --bubble-out:#005c4b;
+    --bubble-in:#202c33;
+    --panel:#111b21;
+    --search-bg:#202c33;
+    --text:#e9edef;
+    --text2:#8696a0;
+    --text3:#667781;
+    --divider:#222d34;
+    --border:#2a3942;
+    --hover:#202c33;
+    --press:#2a3942;
+    --tick:#53bdeb;
+    --red:#f15c6d;
+    --yellow:#ffbc38;
+    --green:#00a884;
+    --shadow:0 1px 0.5px rgba(0,0,0,.4);
+    --shadow-lg:0 2px 6px rgba(0,0,0,.5);
+  }
+}
+body{
+  font:400 15px/1.4 var(--font);
+  background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;height:100dvh;
+  padding-top:env(safe-area-inset-top,0);
+  -webkit-font-smoothing:antialiased;
+  background-image:var(--bg-pattern);
+}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;touch-action:manipulation;transition:background .15s,transform .1s}
+button:active{transform:scale(.97)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.dig,.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr}
+
+/* ══════════ HEADER — WhatsApp green bar ══════════ */
+header{
+  flex:none;height:60px;
+  display:flex;align-items:center;gap:10px;
+  padding:0 8px;
+  background:var(--header);
+  color:#fff;
+  z-index:60;
+  box-shadow:var(--shadow);
+  position:relative;
+}
+header .back{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex:none;
+}
+header .back svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+header .avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:linear-gradient(135deg,#25d366,#128c7e);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font:700 16px var(--font);
+  flex:none;
+  position:relative;
+}
+header .avatar::after{
+  content:'';position:absolute;
+  bottom:1px;right:1px;
+  width:11px;height:11px;border-radius:50%;
+  background:#25d366;
+  border:2px solid var(--header);
+}
+header .avatar.off::after{background:#8696a0}
+header .avatar.warn::after{background:var(--yellow)}
+header .info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+header .info .name{
+  font:600 16px var(--font);
+  color:#fff;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.2;
+}
+header .info .status{
+  font:400 12.5px var(--font);
+  color:rgba(255,255,255,.85);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  line-height:1.2;
+  margin-top:1px;
+}
+header .info .status.online{color:#a8ffd6}
+header .hbtns{display:flex;gap:2px;align-items:center}
+header .icon-btn{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+  position:relative;
+}
+header .icon-btn svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+header .icon-btn:active{background:rgba(255,255,255,.15)}
+header .icon-btn .nbadge{
+  position:absolute;top:4px;right:4px;
+  min-width:18px;height:18px;padding:0 5px;
+  background:#25d366;color:#fff;
+  border-radius:9px;
+  font:700 10px var(--font);
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--header);
+  line-height:1;
+}
+
+/* Offline banner */
+#offline{
+  position:fixed;
+  top:calc(60px + env(safe-area-inset-top,0));
+  left:0;right:0;
+  background:var(--red);color:#fff;
+  text-align:center;padding:8px;
+  font:500 13px var(--font);
+  z-index:70;
+  transform:translateY(-200%);
+  transition:transform .3s;
+  pointer-events:none;
+}
+#offline.show{transform:none;pointer-events:auto}
+
+/* ══════════ LAYOUT ══════════ */
+.layout{flex:1;min-height:0;display:flex}
+main{
+  flex:1;min-width:0;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:8px 8px calc(80px + env(safe-area-inset-bottom,0));
+  background:var(--bg);
+  background-image:var(--bg-pattern);
+}
+.page{display:none}.page.act{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ══════════ BOTTOM NAV — WhatsApp tabs ══════════ */
+nav{
+  flex:none;position:fixed;
+  bottom:0;left:0;right:0;
+  height:calc(60px + env(safe-area-inset-bottom,0));
+  padding-bottom:env(safe-area-inset-bottom,0);
+  background:var(--panel);
+  border-top:1px solid var(--divider);
+  display:flex;
+  z-index:100;
+  box-shadow:0 -1px 3px rgba(0,0,0,.08);
+}
+nav button{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  padding:8px 4px;
+  color:var(--text3);
+  position:relative;
+  border-radius:0;
+  transition:color .15s;
+}
+nav button svg{
+  width:24px;height:24px;
+  stroke:currentColor;fill:none;
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .15s;
+}
+nav button .nlabel{
+  font:500 11.5px var(--font);
+}
+nav button.active{color:var(--primary)}
+nav button.active svg{stroke-width:2.3}
+nav button.active::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:3px;
+  background:var(--primary);
+  border-radius:3px 3px 0 0;
+}
+nav button .nbadge{
+  position:absolute;
+  top:6px;left:calc(50% + 6px);
+  min-width:18px;height:18px;
+  padding:0 5px;
+  background:var(--primary);color:#fff;
+  border-radius:9px;
+  font:700 10px var(--font);
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--panel);
+  line-height:1;
+}
+
+/* ══════════ CHAT-LIKE PANELS ══════════ */
+.panel{
+  background:var(--bubble-in);
+  border-radius:var(--r-bubble);
+  box-shadow:var(--shadow);
+  margin-bottom:8px;
+  overflow:hidden;
+  position:relative;
+}
+.ph{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px 8px;
+  flex-wrap:wrap;
+  border-bottom:1px solid var(--divider);
+}
+.ph h2{
+  flex:1;font:600 15px var(--font);
+  color:var(--text);
+  min-width:0;
+}
+.ph .badge{
+  font:600 11.5px var(--font);
+  padding:3px 9px;
+  border-radius:var(--r-full);
+  background:rgba(0,168,132,.12);
+  color:var(--primary);
+}
+.ph .badge.g{background:rgba(0,168,132,.15);color:var(--primary)}
+.ph .badge.y{background:rgba(255,188,56,.18);color:#a87a00}
+.ph .badge.r{background:rgba(234,0,56,.12);color:var(--red)}
+.pb{padding:8px 12px 12px}
+
+/* ══════════ DO/DI — WhatsApp action cards ══════════ */
+.grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(var(--min,140px),1fr))}
+
+.ctrl{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;min-height:104px;
+  background:var(--panel);
+  border-radius:var(--r-md);
+  color:var(--text);
+  font:500 13px var(--font);
+  padding:12px 8px;
+  position:relative;
+  transition:background .15s,transform .1s;
+  border:1px solid transparent;
+}
+.ctrl i{
+  font-style:normal;font-size:34px;line-height:1;
+  filter:grayscale(1) opacity(.35);
+  transition:filter .2s,transform .2s;
+}
+.ctrl small{font:400 11px var(--font);color:var(--text2)}
+.ctrl span:not(small){direction:ltr;font-weight:600}
+.ctrl.on{
+  background:var(--bubble-out);
+  color:var(--primary-dk);
+  border-color:rgba(0,168,132,.25);
+}
+.ctrl.on i{filter:none;transform:scale(1.1)}
+.ctrl.on small{color:var(--primary-dk)}
+.ctrl.sending{pointer-events:none;opacity:.6}
+
+/* DI LEDs */
+.led{
+  background:var(--panel);
+  border-radius:var(--r-md);
+  padding:14px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.led b{
+  width:46px;height:46px;border-radius:50%;
+  background:#cfd6da;
+  transition:.25s;
+  position:relative;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.1);
+}
+.led b::after{
+  content:'';position:absolute;inset:6px;
+  border-radius:50%;background:transparent;
+  transition:.25s;
+}
+.led.on b{
+  background:var(--primary);
+  box-shadow:0 0 0 5px rgba(0,168,132,.18),inset 0 2px 4px rgba(0,0,0,.15);
+}
+.led.on b::after{
+  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7),transparent 60%);
+}
+.led span{font:600 13px var(--font);color:var(--text2);direction:ltr}
+.led.on span{color:var(--primary-dk)}
+.led small{font:400 11px var(--font);color:var(--text3)}
+.led.on small{color:var(--primary-dk)}
+
+/* ══════════ ANALOG BLOCKS — Chat bubble style ══════════ */
+.io-block{
+  background:var(--bubble-in);
+  border-radius:var(--r-md);
+  padding:14px;
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:var(--shadow);
+  position:relative;
+  border:1px solid var(--divider);
+}
+.io-head{display:flex;align-items:center;gap:12px}
+.io-icon{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#128c7e);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font:700 14px var(--font);
+  flex:none;
+  direction:ltr;
+  box-shadow:0 2px 6px rgba(0,168,132,.3);
+}
+.io-icon.ai{background:linear-gradient(135deg,#25d366,#128c7e)}
+.io-icon.ao{background:linear-gradient(135deg,#34b7f1,#128c7e)}
+.io-name{
+  flex:1;
+  font:600 14px var(--font);
+  color:var(--text);
+  direction:ltr;
+}
+.io-name small{
+  display:block;
+  font:400 11px var(--font);
+  color:var(--text2);
+  direction:rtl;
+  margin-top:1px;
+}
+.io-val{
+  font:700 24px var(--font);
+  color:var(--primary-dk);
+  direction:ltr;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.5px;
+}
+.io-val small{font:400 12px var(--font);color:var(--text2);margin-inline-start:4px}
+.io-bar{
+  height:8px;background:var(--divider);
+  border-radius:4px;overflow:hidden;
+}
+.io-bar .fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  border-radius:4px;
+  transition:width .4s,background .3s;
+}
+.io-foot{
+  display:flex;justify-content:space-between;
+  font:400 12px var(--font);color:var(--text3);
+  direction:ltr;
+}
+
+/* ══════════ STATUS CARDS — WhatsApp contact rows ══════════ */
+.card{
+  background:var(--panel);
+  border-radius:var(--r-md);
+  padding:12px 14px;
+  display:flex;flex-direction:column;gap:3px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid transparent;
+}
+.card::before{
+  content:'';position:absolute;
+  inset-inline-start:0;top:0;bottom:0;
+  width:4px;background:var(--c,var(--text3));
+}
+.card.ok{--c:var(--primary)}
+.card.warn{--c:var(--yellow)}
+.card.err{--c:var(--red)}
+.card.info{--c:#34b7f1}
+.card .lbl{
+  font:500 11.5px var(--font);
+  color:var(--text2);
+}
+.card .val{
+  font:600 16px var(--font);
+  color:var(--text);
+  direction:ltr;
+  word-break:break-all;
+}
+.card.ok .val{color:var(--primary-dk)}
+.card.err .val{color:var(--red)}
+.card.warn .val{color:#a87a00}
+.card.info .val{color:#34b7f1}
+
+/* ══════════ BUTTONS — WhatsApp style ══════════ */
+.btn{
+  display:flex;align-items:center;justify-content:center;
+  gap:8px;padding:10px 16px;min-height:42px;
+  background:var(--panel);
+  color:var(--text);
+  border-radius:var(--r-md);
+  font:600 14px var(--font);
+  transition:background .15s,transform .1s;
+  border:1px solid var(--divider);
+}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn:hover{background:var(--hover)}
+.btn.pri{
+  background:var(--primary);color:#fff;border-color:var(--primary);
+}
+.btn.pri:hover{background:var(--primary-dk)}
+.btn.danger{background:rgba(234,0,56,.08);color:var(--red);border-color:rgba(234,0,56,.2)}
+.btn.danger:hover{background:var(--red);color:#fff}
+.btn.success{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.sm{min-height:34px;padding:6px 12px;font-size:13px}
+.btn.sending{pointer-events:none;opacity:.6}
+
+.btn-full{
+  width:100%;
+  background:var(--primary);color:#fff;
+  padding:12px;
+  font:600 15px var(--font);
+  border-radius:var(--r-md);
+}
+
+/* ══════════ SETTINGS fields — Chat input style ══════════ */
+.set{
+  background:var(--panel);
+  border-radius:var(--r-md);
+  padding:12px 14px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.set label{
+  font:600 13px var(--font);
+  color:var(--text);
+  display:flex;justify-content:space-between;align-items:center;
+  gap:8px;
+}
+.set label small{
+  font:500 11px var(--font);
+  color:var(--text3);
+  font-family:var(--mono);
+  direction:ltr;
+}
+.row{display:flex;gap:8px}
+input,select{
+  height:42px;
+  background:var(--bubble-in);
+  border:1px solid var(--divider);
+  border-radius:var(--r-md);
+  color:var(--text);
+  font:500 15px var(--font);
+  text-align:center;
+  direction:ltr;
+  padding:0 14px;
+  min-width:0;width:100%;
+  transition:border-color .15s,box-shadow .15s;
+}
+input:focus,select:focus{
+  outline:0;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(0,168,132,.15);
+}
+input.bad{border-color:var(--red)}
+.row .save{
+  flex:none;width:48px;
+  background:var(--primary);color:#fff;
+  border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+
+/* ══════════ MODE BUTTONS ══════════ */
+.mode{
+  flex-direction:column;min-height:88px;
+  background:var(--panel);color:var(--text);
+  gap:8px;
+}
+.mode i{font-style:normal;font-size:28px}
+.mode.active{
+  background:var(--bubble-out);
+  color:var(--primary-dk);
+  box-shadow:inset 0 0 0 2px var(--primary);
+}
+
+/* ══════════ LOG — WhatsApp chat feed ══════════ */
+.log{
+  display:flex;flex-direction:column;
+  gap:8px;
+  max-height:500px;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:8px 4px;
+}
+.ev{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:8px;
+  padding:8px 12px;
+  background:var(--bubble-in);
+  border-radius:var(--r-bubble);
+  font:400 13.5px var(--font);
+  box-shadow:var(--shadow);
+  position:relative;
+  max-width:92%;
+  align-self:flex-start;
+  border-top-left-radius:0;
+  min-width:200px;
+}
+[dir="rtl"] .ev{
+  border-top-left-radius:var(--r-bubble);
+  border-top-right-radius:0;
+}
+.ev.info{background:var(--bubble-in)}
+.ev.success{background:var(--bubble-out)}
+.ev.warn{background:#fff8e1}
+.ev.error{background:#ffebee}
+@media(prefers-color-scheme:dark){
+  .ev.warn{background:#3a2f14}
+  .ev.error{background:#3a1e1e}
+}
+.ev-head{
+  display:flex;align-items:center;gap:6px;
+  margin-bottom:2px;
+}
+.ev-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--primary);
+}
+.ev.info .ev-dot{background:#34b7f1}
+.ev.success .ev-dot{background:var(--primary)}
+.ev.warn .ev-dot{background:var(--yellow)}
+.ev.error .ev-dot{background:var(--red)}
+.ev-msg{
+  color:var(--text);
+  grid-column:1/-1;
+  margin-top:2px;
+  word-break:break-word;
+}
+.ev-foot{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:4px;
+  justify-content:flex-end;
+  font:400 11px var(--font);
+  color:var(--text3);
+  margin-top:2px;
+}
+.ev-foot .ticks{
+  display:inline-flex;
+  color:var(--tick);
+  font-size:14px;
+  line-height:1;
+}
+.ev button[data-del]{
+  background:transparent;
+  color:var(--text3);
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+  opacity:0;
+  transition:opacity .15s;
+}
+.ev:hover button[data-del]{opacity:1}
+.ev button[data-del]:hover{background:rgba(234,0,56,.1);color:var(--red)}
+
+/* ══════════ SCHEDULES — WhatsApp list items ══════════ */
+.sch{
+  display:grid;
+  grid-template-columns:46px 1fr 50px 40px;
+  gap:12px;align-items:center;
+  padding:12px;
+  background:var(--bubble-in);
+  border-radius:var(--r-md);
+  margin-bottom:6px;
+  transition:background .15s;
+  border-bottom:1px solid var(--divider);
+}
+.sch .sch-avatar{
+  width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#128c7e);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font:700 15px var(--mono);
+  direction:ltr;
+}
+.sch.on .sch-avatar{background:linear-gradient(135deg,#25d366,#128c7e)}
+.sch b{
+  display:block;
+  font:600 14.5px var(--font);
+  color:var(--text);
+  direction:ltr;
+  text-align:start;
+}
+.sch small{font:400 12px var(--font);color:var(--text2)}
+.sch.on small{color:var(--primary-dk)}
+.tg{
+  width:50px;height:28px;
+  background:var(--border);
+  border-radius:14px;position:relative;
+  cursor:pointer;
+  transition:background .2s;
+}
+.tg::after{
+  content:'';position:absolute;
+  top:2px;right:2px;
+  width:24px;height:24px;
+  border-radius:50%;
+  background:#fff;
+  transition:right .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.2);
+}
+.sch.on .tg{background:var(--primary)}
+.sch.on .tg::after{right:24px}
+.sd{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--panel);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+}
+.sd:hover{background:rgba(234,0,56,.1);color:var(--red)}
+
+/* ══════════ EMPTY STATE ══════════ */
+.empty{
+  text-align:center;
+  color:var(--text3);
+  padding:32px 16px;
+  font:400 14px var(--font);
+}
+
+/* ══════════ TOAST — WhatsApp snackbar ══════════ */
+#toast{
+  position:fixed;
+  bottom:calc(80px + env(safe-area-inset-bottom,0));
+  left:50%;transform:translate(-50%,20px);
+  padding:12px 20px;
+  background:#111b21;color:#e9edef;
+  border-radius:var(--r-md);
+  font:500 13.5px var(--font);
+  opacity:0;transition:.25s;
+  pointer-events:none;z-index:400;
+  max-width:calc(100vw - 32px);
+  text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.3);
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.success{background:var(--primary);color:#fff}
+#toast.error{background:var(--red);color:#fff}
+#toast.warn{background:var(--yellow);color:#111b21}
+
+/* ══════════ DIALOG — WhatsApp modal ══════════ */
+dialog{
+  margin:auto;
+  background:var(--bubble-in);
+  color:var(--text);
+  border:none;
+  border-radius:var(--r-lg);
+  padding:20px;
+  width:min(400px,92vw);
+  max-height:90dvh;
+  overflow-y:auto;
+  box-shadow:0 8px 30px rgba(0,0,0,.4);
+}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog h3{
+  margin-bottom:16px;
+  font:600 18px var(--font);
+  color:var(--text);
+  text-align:center;
+}
+.dbody{
+  display:flex;flex-direction:column;gap:12px;
+  margin-bottom:18px;color:var(--text2);
+  font-size:14px;line-height:1.5;
+}
+.dbody input,.dbody select{background:var(--panel);border-color:var(--divider)}
+.dbtn{display:flex;gap:8px;flex-direction:row-reverse}
+.dbtn .btn{flex:1}
+
+/* ══════════ DARK MODE ADJUSTMENTS ══════════ */
+@media(prefers-color-scheme:dark){
+  .ctrl{background:var(--panel)}
+  .ctrl.on{background:var(--bubble-out);color:#d9fdd3}
+  .ctrl.on small{color:#a8e6b9}
+  .led{background:var(--panel)}
+  .led b{background:#2a3942;box-shadow:inset 0 2px 4px rgba(0,0,0,.3)}
+  .led.on b{background:var(--primary)}
+  .led.on span,.led.on small{color:#a8e6b9}
+  .card{background:var(--panel)}
+  .card.ok .val{color:#00d97a}
+  .card.warn .val{color:var(--yellow)}
+  .btn{background:var(--panel);border-color:var(--divider)}
+  .btn:hover{background:var(--hover)}
+  .set{background:var(--panel)}
+  .io-block{background:var(--panel);border-color:var(--divider)}
+  .io-val{color:#a8e6b9}
+  input,select{background:var(--panel);border-color:var(--border)}
+  .tg{background:#3a4a52}
+  .sch{background:var(--panel)}
+  #toast{background:#e9edef;color:#111b21}
+  dialog{background:var(--panel)}
+  dialog::backdrop{background:rgba(0,0,0,.7)}
+}
+
+/* ══════════ MOBILE ONLY ══════════ */
+@media(max-width:700px){
+  main{padding:6px;padding-bottom:calc(80px + env(safe-area-inset-bottom,0))}
+  .pb{padding:6px 10px 12px}
+  .ph{padding:10px 12px 6px}
+  .ph h2{font-size:14.5px}
+  .io-val{font-size:22px}
+  .io-icon{width:42px;height:42px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════ HEADER — WhatsApp chat header ══════════ -->
 <header>
-  <h1>⚡ KC868-A6 · لوحة التحكم الصناعية</h1>
-  <div class="pill" role="status"><span class="dot" id="hDot"></span><span id="hTxt">جاري الاتصال</span></div>
-  <div class="pill dig" id="clock">--:--:--</div>
+  <button class="back" aria-label="back">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <div class="avatar" id="hAvatar">K</div>
+  <div class="info">
+    <div class="name">KC868-A6 Controller</div>
+    <div class="status" id="hStatus">connecting…</div>
+  </div>
+  <div class="hbtns">
+    <button class="icon-btn" aria-label="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
+    <button class="icon-btn" id="hMenu" aria-label="menu">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+      <span class="nbadge" id="hBadge" style="display:none">0</span>
+    </button>
+  </div>
 </header>
-<div id="offline" role="alert">⚠️ فقدان الاتصال بـ Firebase — جاري إعادة المحاولة</div>
+<div id="offline" role="alert">⚠ No connection — retrying…</div>
+
 <div class="layout">
-<nav id="nav" aria-label="التنقل">
-  <button class="active" data-p="home"><span>🏠</span><span>الرئيسية</span></button>
-  <button data-p="monitor"><span>📊</span><span>المراقبة</span></button>
-  <button data-p="alarm"><span>⚠️</span><span>التنبيهات</span></button>
-  <button data-p="params"><span>⚙️</span><span>الإعدادات</span></button>
-  <button data-p="sys"><span>🔧</span><span>النظام</span></button>
-</nav>
 <main>
-  <section class="page act" id="p-home">
-    <div class="panel"><div class="ph"><h2>📋 ملخص الحالة</h2></div><div class="pb"><div class="grid" id="kpi" style="--min:130px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>🎛️ المخارج الرقمية</h2><span class="badge g" id="doCnt">0/6</span></div><div class="pb"><div class="grid" id="doGrid"></div></div></div>
-    <div class="panel"><div class="ph"><h2>📡 المداخل الرقمية</h2><span class="badge y" id="diCnt">0/6</span></div><div class="pb"><div class="grid" id="diGrid" style="--min:96px"></div></div></div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- PAGE 1: I/O                                    -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="page" id="p-io">
+
+    <div class="panel">
+      <div class="ph">
+        <h2>Digital Outputs</h2>
+        <span class="badge g" id="doCnt">0/6</span>
+        <button class="btn sm danger" id="doAllOff">All off</button>
+      </div>
+      <div class="pb"><div class="grid" id="doGrid" style="--min:110px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">
+        <h2>Digital Inputs</h2>
+        <span class="badge y" id="diCnt">0/6</span>
+      </div>
+      <div class="pb"><div class="grid" id="diGrid" style="--min:100px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Analog Outputs</h2><span class="badge">2</span></div>
+      <div class="pb"><div class="grid" id="aoGrid" style="--min:170px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Analog Inputs</h2><span class="badge g">4</span></div>
+      <div class="pb"><div class="grid" id="aiGrid" style="--min:170px"></div></div>
+    </div>
+
   </section>
-  <section class="page" id="p-monitor">
-    <div class="panel"><div class="ph"><h2>⚙️ المخارج التناظرية</h2><span class="badge">AO · 2</span></div><div class="pb"><div class="grid" id="aoGrid" style="--min:150px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>📈 المداخل التناظرية</h2><span class="badge g">AI · 4</span></div><div class="pb"><div class="grid" id="aiGrid" style="--min:150px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>📉 المخطط الحي</h2><span class="badge">60 نقطة</span></div><div class="pb"><div class="chart"><svg id="chart" viewBox="0 0 800 220" preserveAspectRatio="none" role="img" aria-label="مخطط المداخل التناظرية"></svg></div><div class="legend" id="legend"></div></div></div>
-  </section>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- PAGE 2: ALARM                                  -->
+  <!-- ═══════════════════════════════════════════════ -->
   <section class="page" id="p-alarm">
-    <div class="panel"><div class="ph"><h2>⚠️ حالة النظام</h2></div><div class="pb"><div class="grid" id="statusGrid" style="--min:140px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>📜 سجل الأحداث</h2><span class="badge" id="logCnt">0</span><button class="btn sm" id="clearLog">🗑️ مسح</button><button class="btn sm" id="exportLog">📤 تصدير</button></div><div class="pb"><div class="log" id="log"></div></div></div>
+
+    <div class="panel">
+      <div class="ph"><h2>System Status</h2></div>
+      <div class="pb"><div class="grid" id="statusGrid" style="--min:130px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">
+        <h2>Activity</h2>
+        <span class="badge" id="logCnt">0</span>
+        <button class="btn sm" id="clearLog">Clear</button>
+        <button class="btn sm" id="exportLog">Export</button>
+      </div>
+      <div class="pb" style="padding:4px 8px 8px">
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
   </section>
-  <section class="page" id="p-params">
-    <div class="panel"><div class="ph"><h2>⚡ ضبط سريع للكل</h2></div><div class="pb"><div class="grid" style="--min:120px">
-      <button class="btn" data-preset="default">⚖️ افتراضي</button><button class="btn" data-preset="reliable">🛡️ اعتمادية</button><button class="btn" data-preset="efficient">🌿 توفير</button></div></div></div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- PAGE 3: SETTINGS                               -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <section class="page act" id="p-sys">
+
+    <div class="panel">
+      <div class="ph"><h2>Quick Preset</h2></div>
+      <div class="pb">
+        <div class="grid" style="--min:110px">
+          <button class="btn" data-preset="default">Default</button>
+          <button class="btn" data-preset="reliable">Reliable</button>
+          <button class="btn" data-preset="efficient">Efficient</button>
+        </div>
+      </div>
+    </div>
+
     <div id="groups"></div>
-    <div class="panel"><div class="ph"><h2>🖥️ نمط شاشة OLED</h2></div><div class="pb"><div class="grid mode-grid" style="--min:100px;grid-template-columns:repeat(3,1fr)">
-      <button class="btn mode active" data-mode="0"><i>📊</i>الكل</button><button class="btn mode" data-mode="1"><i>🔢</i>رقمي</button><button class="btn mode" data-mode="2"><i>📈</i>تناظري</button></div></div></div>
-    <div class="panel"><div class="ph"><h2>⏰ المؤقتات اليومية</h2></div><div class="pb"><div id="schList"></div>
-      <p style="font-size:10.5px;color:var(--t3);margin:4px 0 10px">تعمل المؤقتات فقط أثناء فتح هذه الصفحة.</p><button class="btn" id="addSch" style="width:100%">➕ إضافة مؤقت</button></div></div>
-    <div class="panel"><div class="ph"><h2>💾 النسخ الاحتياطي</h2></div><div class="pb"><div class="grid" style="--min:140px">
-      <button class="btn" id="expBtn">📤 تصدير JSON</button><button class="btn" id="impBtn">📥 استيراد JSON</button></div><input type="file" id="impFile" accept=".json" hidden></div></div>
+
+    <div class="panel">
+      <div class="ph"><h2>OLED Display</h2></div>
+      <div class="pb">
+        <div class="grid mode-grid" style="--min:100px;grid-template-columns:repeat(3,1fr)">
+          <button class="btn mode active" data-mode="0"><i>▦</i>All</button>
+          <button class="btn mode" data-mode="1"><i>◉</i>Digital</button>
+          <button class="btn mode" data-mode="2"><i>∿</i>Analog</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Daily Timers</h2></div>
+      <div class="pb">
+        <div id="schList"></div>
+        <button class="btn-full" id="addSch" style="margin-top:8px">+ Add Timer</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Backup</h2></div>
+      <div class="pb">
+        <div class="grid" style="--min:140px">
+          <button class="btn" id="expBtn">⬇ Export JSON</button>
+          <button class="btn" id="impBtn">⬆ Import JSON</button>
+        </div>
+        <input type="file" id="impFile" accept=".json" hidden>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>WiFi</h2></div>
+      <div class="pb"><div class="grid" id="wifiGrid" style="--min:130px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>System</h2></div>
+      <div class="pb"><div class="grid" id="sysGrid" style="--min:130px"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Reconnect & Control</h2></div>
+      <div class="pb">
+        <div class="grid" style="--min:120px">
+          <button class="btn" data-rc="wifi">WiFi</button>
+          <button class="btn" data-rc="firebase">Firebase</button>
+          <button class="btn" data-rc="ntp">NTP</button>
+          <button class="btn danger" data-rc="restart">Restart</button>
+          <button class="btn" data-rc="all" style="grid-column:1/-1">Reconnect all</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><h2>Notifications & UI</h2></div>
+      <div class="pb">
+        <div class="grid" style="--min:140px">
+          <button class="btn" id="nDI">DI Notify</button>
+          <button class="btn" id="nConn">Connection Notify</button>
+          <button class="btn" id="kiosk">Fullscreen</button>
+        </div>
+      </div>
+    </div>
+
   </section>
-  <section class="page" id="p-sys">
-    <div class="panel"><div class="ph"><h2>🌐 تفاصيل WiFi</h2></div><div class="pb"><div class="grid" id="wifiGrid" style="--min:150px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>💾 النظام</h2></div><div class="pb"><div class="grid" id="sysGrid" style="--min:150px"></div></div></div>
-    <div class="panel"><div class="ph"><h2>🔄 إعادة الاتصال والتحكم</h2></div><div class="pb"><div class="grid" style="--min:130px">
-      <button class="btn" data-rc="wifi">📶 WiFi</button><button class="btn" data-rc="firebase">🔥 Firebase</button><button class="btn" data-rc="ntp">🕐 NTP</button>
-      <button class="btn danger" data-rc="restart">⚡ RESTART</button><button class="btn" data-rc="all" style="grid-column:1/-1">🔄 إعادة الاتصال بالكل</button></div></div></div>
-    <div class="panel"><div class="ph"><h2>🎨 الواجهة</h2></div><div class="pb"><div class="grid" style="--min:140px">
-      <button class="btn" id="nDI">🔔 إشعارات DI</button><button class="btn" id="nConn">📡 إشعارات الاتصال</button><button class="btn" id="kiosk">🖥️ ملء الشاشة</button></div></div></div>
-  </section>
+
 </main>
 </div>
+
+<!-- ══════════ BOTTOM NAV — WhatsApp tabs ══════════ -->
+<nav id="nav" aria-label="Navigation">
+  <button data-p="io" data-c="io">
+    <svg viewBox="0 0 24 24">
+      <rect x="3" y="6" width="18" height="12" rx="2"/>
+      <circle cx="8" cy="12" r="1.5"/>
+      <circle cx="16" cy="12" r="1.5"/>
+      <path d="M11 12h2"/>
+    </svg>
+    <span class="nlabel">I/O</span>
+  </button>
+  <button data-p="alarm" data-c="alarm">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 3v3M5 6l2 2M19 6l-2 2M4 14a8 8 0 0 1 16 0v5H4z"/>
+      <path d="M12 11v3M12 17h.01"/>
+    </svg>
+    <span class="nlabel">Alarms</span>
+    <span class="nbadge" id="alarmBadge" style="display:none">0</span>
+  </button>
+  <button class="active" data-p="sys" data-c="sys">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+    <span class="nlabel">Settings</span>
+  </button>
+</nav>
+
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 const db = getDatabase(initializeApp({ databaseURL:"https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE='/Said', AI_MAX=4095, VER='58.0';
+const BASE='/Said', AI_MAX=4095, VER='63.0';
 
 /* ── constants ── */
 const SCHEMA={sync_interval:[5,600],sync_before_integrity:[5,100],ai_threshold:[10,500],read_inputs:[5,300],check_i2c:[1,30],check_heap:[10,300],save_eeprom:[5,120],serial_print:[5,300],fb_retry:[5,60],max_fb_failures:[1,5],max_consecutive_reinits:[1,10],ssl_lockout_base:[10,120],ssl_lockout_max:[60,600],oled_cycle_do:[2,60],oled_cycle_ao:[2,60],hold_duration:[2,15],oled_display_mode:[0,2]};
-const GROUPS=[['⏱️ المزامنة والحساسية',{sync_interval:'وقت المزامنة (s)',sync_before_integrity:'فحص السلامة',ai_threshold:'حساسية AI'}],
-['🔧 التوقيتات الدورية',{read_inputs:'قراءة المداخل (s)',check_i2c:'فحص I2C (s)',check_heap:'فحص الذاكرة (s)',save_eeprom:'حفظ EEPROM (s)',serial_print:'طباعة Serial (s)'}],
-['🌐 الشبكة والاستعادة',{fb_retry:'محاولة Firebase (s)',max_fb_failures:'حد فشل Firebase',max_consecutive_reinits:'حد Reinits',ssl_lockout_base:'SSL Lockout base (s)',ssl_lockout_max:'SSL Lockout max (s)'}],
-['🖥️ توقيت OLED',{oled_cycle_do:'وقت DI / DO (s)',oled_cycle_ao:'وقت AI / AO (s)',hold_duration:'مدة التثبيت (s)'}]];
+const GROUPS=[
+  ['Sync & Sensitivity',{sync_interval:'Sync interval (s)',sync_before_integrity:'Integrity check',ai_threshold:'AI threshold'}],
+  ['Cycle Timings',{read_inputs:'Read inputs (s)',check_i2c:'Check I2C (s)',check_heap:'Check heap (s)',save_eeprom:'Save EEPROM (s)',serial_print:'Serial print (s)'}],
+  ['Network & Recovery',{fb_retry:'FB retry (s)',max_fb_failures:'Max FB fails',max_consecutive_reinits:'Max reinits',ssl_lockout_base:'SSL lockout base (s)',ssl_lockout_max:'SSL lockout max (s)'}],
+  ['OLED Timing',{oled_cycle_do:'DI/DO cycle (s)',oled_cycle_ao:'AI/AO cycle (s)',hold_duration:'Hold duration (s)'}]
+];
 const PRESETS={
  default:{sync_interval:10,oled_cycle_do:5,oled_cycle_ao:5,hold_duration:5,oled_display_mode:0,read_inputs:30,check_i2c:5,check_heap:30,save_eeprom:10,serial_print:30,fb_retry:10,sync_before_integrity:15,ai_threshold:50,max_fb_failures:1,ssl_lockout_base:30,ssl_lockout_max:120,max_consecutive_reinits:3},
  reliable:{sync_interval:5,oled_cycle_do:5,oled_cycle_ao:5,hold_duration:5,oled_display_mode:0,read_inputs:5,check_i2c:1,check_heap:10,save_eeprom:5,serial_print:15,fb_retry:10,sync_before_integrity:5,ai_threshold:20,max_fb_failures:1,ssl_lockout_base:10,ssl_lockout_max:60,max_consecutive_reinits:5},
- efficient:{sync_interval:300,oled_cycle_do:60,oled_cycle_ao:60,hold_duration:15,oled_display_mode:1,read_inputs:300,check_i2c:30,check_heap:300,save_eeprom:120,serial_print:300,fb_retry:60,sync_before_integrity:100,ai_threshold:100,max_fb_failures:3,ssl_lockout_base:120,ssl_lockout_max:600,max_consecutive_reinits:2}};
-const PNAME={default:'افتراضي',reliable:'اعتمادية',efficient:'توفير'}, MODES=['الكل','رقمي','تناظري'];
+ efficient:{sync_interval:300,oled_cycle_do:60,oled_cycle_ao:60,hold_duration:15,oled_display_mode:1,read_inputs:300,check_i2c:30,check_heap:300,save_eeprom:120,serial_print:300,fb_retry:60,sync_before_integrity:100,ai_threshold:100,max_fb_failures:3,ssl_lockout_base:120,ssl_lockout_max:600,max_consecutive_reinits:2}
+};
+const PNAME={default:'Default',reliable:'Reliable',efficient:'Efficient'}, MODES=['All','Digital','Analog'];
 
 /* ── helpers ── */
 const $=id=>document.getElementById(id), qa=s=>[...document.querySelectorAll(s)];
 const haptic=(ms=10)=>navigator.vibrate?.(ms);
 const num=(v,d=0)=>{const n=Number(v);return Number.isFinite(n)?n:d};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nowT=()=>new Date().toLocaleTimeString('ar-MA-u-nu-latn');
+const nowT=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const nowShort=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
 const st={DI:{},DO:{},AI:{},AO:{},status:{},info:{}}, sending=new Set();
 let oledMode=0, lastUpdate=0;
 
-let tt;
-function toast(m,type=''){const t=$('toast');t.textContent=m;t.className='show '+type;clearTimeout(tt);tt=setTimeout(()=>t.className='',3000)}
+/* ═══════════ CONNECTION WATCHDOG ═══════════ */
+const CONN={firebaseConnected:null,lastDataAt:Date.now(),warningVisible:false,graceUntil:Date.now()+6000};
+function markData(){CONN.lastDataAt=Date.now();}
+function isConnectionHealthy(){
+  if(Date.now()<CONN.graceUntil)return true;
+  if(CONN.firebaseConnected===true)return true;
+  if(Date.now()-CONN.lastDataAt<20000)return true;
+  return false;
+}
+function evaluateConnection(){
+  const healthy=isConnectionHealthy();
+  if(healthy){if(CONN.warningVisible){$('offline').classList.remove('show');CONN.warningVisible=false;}}
+  else{if(!CONN.warningVisible){$('offline').classList.add('show');CONN.warningVisible=true;}}
+}
+setInterval(evaluateConnection,2000);
 
-/* modal dialog: returns read(d) result on OK, otherwise null */
-const ask=(title,html,ok='تأكيد',read=()=>true)=>new Promise(res=>{
-  const d=document.createElement('dialog');
-  d.innerHTML=`<form method="dialog"><h3>${title}</h3><div class="dbody">${html}</div><div class="dbtn"><button class="btn pri" value="ok">${ok}</button><button class="btn" value="x">إلغاء</button></div></form>`;
-  document.body.appendChild(d);
-  d.addEventListener('close',()=>{res(d.returnValue==='ok'?read(d):null);d.remove()});
-  d.showModal();
-});
-
-/* ── event log (persisted, escaped) ── */
+/* ═══════════ EVENT LOG — chat bubbles ═══════════ */
 const events=store.get('eventLog',[]);
 function addEvent(msg,type='info'){
   events.unshift({id:Date.now()+Math.random(),time:nowT(),msg,type});
@@ -226,84 +1010,129 @@ function addEvent(msg,type='info'){
 }
 function renderLog(){
   $('logCnt').textContent=events.length;
-  $('log').innerHTML=events.length?events.slice(0,50).map(e=>`<div class="ev ${esc(e.type)}"><time>${esc(e.time)}</time><span>${esc(e.msg)}</span><button data-del="${e.id}" aria-label="حذف">✕</button></div>`).join(''):'<div class="empty">لا توجد أحداث بعد</div>';
+  $('log').innerHTML=events.length?events.slice(0,50).map(e=>`
+    <div class="ev ${esc(e.type)}">
+      <div class="ev-head">
+        <span class="ev-dot"></span>
+        <time style="font:500 11px var(--mono);color:var(--text3);direction:ltr">${esc(e.time)}</time>
+        <button data-del="${e.id}" aria-label="delete">✕</button>
+      </div>
+      <div class="ev-msg">${esc(e.msg)}</div>
+      <div class="ev-foot">
+        <span class="ticks">✓✓</span>
+      </div>
+    </div>`).join(''):'<div class="empty">No activity yet</div>';
+  updateAlarmBadge();
+}
+function updateAlarmBadge(){
+  const unseen=events.filter(e=>!e.seen && (e.type==='error'||e.type==='warn')).length;
+  const badge=$('alarmBadge');
+  const hb=$('hBadge');
+  if(unseen>0){
+    badge.style.display='';badge.textContent=unseen>99?'99+':unseen;
+    hb.style.display='';hb.textContent=unseen>99?'99+':unseen;
+  } else {
+    badge.style.display='none';hb.style.display='none';
+  }
 }
 $('log').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;const i=events.findIndex(x=>String(x.id)===b.dataset.del);if(i>-1){events.splice(i,1);renderLog();store.set('eventLog',events)}});
-$('clearLog').onclick=async()=>{if(!await ask('مسح السجل','<span>سيتم حذف كل الأحداث المحفوظة.</span>','مسح'))return;events.length=0;renderLog();store.set('eventLog',[]);toast('تم مسح السجل','success')};
+$('clearLog').onclick=async()=>{if(!await ask('Clear activity','<span>All events will be deleted.</span>','Clear'))return;events.length=0;renderLog();store.set('eventLog',[]);toast('Activity cleared','success')};
 const download=(obj,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('exportLog').onclick=()=>download(events,`kc868-log-${Date.now()}.json`);
-renderLog();
 
-/* ── clock + nav ── */
-setInterval(()=>$('clock').textContent=nowT(),1000);$('clock').textContent=nowT();
+/* ═══════════ CLOCK + NAV ═══════════ */
+setInterval(()=>$('clock')&&($('clock').textContent=nowShort()),1000);
 $('nav').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;haptic();
   qa('#nav button').forEach(x=>x.classList.toggle('active',x===b));
   qa('.page').forEach(p=>p.classList.toggle('act',p.id==='p-'+b.dataset.p));
   store.set('page',b.dataset.p);
+  if(b.dataset.p==='alarm'){
+    setTimeout(()=>{
+      events.forEach(ev=>{if(ev.type==='error'||ev.type==='warn')ev.seen=true});
+      store.set('eventLog',events);
+      updateAlarmBadge();
+    },1500);
+  }
 });
-{const p=store.get('page','home');qa('#nav button').find(b=>b.dataset.p===p)?.click()}
+{const p=store.get('page','sys');qa('#nav button').find(b=>b.dataset.p===p)?.click()}
+renderLog();
 
-/* ── cards ── */
+/* ═══════════ CARDS ═══════════ */
 const card=(id,label,cls='')=>`<div class="card ${cls}" id="c_${id}"><span class="lbl">${label}</span><span class="val">--</span></div>`;
 const setCard=(id,cls,txt)=>{const c=$('c_'+id);if(!c)return;c.className='card '+cls;if(txt!==undefined)c.lastElementChild.textContent=txt};
-$('kpi').innerHTML=[['conn','الاتصال'],['doN','مخارج نشطة'],['diN','مداخل نشطة'],['up','زمن التشغيل'],['last','آخر تحديث']].map(([i,l])=>card('k_'+i,l)).join('');
-$('statusGrid').innerHTML=[['wifi','WiFi'],['fb','Firebase'],['i2c','I2C'],['ntp','NTP'],['integ','Integrity'],['ssl','SSL Errors'],['fbf','FB Failures'],['fbl','FB Lockouts'],['rec','Recovery']].map(([i,l])=>card('s_'+i,l)).join('');
-$('wifiGrid').innerHTML=[['ip','IP'],['ssid','SSID'],['rssi','RSSI'],['mac','MAC']].map(([i,l])=>card('w_'+i,l,'info')).join('');
-$('sysGrid').innerHTML=[['fw','Firmware'],['up','Uptime'],['heap','Free Heap'],['boot','Boot Count']].map(([i,l])=>card('y_'+i,l,'info')).join('');
+$('statusGrid').innerHTML=[['wifi','WiFi'],['fb','Firebase'],['i2c','I2C'],['ntp','NTP'],['integ','Integrity'],['ssl','SSL errors'],['fbf','FB failures'],['fbl','FB lockouts'],['rec','Recovery']].map(([i,l])=>card('s_'+i,l)).join('');
+$('wifiGrid').innerHTML=[['ip','IP address'],['ssid','Network'],['rssi','Signal'],['mac','MAC']].map(([i,l])=>card('w_'+i,l,'info')).join('');
+$('sysGrid').innerHTML=[['fw','Firmware'],['up','Uptime'],['heap','Free heap'],['boot','Boot count']].map(([i,l])=>card('y_'+i,l,'info')).join('');
 
-/* ── DO / DI ── */
+/* ═══════════ DO / DI ═══════════ */
 const doB={},diC={};
 for(let i=1;i<=6;i++){
   const b=document.createElement('button');b.className='ctrl';b.setAttribute('aria-pressed','false');
-  b.innerHTML=`<i>⚡</i><span>DO${i}</span><small>مغلق</small>`;b.onclick=()=>toggleDO(i);
+  b.innerHTML=`<i>⚡</i><span>DO${i}</span><small>Off</small>`;b.onclick=()=>toggleDO(i);
   $('doGrid').appendChild(b);doB[i]=b;
-  const c=document.createElement('div');c.className='led';c.innerHTML=`<b></b><span>DI${i}</span><small>غير نشط</small>`;
+  const c=document.createElement('div');c.className='led';c.innerHTML=`<b></b><span>DI${i}</span><small>Inactive</small>`;
   $('diGrid').appendChild(c);diC[i]=c;
 }
 async function toggleDO(i){
   haptic();const k='DO'+i;if(sending.has(k))return;
   const prev=st.DO[k],nv=prev===1?0:1;st.DO[k]=nv;renderDO(st.DO);sending.add(k);doB[i].classList.add('sending');
-  try{await set(ref(db,`${BASE}/DO/${k}`),nv);addEvent(`DO${i} → ${nv?'مفتوح':'مغلق'}`,nv?'success':'info')}
-  catch{st.DO[k]=prev;renderDO(st.DO);toast('تعذّر الإرسال','error');addEvent(`فشل تغيير DO${i}`,'error')}
+  try{await set(ref(db,`${BASE}/DO/${k}`),nv);markData();addEvent(`DO${i} turned ${nv?'on':'off'}`,nv?'success':'info')}
+  catch{st.DO[k]=prev;renderDO(st.DO);toast('Could not send','error');addEvent(`Failed to change DO${i}`,'error')}
   finally{sending.delete(k);doB[i].classList.remove('sending')}
 }
+$('doAllOff').onclick=async()=>{
+  if(!await ask('Turn off all?','<span>All 6 digital outputs will be turned off.</span>','Turn off'))return;
+  haptic(30);
+  const u={};for(let i=1;i<=6;i++)u[`${BASE}/DO/DO${i}`]=0;
+  try{await update(ref(db),u);markData();addEvent('All outputs off','warn');toast('All outputs are off','success')}
+  catch{toast('Failed','error')}
+};
 
-/* ── gauges ── */
-const R=52,C=2*Math.PI*R,ARC=C*.75;
-function gauge(host,label){
-  const el=document.createElement('div');el.className='gauge';
-  el.innerHTML=`<div class="lbl">${label}</div><div class="gw"><svg viewBox="0 0 130 130" aria-hidden="true"><circle class="bg" cx="65" cy="65" r="${R}" stroke-dasharray="${ARC} ${C}" transform="rotate(135 65 65)"/><circle class="fg" cx="65" cy="65" r="${R}" stroke-dasharray="${ARC} ${C}" stroke-dashoffset="${ARC}" transform="rotate(135 65 65)"/></svg><div class="gv"><span>0</span><small>%</small></div></div>`;
-  $(host).appendChild(el);return {fg:el.querySelector('.fg'),gv:el.querySelector('.gv'),n:el.querySelector('.gv span')};
+/* ═══════════ ANALOG BLOCKS ═══════════ */
+function ioBlock(host, name, unit, maxVal, kind){
+  const el=document.createElement('div');
+  el.className='io-block';
+  el.innerHTML=`
+    <div class="io-head">
+      <div class="io-icon ${kind}">${name}</div>
+      <div class="io-name">${name}<small>${unit}</small></div>
+      <div class="io-val" data-v>0</div>
+    </div>
+    <div class="io-bar"><div class="fill" data-fill style="width:0%"></div></div>
+    <div class="io-foot"><span>0</span><span>${maxVal}</span></div>
+  `;
+  $(host).appendChild(el);
+  return {val:el.querySelector('[data-v]'),fill:el.querySelector('[data-fill]')};
 }
-const setGauge=(g,p,col)=>{p=Math.max(0,Math.min(100,p));g.fg.style.strokeDashoffset=ARC*(1-p/100);g.fg.style.stroke=col;g.fg.style.color=col;g.gv.style.color=col;g.n.textContent=Math.round(p)};
-const aoG={},aiG={};
-for(let i=1;i<=2;i++)aoG[i]=gauge('aoGrid','AO'+i);
-for(let i=1;i<=4;i++)aiG[i]=gauge('aiGrid','AI'+i);
-const aiCol=p=>p<30?'#22d3ee':p<60?'#10b981':p<85?'#fbbf24':'#ef4444';
+const aoB={},aiB={};
+for(let i=1;i<=2;i++) aoB[i]=ioBlock('aoGrid','AO'+i,'0 – 255',255,'ao');
+for(let i=1;i<=4;i++) aiB[i]=ioBlock('aiGrid','AI'+i,'0 – 4095',4095,'ai');
+const aiCol=p=>p<30?'#34b7f1':p<60?'#00a884':p<85?'#ffbc38':'#ea0038';
 
-/* ── chart ── */
-const COL={AI1:'#22d3ee',AI2:'#10b981',AI3:'#fbbf24',AI4:'#ef4444'},hist={AI1:[],AI2:[],AI3:[],AI4:[]},MAXP=60;
-$('legend').innerHTML=Object.entries(COL).map(([k,c])=>`<span><i style="background:${c}"></i>${k}</span>`).join('');
-function drawChart(){
-  const W=800,H=220,P=12,iw=W-2*P,ih=H-2*P;let s='';
-  for(let i=0;i<=5;i++){const y=P+ih*i/5;s+=`<line x1="${P}" y1="${y}" x2="${W-P}" y2="${y}" stroke="#3a4a5e" stroke-width=".5" opacity=".5"/>`}
-  for(let i=0;i<=10;i++){const x=P+iw*i/10;s+=`<line x1="${x}" y1="${P}" x2="${x}" y2="${H-P}" stroke="#3a4a5e" stroke-width=".5" opacity=".3"/>`}
-  for(const k in COL){const a=hist[k];if(a.length<2)continue;
-    s+=`<polyline points="${a.map((v,i)=>`${P+iw*i/(MAXP-1)},${P+ih*(1-v/100)}`).join(' ')}" fill="none" stroke="${COL[k]}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`}
-  $('chart').innerHTML=s;
-}
-
-/* ── settings UI ── */
-$('groups').innerHTML=GROUPS.map(([title,f])=>`<div class="panel"><div class="ph"><h2>${title}</h2></div><div class="pb"><div class="grid" style="--min:210px">${Object.entries(f).map(([k,l])=>`<div class="set"><label for="${k}">${l}<small>${SCHEMA[k][0]}–${SCHEMA[k][1]}</small></label><div class="row"><input type="number" inputmode="numeric" id="${k}" min="${SCHEMA[k][0]}" max="${SCHEMA[k][1]}"><button class="save" data-save="${k}" aria-label="حفظ">💾</button></div></div>`).join('')}</div></div></div>`).join('');
+/* ═══════════ SETTINGS UI ═══════════ */
+$('groups').innerHTML=GROUPS.map(([title,f])=>`
+  <div class="panel">
+    <div class="ph"><h2>${title}</h2></div>
+    <div class="pb"><div class="grid" style="--min:210px">
+      ${Object.entries(f).map(([k,l])=>`
+        <div class="set">
+          <label for="${k}">${l}<small>${SCHEMA[k][0]}–${SCHEMA[k][1]}</small></label>
+          <div class="row">
+            <input type="number" inputmode="numeric" id="${k}" min="${SCHEMA[k][0]}" max="${SCHEMA[k][1]}">
+            <button class="save" data-save="${k}" aria-label="save">✓</button>
+          </div>
+        </div>`).join('')}
+    </div></div>
+  </div>`).join('');
 
 const valid=(k,v)=>SCHEMA[k]&&Number.isInteger(v)&&v>=SCHEMA[k][0]&&v<=SCHEMA[k][1];
 async function saveSetting(k){
   const inp=$(k),v=Number(inp.value.trim());
-  if(inp.value.trim()===''||!valid(k,v)){inp.classList.add('bad');toast(`القيمة بين ${SCHEMA[k][0]} و ${SCHEMA[k][1]}`,'error');inp.focus();return}
+  if(inp.value.trim()===''||!valid(k,v)){inp.classList.add('bad');toast(`Enter value between ${SCHEMA[k][0]} and ${SCHEMA[k][1]}`,'error');inp.focus();return}
   inp.classList.remove('bad');haptic();
-  try{await set(ref(db,`${BASE}/status/${k}`),v);toast(`تم الحفظ: ${v}`,'success');addEvent(`حفظ ${k} = ${v}`,'success')}
-  catch{toast('تعذّر الحفظ','error');addEvent(`فشل حفظ ${k}`,'error')}
+  try{await set(ref(db,`${BASE}/status/${k}`),v);markData();toast(`Saved`,'success');addEvent(`${k} = ${v}`,'success')}
+  catch{toast('Could not save','error');addEvent(`Failed to save ${k}`,'error')}
 }
 $('groups').addEventListener('click',e=>{const b=e.target.closest('[data-save]');if(b)saveSetting(b.dataset.save)});
 $('groups').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id in SCHEMA){e.preventDefault();saveSetting(e.target.id)}});
@@ -311,37 +1140,37 @@ $('groups').addEventListener('input',e=>e.target.classList.remove('bad'));
 
 qa('[data-preset]').forEach(b=>b.onclick=async()=>{
   const n=b.dataset.preset;
-  if(!await ask('تطبيق إعداد جاهز',`<span>سيتم استبدال كل الإعدادات بإعداد «${PNAME[n]}».</span>`,'تطبيق'))return;
+  if(!await ask('Apply preset',`<span>All settings will be replaced with "${PNAME[n]}".</span>`,'Apply'))return;
   haptic(20);b.classList.add('sending');const u={};
   for(const[k,v]of Object.entries(PRESETS[n]))u[`${BASE}/status/${k}`]=v;
-  try{await update(ref(db),u);toast('تم تطبيق: '+PNAME[n],'success');addEvent('تطبيق إعداد: '+PNAME[n],'success');b.classList.add('success');setTimeout(()=>b.classList.remove('success'),1200)}
-  catch{toast('تعذّر التطبيق','error')}
+  try{await update(ref(db),u);markData();toast(`${PNAME[n]} applied`,'success');addEvent(`Preset: ${PNAME[n]}`,'success');b.classList.add('success');setTimeout(()=>b.classList.remove('success'),1200)}
+  catch{toast('Failed','error')}
   b.classList.remove('sending');
 });
 
 qa('[data-mode]').forEach(b=>b.onclick=async()=>{
   haptic();const m=Number(b.dataset.mode),prev=oledMode;oledMode=m;paintMode();
-  try{await set(ref(db,`${BASE}/status/oled_display_mode`),m);toast('النمط: '+MODES[m],'success')}
-  catch{oledMode=prev;paintMode();toast('تعذّر الحفظ','error')}
+  try{await set(ref(db,`${BASE}/status/oled_display_mode`),m);markData();toast(`Display: ${MODES[m]}`,'success')}
+  catch{oledMode=prev;paintMode();toast('Failed','error')}
 });
 const paintMode=()=>qa('[data-mode]').forEach(b=>b.classList.toggle('active',Number(b.dataset.mode)===oledMode));
 
-/* ── reconnect ── */
-const RC={wifi:'WiFi',firebase:'Firebase',ntp:'NTP',restart:'RESTART',all:'الكل'};
+/* ═══════════ RECONNECT ═══════════ */
+const RC={wifi:'WiFi',firebase:'Firebase',ntp:'NTP',restart:'Restart',all:'All'};
 qa('[data-rc]').forEach(b=>b.onclick=async()=>{
   const c=b.dataset.rc;
-  if(!await ask(c==='restart'?'⚠️ إعادة تشغيل الجهاز':'إعادة الاتصال',`<span>${c==='restart'?'سيتوقف الجهاز مؤقتاً ويعيد التشغيل. هل أنت متأكد؟':'تنفيذ: '+RC[c]}</span>`,'تنفيذ'))return;
+  if(!await ask(c==='restart'?'Restart device?':'Reconnect',`<span>${c==='restart'?'The device will restart. Are you sure?':`Execute: ${RC[c]}`}</span>`,'Continue'))return;
   haptic(15);b.classList.add('sending');
-  try{await set(ref(db,`${BASE}/cmd/${c==='all'?'refresh_all':c}`),1);toast('تم: '+RC[c],'success');addEvent('أمر: '+RC[c],'warn');b.classList.add('success');setTimeout(()=>b.classList.remove('success'),1000)}
-  catch{toast('تعذّر الإرسال','error')}
+  try{await set(ref(db,`${BASE}/cmd/${c==='all'?'refresh_all':c}`),1);markData();toast(`${RC[c]} sent`,'success');addEvent(`Command: ${RC[c]}`,'warn');b.classList.add('success');setTimeout(()=>b.classList.remove('success'),1000)}
+  catch{toast('Failed','error')}
   b.classList.remove('sending');
 });
 
-/* ── backup (validated) ── */
+/* ═══════════ BACKUP ═══════════ */
 $('expBtn').onclick=()=>{
   const settings={};for(const k in SCHEMA)if(st.status[k]!==undefined)settings[k]=st.status[k];
   download({version:VER,timestamp:new Date().toISOString(),settings,schedules},`kc868-backup-${Date.now()}.json`);
-  toast('تم التصدير','success');addEvent('تصدير النسخة الاحتياطية','success');
+  toast('Backup downloaded','success');addEvent('Backup exported','success');
 };
 $('impBtn').onclick=()=>$('impFile').click();
 $('impFile').onchange=async e=>{
@@ -349,88 +1178,124 @@ $('impFile').onchange=async e=>{
   try{
     const d=JSON.parse(await f.text()),u={};let n=0,bad=0;
     for(const[k,v]of Object.entries(d.settings||{})){if(valid(k,v)){u[`${BASE}/status/${k}`]=v;n++}else bad++}
-    if(n&&await ask('استيراد نسخة احتياطية',`<span>سيتم تطبيق ${n} إعداداً${bad?` وتجاهل ${bad} غير صالح`:''}.</span>`,'استيراد')){await update(ref(db),u);toast('تم الاستيراد','success');addEvent(`استيراد ${n} إعداد`,'success')}
+    if(n&&await ask('Import backup',`<span>Apply ${n} settings${bad?`, skip ${bad} invalid`:''}.</span>`,'Import')){await update(ref(db),u);markData();toast('Imported','success');addEvent(`Imported ${n} settings`,'success')}
     if(Array.isArray(d.schedules)){schedules=d.schedules.filter(s=>/^\d{2}:\d{2}$/.test(s.time)&&s.do>=1&&s.do<=6).map(s=>({time:s.time,do:+s.do,state:s.state?1:0,enabled:!!s.enabled}));store.set('schedules',schedules);renderSch()}
-  }catch{toast('ملف غير صالح','error')}
+  }catch{toast('Invalid file','error')}
   e.target.value='';
 };
 
-/* ── schedules (de-duplicated firing) ── */
+/* ═══════════ SCHEDULES ═══════════ */
 let schedules=store.get('schedules',[]);const fired=new Set();
 function renderSch(){
-  $('schList').innerHTML=schedules.length?schedules.map((s,i)=>`<div class="sch ${s.enabled?'on':''}"><div><b>DO${s.do} ${s.state?'ON':'OFF'} @ ${esc(s.time)}</b><small>${s.enabled?'✓ مفعّل':'معطّل'} — كل يوم</small></div><button class="tg" data-t="${i}" aria-label="تفعيل"></button><button class="sd" data-d="${i}" aria-label="حذف">🗑️</button></div>`).join(''):'<div class="empty">لا توجد مؤقتات</div>';
+  $('schList').innerHTML=schedules.length?schedules.map((s,i)=>`
+    <div class="sch ${s.enabled?'on':''}">
+      <div class="sch-avatar">${s.time.split(':')[0]}</div>
+      <div>
+        <b>DO${s.do} · ${s.state?'ON':'OFF'}</b>
+        <small>${s.enabled?'Enabled':'Disabled'} · every day at ${esc(s.time)}</small>
+      </div>
+      <button class="tg" data-t="${i}" aria-label="toggle"></button>
+      <button class="sd" data-d="${i}" aria-label="delete">✕</button>
+    </div>`).join(''):'<div class="empty">No timers yet</div>';
 }
 $('schList').addEventListener('click',e=>{
   const t=e.target.closest('[data-t]'),d=e.target.closest('[data-d]');
-  if(t){schedules[+t.dataset.t].enabled^=1;haptic()}else if(d){schedules.splice(+d.dataset.d,1);addEvent('حذف مؤقت','warn')}else return;
+  if(t){schedules[+t.dataset.t].enabled^=1;haptic()}else if(d){schedules.splice(+d.dataset.d,1);addEvent('Timer removed','warn')}else return;
   store.set('schedules',schedules);renderSch();
 });
 $('addSch').onclick=async()=>{
-  const r=await ask('إضافة مؤقت',`<input type="time" name="t" value="08:00"><select name="o">${[1,2,3,4,5,6].map(i=>`<option value="${i}">DO${i}</option>`).join('')}</select><select name="s"><option value="1">تشغيل ON</option><option value="0">إيقاف OFF</option></select>`,'إضافة',d=>({time:d.querySelector('[name=t]').value,do:+d.querySelector('[name=o]').value,state:+d.querySelector('[name=s]').value}));
+  const r=await ask('Add timer',`<input type="time" name="t" value="08:00"><select name="o">${[1,2,3,4,5,6].map(i=>`<option value="${i}">DO${i}</option>`).join('')}</select><select name="s"><option value="1">Turn ON</option><option value="0">Turn OFF</option></select>`,'Add',d=>({time:d.querySelector('[name=t]').value,do:+d.querySelector('[name=o]').value,state:+d.querySelector('[name=s]').value}));
   if(!r||!/^\d{2}:\d{2}$/.test(r.time))return;
-  schedules.push({...r,enabled:true});store.set('schedules',schedules);renderSch();addEvent(`إضافة مؤقت DO${r.do} @ ${r.time}`,'info');
+  schedules.push({...r,enabled:true});store.set('schedules',schedules);renderSch();addEvent(`Timer for DO${r.do} at ${r.time}`,'info');
 };
 renderSch();
 setInterval(()=>{
   const n=new Date(),day=n.toDateString(),t=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
   schedules.forEach((s,i)=>{const key=`${day}${t}${i}`;
     if(s.enabled&&s.time===t&&!fired.has(key)){fired.add(key);
-      set(ref(db,`${BASE}/DO/DO${s.do}`),s.state).then(()=>addEvent(`مؤقت: DO${s.do} → ${s.state?'ON':'OFF'}`,'success')).catch(()=>addEvent(`فشل مؤقت DO${s.do}`,'error'))}});
+      set(ref(db,`${BASE}/DO/DO${s.do}`),s.state).then(()=>{markData();addEvent(`Timer: DO${s.do} ${s.state?'on':'off'}`,'success')}).catch(()=>addEvent(`Timer failed for DO${s.do}`,'error'))}});
   if(fired.size>200)fired.clear();
 },15000);
 
-/* ── notifications + fullscreen ── */
+/* ═══════════ NOTIFICATIONS + FULLSCREEN ═══════════ */
 const notif={di:store.get('nDI',false),conn:store.get('nConn',false)};
 const paintN=()=>{$('nDI').classList.toggle('success',notif.di);$('nConn').classList.toggle('success',notif.conn)};paintN();
-const notify=(on,t,b)=>{if(on&&'Notification'in window&&Notification.permission==='granted')try{new Notification(t,{body:b})}catch{}};
-for(const[id,k,sk]of[['nDI','di','nDI'],['nConn','conn','nConn']])$(id).onclick=async()=>{
-  if(!('Notification'in window)){toast('غير مدعوم','error');return}
-  if(notif[k]){notif[k]=false}else if(await Notification.requestPermission()==='granted'){notif[k]=true}else{toast('تم رفض الإذن','error');return}
-  store.set(sk,notif[k]);paintN();toast(notif[k]?'تم التفعيل':'تم الإيقاف','success');
+const notify=(on,t,b)=>{
+  if(!on||!('Notification'in window)||Notification.permission!=='granted')return;
+  try{const n=new Notification(t,{body:b,tag:'kc868-'+t,vibrate:[80,40,80],renotify:true});n.onclick=()=>{try{window.focus();n.close()}catch{}}}catch{}
 };
-$('kiosk').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.().catch(()=>toast('غير مدعوم','error'));
+for(const[id,k,sk]of[['nDI','di','nDI'],['nConn','conn','nConn']])$(id).onclick=async()=>{
+  if(!('Notification'in window)){toast('Not supported','error');return}
+  if(notif[k]){notif[k]=false}else if(await Notification.requestPermission()==='granted'){notif[k]=true}else{toast('Permission denied','error');return}
+  store.set(sk,notif[k]);paintN();toast(notif[k]?'Notifications on':'Notifications off','success');
+};
+$('kiosk').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.().catch(()=>toast('Not supported','error'));
 
-/* ── renderers ── */
+/* ═══════════ RENDERERS ═══════════ */
 const fmtUp=s=>{s=num(s);const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?`${d}d ${h}h`:h?`${h}h ${m}m`:`${m}m ${s%60}s`};
 let doN=0,diN=0,firstDI=true;
 function renderDO(d){
   doN=0;
   for(let i=1;i<=6;i++){
-    const on=d['DO'+i]===1;doN+=on;const b=doB[i],was=b.classList.contains('on');
+    const on=d['DO'+i]===1;doN+=on;const b=doB[i];
     b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);
-    b.querySelector('small').textContent=on?'مفتوح':'مغلق';b.querySelector('i').textContent=on?'🟢':'⚡';
+    b.querySelector('small').textContent=on?'On':'Off';
   }
-  $('doCnt').textContent=doN+'/6';setCard('k_doN',doN?'ok':'',doN+' / 6');
+  $('doCnt').textContent=doN+'/6';
 }
 function renderDI(d){
   diN=0;
   for(let i=1;i<=6;i++){
     const on=d['DI'+i]===1;diN+=on;const c=diC[i],was=c.classList.contains('on');
-    c.classList.toggle('on',on);c.querySelector('small').textContent=on?'نشط':'غير نشط';
-    if(!firstDI&&was!==on){notify(notif.di,'DI'+i,on?'نشط':'غير نشط');addEvent(`DI${i} → ${on?'نشط':'غير نشط'}`,on?'success':'info')}
+    c.classList.toggle('on',on);c.querySelector('small').textContent=on?'Active':'Inactive';
+    if(!firstDI&&was!==on){notify(notif.di,'DI'+i,on?'Active':'Inactive');addEvent(`DI${i} is ${on?'active':'inactive'}`,on?'success':'info')}
   }
-  firstDI=false;$('diCnt').textContent=diN+'/6';setCard('k_diN',diN?'info':'',diN+' / 6');
+  firstDI=false;$('diCnt').textContent=diN+'/6';
 }
-const renderAO=d=>{for(let i=1;i<=2;i++)setGauge(aoG[i],Math.round(num(d['AO'+i])/255*100),'#2c7be5')};
+function renderAO(d){
+  for(let i=1;i<=2;i++){
+    const v=num(d['AO'+i]),p=Math.round(v/255*100);
+    aoB[i].val.textContent=v;
+    aoB[i].fill.style.width=p+'%';
+  }
+}
 function renderAI(d){
-  for(let i=1;i<=4;i++){const p=Math.round(num(d['AI'+i])/AI_MAX*100);setGauge(aiG[i],p,aiCol(p));const a=hist['AI'+i];a.push(Math.max(0,Math.min(100,p)));if(a.length>MAXP)a.shift()}
-  drawChart();
+  for(let i=1;i<=4;i++){
+    const v=num(d['AI'+i]),p=Math.round(v/AI_MAX*100);
+    aiB[i].val.textContent=v;
+    aiB[i].fill.style.width=p+'%';
+    const col=aiCol(p);
+    aiB[i].val.style.color=col;
+    aiB[i].fill.style.background=`linear-gradient(90deg,${col},${col}dd)`;
+  }
 }
 const cls=(ok,warn)=>ok?'ok':warn?'warn':'err';
 function renderStatus(v){
   const ok=(x)=>x===1;
-  setCard('s_wifi',cls(ok(v.wifi)),ok(v.wifi)?'متصل':'غير متصل');
-  setCard('s_fb',cls(ok(v.firebase)),ok(v.firebase)?'متصل':'غير متصل');
-  setCard('s_i2c',cls(ok(v.i2c)),ok(v.i2c)?'سليم':'خطأ');
-  setCard('s_ntp',cls(ok(v.ntp)),ok(v.ntp)?'مزامن':'غير مزامن');
-  const ig=num(v.integrite,-1);if(ig>=0)setCard('s_integ',['ok','warn','err'][ig]||'err',['سليم','جزئي','حرج'][ig]||ig);
+  setCard('s_wifi',cls(ok(v.wifi)),ok(v.wifi)?'Online':'Offline');
+  setCard('s_fb',cls(ok(v.firebase)),ok(v.firebase)?'Online':'Offline');
+  setCard('s_i2c',cls(ok(v.i2c)),ok(v.i2c)?'OK':'Error');
+  setCard('s_ntp',cls(ok(v.ntp)),ok(v.ntp)?'Synced':'No sync');
+  const ig=num(v.integrite,-1);if(ig>=0)setCard('s_integ',['ok','warn','err'][ig]||'err',['Good','Partial','Critical'][ig]||ig);
   const ssl=num(v.ssl_errors),fbf=num(v.fb_failures),fbl=num(v.fb_lockout_count);
   setCard('s_ssl',cls(ssl===0,ssl<3),ssl);setCard('s_fbf',cls(fbf===0,1),fbf);setCard('s_fbl',cls(fbl===0,1),fbl);
   if(v.version)setCard('y_fw','info','v'+v.version);
   const ess=ok(v.wifi)&&ok(v.firebase);
-  $('hDot').className='dot'+(!ess?' off':ssl?' warn':'');
-  $('hTxt').textContent=!ess?'غير متصل':ssl?'تحذير SSL':'متصل';
-  setCard('k_conn',!ess?'err':ssl?'warn':'ok',$('hTxt').textContent);
+  // Header status text (like WhatsApp "online / last seen")
+  const $status=$('hStatus'),$avatar=$('hAvatar');
+  if(!ess){
+    $status.textContent='offline';
+    $status.classList.remove('online');
+    $avatar.classList.add('off');$avatar.classList.remove('warn');
+  } else if(ssl){
+    $status.textContent='warning · SSL errors';
+    $status.classList.remove('online');
+    $avatar.classList.add('warn');$avatar.classList.remove('off');
+  } else {
+    $status.textContent='online';
+    $status.classList.add('online');
+    $avatar.classList.remove('off','warn');
+  }
   if(v.oled_display_mode!==undefined){const m=num(v.oled_display_mode);if(m!==oledMode){oledMode=m;paintMode()}}
   const heap=num(v.heap_k,-1);if(heap>=0)setCard('y_heap',cls(heap>=60,heap>=30),heap+' KB');
   if(v.rssi!==undefined&&v.rssi!==null){const r=num(v.rssi);setCard('w_rssi',cls(r>-60,r>-75),r+' dBm')}
@@ -438,27 +1303,49 @@ function renderStatus(v){
 }
 function renderInfo(i){
   setCard('w_ip','info',i.wifi_ip||'--');setCard('w_ssid','info',i.wifi_ssid||'--');setCard('w_mac','info',i.mac_address||'--');
-  setCard('y_boot','info',i.boot_count??'--');setCard('y_up','info',fmtUp(i.uptime_s));setCard('k_up','info',fmtUp(i.uptime_s));
-  const lv=i.recovery_level||'none',N={none:'سليم',fb:'Firebase',wifi:'WiFi',deep:'Deep Reset'};
+  setCard('y_boot','info',i.boot_count??'--');setCard('y_up','info',fmtUp(i.uptime_s));
+  const lv=i.recovery_level||'none',N={none:'Good',fb:'Firebase',wifi:'WiFi',deep:'Deep reset'};
   setCard('s_rec',lv==='none'?'ok':'info',`${N[lv]||lv} (${num(i.recovery_attempts)})`);
 }
 
-/* ── Firebase listeners ── */
-const touch=()=>{lastUpdate=Date.now()};
-onValue(ref(db,`${BASE}/status`),s=>{touch();st.status=s.val()||{};renderStatus(st.status)});
-onValue(ref(db,`${BASE}/info`),s=>{touch();st.info=s.val()||{};renderInfo(st.info)});
+/* ═══════════ FIREBASE LISTENERS ═══════════ */
+onValue(ref(db,`${BASE}/status`),s=>{markData();st.status=s.val()||{};renderStatus(st.status)});
+onValue(ref(db,`${BASE}/info`),s=>{markData();st.info=s.val()||{};renderInfo(st.info)});
 for(const[k,fn]of[['DO',renderDO],['DI',renderDI],['AO',renderAO],['AI',renderAI]])
-  onValue(ref(db,`${BASE}/${k}`),s=>{touch();st[k]=s.val()||{};fn(st[k])});
-setInterval(()=>{if(!lastUpdate)return;const s=Math.round((Date.now()-lastUpdate)/1000);setCard('k_last',s>120?'warn':'ok',s<5?'الآن':s<60?s+'s':Math.floor(s/60)+'m')},2000);
+  onValue(ref(db,`${BASE}/${k}`),s=>{markData();st[k]=s.val()||{};fn(st[k])});
 
 let wasOnline=null;
 onValue(ref(db,'.info/connected'),s=>{
-  const on=s.val()===true;$('offline').classList.toggle('show',!on);
+  const on=s.val()===true;
+  CONN.firebaseConnected=on;
+  if(on){markData();CONN.graceUntil=Date.now()+2000;}
+  evaluateConnection();
   if(wasOnline===on)return;
-  if(!on){toast('انقطع الاتصال بـ Firebase','warn');addEvent('انقطع الاتصال','error');notify(notif.conn,'KC868-A6','انقطع الاتصال');$('hDot').className='dot off';$('hTxt').textContent='غير متصل'}
-  else{addEvent(wasOnline===null?'تشغيل المنصة v'+VER:'عاد الاتصال بـ Firebase','success');if(wasOnline!==null)toast('عاد الاتصال','success')}
+  if(!on){
+    toast('Connection lost','warn');addEvent('Connection lost','error');
+    notify(notif.conn,'KC868-A6','Connection lost');
+  } else {
+    addEvent(wasOnline===null?'App started':'Reconnected','success');
+    if(wasOnline!==null)toast('Connected','success');
+  }
   wasOnline=on;
 });
+
+/* ═══════════ ANDROID LIFECYCLE ═══════════ */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    CONN.graceUntil=Date.now()+3000;markData();evaluateConnection();
+    try{db.ref(`${BASE}/status`).once('value').then(s=>{markData();if(s.exists()){st.status=s.val();renderStatus(st.status)}}).catch(()=>{})}catch{}
+    try{db.ref('.info/connected').once('value').then(s=>{CONN.firebaseConnected=s.val()===true;evaluateConnection()}).catch(()=>{})}catch{}
+  }
+});
+window.addEventListener('online',()=>{CONN.graceUntil=Date.now()+3000;markData();evaluateConnection()});
+window.addEventListener('offline',()=>{CONN.graceUntil=0;evaluateConnection()});
+if(window.visualViewport){
+  const vv=window.visualViewport;
+  const fixH=()=>document.documentElement.style.setProperty('--vh',(vv.height*0.01)+'px');
+  vv.addEventListener('resize',fixH);vv.addEventListener('scroll',fixH);fixH();
+}
 </script>
 </body>
 </html>
