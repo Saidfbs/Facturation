@@ -34,6 +34,7 @@ html,body{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
 }
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100dvh;transition:background .3s,color .3s}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
 input,select{font:inherit}
 .ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block}
 [data-i]{display:inline-grid;place-items:center}
@@ -336,7 +337,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v5.0';
+const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v5.1';
 
 /* ── helpers ── */
 const $ = id => document.getElementById(id);
@@ -424,7 +425,6 @@ try{ const s = localStorage.getItem('eventLog'); if(s) JSON.parse(s).forEach(e =
 
 /* ── delete helpers ── */
 function clearStatusAndInfo(){
-  /* حذف status + info من Firebase فقط */
   return Promise.all([
     remove(ref(db, `${BASE}/status`)),
     remove(ref(db, `${BASE}/info`))
@@ -642,26 +642,39 @@ document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('cl
   catch(e){ toast('تعذّر الحفظ', 'error'); }
 }));
 
-/* ── reconnect buttons: set cmd + delete status/info ── */
+/* ── reconnect buttons: set cmd + delete status/info + reload ── */
 const RL = { wifi:'WiFi', firebase:'Firebase', ntp:'NTP', restart:'RESTART', all:'الكل' };
 document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListener('click', async () => {
   haptic(15);
   const cmd = btn.dataset.reconnect;
   if(cmd === 'restart' && !confirm('⚠️ إعادة تشغيل الجهاز؟')) return;
 
-  /* 1) إرسال الأمر إلى Firebase */
+  /* 1) تعطيل الزر لمنع الضغط المزدوج */
+  btn.disabled = true;
+
+  /* 2) إرسال الأمر إلى Firebase */
   try{
     await set(ref(db, `${BASE}/cmd/${cmd === 'all' ? 'refresh_all' : cmd}`), 1);
     addEvent(`إعادة اتصال: ${RL[cmd]}`, 'warn');
-  }catch(e){ toast('تعذّر الإرسال', 'error'); return; }
+  }catch(e){
+    toast('تعذّر الإرسال', 'error');
+    btn.disabled = false;
+    return;
+  }
 
-  /* 2) حذف status + info من Firebase */
+  /* 3) حذف status + info من Firebase */
   try{
     await clearStatusAndInfo();
-    toast(`تم: ${RL[cmd]} — في انتظار البيانات الجديدة`, 'warn');
+    toast(`تم: ${RL[cmd]} — جاري تحديث الصفحة...`, 'warn');
   }catch(e){
     toast('تعذّر حذف status/info', 'error');
   }
+
+  /* 4) تحديث الصفحة بعد تأخير بسيط */
+  setTimeout(() => {
+    try{ localStorage.removeItem('page'); }catch(e){}
+    location.reload();
+  }, 800);
 }));
 
 /* ── wipe database + localStorage ── */
@@ -690,10 +703,13 @@ $('wipeDbBtn').addEventListener('click', async () => {
     lsOK = true;
   }catch(e){}
 
-  if(fbOK && lsOK) toast('تم حذف Firebase + localStorage', 'success');
-  else if(fbOK) toast('تم حذف Firebase فقط', 'warn');
-  else if(lsOK) toast('تم حذف localStorage فقط', 'error');
+  if(fbOK && lsOK) toast('تم حذف Firebase + localStorage — جاري تحديث الصفحة...', 'success');
+  else if(fbOK) toast('تم حذف Firebase فقط — جاري تحديث الصفحة...', 'warn');
+  else if(lsOK) toast('تم حذف localStorage فقط — جاري تحديث الصفحة...', 'error');
   else toast('فشل الحذف', 'error');
+
+  /* 3) تحديث الصفحة بعد تأخير */
+  setTimeout(() => location.reload(), 1000);
 });
 
 /* ── render ── */
