@@ -99,7 +99,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .sc.warn{border-color:var(--warn)}.sc.warn .v{color:var(--warn)}
 .sc.err{border-color:var(--danger)}.sc.err .v{color:var(--danger)}
 .sc.info{border-color:var(--brand)}.sc.info .v{color:var(--brand)}
-.log{background:var(--card);border-radius:16px;padding:8px;max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh)}
+.log{background:var(--card);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh);width:100%}
 .ev{display:grid;grid-template-columns:62px 1fr 26px;gap:8px;align-items:center;padding:8px 10px;background:var(--soft);border-radius:10px;border-inline-start:3px solid var(--brand);font-size:12.5px}
 .ev.success{border-color:var(--on)}.ev.warn{border-color:var(--warn)}.ev.error{border-color:var(--danger)}
 .ev time{font-size:10.5px;font-weight:700;color:var(--ink3);direction:ltr}
@@ -174,6 +174,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 <symbol id="i-xc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
 </defs></svg>
 
 <header class="top">
@@ -184,6 +185,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 
 <main>
   <div class="page active" id="page-home">
+    <h2 class="pt"><span data-i="target"></span>التحكم</h2>
     <div class="sec">المخارج</div>
     <div class="col open" id="doCard">
       <div class="col-h" onclick="toggleCollapse('doCard')"><span class="cv" data-i="chev"></span><div class="t">المخارج الرقمية (DO)</div><div class="badge" id="doCnt">0/6</div></div>
@@ -205,6 +207,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
   <div class="page" id="page-alarms">
     <h2 class="pt"><span data-i="bell"></span>التنبيهات</h2>
     <div class="sec"><span>سجل الأحداث</span><span class="badge" id="logCount">0</span></div>
+    <button class="btn d" id="clearAlarmsBtn" style="margin-bottom:12px"><span data-i="trash"></span>حذف كل التنبيهات</button>
     <div class="log" id="eventLog"></div>
   </div>
 
@@ -282,7 +285,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v4.1';
+const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v4.2';
 
 /* ── helpers ── */
 const $ = id => document.getElementById(id);
@@ -302,7 +305,6 @@ const GROUPS = [
  ['الشبكة والاستعادة',[['fb_retry','محاولة Firebase','s',5,60],['max_fb_failures','حد فشل Firebase','',1,5],['max_consecutive_reinits','حد Reinits','',1,10],['ssl_lockout_base','SSL Lockout base','s',10,120],['ssl_lockout_max','SSL Lockout max','s',60,600]]],
 ];
 const SETTINGS_SCHEMA = { oled_display_mode:{min:0,max:2} };
-/* OLED settings registered manually */
 [['oled_cycle_do',2,60],['oled_cycle_ao',2,60],['hold_duration',2,15]].forEach(([id,min,max]) => SETTINGS_SCHEMA[id] = {min,max});
 
 $('paramGroups').innerHTML = GROUPS.map(([title, fields]) => `
@@ -341,7 +343,7 @@ function toast(msg, type='info'){
 }
 
 /* ── event log ── */
-const eventLog = [];
+let eventLog = [];
 let notifCount = 0;
 function addEvent(msg, type='info'){
   eventLog.unshift({ id: Date.now() + Math.random(), time: nowTime(), msg, type });
@@ -367,6 +369,18 @@ function updateNotifBadge(){
   b.style.display = notifCount > 0 ? 'grid' : 'none';
 }
 try{ const s = localStorage.getItem('eventLog'); if(s) JSON.parse(s).forEach(e => eventLog.push(e)); }catch(e){}
+
+/* ── clear alarms ── */
+$('clearAlarmsBtn').addEventListener('click', () => {
+  haptic(20);
+  if(!eventLog.length){ toast('لا توجد تنبيهات'); return; }
+  if(!confirm('⚠️ حذف كل التنبيهات؟')) return;
+  eventLog = [];
+  notifCount = 0;
+  renderEventLog(); updateNotifBadge();
+  try{ localStorage.removeItem('eventLog'); }catch(e){}
+  toast('تم حذف كل التنبيهات', 'success');
+});
 
 /* ── navigation ── */
 const PAGE_TITLES = { home:'ESP32 IOT DASHBOARD', monitor:'المراقبة', alarms:'التنبيهات', params:'الإعدادات', settings:'النظام' };
