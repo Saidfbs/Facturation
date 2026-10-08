@@ -337,7 +337,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v5.1';
+const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v5.2';
 
 /* ── helpers ── */
 const $ = id => document.getElementById(id);
@@ -642,7 +642,7 @@ document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('cl
   catch(e){ toast('تعذّر الحفظ', 'error'); }
 }));
 
-/* ── reconnect buttons: set cmd + delete status/info + reload ── */
+/* ── reconnect buttons: set cmd + delete status/info + reload (stay on settings) ── */
 const RL = { wifi:'WiFi', firebase:'Firebase', ntp:'NTP', restart:'RESTART', all:'الكل' };
 document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListener('click', async () => {
   haptic(15);
@@ -670,14 +670,14 @@ document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListene
     toast('تعذّر حذف status/info', 'error');
   }
 
-  /* 4) تحديث الصفحة بعد تأخير بسيط */
+  /* 4) تحديث الصفحة مع البقاء على صفحة النظام */
   setTimeout(() => {
-    try{ localStorage.removeItem('page'); }catch(e){}
+    try{ localStorage.setItem('page', 'settings'); }catch(e){}
     location.reload();
   }, 800);
 }));
 
-/* ── wipe database + localStorage ── */
+/* ── wipe database + localStorage (stay on settings) ── */
 $('wipeDbBtn').addEventListener('click', async () => {
   haptic(30);
   if(!confirm('⚠️ سيتم حذف كل بيانات Firebase (/Said) + كل بيانات localStorage. هل أنت متأكد؟')) return;
@@ -708,8 +708,11 @@ $('wipeDbBtn').addEventListener('click', async () => {
   else if(lsOK) toast('تم حذف localStorage فقط — جاري تحديث الصفحة...', 'error');
   else toast('فشل الحذف', 'error');
 
-  /* 3) تحديث الصفحة بعد تأخير */
-  setTimeout(() => location.reload(), 1000);
+  /* 3) تحديث الصفحة مع البقاء على صفحة النظام */
+  setTimeout(() => {
+    try{ localStorage.setItem('page', 'settings'); }catch(e){}
+    location.reload();
+  }, 1000);
 });
 
 /* ── render ── */
