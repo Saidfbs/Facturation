@@ -104,7 +104,6 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .sc.warn{border-color:var(--warn)}.sc.warn .v{color:var(--warn)}
 .sc.err{border-color:var(--danger)}.sc.err .v{color:var(--danger)}
 .sc.info{border-color:var(--brand)}.sc.info .v{color:var(--brand)}
-.sc.loading .v{color:var(--ink3);opacity:.6}
 .log{background:var(--card);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh);width:100%}
 .ev{display:grid;grid-template-columns:62px 1fr 26px;gap:8px;align-items:center;padding:8px 10px;background:var(--soft);border-radius:10px;border-inline-start:3px solid var(--brand);font-size:12.5px}
 .ev.success{border-color:var(--on)}.ev.warn{border-color:var(--warn)}.ev.error{border-color:var(--danger)}
@@ -141,12 +140,10 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .switch-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:8px}
 .switch-row span{font-weight:700;font-size:14px}
-.switch{position:relative;width:52px;height:30px;border-radius:99px;background:var(--line);transition:.25s;flex:none}
+.switch{position:relative;width:52px;height:30px;border-radius:99px;background:var(--line);transition:.25s;flex:none;cursor:pointer}
 .switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
 .switch.on{background:var(--on)}
 .switch.on::after{transform:translateX(-22px)}
-[dir=rtl] .switch.on::after{transform:translateX(-22px)}
-[dir=ltr] .switch.on::after{transform:translateX(22px)}
 
 /* bottom nav */
 .nav{position:fixed;inset-inline:0;bottom:0;z-index:60;display:flex;padding:8px 10px calc(8px + var(--bot));background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
@@ -425,6 +422,25 @@ function updateNotifBadge(){
 }
 try{ const s = localStorage.getItem('eventLog'); if(s) JSON.parse(s).forEach(e => eventLog.push(e)); }catch(e){}
 
+/* ── delete helpers ── */
+function clearStatusAndInfo(){
+  /* حذف status + info من Firebase فقط */
+  return Promise.all([
+    remove(ref(db, `${BASE}/status`)),
+    remove(ref(db, `${BASE}/info`))
+  ]);
+}
+function clearLocalStorageLog(){
+  try{ localStorage.removeItem('eventLog'); }catch(e){}
+}
+function clearLocalStorageAll(){
+  try{
+    localStorage.removeItem('eventLog');
+    localStorage.removeItem('theme');
+    localStorage.removeItem('page');
+  }catch(e){}
+}
+
 /* ── clear alarms ── */
 $('clearAlarmsBtn').addEventListener('click', () => {
   haptic(20);
@@ -433,33 +449,9 @@ $('clearAlarmsBtn').addEventListener('click', () => {
   eventLog = [];
   notifCount = 0;
   renderEventLog(); updateNotifBadge();
-  try{ localStorage.removeItem('eventLog'); }catch(e){}
+  clearLocalStorageLog();
   toast('تم حذف كل التنبيهات', 'success');
 });
-
-/* ── reset local state (for reconnect/wipe) ── */
-function resetLocalState(reason=''){
-  st.DO = {}; st.DI = {}; st.AO = {}; st.AI = {}; st.status = {}; st.info = {}; st.schedule = {};
-  renderDO(st.DO); renderDI(st.DI); renderAO(st.AO); renderAI(st.AI);
-  renderStatusLoading();
-  renderInfoLoading();
-  renderSchedule();
-  setConn(false);
-  if(reason) toast(reason, 'warn');
-}
-
-function renderStatusLoading(){
-  ['scWifi','scFb','scI2c','scNtp','scInteg','scSsl','scFbFail','scRecovery'].forEach(id => {
-    const c = $(id); if(!c) return;
-    c.className = 'sc loading';
-    $(id + 'Val').textContent = '...';
-  });
-}
-function renderInfoLoading(){
-  ['infoWifiIp','infoWifiSsid','infoMac','infoRssi','infoFwVersion','infoUptime','infoHeapFree','infoBootCount'].forEach(id => {
-    const el = $(id); if(el) el.textContent = '...';
-  });
-}
 
 /* ── navigation ── */
 const PAGE_TITLES = { home:'ESP32 IOT DASHBOARD', monitor:'المراقبة', alarms:'التنبيهات', params:'الإعدادات', settings:'النظام' };
@@ -630,7 +622,7 @@ $('saveAllBtn').addEventListener('click', async () => {
   catch(e){ toast('تعذّر الحفظ', 'error'); }
 });
 
-/* ── presets / OLED / reconnect ── */
+/* ── presets / OLED ── */
 document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', async () => {
   haptic(20);
   const name = btn.dataset.preset, u = {};
@@ -649,30 +641,59 @@ document.querySelectorAll('[data-mode]').forEach(btn => btn.addEventListener('cl
   try{ await set(ref(db, `${BASE}/status/oled_display_mode`), mode); toast(`النمط: ${OLED_MODE_NAMES[mode]}`, 'success'); }
   catch(e){ toast('تعذّر الحفظ', 'error'); }
 }));
+
+/* ── reconnect buttons: set cmd + delete status/info ── */
 const RL = { wifi:'WiFi', firebase:'Firebase', ntp:'NTP', restart:'RESTART', all:'الكل' };
 document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListener('click', async () => {
   haptic(15);
   const cmd = btn.dataset.reconnect;
   if(cmd === 'restart' && !confirm('⚠️ إعادة تشغيل الجهاز؟')) return;
+
   /* 1) إرسال الأمر إلى Firebase */
   try{
     await set(ref(db, `${BASE}/cmd/${cmd === 'all' ? 'refresh_all' : cmd}`), 1);
     addEvent(`إعادة اتصال: ${RL[cmd]}`, 'warn');
   }catch(e){ toast('تعذّر الإرسال', 'error'); return; }
-  /* 2) مسح البيانات محلياً لتحديثها لاحقاً */
-  resetLocalState(`تم إرسال: ${RL[cmd]} — في انتظار البيانات الجديدة...`);
+
+  /* 2) حذف status + info من Firebase */
+  try{
+    await clearStatusAndInfo();
+    toast(`تم: ${RL[cmd]} — في انتظار البيانات الجديدة`, 'warn');
+  }catch(e){
+    toast('تعذّر حذف status/info', 'error');
+  }
 }));
 
-/* ── wipe database ── */
+/* ── wipe database + localStorage ── */
 $('wipeDbBtn').addEventListener('click', async () => {
   haptic(30);
-  if(!confirm('⚠️ سيتم حذف كل بيانات قاعدة البيانات (DO, DI, AO, AI, status, info, cmd, schedule) نهائياً. هل أنت متأكد؟')) return;
+  if(!confirm('⚠️ سيتم حذف كل بيانات Firebase (/Said) + كل بيانات localStorage. هل أنت متأكد؟')) return;
   if(!confirm('تأكيد نهائي: لا يمكن التراجع عن هذه العملية!')) return;
+
+  let fbOK = false, lsOK = false;
+
+  /* 1) حذف /Said كاملاً من Firebase */
   try{
     await remove(ref(db, BASE));
-    addEvent('حذف كل بيانات قاعدة البيانات', 'error');
-  }catch(e){ toast('تعذّر الحذف', 'error'); addEvent('فشل حذف البيانات', 'error'); return; }
-  resetLocalState('تم حذف البيانات — في انتظار إعادة الإرسال من المتحكم...');
+    fbOK = true;
+    addEvent('حذف كل بيانات Firebase (/Said)', 'error');
+  }catch(e){
+    addEvent('فشل حذف Firebase', 'error');
+  }
+
+  /* 2) حذف من localStorage */
+  try{
+    clearLocalStorageAll();
+    eventLog = [];
+    notifCount = 0;
+    renderEventLog(); updateNotifBadge();
+    lsOK = true;
+  }catch(e){}
+
+  if(fbOK && lsOK) toast('تم حذف Firebase + localStorage', 'success');
+  else if(fbOK) toast('تم حذف Firebase فقط', 'warn');
+  else if(lsOK) toast('تم حذف localStorage فقط', 'error');
+  else toast('فشل الحذف', 'error');
 });
 
 /* ── render ── */
@@ -733,6 +754,14 @@ function setConn(ok){
   $('pill').querySelector('span').textContent = ok ? 'متصل' : 'غير متصل';
 }
 function renderStatus(v){
+  if(!v || !Object.keys(v).length){
+    ['scWifi','scFb','scI2c','scNtp','scInteg','scSsl','scFbFail','scRecovery'].forEach(id => {
+      const c = $(id); if(!c) return;
+      c.className = 'sc'; $(id + 'Val').textContent = '--';
+    });
+    setConn(false);
+    return;
+  }
   setCard('scWifi', v.wifi === 1, 'متصل', 'غير متصل');
   setCard('scFb', v.firebase === 1, 'متصل', 'غير متصل');
   setCard('scI2c', v.i2c === 1, 'سليم', 'خطأ');
@@ -774,6 +803,12 @@ function fmtUptime(sec){
   return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : `${m}m ${sec%60}s`;
 }
 function renderInfo(info){
+  if(!info || !Object.keys(info).length){
+    ['infoWifiIp','infoWifiSsid','infoMac','infoRssi','infoFwVersion','infoUptime','infoHeapFree','infoBootCount'].forEach(id => {
+      const el = $(id); if(el) el.textContent = '--';
+    });
+    return;
+  }
   $('infoWifiIp').textContent = info.wifi_ip || '--';
   $('infoWifiSsid').textContent = info.wifi_ssid || '--';
   $('infoMac').textContent = info.mac_address || '--';
