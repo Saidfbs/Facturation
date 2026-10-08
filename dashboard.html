@@ -34,7 +34,7 @@ html,body{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
 }
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100dvh;transition:background .3s,color .3s}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-input{font:inherit}
+input,select{font:inherit}
 .ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block}
 [data-i]{display:inline-grid;place-items:center}
 
@@ -72,12 +72,17 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px 12px}
 .tile{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:16px;padding:14px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.25s}
 .tile.on{background:var(--on-bg);border-color:transparent}
+.tile.scheduled::before{content:"";position:absolute;top:8px;inset-inline-start:8px;width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 3px rgba(217,119,6,.2)}
 .lb{font-weight:700;font-size:13px;color:var(--ink2)}.lb b{font-size:16px;color:var(--ink);margin-inline-start:3px}
 .pwr,.ind{width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-size:28px;background:var(--card);color:var(--off);border:2px solid var(--line);transition:.25s}
 .pwr:active{transform:scale(.92)}
 .tile.on .pwr{background:var(--on);color:#fff;border-color:var(--on);box-shadow:0 0 0 6px rgba(5,150,105,.15),0 6px 16px rgba(5,150,105,.35)}
 .tile.on .ind{background:var(--on);color:#fff;border-color:var(--on);box-shadow:0 0 0 6px rgba(5,150,105,.15)}
 .stt{font-size:12px;font-weight:700;color:var(--ink3)}.tile.on .stt{color:var(--on)}
+.sched-btn{position:absolute;top:6px;inset-inline-end:6px;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink3);font-size:14px;transition:.15s}
+.sched-btn:active{transform:scale(.9)}
+.sched-btn.active{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.tile.on .sched-btn{background:rgba(255,255,255,.5)}
 
 /* analog */
 .an{background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:var(--sh);margin-bottom:10px}
@@ -99,6 +104,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .sc.warn{border-color:var(--warn)}.sc.warn .v{color:var(--warn)}
 .sc.err{border-color:var(--danger)}.sc.err .v{color:var(--danger)}
 .sc.info{border-color:var(--brand)}.sc.info .v{color:var(--brand)}
+.sc.loading .v{color:var(--ink3);opacity:.6}
 .log{background:var(--card);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh);width:100%}
 .ev{display:grid;grid-template-columns:62px 1fr 26px;gap:8px;align-items:center;padding:8px 10px;background:var(--soft);border-radius:10px;border-inline-start:3px solid var(--brand);font-size:12.5px}
 .ev.success{border-color:var(--on)}.ev.warn{border-color:var(--warn)}.ev.error{border-color:var(--danger)}
@@ -122,6 +128,25 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 .chip .ic{font-size:22px}
 .chip.active{background:var(--brand-bg);border-color:var(--brand);color:var(--brand)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.6);backdrop-filter:blur(4px)}
+.modal.show{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{width:100%;max-width:420px;background:var(--card);border-radius:20px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.4);max-height:90vh;overflow-y:auto;animation:slideUp .25s}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-weight:800;font-size:16px}
+.modal-h button{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink3);font-size:16px}
+.modal-h button:hover{background:var(--soft)}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:8px}
+.switch-row span{font-weight:700;font-size:14px}
+.switch{position:relative;width:52px;height:30px;border-radius:99px;background:var(--line);transition:.25s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.switch.on{background:var(--on)}
+.switch.on::after{transform:translateX(-22px)}
+[dir=rtl] .switch.on::after{transform:translateX(-22px)}
+[dir=ltr] .switch.on::after{transform:translateX(22px)}
 
 /* bottom nav */
 .nav{position:fixed;inset-inline:0;bottom:0;z-index:60;display:flex;padding:8px 10px calc(8px + var(--bot));background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line)}
@@ -175,6 +200,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
 <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6"/></symbol>
 <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6M12 2v3"/></symbol>
 </defs></svg>
 
 <header class="top">
@@ -280,12 +306,40 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 
 <div class="toast" id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
 
+<!-- Schedule Modal -->
+<div class="modal" id="schedModal">
+  <div class="modal-box">
+    <div class="modal-h">
+      <span id="schedTitle">جدولة المخرج</span>
+      <button id="schedClose" aria-label="إغلاق">✕</button>
+    </div>
+    <div class="switch-row">
+      <span>تفعيل الجدولة</span>
+      <div class="switch" id="schedEnabled"></div>
+    </div>
+    <div class="sec" style="margin:8px 0 6px">وقت التشغيل</div>
+    <div class="fg">
+      <div class="f"><label>الساعة (0-23)</label><input type="number" id="on_hour" min="0" max="23" value="8"></div>
+      <div class="f"><label>الدقيقة (0-59)</label><input type="number" id="on_min" min="0" max="59" value="0"></div>
+    </div>
+    <div class="sec" style="margin:14px 0 6px">وقت الإطفاء</div>
+    <div class="fg">
+      <div class="f"><label>الساعة (0-23)</label><input type="number" id="off_hour" min="0" max="23" value="18"></div>
+      <div class="f"><label>الدقيقة (0-59)</label><input type="number" id="off_min" min="0" max="59" value="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn d" id="schedClear"><span data-i="trash"></span>مسح</button>
+      <button class="btn p" id="schedSave"><span data-i="save"></span>حفظ</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v4.3';
+const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v5.0';
 
 /* ── helpers ── */
 const $ = id => document.getElementById(id);
@@ -294,9 +348,10 @@ const icons = root => root.querySelectorAll('[data-i]').forEach(e => { e.innerHT
 const haptic = (ms=10) => navigator.vibrate?.(ms);
 const numOr = (v,d=0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
 const nowTime = () => new Date().toLocaleTimeString('en-GB', {hour12:false});
-const st = { DI:{}, DO:{}, AI:{}, AO:{}, status:{}, info:{} };
+const st = { DI:{}, DO:{}, AI:{}, AO:{}, status:{}, info:{}, schedule:{} };
 const sending = new Set();
 let currentOledMode = 0;
+let activeSchedDO = null;
 
 /* ── settings schema ── */
 const GROUPS = [
@@ -382,6 +437,30 @@ $('clearAlarmsBtn').addEventListener('click', () => {
   toast('تم حذف كل التنبيهات', 'success');
 });
 
+/* ── reset local state (for reconnect/wipe) ── */
+function resetLocalState(reason=''){
+  st.DO = {}; st.DI = {}; st.AO = {}; st.AI = {}; st.status = {}; st.info = {}; st.schedule = {};
+  renderDO(st.DO); renderDI(st.DI); renderAO(st.AO); renderAI(st.AI);
+  renderStatusLoading();
+  renderInfoLoading();
+  renderSchedule();
+  setConn(false);
+  if(reason) toast(reason, 'warn');
+}
+
+function renderStatusLoading(){
+  ['scWifi','scFb','scI2c','scNtp','scInteg','scSsl','scFbFail','scRecovery'].forEach(id => {
+    const c = $(id); if(!c) return;
+    c.className = 'sc loading';
+    $(id + 'Val').textContent = '...';
+  });
+}
+function renderInfoLoading(){
+  ['infoWifiIp','infoWifiSsid','infoMac','infoRssi','infoFwVersion','infoUptime','infoHeapFree','infoBootCount'].forEach(id => {
+    const el = $(id); if(el) el.textContent = '...';
+  });
+}
+
 /* ── navigation ── */
 const PAGE_TITLES = { home:'ESP32 IOT DASHBOARD', monitor:'المراقبة', alarms:'التنبيهات', params:'الإعدادات', settings:'النظام' };
 function switchPage(page){
@@ -427,8 +506,9 @@ const doCards = {}, diCards = {};
 for(let i = 1; i <= 6; i++){
   const d = document.createElement('div');
   d.className = 'tile';
-  d.innerHTML = `<div class="lb">المرحل<b>${i}</b></div><button class="pwr" aria-label="DO${i}">${I('power')}</button><div class="stt">مغلق</div>`;
+  d.innerHTML = `<button class="sched-btn" data-sched="${i}" aria-label="جدولة">${I('timer')}</button><div class="lb">المرحل<b>${i}</b></div><button class="pwr" aria-label="DO${i}">${I('power')}</button><div class="stt">مغلق</div>`;
   d.querySelector('.pwr').addEventListener('click', () => toggleDO(i));
+  d.querySelector('.sched-btn').addEventListener('click', e => { e.stopPropagation(); openSchedule(i); });
   $('doGrid').appendChild(d); doCards[i] = d;
 
   const n = document.createElement('div');
@@ -475,6 +555,53 @@ for(let i = 1; i <= 4; i++){
   aiMeters[i] = $('aiF' + i); aiValues[i] = $('aiV' + i);
 }
 const getAiColor = p => p < 30 ? '#3b82f6' : p < 60 ? '#10b981' : p < 85 ? '#f59e0b' : '#ef4444';
+
+/* ── Schedule Modal ── */
+function openSchedule(i){
+  haptic();
+  activeSchedDO = i;
+  const s = st.schedule['DO' + i] || {};
+  $('schedTitle').textContent = `جدولة المخرج DO${i}`;
+  $('on_hour').value = s.on_hour ?? 8;
+  $('on_min').value = s.on_min ?? 0;
+  $('off_hour').value = s.off_hour ?? 18;
+  $('off_min').value = s.off_min ?? 0;
+  $('schedEnabled').classList.toggle('on', s.enabled === 1);
+  $('schedModal').classList.add('show');
+}
+function closeSchedule(){ $('schedModal').classList.remove('show'); activeSchedDO = null; }
+$('schedClose').addEventListener('click', closeSchedule);
+$('schedModal').addEventListener('click', e => { if(e.target === $('schedModal')) closeSchedule(); });
+$('schedEnabled').addEventListener('click', () => { haptic(); $('schedEnabled').classList.toggle('on'); });
+
+$('schedSave').addEventListener('click', async () => {
+  if(activeSchedDO == null) return;
+  haptic(20);
+  const oh = Math.max(0, Math.min(23, parseInt($('on_hour').value, 10) || 0));
+  const om = Math.max(0, Math.min(59, parseInt($('on_min').value, 10) || 0));
+  const fh = Math.max(0, Math.min(23, parseInt($('off_hour').value, 10) || 0));
+  const fm = Math.max(0, Math.min(59, parseInt($('off_min').value, 10) || 0));
+  const en = $('schedEnabled').classList.contains('on') ? 1 : 0;
+  try{
+    await set(ref(db, `${BASE}/schedule/DO${activeSchedDO}`), {
+      enabled: en, on_hour: oh, on_min: om, off_hour: fh, off_min: fm
+    });
+    toast(`تم حفظ جدولة DO${activeSchedDO}`, 'success');
+    addEvent(`جدولة DO${activeSchedDO}: ${en?'مفعّل':'معطّل'}`, en ? 'warn' : 'info');
+    closeSchedule();
+  }catch(e){ toast('تعذّر الحفظ', 'error'); }
+});
+$('schedClear').addEventListener('click', async () => {
+  if(activeSchedDO == null) return;
+  haptic(20);
+  if(!confirm('مسح جدولة هذا المخرج؟')) return;
+  try{
+    await remove(ref(db, `${BASE}/schedule/DO${activeSchedDO}`));
+    toast(`تم مسح جدولة DO${activeSchedDO}`, 'success');
+    addEvent(`مسح جدولة DO${activeSchedDO}`, 'warn');
+    closeSchedule();
+  }catch(e){ toast('تعذّر المسح', 'error'); }
+});
 
 /* ── save settings ── */
 async function saveSetting(key){
@@ -527,25 +654,25 @@ document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListene
   haptic(15);
   const cmd = btn.dataset.reconnect;
   if(cmd === 'restart' && !confirm('⚠️ إعادة تشغيل الجهاز؟')) return;
+  /* 1) إرسال الأمر إلى Firebase */
   try{
     await set(ref(db, `${BASE}/cmd/${cmd === 'all' ? 'refresh_all' : cmd}`), 1);
-    toast(`تم: ${RL[cmd]}`, 'success'); addEvent(`إعادة اتصال: ${RL[cmd]}`, 'warn');
-  }catch(e){ toast('تعذّر الإرسال', 'error'); }
+    addEvent(`إعادة اتصال: ${RL[cmd]}`, 'warn');
+  }catch(e){ toast('تعذّر الإرسال', 'error'); return; }
+  /* 2) مسح البيانات محلياً لتحديثها لاحقاً */
+  resetLocalState(`تم إرسال: ${RL[cmd]} — في انتظار البيانات الجديدة...`);
 }));
 
 /* ── wipe database ── */
 $('wipeDbBtn').addEventListener('click', async () => {
   haptic(30);
-  if(!confirm('⚠️ سيتم حذف كل بيانات قاعدة البيانات (DO, DI, AO, AI, status, info, cmd) نهائياً. هل أنت متأكد؟')) return;
+  if(!confirm('⚠️ سيتم حذف كل بيانات قاعدة البيانات (DO, DI, AO, AI, status, info, cmd, schedule) نهائياً. هل أنت متأكد؟')) return;
   if(!confirm('تأكيد نهائي: لا يمكن التراجع عن هذه العملية!')) return;
   try{
     await remove(ref(db, BASE));
-    toast('تم حذف كل البيانات', 'success');
     addEvent('حذف كل بيانات قاعدة البيانات', 'error');
-  }catch(e){
-    toast('تعذّر الحذف', 'error');
-    addEvent('فشل حذف البيانات', 'error');
-  }
+  }catch(e){ toast('تعذّر الحذف', 'error'); addEvent('فشل حذف البيانات', 'error'); return; }
+  resetLocalState('تم حذف البيانات — في انتظار إعادة الإرسال من المتحكم...');
 });
 
 /* ── render ── */
@@ -585,6 +712,15 @@ function renderAI(d){
     const p = Math.round(numOr(d['AI' + i]) / AI_MAX * 100), c = getAiColor(p);
     aiMeters[i].style.width = p + '%'; aiMeters[i].style.background = c;
     aiValues[i].textContent = p; aiValues[i].style.color = c;
+  }
+}
+function renderSchedule(){
+  for(let i = 1; i <= 6; i++){
+    const s = st.schedule['DO' + i] || {};
+    const on = s.enabled === 1;
+    const btn = doCards[i].querySelector('.sched-btn');
+    btn.classList.toggle('active', on);
+    doCards[i].classList.toggle('scheduled', on);
   }
 }
 function setCard(id, ok, onTxt, offTxt){
@@ -654,6 +790,7 @@ onValue(ref(db, `${BASE}/status`), s => { st.status = s.val() || {}; renderStatu
 onValue(ref(db, `${BASE}/info`), s => { st.info = s.val() || {}; renderInfo(st.info); });
 const bind = (k, fn) => onValue(ref(db, `${BASE}/${k}`), s => { st[k] = s.val() || {}; fn(st[k]); });
 bind('DO', renderDO); bind('DI', renderDI); bind('AO', renderAO); bind('AI', renderAI);
+onValue(ref(db, `${BASE}/schedule`), s => { st.schedule = s.val() || {}; renderSchedule(); });
 onValue(ref(db, '.info/connected'), s => {
   if(s.val() !== true){
     toast('انقطع الاتصال بـ Firebase', 'warn'); addEvent('انقطع الاتصال', 'error'); sendSystemNotification('KC868-A6', 'انقطع الاتصال');
