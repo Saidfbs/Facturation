@@ -1,5 +1,691 @@
-النظام
-اختيار الجهاز
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef1f4">
+<title>KC868-A6 — لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#eef1f4;--panel:#fff;--well:#e4e9ee;--line:#d3dae2;--ink:#14202b;--ink2:#4a5b6b;--ink3:#7d8d9c;
+--sig:#0b8f8c;--sig-bg:#d6f0ef;--amber:#d98a00;--amber-bg:#fdf0d2;--red:#d1362f;--red-bg:#fbe0de;--grn:#1a9a52;--grn-bg:#d8f3e3;
+--sans:'Tajawal',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace;--top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px)}
+[data-theme=dark]{--bg:#0d141b;--panel:#16212b;--well:#0b1118;--line:#26343f;--ink:#e6edf3;--ink2:#a5b4c1;--ink3:#6c7d8c;
+--sig:#2dd4cf;--sig-bg:#0f3a3b;--amber:#f5b83d;--amber-bg:#3d2e0b;--red:#ff6b61;--red-bg:#451a18;--grn:#3ddc84;--grn-bg:#0f3a22}
+html,body{height:100%}
+body{font:500 14px/1.6 var(--sans);background:var(--bg);color:var(--ink);display:flex;flex-direction:column;min-height:100dvh;overflow-x:hidden;transition:background .25s}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{opacity:.5}
+input,select{font:inherit;color:inherit}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block;flex:none}
+.mono{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
+/* top */
+.top{position:sticky;top:0;z-index:50;background:var(--bg);padding:calc(var(--top) + 10px) 14px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.ttl{flex:1;min-width:0}
+.ttl h1{font-size:17px;font-weight:800;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl small{font-size:11.5px;color:var(--ink3);font-weight:700}
+.ib{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink2);position:relative}
+.ib.off{color:var(--red)}
+.ib:active{transform:scale(.94)}
+.pill{display:flex;align-items:center;gap:7px;height:40px;padding:0 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-size:12px;font-weight:800}
+.led{width:9px;height:9px;border-radius:50%;background:var(--ink3);flex:none;transition:.2s}
+.led.on{background:var(--grn);box-shadow:0 0 0 3px var(--grn-bg),0 0 8px var(--grn)}
+.led.warn{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
+.led.bad{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+.banner{display:none;background:var(--amber);color:#1b1300;text-align:center;font-weight:800;font-size:12px;padding:6px}
+.banner.show{display:block}
+/* layout */
+main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 96px}
+.page{display:none}.page.active{display:block;animation:in .2s}
+@keyframes in{from{opacity:0}to{opacity:1}}
+.sec{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 10px;font-size:13px;font-weight:800;color:var(--ink2)}
+.sec:first-child{margin-top:4px}
+.cnt{font:600 12px var(--mono);background:var(--well);border-radius:6px;padding:2px 8px;color:var(--ink2)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)!important}}
+/* relay module */
+.rel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;transition:.2s}
+.rel.on{border-color:var(--sig);background:linear-gradient(var(--sig-bg),var(--panel) 70%)}
+.rel-h{display:flex;align-items:center;gap:8px}
+.rel-n{flex:1;min-width:0;text-align:start;font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rel-id{font:600 10.5px var(--mono);color:var(--ink3)}
+.sch{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--ink3);border:1px solid var(--line)}
+.sch.active{color:var(--amber);background:var(--amber-bg);border-color:transparent}
+.sw{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 6px 0 14px;border-radius:12px;background:var(--well);font-weight:800;color:var(--ink2);transition:.2s}
+.sw .knob{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink3);transition:.2s}
+.rel.on .sw{background:var(--sig);color:#fff}
+.rel.on .sw .knob{background:#fff;color:var(--sig);border-color:transparent}
+.sw:active .knob{transform:scale(.92)}
+.prev{font:600 10.5px var(--mono);color:var(--amber);min-height:15px}
+.bar2{display:flex;gap:10px;margin-top:10px}
+/* inputs */
+.di{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-weight:700}
+.di .s{margin-inline-start:auto;font-size:12px;color:var(--ink3)}
+.di.on{border-color:var(--grn)}.di.on .s{color:var(--grn)}
+/* analog */
+.an-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;font-weight:800}
+.an-h .mono{font-size:20px;color:var(--sig)}
+.rs{-webkit-appearance:none;appearance:none;width:100%;height:12px;border-radius:99px;direction:ltr;outline:0;--p:0%;background:linear-gradient(to right,var(--sig) var(--p),var(--well) var(--p))}
+.rs::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:8px;background:var(--panel);border:3px solid var(--sig)}
+.rs::-moz-range-thumb{width:22px;height:22px;border-radius:8px;background:var(--panel);border:3px solid var(--sig)}
+.pre{display:flex;gap:6px;margin-top:12px}
+.pre button{flex:1;height:34px;border-radius:8px;background:var(--well);font:600 12px var(--mono);color:var(--ink2)}
+.pre button:active{background:var(--sig-bg);color:var(--sig)}
+.meter{height:12px;border-radius:99px;background:var(--well);overflow:hidden}
+.meter i{display:block;height:100%;width:0;border-radius:99px;transition:width .4s,background .3s}
+.spark{width:100%;height:34px;margin-top:10px;display:block}
+.spark polyline{fill:none;stroke:var(--sig);stroke-width:1.6;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+/* buttons / forms */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;height:46px;border-radius:12px;font-weight:800;font-size:14px;background:var(--panel);border:1px solid var(--line);padding:0 12px}
+.btn:active{transform:scale(.97)}
+.btn.p{background:var(--sig);border-color:transparent;color:#fff}
+[data-theme=dark] .btn.p{color:#04201f}
+.btn.s{background:var(--sig-bg);color:var(--sig);border-color:transparent}
+.btn.d{background:var(--red-bg);color:var(--red);border-color:transparent}
+.btn.sm{height:40px;font-size:13px}
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:4px}
+.f input,.f select{width:100%;height:44px;background:var(--well);border:1px solid transparent;border-radius:10px;padding:0 10px;text-align:center;font:600 15px var(--mono)}
+.f input[type=text]{direction:ltr;text-align:start;font-family:var(--sans)}
+.f input:focus{outline:0;border-color:var(--sig);background:var(--panel)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--well);padding:4px;border-radius:12px}
+.seg button{height:40px;border-radius:9px;font-weight:800;color:var(--ink2)}
+.seg button.active{background:var(--panel);color:var(--sig);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+/* kv */
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(min-width:700px){.kv{grid-template-columns:repeat(4,1fr)}}
+.k{background:var(--panel);border:1px solid var(--line);border-inline-start:4px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.k .l{font-size:11px;color:var(--ink3);font-weight:700}
+.k .v{font:600 13px var(--mono);direction:ltr;text-align:start;overflow-wrap:anywhere}
+.k.ok{border-inline-start-color:var(--grn)}.k.warn{border-inline-start-color:var(--amber)}.k.err{border-inline-start-color:var(--red)}
+.k.ok .v{color:var(--grn)}.k.warn .v{color:var(--amber)}.k.err .v{color:var(--red)}
+/* log */
+.ev{display:grid;grid-template-columns:64px 1fr 30px;gap:8px;align-items:center;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-inline-start:4px solid var(--sig);border-radius:10px;margin-bottom:6px;font-size:13px}
+.ev.success{border-inline-start-color:var(--grn)}.ev.warn{border-inline-start-color:var(--amber)}.ev.error{border-inline-start-color:var(--red)}
+.ev time{font:600 11px var(--mono);color:var(--ink3)}
+.ev button{width:30px;height:30px;color:var(--ink3);display:grid;place-items:center}
+.empty{text-align:center;color:var(--ink3);padding:26px;font-size:13px}
+/* devices */
+.dev{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--well);margin-bottom:8px;border:1px solid transparent;cursor:pointer}
+.dev.active{border-color:var(--sig);background:var(--sig-bg)}
+.dev .t{flex:1;min-width:0}.dev strong{display:block;font-size:14px}
+.dev small{display:block;font:500 11px var(--mono);color:var(--ink3);direction:ltr;text-align:start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* nav */
+nav{position:fixed;inset-inline:0;bottom:0;z-index:60;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + var(--bot))}
+nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:10px;color:var(--ink3);font-size:11px;font-weight:800;position:relative}
+nav button.active{color:var(--sig);background:var(--sig-bg)}
+.nb{position:absolute;top:2px;inset-inline-end:calc(50% - 22px);min-width:17px;height:17px;border-radius:99px;background:var(--red);color:#fff;font:700 10px/17px var(--mono);text-align:center;padding:0 4px;display:none}
+.nb.show{display:block}
+/* modal + toast */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:flex-end;justify-content:center;background:rgba(5,12,18,.6)}
+.modal.show{display:flex}
+.box{width:100%;max-width:480px;background:var(--panel);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + var(--bot));max-height:92dvh;overflow-y:auto;animation:up .22s}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.mh{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:16px;margin-bottom:14px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-weight:800}
+.tg{width:52px;height:30px;border-radius:99px;background:var(--well);position:relative;transition:.2s;border:1px solid var(--line)}
+.tg::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:var(--ink3);transition:.2s}
+.tg.on{background:var(--sig);border-color:transparent}
+.tg.on::after{inset-inline-start:25px;background:#fff}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:6px 0 12px}
+.day{padding:9px 0;border-radius:9px;background:var(--well);font-size:12px;font-weight:800;text-align:center;color:var(--ink2);cursor:pointer}
+.day.active{background:var(--sig);color:#fff}
+.toast{position:fixed;inset-inline:16px;bottom:calc(84px + var(--bot));margin:auto;width:fit-content;max-width:100%;z-index:120;padding:11px 18px;border-radius:12px;background:#14202b;color:#fff;font-weight:800;font-size:13px;opacity:0;transform:translateY(14px);pointer-events:none;transition:.25s}
+.toast.show{opacity:1;transform:none}
+.toast.success{background:#12683a}.toast.error{background:#a02a24}.toast.warn{background:#8a5a00}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body data-theme="light">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="i-act" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+<symbol id="i-sl" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+<symbol id="i-cpu" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="i-bellx" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0M2 2l20 20"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-pw" viewBox="0 0 24 24"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></symbol>
+<symbol id="i-tm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-ed" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+<symbol id="i-tr" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></symbol>
+<symbol id="i-sv" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></symbol>
+<symbol id="i-rf" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+</defs></svg>
 
-KC868-A6
-الأجهزة (Multi-Device)
+<header class="top">
+  <div class="ttl"><h1 id="devTitle">KC868-A6</h1><small id="viewTitle">الرئيسية</small></div>
+  <div class="pill" id="pill"><i class="led" id="pillLed"></i><span id="pillTxt">--</span></div>
+  <button class="ib" id="btnMute" aria-label="الإشعارات"></button>
+  <button class="ib" id="btnTheme" aria-label="الثيم"></button>
+</header>
+<div class="banner" id="offBanner">لا يوجد اتصال بالإنترنت — الأوامر محفوظة وستُرسل لاحقاً</div>
+
+<main>
+  <section class="page active" id="page-home">
+    <div class="sec"><span>المخارج الرقمية</span><span class="cnt" id="doCnt">0/6</span></div>
+    <div class="grid" id="doGrid"></div>
+    <div class="bar2">
+      <button class="btn s sm" id="allOn">تشغيل الكل</button>
+      <button class="btn d sm" id="allOff">إطفاء الكل</button>
+    </div>
+    <div class="sec"><span>المداخل الرقمية</span><span class="cnt" id="diCnt">0/6</span></div>
+    <div class="grid" id="diGrid"></div>
+  </section>
+
+  <section class="page" id="page-monitor">
+    <div class="sec"><span>المخارج التناظرية</span></div><div id="aoBox"></div>
+    <div class="sec"><span>المداخل التناظرية</span></div><div id="aiBox"></div>
+  </section>
+
+  <section class="page" id="page-log">
+    <div class="bg2"><button class="btn s" id="muteBtn"></button><button class="btn d" id="clearLog"><svg class="ic"><use href="#i-tr"/></svg>حذف السجل</button></div>
+    <div class="sec"><span>سجل الأحداث</span><span class="cnt" id="logCnt">0</span></div>
+    <div id="eventLog"></div>
+  </section>
+
+  <section class="page" id="page-params">
+    <button class="btn p" id="saveAll"><svg class="ic"><use href="#i-sv"/></svg>حفظ جميع الإعدادات</button>
+    <div class="sec"><span>ضبط سريع</span></div>
+    <div class="card"><div class="seg" id="presets">
+      <button data-preset="default">افتراضي</button><button data-preset="reliable">اعتمادية</button><button data-preset="efficient">توفير</button>
+    </div></div>
+    <div class="sec"><span>شاشة OLED</span></div>
+    <div class="card">
+      <div class="seg" id="oledModes" style="margin-bottom:12px"><button data-mode="0">الكل</button><button data-mode="1">رقمي</button><button data-mode="2">تناظري</button></div>
+      <div class="fg" id="oledFields"></div>
+    </div>
+    <div id="paramGroups"></div>
+  </section>
+
+  <section class="page" id="page-system">
+    <div class="sec"><span>اختيار الجهاز</span></div>
+    <div class="card"><div class="f"><select id="devSelect" aria-label="اختيار الجهاز" style="font-family:var(--sans);font-weight:800;font-size:14px"></select></div></div>
+    <div class="sec"><span>الأجهزة (Multi-Device)</span></div>
+    <div class="card"><div id="devList"></div><button class="btn s" id="addDev"><svg class="ic"><use href="#i-plus"/></svg>إضافة جهاز</button></div>
+    <div class="sec"><span>إعادة الاتصال</span></div>
+    <div class="card"><div class="bg2">
+      <button class="btn" data-rc="wifi">WiFi</button><button class="btn" data-rc="firebase">Firebase</button>
+      <button class="btn" data-rc="ntp">NTP</button><button class="btn d" data-rc="restart">إعادة تشغيل</button>
+      <button class="btn s" data-rc="all">تحديث الكل</button><button class="btn d" id="wipe">حذف البيانات</button>
+    </div></div>
+    <div class="sec"><span>حالة النظام</span></div><div class="kv" id="stGrid"></div>
+    <div class="sec"><span>الشبكة</span></div><div class="kv" id="wfGrid"></div>
+    <div class="sec"><span>معلومات الجهاز</span></div><div class="kv" id="sysGrid"></div>
+  </section>
+</main>
+
+<nav id="nav">
+  <button class="active" data-nav="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
+  <button data-nav="monitor"><svg class="ic"><use href="#i-act"/></svg>المراقبة</button>
+  <button data-nav="log"><svg class="ic"><use href="#i-list"/></svg>السجل<span class="nb" id="nb">0</span></button>
+  <button data-nav="params"><svg class="ic"><use href="#i-sl"/></svg>الإعدادات</button>
+  <button data-nav="system"><svg class="ic"><use href="#i-cpu"/></svg>النظام</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="schedModal"><div class="box">
+  <div class="mh"><span id="schedTitle">جدولة</span><button class="ib" id="schedClose"><svg class="ic"><use href="#i-x"/></svg></button></div>
+  <div class="row"><span>تفعيل الجدولة</span><div class="tg" id="schedEn"></div></div>
+  <div class="f"><label>الأيام</label></div>
+  <div class="days" id="schedDays"></div>
+  <div class="fg" style="margin-bottom:12px">
+    <div class="f"><label>ساعة التشغيل</label><input type="number" id="onH" min="0" max="23"></div>
+    <div class="f"><label>دقيقة التشغيل</label><input type="number" id="onM" min="0" max="59"></div>
+    <div class="f"><label>ساعة الإطفاء</label><input type="number" id="offH" min="0" max="23"></div>
+    <div class="f"><label>دقيقة الإطفاء</label><input type="number" id="offM" min="0" max="59"></div>
+  </div>
+  <div class="bg2"><button class="btn d" id="schedClear">مسح</button><button class="btn p" id="schedSave">حفظ</button></div>
+</div></div>
+
+<div class="modal" id="devModal"><div class="box">
+  <div class="mh"><span id="devModalTitle">جهاز</span><button class="ib" id="devClose"><svg class="ic"><use href="#i-x"/></svg></button></div>
+  <div class="f" style="margin-bottom:10px"><label>اسم الجهاز</label><input type="text" id="devName"></div>
+  <div class="f" style="margin-bottom:10px"><label>رابط Firebase</label><input type="text" id="devUrl" placeholder="https://xxx.firebaseio.com"></div>
+  <div class="f" style="margin-bottom:14px"><label>المسار الأساسي</label><input type="text" id="devBase"></div>
+  <div class="bg2"><button class="btn d" id="devDel">حذف</button><button class="btn p" id="devSave">حفظ</button></div>
+</div></div>
+
+<script type="module">
+import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getDatabase, ref, onValue, set, update, remove, off } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+const VERSION = 'Dashboard v8.0';
+const AI_MAX = 4095, HIST = 40, STALE_MS = 90000;
+const $ = id => document.getElementById(id), $$ = s => document.querySelectorAll(s);
+const I = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const haptic = (ms = 10) => navigator.vibrate?.(ms);
+const num = (v, d = 0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const nowT = () => new Date().toLocaleTimeString('en-GB', { hour12: false });
+const throttle = (fn, w = 150) => { let l = 0, t; return (...a) => { const n = Date.now(); clearTimeout(t); if (n - l >= w) { l = n; fn(...a); } else t = setTimeout(() => { l = Date.now(); fn(...a); }, w - (n - l)); }; };
+const debounce = (fn, w = 400) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), w); }; };
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+
+const S = {
+  devices: LS.get('devices', [{ id: 'default', name: 'KC868-A6', url: 'https://said-rahil-default-rtdb.firebaseio.com', base: 'Said' }]),
+  activeId: LS.get('activeDeviceId', 'default'),
+  app: null, db: null, BASE: '/Said', listeners: [],
+  fbOnline: false, DO: {}, DI: {}, AO: {}, AI: {}, status: {}, info: {}, schedule: {},
+  log: LS.get('eventLog', []), unread: 0, muted: LS.get('notifyMuted', false),
+  diReady: false, lastBeat: 0, lastUp: null, editSched: null, editDev: null,
+  names: LS.get('relayNames', {}), hist: { 1: [], 2: [], 3: [], 4: [] }, sending: new Set()
+};
+const queue = LS.get('offlineQueue', []);
+
+/* ═══ toast / log ═══ */
+let tt;
+function toast(m, type = 'info') {
+  const t = $('toast'); t.textContent = m; t.className = 'toast show ' + type;
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function addEvent(msg, type = 'info') {
+  S.log.unshift({ id: uid(), time: nowT(), msg, type });
+  if (S.log.length > 150) S.log.pop();
+  LS.set('eventLog', S.log.slice(0, 100));
+  if (type !== 'info' && !S.muted && !$('page-log').classList.contains('active')) S.unread++;
+  renderLog(); renderBadge();
+}
+function renderBadge() { const b = $('nb'); b.textContent = S.unread > 99 ? '99+' : S.unread; b.classList.toggle('show', S.unread > 0 && !S.muted); }
+const renderLog = throttle(() => {
+  $('logCnt').textContent = S.log.length;
+  $('eventLog').innerHTML = S.log.length
+    ? S.log.slice(0, 60).map(e => `<div class="ev ${e.type}"><time>${e.time}</time><span>${esc(e.msg)}</span><button data-del="${e.id}" aria-label="حذف">${I('x')}</button></div>`).join('')
+    : '<div class="empty">لا توجد أحداث بعد</div>';
+}, 150);
+$('eventLog').addEventListener('click', e => {
+  const b = e.target.closest('[data-del]'); if (!b) return;
+  S.log = S.log.filter(x => x.id !== b.dataset.del); LS.set('eventLog', S.log); renderLog();
+});
+$('clearLog').addEventListener('click', () => {
+  if (!S.log.length) return toast('السجل فارغ');
+  if (!confirm('حذف كل الأحداث؟')) return;
+  S.log = []; S.unread = 0; LS.del('eventLog'); renderLog(); renderBadge(); toast('تم الحذف', 'success');
+});
+
+/* ═══ mute / theme ═══ */
+function paintMute() {
+  $('btnMute').innerHTML = I(S.muted ? 'bellx' : 'bell'); $('btnMute').classList.toggle('off', S.muted);
+  $('muteBtn').innerHTML = I(S.muted ? 'bell' : 'bellx') + (S.muted ? 'تفعيل الإشعارات' : 'كتم الإشعارات');
+  renderBadge();
+}
+function toggleMute() { haptic(15); S.muted = !S.muted; LS.set('notifyMuted', S.muted); if (S.muted) S.unread = 0; paintMute(); toast(S.muted ? 'تم كتم الإشعارات' : 'تم تفعيل الإشعارات'); }
+$('btnMute').onclick = $('muteBtn').onclick = toggleMute;
+function applyTheme(t) {
+  document.body.dataset.theme = t;
+  document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0d141b' : '#eef1f4';
+  $('btnTheme').innerHTML = I(t === 'dark' ? 'sun' : 'moon'); LS.set('theme', t);
+}
+$('btnTheme').onclick = () => { haptic(); applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'); };
+
+/* ═══ nav ═══ */
+const TITLES = { home: 'الرئيسية', monitor: 'المراقبة', log: 'سجل الأحداث', params: 'الإعدادات', system: 'النظام' };
+function go(p) {
+  if (!TITLES[p]) p = 'home';
+  $$('.page').forEach(x => x.classList.toggle('active', x.id === 'page-' + p));
+  $$('#nav button').forEach(b => b.classList.toggle('active', b.dataset.nav === p));
+  $('viewTitle').textContent = TITLES[p]; scrollTo({ top: 0 }); LS.set('page', p);
+  if (p === 'log') { S.unread = 0; renderBadge(); }
+}
+$$('#nav button').forEach(b => b.onclick = () => { haptic(); go(b.dataset.nav); });
+
+/* ═══ connection / writes ═══ */
+function paintConn() {
+  const online = navigator.onLine, led = $('pillLed');
+  $('offBanner').classList.toggle('show', !online);
+  const stale = S.fbOnline && S.lastBeat && Date.now() - S.lastBeat > STALE_MS;
+  led.className = 'led ' + (!online ? 'bad' : !S.fbOnline ? 'bad' : stale ? 'warn' : 'on');
+  $('pillTxt').textContent = !online ? 'Offline' : !S.fbOnline ? 'غير متصل' : stale ? 'الجهاز لا يستجيب' : 'متصل';
+}
+setInterval(paintConn, 5000);
+addEventListener('online', () => { paintConn(); flushQueue(); });
+addEventListener('offline', () => { paintConn(); toast('انقطع الإنترنت', 'warn'); });
+
+function qPush(path, value) { queue.push({ path, value, dev: S.activeId }); LS.set('offlineQueue', queue.slice(-100)); }
+async function flushQueue() {
+  if (!S.db || !S.fbOnline || !queue.length) return;
+  const mine = queue.filter(q => q.dev === S.activeId), rest = queue.filter(q => q.dev !== S.activeId);
+  queue.length = 0; queue.push(...rest);
+  for (const it of mine) { try { await set(ref(S.db, S.BASE + it.path), it.value); } catch { queue.push(it); } }
+  LS.set('offlineQueue', queue);
+}
+async function write(path, value) {
+  if (!S.db || !S.fbOnline) { qPush(path, value); return false; }
+  try { await set(ref(S.db, S.BASE + path), value); return true; } catch { qPush(path, value); return false; }
+}
+async function multi(map) {
+  if (!S.db || !S.fbOnline) { for (const k in map) qPush('/' + k, map[k]); return false; }
+  try { await update(ref(S.db, S.BASE), map); return true; } catch { for (const k in map) qPush('/' + k, map[k]); return false; }
+}
+async function erase(path) { if (!S.db || !S.fbOnline) return false; try { await remove(ref(S.db, S.BASE + path)); return true; } catch { return false; } }
+
+async function connect(dev) {
+  detach();
+  if (S.app) { try { await deleteApp(S.app); } catch {} S.app = S.db = null; }
+  S.DO = {}; S.DI = {}; S.AO = {}; S.AI = {}; S.status = {}; S.info = {}; S.schedule = {};
+  S.diReady = false; S.lastBeat = 0; S.lastUp = null; S.fbOnline = false; S.hist = { 1: [], 2: [], 3: [], 4: [] };
+  try {
+    S.app = initializeApp({ databaseURL: dev.url }, 'app-' + dev.id + '-' + uid());
+    S.db = getDatabase(S.app);
+    S.BASE = '/' + (dev.base || 'Said').replace(/^\/+|\/+$/g, '');
+    attach();
+  } catch (e) { console.error(e); toast('تعذّر الاتصال بـ Firebase', 'error'); }
+  $('devTitle').textContent = dev.name; renderRelayNames(); paintConn();
+}
+function detach() { S.listeners.forEach(({ r, cb }) => { try { off(r, 'value', cb); } catch {} }); S.listeners = []; }
+function attach() {
+  const bind = (p, fn) => { const r = ref(S.db, S.BASE + p), cb = s => fn(s.val() || {}); onValue(r, cb); S.listeners.push({ r, cb }); };
+  bind('/status', v => { S.status = v; rStatus(v); });
+  bind('/info', v => { S.info = v; rInfo(v); });
+  bind('/DO', v => { S.DO = v; rDO(); });
+  bind('/DI', v => { S.DI = v; rDI(); });
+  bind('/AO', v => { S.AO = v; rAO(); });
+  bind('/AI', v => { S.AI = v; rAI(); });
+  bind('/schedule', v => { S.schedule = v; rSched(); });
+  const r = ref(S.db, '.info/connected');
+  const cb = s => {
+    S.fbOnline = s.val() === true; paintConn();
+    addEvent(S.fbOnline ? 'تم الاتصال بـ Firebase' : 'انقطع الاتصال بـ Firebase', S.fbOnline ? 'success' : 'error');
+    if (S.fbOnline) flushQueue();
+  };
+  onValue(r, cb); S.listeners.push({ r, cb });
+}
+
+/* ═══ build UI: relays / inputs ═══ */
+const doEl = {}, diEl = {};
+const relayName = i => (S.names[S.activeId] || {})[i] || 'المرحل ' + i;
+for (let i = 1; i <= 6; i++) {
+  const d = document.createElement('div'); d.className = 'rel';
+  d.innerHTML = `<div class="rel-h"><i class="led"></i><button class="rel-n" data-ren="${i}"></button><button class="sch" data-sch="${i}" aria-label="جدولة">${I('tm')}</button></div>
+  <button class="sw" data-do="${i}"><span class="stt">مغلق</span><span class="knob">${I('pw')}</span></button>
+  <div class="rel-id">DO${i}</div><div class="prev" id="prev${i}"></div>`;
+  $('doGrid').appendChild(d); doEl[i] = d;
+  const n = document.createElement('div'); n.className = 'di';
+  n.innerHTML = `<i class="led"></i><span>المدخل ${i}</span><span class="s">غير نشط</span>`;
+  $('diGrid').appendChild(n); diEl[i] = n;
+}
+function renderRelayNames() { for (let i = 1; i <= 6; i++) doEl[i].querySelector('.rel-n').textContent = relayName(i); }
+$('doGrid').addEventListener('click', e => {
+  const ren = e.target.closest('[data-ren]'), sch = e.target.closest('[data-sch]'), sw = e.target.closest('[data-do]');
+  if (ren) {
+    const i = ren.dataset.ren, v = prompt('اسم المرحل', relayName(i));
+    if (v === null) return;
+    (S.names[S.activeId] ||= {})[i] = v.trim().slice(0, 24) || 'المرحل ' + i;
+    LS.set('relayNames', S.names); renderRelayNames();
+  } else if (sch) openSched(Number(sch.dataset.sch));
+  else if (sw) toggleDO(Number(sw.dataset.do));
+});
+async function toggleDO(i) {
+  haptic(); const k = 'DO' + i; if (S.sending.has(k)) return;
+  const prev = S.DO[k], v = prev === 1 ? 0 : 1;
+  S.DO[k] = v; rDO(); S.sending.add(k);
+  const ok = await write('/' + k, v);
+  if (ok) addEvent(`${relayName(i)} ← ${v ? 'تشغيل' : 'إطفاء'}`, v ? 'success' : 'info');
+  else toast('حُفظ محلياً وسيُرسل عند عودة الاتصال', 'warn');
+  S.sending.delete(k);
+}
+async function setAll(v) {
+  if (!confirm(v ? 'تشغيل كل المخارج؟' : 'إطفاء كل المخارج؟')) return;
+  haptic(25); const m = {};
+  for (let i = 1; i <= 6; i++) { m['DO/DO' + i] = v; S.DO['DO' + i] = v; }
+  rDO(); await multi(m); addEvent(v ? 'تشغيل كل المخارج' : 'إطفاء كل المخارج', 'warn');
+}
+$('allOn').onclick = () => setAll(1); $('allOff').onclick = () => setAll(0);
+
+/* analog */
+const aoS = {}, aoV = {}, aiF = {}, aiV = {}, aiSp = {};
+const fillS = s => s.style.setProperty('--p', (s.value / 255 * 100) + '%');
+for (let i = 1; i <= 2; i++) {
+  const d = document.createElement('div'); d.className = 'card';
+  d.innerHTML = `<div class="an-h"><span>AO${i}</span><span class="mono"><b id="aoV${i}">0</b>%</span></div>
+  <input type="range" class="rs" min="0" max="255" value="0" id="aoS${i}">
+  <div class="pre">${[0, 25, 50, 75, 100].map(p => `<button data-ao="${i}" data-p="${p}">${p}</button>`).join('')}</div>`;
+  $('aoBox').appendChild(d);
+  const s = $('aoS' + i); aoS[i] = s; aoV[i] = $('aoV' + i);
+  s.addEventListener('input', () => { aoV[i].textContent = Math.round(s.value / 2.55); fillS(s); });
+  s.addEventListener('change', async () => { haptic(); const v = Number(s.value); if (await write(`/AO/AO${i}`, v)) addEvent(`AO${i} ← ${Math.round(v / 2.55)}%`); });
+}
+$('aoBox').addEventListener('click', e => {
+  const b = e.target.closest('[data-ao]'); if (!b) return;
+  const s = aoS[b.dataset.ao]; s.value = Math.round(b.dataset.p * 2.55); s.dispatchEvent(new Event('input')); s.dispatchEvent(new Event('change'));
+});
+for (let i = 1; i <= 4; i++) {
+  const d = document.createElement('div'); d.className = 'card';
+  d.innerHTML = `<div class="an-h"><span>AI${i}</span><span class="mono"><b id="aiV${i}">0</b>%</span></div>
+  <div class="meter"><i id="aiF${i}"></i></div><svg class="spark" id="aiSp${i}" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points=""/></svg>`;
+  $('aiBox').appendChild(d); aiF[i] = $('aiF' + i); aiV[i] = $('aiV' + i); aiSp[i] = $('aiSp' + i).firstChild;
+}
+const aiColor = p => p < 30 ? '#3b82f6' : p < 60 ? '#1a9a52' : p < 85 ? '#d98a00' : '#d1362f';
+
+/* ═══ schedule modal ═══ */
+const DAYS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
+$('schedDays').innerHTML = DAYS.map((d, i) => `<div class="day" data-day="${i}">${d}</div>`).join('');
+$('schedDays').addEventListener('click', e => { const d = e.target.closest('.day'); if (d) { haptic(); d.classList.toggle('active'); } });
+$('schedEn').onclick = () => { haptic(); $('schedEn').classList.toggle('on'); };
+function openSched(i) {
+  haptic(); S.editSched = i;
+  const s = S.schedule['DO' + i] || {}, days = Array.isArray(s.days) ? s.days : [0, 1, 2, 3, 4, 5, 6];
+  $('schedTitle').textContent = 'جدولة ' + relayName(i);
+  $('onH').value = s.on_hour ?? 8; $('onM').value = s.on_min ?? 0; $('offH').value = s.off_hour ?? 18; $('offM').value = s.off_min ?? 0;
+  $('schedEn').classList.toggle('on', s.enabled === 1);
+  $$('#schedDays .day').forEach(d => d.classList.toggle('active', days.includes(Number(d.dataset.day))));
+  $('schedModal').classList.add('show');
+}
+const closeSched = () => { $('schedModal').classList.remove('show'); S.editSched = null; };
+$('schedClose').onclick = closeSched;
+$('schedModal').onclick = e => { if (e.target === $('schedModal')) closeSched(); };
+$('schedSave').onclick = async () => {
+  const i = S.editSched; if (i == null) return;
+  const en = $('schedEn').classList.contains('on') ? 1 : 0;
+  const days = [...$$('#schedDays .day.active')].map(d => Number(d.dataset.day));
+  if (en && !days.length) return toast('اختر يوماً واحداً على الأقل', 'error');
+  const g = (id, mx) => clamp(parseInt($(id).value, 10) || 0, 0, mx);
+  const ok = await write('/schedule/DO' + i, { enabled: en, on_hour: g('onH', 23), on_min: g('onM', 59), off_hour: g('offH', 23), off_min: g('offM', 59), days });
+  toast(ok ? 'تم حفظ الجدولة' : 'حُفظ محلياً', ok ? 'success' : 'warn');
+  addEvent(`جدولة ${relayName(i)}: ${en ? 'مفعّلة' : 'معطّلة'}`, en ? 'warn' : 'info'); closeSched();
+};
+$('schedClear').onclick = async () => {
+  const i = S.editSched; if (i == null || !confirm('مسح الجدولة؟')) return;
+  await erase('/schedule/DO' + i); addEvent('مسح جدولة ' + relayName(i), 'warn'); toast('تم المسح', 'success'); closeSched();
+};
+
+/* ═══ devices ═══ */
+function renderDevices() {
+  $('devSelect').innerHTML = S.devices.map(d => `<option value="${esc(d.id)}" ${d.id === S.activeId ? 'selected' : ''}>${esc(d.name)}</option>`).join('');
+  $('devSelect').onchange = e => switchDev(e.target.value);
+  $('devList').innerHTML = S.devices.map(d => `<div class="dev ${d.id === S.activeId ? 'active' : ''}" data-dev="${esc(d.id)}">
+    <i class="led ${d.id === S.activeId ? 'on' : ''}"></i><div class="t"><strong>${esc(d.name)}</strong><small>${esc(d.url)}</small></div>
+    <button class="ib" data-editdev="${esc(d.id)}" aria-label="تعديل">${I('ed')}</button></div>`).join('');
+}
+async function switchDev(id) {
+  const dev = S.devices.find(d => d.id === id); if (!dev || id === S.activeId) return;
+  S.activeId = id; LS.set('activeDeviceId', id); await connect(dev); renderDevices(); rDO(); rDI(); rAO(); rAI(); rSched(); rStatus({}); rInfo({});
+  toast('تم التبديل إلى ' + dev.name, 'success'); addEvent('تبديل الجهاز: ' + dev.name);
+}
+$('devList').addEventListener('click', e => {
+  const ed = e.target.closest('[data-editdev]'); if (ed) return openDev(ed.dataset.editdev);
+  const d = e.target.closest('[data-dev]'); if (d) switchDev(d.dataset.dev);
+});
+$('addDev').onclick = () => openDev(null);
+function openDev(id) {
+  S.editDev = id; const d = id ? S.devices.find(x => x.id === id) : { name: '', url: '', base: 'Said' };
+  $('devModalTitle').textContent = id ? 'تعديل الجهاز' : 'إضافة جهاز';
+  $('devName').value = d.name; $('devUrl').value = d.url; $('devBase').value = d.base || 'Said';
+  $('devDel').style.display = id && S.devices.length > 1 ? '' : 'none'; $('devModal').classList.add('show');
+}
+const closeDev = () => { $('devModal').classList.remove('show'); S.editDev = null; };
+$('devClose').onclick = closeDev; $('devModal').onclick = e => { if (e.target === $('devModal')) closeDev(); };
+$('devSave').onclick = async () => {
+  const name = $('devName').value.trim(), url = $('devUrl').value.trim().replace(/\/+$/, ''), base = $('devBase').value.trim() || 'Said';
+  if (!name || !url) return toast('املأ الاسم والرابط', 'error');
+  if (!/^https:\/\/.+/.test(url)) return toast('الرابط يجب أن يبدأ بـ https://', 'error');
+  let reconnect = false;
+  if (S.editDev) { const d = S.devices.find(x => x.id === S.editDev); reconnect = d.id === S.activeId && (d.url !== url || d.base !== base); Object.assign(d, { name, url, base }); }
+  else S.devices.push({ id: uid(), name, url, base });
+  LS.set('devices', S.devices); renderDevices(); closeDev(); toast('تم الحفظ', 'success');
+  if (reconnect) connect(S.devices.find(d => d.id === S.activeId)); else $('devTitle').textContent = S.devices.find(d => d.id === S.activeId).name;
+};
+$('devDel').onclick = () => {
+  if (!S.editDev || S.devices.length <= 1 || !confirm('حذف هذا الجهاز؟')) return;
+  const was = S.editDev === S.activeId;
+  S.devices = S.devices.filter(x => x.id !== S.editDev); LS.set('devices', S.devices);
+  closeDev();
+  if (was) { S.activeId = S.devices[0].id; LS.set('activeDeviceId', S.activeId); connect(S.devices[0]); }
+  renderDevices(); toast('تم الحذف', 'success');
+};
+
+/* ═══ settings schema ═══ */
+const GROUPS = [
+  ['المزامنة والحساسية', [['sync_interval', 'وقت المزامنة', 's', 5, 600], ['sync_before_integrity', 'فحص السلامة', '', 5, 100], ['ai_threshold', 'حساسية AI', '', 10, 500]]],
+  ['التوقيتات الدورية', [['read_inputs', 'قراءة المداخل', 's', 5, 300], ['check_i2c', 'فحص I2C', 's', 1, 30], ['check_heap', 'فحص الذاكرة', 's', 10, 300], ['save_eeprom', 'حفظ EEPROM', 's', 5, 120], ['serial_print', 'طباعة Serial', 's', 5, 300]]],
+  ['الشبكة والاستعادة', [['fb_retry', 'محاولة Firebase', 's', 5, 60], ['max_fb_failures', 'حد فشل Firebase', '', 1, 5], ['max_consecutive_reinits', 'حد Reinits', '', 1, 10], ['ssl_lockout_base', 'SSL base', 's', 10, 120], ['ssl_lockout_max', 'SSL max', 's', 60, 600]]]
+];
+const SCHEMA = { oled_display_mode: { min: 0, max: 2 } };
+const field = (id, l, u, min, max) => { SCHEMA[id] = { min, max }; return `<div class="f"><label>${l} (${min}–${max}${u})</label><input type="number" id="${id}" min="${min}" max="${max}" inputmode="numeric"></div>`; };
+$('oledFields').innerHTML = field('oled_cycle_do', 'وقت DI/DO', 's', 2, 60) + field('oled_cycle_ao', 'وقت AI/AO', 's', 2, 60) + field('hold_duration', 'مدة التثبيت', 's', 2, 15);
+$('paramGroups').innerHTML = GROUPS.map(([t, f]) => `<div class="sec"><span>${t}</span></div><div class="card"><div class="fg">${f.map(x => field(...x)).join('')}</div></div>`).join('');
+const PRESETS = {
+  default: { sync_interval: 30, oled_cycle_do: 5, oled_cycle_ao: 5, hold_duration: 5, oled_display_mode: 0, read_inputs: 30, check_i2c: 5, check_heap: 30, save_eeprom: 10, serial_print: 30, fb_retry: 30, sync_before_integrity: 15, ai_threshold: 50, max_fb_failures: 1, ssl_lockout_base: 30, ssl_lockout_max: 120, max_consecutive_reinits: 3 },
+  reliable: { sync_interval: 10, oled_cycle_do: 5, oled_cycle_ao: 5, hold_duration: 5, oled_display_mode: 0, read_inputs: 5, check_i2c: 1, check_heap: 10, save_eeprom: 5, serial_print: 15, fb_retry: 30, sync_before_integrity: 5, ai_threshold: 20, max_fb_failures: 1, ssl_lockout_base: 10, ssl_lockout_max: 60, max_consecutive_reinits: 5 },
+  efficient: { sync_interval: 300, oled_cycle_do: 60, oled_cycle_ao: 60, hold_duration: 15, oled_display_mode: 1, read_inputs: 300, check_i2c: 30, check_heap: 300, save_eeprom: 120, serial_print: 300, fb_retry: 60, sync_before_integrity: 100, ai_threshold: 100, max_fb_failures: 3, ssl_lockout_base: 120, ssl_lockout_max: 600, max_consecutive_reinits: 2 }
+};
+const PN = { default: 'افتراضي', reliable: 'اعتمادية', efficient: 'توفير' };
+
+const kv = (id, l) => `<div class="k" id="k_${id}"><div class="l">${l}</div><div class="v" id="v_${id}">--</div></div>`;
+$('stGrid').innerHTML = [['wifi', 'WiFi'], ['fb', 'Firebase'], ['i2c', 'I2C'], ['ntp', 'NTP'], ['integ', 'Integrity'], ['ssl', 'SSL'], ['ff', 'FB Failures'], ['rec', 'Recovery']].map(a => kv(...a)).join('');
+$('wfGrid').innerHTML = [['ip', 'IP'], ['ssid', 'SSID'], ['mac', 'MAC'], ['rssi', 'RSSI']].map(a => kv(...a)).join('');
+$('sysGrid').innerHTML = [['fw', 'Firmware'], ['up', 'Uptime'], ['heap', 'Heap'], ['boot', 'Boot']].map(a => kv(...a)).join('');
+const kset = (id, text, cls = '') => { const k = $('k_' + id); if (!k) return; $('v_' + id).textContent = text; k.className = 'k ' + cls; };
+
+/* ═══ renderers ═══ */
+function rDO() {
+  let n = 0;
+  for (let i = 1; i <= 6; i++) {
+    const on = S.DO['DO' + i] === 1; n += on; const c = doEl[i];
+    c.classList.toggle('on', on); c.querySelector('.led').classList.toggle('on', on);
+    c.querySelector('.stt').textContent = on ? 'مفتوح' : 'مغلق';
+  }
+  $('doCnt').textContent = n + '/6';
+}
+function rDI() {
+  let n = 0;
+  for (let i = 1; i <= 6; i++) {
+    const on = S.DI['DI' + i] === 1; n += on; const c = diEl[i], was = c.classList.contains('on');
+    c.classList.toggle('on', on); c.querySelector('.led').classList.toggle('on', on);
+    c.querySelector('.s').textContent = on ? 'نشط' : 'غير نشط';
+    if (S.diReady && was !== on) addEvent(`المدخل ${i} ← ${on ? 'نشط' : 'غير نشط'}`, on ? 'success' : 'info');
+  }
+  S.diReady = true; $('diCnt').textContent = n + '/6';
+}
+function rAO() {
+  for (let i = 1; i <= 2; i++) {
+    const v = num(S.AO['AO' + i]), s = aoS[i];
+    if (document.activeElement !== s) s.value = v; fillS(s); aoV[i].textContent = Math.round(v / 2.55);
+  }
+}
+function rAI() {
+  for (let i = 1; i <= 4; i++) {
+    const p = clamp(Math.round(num(S.AI['AI' + i]) / AI_MAX * 100), 0, 100), c = aiColor(p);
+    aiF[i].style.width = p + '%'; aiF[i].style.background = c; aiV[i].textContent = p; aiV[i].style.color = c;
+    const h = S.hist[i]; h.push(p); if (h.length > HIST) h.shift();
+    aiSp[i].setAttribute('points', h.map((v, x) => `${(x / (HIST - 1) * 100).toFixed(1)},${(28 - v * .26).toFixed(1)}`).join(' '));
+  }
+}
+function rSched() {
+  for (let i = 1; i <= 6; i++) {
+    const s = S.schedule['DO' + i] || {}, on = s.enabled === 1, p = n => String(n ?? 0).padStart(2, '0');
+    doEl[i].querySelector('.sch').classList.toggle('active', on);
+    $('prev' + i).textContent = on ? `${p(s.on_hour)}:${p(s.on_min)} → ${p(s.off_hour)}:${p(s.off_min)}` : '';
+  }
+}
+function rStatus(v) {
+  if (!v || !Object.keys(v).length) { ['wifi', 'fb', 'i2c', 'ntp', 'integ', 'ssl', 'ff'].forEach(k => kset(k, '--')); return; }
+  const yn = (id, ok, a, b) => kset(id, ok ? a : b, ok ? 'ok' : 'err');
+  yn('wifi', v.wifi === 1, 'متصل', 'غير متصل'); yn('fb', v.firebase === 1, 'متصل', 'غير متصل');
+  yn('i2c', v.i2c === 1, 'سليم', 'خطأ'); yn('ntp', v.ntp === 1, 'مزامن', 'غير مزامن');
+  const ig = num(v.integrity, -1); if (ig >= 0 && ig <= 2) kset('integ', ['سليم', 'جزئي', 'حرج'][ig], ['ok', 'warn', 'err'][ig]);
+  const ssl = num(v.ssl_errors); kset('ssl', ssl, ssl === 0 ? 'ok' : ssl < 3 ? 'warn' : 'err');
+  const ff = num(v.fb_failures); kset('ff', ff, ff === 0 ? 'ok' : 'warn');
+  if (v.version) kset('fw', 'v' + v.version, '');
+  const h = num(v.heap_k, -1); if (h >= 0) kset('heap', h + ' KB', h < 30 ? 'err' : h < 60 ? 'warn' : 'ok');
+  if (v.rssi != null) { const r = num(v.rssi); kset('rssi', r + ' dBm', r > -60 ? 'ok' : r > -75 ? 'warn' : 'err'); }
+  if (v.oled_display_mode != null) $$('#oledModes button').forEach(b => b.classList.toggle('active', Number(b.dataset.mode) === num(v.oled_display_mode)));
+  for (const key in SCHEMA) { const el = $(key); if (el && document.activeElement !== el && v[key] != null) el.value = v[key]; }
+}
+const fmtUp = s => { s = num(s); const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m ${s % 60}s`; };
+function rInfo(i) {
+  if (!i || !Object.keys(i).length) { ['ip', 'ssid', 'mac', 'up', 'boot', 'rec'].forEach(k => kset(k, '--')); return; }
+  if (i.uptime_s !== S.lastUp) { S.lastUp = i.uptime_s; S.lastBeat = Date.now(); paintConn(); }
+  kset('ip', i.wifi_ip || '--', 'ok'); kset('ssid', i.wifi_ssid || '--'); kset('mac', i.mac_address || '--');
+  kset('boot', i.boot_count ?? '--'); kset('up', fmtUp(i.uptime_s));
+  const lv = i.recovery_level || 'none', nm = { none: 'سليم', fb: 'Firebase', wifi: 'WiFi', deep: 'Deep Reset' };
+  kset('rec', `${nm[lv] || lv} (${num(i.recovery_attempts)})`, lv === 'none' ? 'ok' : 'warn');
+}
+
+/* ═══ save settings ═══ */
+async function saveOne(key) {
+  const sc = SCHEMA[key], el = $(key), v = Number(el.value.trim());
+  if (!Number.isInteger(v) || v < sc.min || v > sc.max) { toast(`القيمة بين ${sc.min} و ${sc.max}`, 'error'); return; }
+  haptic(); await write('/status/' + key, v); toast('تم الحفظ: ' + v, 'success'); addEvent(`${key} = ${v}`, 'success');
+}
+Object.keys(SCHEMA).forEach(k => { const el = $(k); if (el) el.addEventListener('change', debounce(() => saveOne(k))); });
+$('saveAll').onclick = async () => {
+  haptic(20); const m = {}; let n = 0;
+  for (const k in SCHEMA) { const el = $(k); if (!el || el.value === '') continue; const v = Number(el.value), sc = SCHEMA[k]; if (Number.isInteger(v) && v >= sc.min && v <= sc.max) { m['status/' + k] = v; n++; } }
+  await multi(m); toast(`تم حفظ ${n} إعداد`, 'success'); addEvent(`حفظ شامل: ${n} إعداد`, 'success');
+};
+$$('[data-preset]').forEach(b => b.onclick = async () => {
+  haptic(20); const m = {}; for (const [k, v] of Object.entries(PRESETS[b.dataset.preset])) m['status/' + k] = v;
+  await multi(m); toast('تم تطبيق: ' + PN[b.dataset.preset], 'success'); addEvent('إعداد جاهز: ' + PN[b.dataset.preset], 'success');
+  $$('[data-preset]').forEach(x => x.classList.toggle('active', x === b));
+});
+$$('#oledModes button').forEach(b => b.onclick = async () => {
+  haptic(); $$('#oledModes button').forEach(x => x.classList.toggle('active', x === b)); await write('/status/oled_display_mode', Number(b.dataset.mode)); toast('تم تغيير نمط الشاشة', 'success');
+});
+
+/* ═══ reconnect / wipe ═══ */
+const RL = { wifi: 'WiFi', firebase: 'Firebase', ntp: 'NTP', restart: 'إعادة التشغيل', all: 'تحديث الكل' };
+$$('[data-rc]').forEach(b => b.onclick = async () => {
+  haptic(15); const c = b.dataset.rc;
+  if (c === 'restart' && !confirm('إعادة تشغيل الجهاز؟')) return;
+  b.disabled = true;
+  if (await write('/cmd/' + (c === 'all' ? 'refresh_all' : c), 1)) {
+    addEvent('أمر: ' + RL[c], 'warn'); await Promise.all([erase('/status'), erase('/info')]); toast('تم إرسال: ' + RL[c], 'warn');
+  } else toast('تعذّر الإرسال الآن، سيُرسل لاحقاً', 'error');
+  setTimeout(() => b.disabled = false, 1500);
+});
+$('wipe').onclick = async () => {
+  haptic(30);
+  if (!confirm('سيتم حذف بيانات هذا الجهاز من Firebase. متأكد؟') || !confirm('تأكيد نهائي!')) return;
+  await erase(''); S.log = []; S.unread = 0; LS.del('eventLog'); LS.del('offlineQueue'); queue.length = 0;
+  renderLog(); renderBadge(); toast('تم حذف البيانات', 'success');
+};
+
+/* ═══ boot ═══ */
+(async function () {
+  applyTheme(LS.get('theme', matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'));
+  paintMute(); renderLog(); renderDevices(); rSched();
+  const dev = S.devices.find(d => d.id === S.activeId) || S.devices[0];
+  S.activeId = dev.id; await connect(dev);
+  go(LS.get('page', 'home'));
+  addEvent('تشغيل ' + VERSION, 'success');
+})();
+</script>
+</body>
+</html>
