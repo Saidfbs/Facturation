@@ -129,7 +129,7 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
 .ib{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink2)}
 .ib:active{transform:scale(.92)}
 
-/* ═══ BOTTOM NAV (4 أزرار ملء العرض) ═══ */
+/* ═══ BOTTOM NAV ═══ */
 .bottom-nav{position:sticky;bottom:0;z-index:60;background:var(--panel);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + var(--bot));flex:none;box-shadow:0 -2px 8px rgba(0,0,0,.04)}
 .bn-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;border-radius:10px;color:var(--ink3);font-size:11px;font-weight:800;position:relative;transition:.15s;border:1.5px solid transparent;background:transparent;min-height:58px}
 .bn-btn:active{transform:scale(.96)}
@@ -249,7 +249,6 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
   </section>
 </main>
 
-<!-- ═══ BOTTOM NAV — 4 أزرار ═══ -->
 <nav class="bottom-nav">
   <button class="bn-btn active" data-nav="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
   <button class="bn-btn" data-nav="monitor"><svg class="ic"><use href="#i-act"/></svg>المراقبة</button>
@@ -285,7 +284,7 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
 import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove, off } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
-const VERSION = 'Dashboard v8.4 — System in Bottom';
+const VERSION = 'Dashboard v8.5 — Fixed DO/AO paths';
 const AI_MAX = 4095, HIST = 40, STALE_MS = 90000;
 const $ = id => document.getElementById(id), $$ = s => document.querySelectorAll(s);
 const I = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
@@ -371,7 +370,6 @@ function applyTheme(t) {
 }
 $('btnTheme').onclick = () => { haptic(); applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'); };
 
-/* زر التحديث في الشريط العلوي */
 $('btnRefresh').onclick = () => {
   haptic();
   toast('تحديث البيانات...');
@@ -407,24 +405,46 @@ setInterval(paintConn, 5000);
 addEventListener('online', () => { paintConn(); flushQueue(); });
 addEventListener('offline', () => { paintConn(); toast('انقطع الإنترنت', 'warn'); });
 
-function qPush(path, value) { queue.push({ path, value, dev: S.activeId }); LS.set('offlineQueue', queue.slice(-100)); }
+/* ═══ QUEUE / WRITES ═══ */
+function qPush(path, value) { 
+  queue.push({ path, value, dev: S.activeId }); 
+  LS.set('offlineQueue', queue.slice(-100)); 
+}
 async function flushQueue() {
   if (!S.db || !S.fbOnline || !queue.length) return;
   const mine = queue.filter(q => q.dev === S.activeId), rest = queue.filter(q => q.dev !== S.activeId);
   queue.length = 0; queue.push(...rest);
-  for (const it of mine) { try { await set(ref(S.db, S.BASE + it.path), it.value); } catch { queue.push(it); } }
+  for (const it of mine) { 
+    try { 
+      await set(ref(S.db, S.BASE + it.path), it.value); 
+    } catch { 
+      queue.push(it); 
+    } 
+  }
   LS.set('offlineQueue', queue);
 }
 async function write(path, value) {
   if (!S.db || !S.fbOnline) { qPush(path, value); return false; }
-  try { await set(ref(S.db, S.BASE + path), value); return true; } catch { qPush(path, value); return false; }
+  try { await set(ref(S.db, S.BASE + path), value); return true; } 
+  catch { qPush(path, value); return false; }
 }
 async function multi(map) {
-  if (!S.db || !S.fbOnline) { for (const k in map) qPush('/' + k, map[k]); return false; }
-  try { await update(ref(S.db, S.BASE), map); return true; } catch { for (const k in map) qPush('/' + k, map[k]); return false; }
+  if (!S.db || !S.fbOnline) { 
+    for (const k in map) qPush(k, map[k]); 
+    return false; 
+  }
+  try { await update(ref(S.db, S.BASE), map); return true; } 
+  catch { for (const k in map) qPush(k, map[k]); return false; }
 }
-async function erase(path) { if (!S.db || !S.fbOnline) return false; try { await remove(ref(S.db, S.BASE + path)); return true; } catch { return false; } }
+async function erase(path) { 
+  if (!S.db || !S.fbOnline) return false; 
+  try { 
+    await remove(ref(S.db, S.BASE + (path || ''))); 
+    return true; 
+  } catch { return false; } 
+}
 
+/* ═══ CONNECT ═══ */
 async function connect(dev) {
   detach();
   if (S.app) { try { await deleteApp(S.app); } catch {} S.app = S.db = null; }
@@ -482,22 +502,37 @@ $('doGrid').addEventListener('click', e => {
   } else if (sch) openSched(Number(sch.dataset.sch));
   else if (sw) toggleDO(Number(sw.dataset.do));
 });
+
+/* ═══ ✅ toggleDO — المسار الصحيح /DO/DO{i} ═══ */
 async function toggleDO(i) {
-  haptic(); const k = 'DO' + i; if (S.sending.has(k)) return;
+  haptic(); 
+  const k = 'DO' + i; 
+  if (S.sending.has(k)) return;
   const prev = S.DO[k], v = prev === 1 ? 0 : 1;
-  S.DO[k] = v; rDO(); S.sending.add(k);
-  const ok = await write('/' + k, v);
+  S.DO[k] = v; 
+  rDO(); 
+  S.sending.add(k);
+  const ok = await write('/DO/' + k, v);   // ← ← ✅ المسار الصحيح: /Said/DO/DO1
   if (ok) addEvent(`${relayName(i)} ← ${v ? 'تشغيل' : 'إطفاء'}`, v ? 'success' : 'info');
   else toast('حُفظ محلياً وسيُرسل عند عودة الاتصال', 'warn');
   S.sending.delete(k);
 }
+
+/* ═══ setAll — تشغيل/إطفاء الكل ═══ */
 async function setAll(v) {
   if (!confirm(v ? 'تشغيل كل المخارج؟' : 'إطفاء كل المخارج؟')) return;
-  haptic(25); const m = {};
-  for (let i = 1; i <= 6; i++) { m['DO/DO' + i] = v; S.DO['DO' + i] = v; }
-  rDO(); await multi(m); addEvent(v ? 'تشغيل كل المخارج' : 'إطفاء كل المخارج', 'warn');
+  haptic(25); 
+  const m = {};
+  for (let i = 1; i <= 6; i++) { 
+    m['DO/DO' + i] = v;   // ← ✅ المسار: DO/DO1 ... DO/DO6
+    S.DO['DO' + i] = v; 
+  }
+  rDO(); 
+  await multi(m); 
+  addEvent(v ? 'تشغيل كل المخارج' : 'إطفاء كل المخارج', 'warn');
 }
-$('allOn').onclick = () => setAll(1); $('allOff').onclick = () => setAll(0);
+$('allOn').onclick = () => setAll(1); 
+$('allOff').onclick = () => setAll(0);
 
 /* ═══ ANALOG ═══ */
 const aoS = {}, aoV = {}, aiF = {}, aiV = {}, aiSp = {};
@@ -510,7 +545,11 @@ for (let i = 1; i <= 2; i++) {
   $('aoBox').appendChild(d);
   const s = $('aoS' + i); aoS[i] = s; aoV[i] = $('aoV' + i);
   s.addEventListener('input', () => { aoV[i].textContent = Math.round(s.value / 2.55); fillS(s); });
-  s.addEventListener('change', async () => { haptic(); const v = Number(s.value); if (await write(`/AO/AO${i}`, v)) addEvent(`AO${i} ← ${Math.round(v / 2.55)}%`); });
+  s.addEventListener('change', async () => { 
+    haptic(); 
+    const v = Number(s.value); 
+    if (await write(`/AO/AO${i}`, v)) addEvent(`AO${i} ← ${Math.round(v / 2.55)}%`);  // ← ✅ /Said/AO/AO1
+  });
 }
 $('aoBox').addEventListener('click', e => {
   const b = e.target.closest('[data-ao]'); if (!b) return;
@@ -524,7 +563,7 @@ for (let i = 1; i <= 4; i++) {
 }
 const aiColor = p => p < 30 ? '#3b82f6' : p < 60 ? '#1a9a52' : p < 85 ? '#d98a00' : '#d1362f';
 
-/* ═══ SCHEDULE MODAL ═══ */
+/* ═══ SCHEDULE ═══ */
 const DAYS = ['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
 $('schedDays').innerHTML = DAYS.map((d, i) => `<div class="day" data-day="${i}">${d}</div>`).join('');
 $('schedDays').addEventListener('click', e => { const d = e.target.closest('.day'); if (d) { haptic(); d.classList.toggle('active'); } });
@@ -547,13 +586,24 @@ $('schedSave').onclick = async () => {
   const days = [...$$('#schedDays .day.active')].map(d => Number(d.dataset.day));
   if (en && !days.length) return toast('اختر يوماً واحداً على الأقل', 'error');
   const g = (id, mx) => clamp(parseInt($(id).value, 10) || 0, 0, mx);
-  const ok = await write('/schedule/DO' + i, { enabled: en, on_hour: g('onH', 23), on_min: g('onM', 59), off_hour: g('offH', 23), off_min: g('offM', 59), days });
+  const ok = await write('/schedule/DO' + i, {   // ← ✅ /Said/schedule/DO1
+    enabled: en, 
+    on_hour: g('onH', 23), 
+    on_min: g('onM', 59), 
+    off_hour: g('offH', 23), 
+    off_min: g('offM', 59), 
+    days 
+  });
   toast(ok ? 'تم حفظ الجدولة' : 'حُفظ محلياً', ok ? 'success' : 'warn');
-  addEvent(`جدولة ${relayName(i)}: ${en ? 'مفعّلة' : 'معطّلة'}`, en ? 'warn' : 'info'); closeSched();
+  addEvent(`جدولة ${relayName(i)}: ${en ? 'مفعّلة' : 'معطّلة'}`, en ? 'warn' : 'info'); 
+  closeSched();
 };
 $('schedClear').onclick = async () => {
   const i = S.editSched; if (i == null || !confirm('مسح الجدولة؟')) return;
-  await erase('/schedule/DO' + i); addEvent('مسح جدولة ' + relayName(i), 'warn'); toast('تم المسح', 'success'); closeSched();
+  await erase('/schedule/DO' + i);   // ← ✅ /Said/schedule/DO1
+  addEvent('مسح جدولة ' + relayName(i), 'warn'); 
+  toast('تم المسح', 'success'); 
+  closeSched();
 };
 
 /* ═══ DEVICES ═══ */
@@ -566,8 +616,11 @@ function renderDevices() {
 }
 async function switchDev(id) {
   const dev = S.devices.find(d => d.id === id); if (!dev || id === S.activeId) return;
-  S.activeId = id; LS.set('activeDeviceId', id); await connect(dev); renderDevices(); rDO(); rDI(); rAO(); rAI(); rSched(); rStatus({}); rInfo({});
-  toast('تم التبديل إلى ' + dev.name, 'success'); addEvent('تبديل الجهاز: ' + dev.name);
+  S.activeId = id; LS.set('activeDeviceId', id); 
+  await connect(dev); 
+  renderDevices(); rDO(); rDI(); rAO(); rAI(); rSched(); rStatus({}); rInfo({});
+  toast('تم التبديل إلى ' + dev.name, 'success'); 
+  addEvent('تبديل الجهاز: ' + dev.name);
 }
 $('devList').addEventListener('click', e => {
   const ed = e.target.closest('[data-editdev]'); if (ed) return openDev(ed.dataset.editdev);
@@ -575,30 +628,47 @@ $('devList').addEventListener('click', e => {
 });
 $('addDev').onclick = () => openDev(null);
 function openDev(id) {
-  S.editDev = id; const d = id ? S.devices.find(x => x.id === id) : { name: '', url: '', base: 'Said' };
+  S.editDev = id; 
+  const d = id ? S.devices.find(x => x.id === id) : { name: '', url: '', base: 'Said' };
   $('devModalTitle').textContent = id ? 'تعديل الجهاز' : 'إضافة جهاز';
   $('devName').value = d.name; $('devUrl').value = d.url; $('devBase').value = d.base || 'Said';
-  $('devDel').style.display = id && S.devices.length > 1 ? '' : 'none'; $('devModal').classList.add('show');
+  $('devDel').style.display = id && S.devices.length > 1 ? '' : 'none'; 
+  $('devModal').classList.add('show');
 }
 const closeDev = () => { $('devModal').classList.remove('show'); S.editDev = null; };
-$('devClose').onclick = closeDev; $('devModal').onclick = e => { if (e.target === $('devModal')) closeDev(); };
+$('devClose').onclick = closeDev; 
+$('devModal').onclick = e => { if (e.target === $('devModal')) closeDev(); };
 $('devSave').onclick = async () => {
-  const name = $('devName').value.trim(), url = $('devUrl').value.trim().replace(/\/+$/, ''), base = $('devBase').value.trim() || 'Said';
+  const name = $('devName').value.trim(), 
+        url = $('devUrl').value.trim().replace(/\/+$/, ''), 
+        base = $('devBase').value.trim() || 'Said';
   if (!name || !url) return toast('املأ الاسم والرابط', 'error');
   if (!/^https:\/\/.+/.test(url)) return toast('الرابط يجب أن يبدأ بـ https://', 'error');
   let reconnect = false;
-  if (S.editDev) { const d = S.devices.find(x => x.id === S.editDev); reconnect = d.id === S.activeId && (d.url !== url || d.base !== base); Object.assign(d, { name, url, base }); }
+  if (S.editDev) { 
+    const d = S.devices.find(x => x.id === S.editDev); 
+    reconnect = d.id === S.activeId && (d.url !== url || d.base !== base); 
+    Object.assign(d, { name, url, base }); 
+  }
   else S.devices.push({ id: uid(), name, url, base });
-  LS.set('devices', S.devices); renderDevices(); closeDev(); toast('تم الحفظ', 'success');
-  if (reconnect) connect(S.devices.find(d => d.id === S.activeId)); else $('devTitle').textContent = S.devices.find(d => d.id === S.activeId).name;
+  LS.set('devices', S.devices); renderDevices(); closeDev(); 
+  toast('تم الحفظ', 'success');
+  if (reconnect) connect(S.devices.find(d => d.id === S.activeId)); 
+  else $('devTitle').textContent = S.devices.find(d => d.id === S.activeId).name;
 };
 $('devDel').onclick = () => {
   if (!S.editDev || S.devices.length <= 1 || !confirm('حذف هذا الجهاز؟')) return;
   const was = S.editDev === S.activeId;
-  S.devices = S.devices.filter(x => x.id !== S.editDev); LS.set('devices', S.devices);
+  S.devices = S.devices.filter(x => x.id !== S.editDev); 
+  LS.set('devices', S.devices);
   closeDev();
-  if (was) { S.activeId = S.devices[0].id; LS.set('activeDeviceId', S.activeId); connect(S.devices[0]); }
-  renderDevices(); toast('تم الحذف', 'success');
+  if (was) { 
+    S.activeId = S.devices[0].id; 
+    LS.set('activeDeviceId', S.activeId); 
+    connect(S.devices[0]); 
+  }
+  renderDevices(); 
+  toast('تم الحذف', 'success');
 };
 
 /* ═══ SETTINGS SCHEMA ═══ */
@@ -629,7 +699,8 @@ function rDO() {
   let n = 0;
   for (let i = 1; i <= 6; i++) {
     const on = S.DO['DO' + i] === 1; n += on; const c = doEl[i];
-    c.classList.toggle('on', on); c.querySelector('.led').classList.toggle('on', on);
+    c.classList.toggle('on', on); 
+    c.querySelector('.led').classList.toggle('on', on);
     c.querySelector('.stt').textContent = on ? 'مفتوح' : 'مغلق';
   }
   $('doCnt').textContent = n + '/6';
@@ -637,24 +708,34 @@ function rDO() {
 function rDI() {
   let n = 0;
   for (let i = 1; i <= 6; i++) {
-    const on = S.DI['DI' + i] === 1; n += on; const c = diEl[i], was = c.classList.contains('on');
-    c.classList.toggle('on', on); c.querySelector('.led').classList.toggle('on', on);
+    const on = S.DI['DI' + i] === 1; n += on; 
+    const c = diEl[i], was = c.classList.contains('on');
+    c.classList.toggle('on', on); 
+    c.querySelector('.led').classList.toggle('on', on);
     c.querySelector('.s').textContent = on ? 'نشط' : 'غير نشط';
     if (S.diReady && was !== on) addEvent(`المدخل ${i} ← ${on ? 'نشط' : 'غير نشط'}`, on ? 'success' : 'info');
   }
-  S.diReady = true; $('diCnt').textContent = n + '/6';
+  S.diReady = true; 
+  $('diCnt').textContent = n + '/6';
 }
 function rAO() {
   for (let i = 1; i <= 2; i++) {
     const v = num(S.AO['AO' + i]), s = aoS[i];
-    if (document.activeElement !== s) s.value = v; fillS(s); aoV[i].textContent = Math.round(v / 2.55);
+    if (document.activeElement !== s) s.value = v; 
+    fillS(s); 
+    aoV[i].textContent = Math.round(v / 2.55);
   }
 }
 function rAI() {
   for (let i = 1; i <= 4; i++) {
     const p = clamp(Math.round(num(S.AI['AI' + i]) / AI_MAX * 100), 0, 100), c = aiColor(p);
-    aiF[i].style.width = p + '%'; aiF[i].style.background = c; aiV[i].textContent = p; aiV[i].style.color = c;
-    const h = S.hist[i]; h.push(p); if (h.length > HIST) h.shift();
+    aiF[i].style.width = p + '%'; 
+    aiF[i].style.background = c; 
+    aiV[i].textContent = p; 
+    aiV[i].style.color = c;
+    const h = S.hist[i]; 
+    h.push(p); 
+    if (h.length > HIST) h.shift();
     aiSp[i].setAttribute('points', h.map((v, x) => `${(x / (HIST - 1) * 100).toFixed(1)},${(28 - v * .26).toFixed(1)}`).join(' '));
   }
 }
@@ -668,13 +749,19 @@ function rSched() {
 function rStatus(v) {
   if (!v || !Object.keys(v).length) { ['wifi', 'fb', 'i2c', 'ntp', 'integ', 'ssl', 'ff'].forEach(k => kset(k, '--')); return; }
   const yn = (id, ok, a, b) => kset(id, ok ? a : b, ok ? 'ok' : 'err');
-  yn('wifi', v.wifi === 1, 'متصل', 'غير متصل'); yn('fb', v.firebase === 1, 'متصل', 'غير متصل');
-  yn('i2c', v.i2c === 1, 'سليم', 'خطأ'); yn('ntp', v.ntp === 1, 'مزامن', 'غير مزامن');
-  const ig = num(v.integrity, -1); if (ig >= 0 && ig <= 2) kset('integ', ['سليم', 'جزئي', 'حرج'][ig], ['ok', 'warn', 'err'][ig]);
-  const ssl = num(v.ssl_errors); kset('ssl', ssl, ssl === 0 ? 'ok' : ssl < 3 ? 'warn' : 'err');
-  const ff = num(v.fb_failures); kset('ff', ff, ff === 0 ? 'ok' : 'warn');
+  yn('wifi', v.wifi === 1, 'متصل', 'غير متصل'); 
+  yn('fb', v.firebase === 1, 'متصل', 'غير متصل');
+  yn('i2c', v.i2c === 1, 'سليم', 'خطأ'); 
+  yn('ntp', v.ntp === 1, 'مزامن', 'غير مزامن');
+  const ig = num(v.integrity, -1); 
+  if (ig >= 0 && ig <= 2) kset('integ', ['سليم', 'جزئي', 'حرج'][ig], ['ok', 'warn', 'err'][ig]);
+  const ssl = num(v.ssl_errors); 
+  kset('ssl', ssl, ssl === 0 ? 'ok' : ssl < 3 ? 'warn' : 'err');
+  const ff = num(v.fb_failures); 
+  kset('ff', ff, ff === 0 ? 'ok' : 'warn');
   if (v.version) kset('fw', 'v' + v.version, '');
-  const h = num(v.heap_k, -1); if (h >= 0) kset('heap', h + ' KB', h < 30 ? 'err' : h < 60 ? 'warn' : 'ok');
+  const h = num(v.heap_k, -1); 
+  if (h >= 0) kset('heap', h + ' KB', h < 30 ? 'err' : h < 60 ? 'warn' : 'ok');
   if (v.rssi != null) { const r = num(v.rssi); kset('rssi', r + ' dBm', r > -60 ? 'ok' : r > -75 ? 'warn' : 'err'); }
   if (v.oled_display_mode != null) $$('#oledModes button').forEach(b => b.classList.toggle('active', Number(b.dataset.mode) === num(v.oled_display_mode)));
   for (const key in SCHEMA) { const el = $(key); if (el && document.activeElement !== el && v[key] != null) el.value = v[key]; }
@@ -683,8 +770,11 @@ const fmtUp = s => { s = num(s); const d = Math.floor(s / 86400), h = Math.floor
 function rInfo(i) {
   if (!i || !Object.keys(i).length) { ['ip', 'ssid', 'mac', 'up', 'boot', 'rec'].forEach(k => kset(k, '--')); return; }
   if (i.uptime_s !== S.lastUp) { S.lastUp = i.uptime_s; S.lastBeat = Date.now(); paintConn(); }
-  kset('ip', i.wifi_ip || '--', 'ok'); kset('ssid', i.wifi_ssid || '--'); kset('mac', i.mac_address || '--');
-  kset('boot', i.boot_count ?? '--'); kset('up', fmtUp(i.uptime_s));
+  kset('ip', i.wifi_ip || '--', 'ok'); 
+  kset('ssid', i.wifi_ssid || '--'); 
+  kset('mac', i.mac_address || '--');
+  kset('boot', i.boot_count ?? '--'); 
+  kset('up', fmtUp(i.uptime_s));
   const lv = i.recovery_level || 'none', nm = { none: 'سليم', fb: 'Firebase', wifi: 'WiFi', deep: 'Deep Reset' };
   kset('rec', `${nm[lv] || lv} (${num(i.recovery_attempts)})`, lv === 'none' ? 'ok' : 'warn');
 }
@@ -692,40 +782,75 @@ function rInfo(i) {
 /* ═══ SAVE SETTINGS ═══ */
 async function saveOne(key) {
   const sc = SCHEMA[key], el = $(key), v = Number(el.value.trim());
-  if (!Number.isInteger(v) || v < sc.min || v > sc.max) { toast(`القيمة بين ${sc.min} و ${sc.max}`, 'error'); return; }
-  haptic(); await write('/status/' + key, v); toast('تم الحفظ: ' + v, 'success'); addEvent(`${key} = ${v}`, 'success');
+  if (!Number.isInteger(v) || v < sc.min || v > sc.max) { 
+    toast(`القيمة بين ${sc.min} و ${sc.max}`, 'error'); 
+    return; 
+  }
+  haptic(); 
+  await write('/status/' + key, v);   // ← ✅ /Said/status/xxx
+  toast('تم الحفظ: ' + v, 'success'); 
+  addEvent(`${key} = ${v}`, 'success');
 }
 Object.keys(SCHEMA).forEach(k => { const el = $(k); if (el) el.addEventListener('change', debounce(() => saveOne(k))); });
 $('saveAll').onclick = async () => {
-  haptic(20); const m = {}; let n = 0;
-  for (const k in SCHEMA) { const el = $(k); if (!el || el.value === '') continue; const v = Number(el.value), sc = SCHEMA[k]; if (Number.isInteger(v) && v >= sc.min && v <= sc.max) { m['status/' + k] = v; n++; } }
-  await multi(m); toast(`تم حفظ ${n} إعداد`, 'success'); addEvent(`حفظ شامل: ${n} إعداد`, 'success');
+  haptic(20); 
+  const m = {}; 
+  let n = 0;
+  for (const k in SCHEMA) { 
+    const el = $(k); 
+    if (!el || el.value === '') continue; 
+    const v = Number(el.value), sc = SCHEMA[k]; 
+    if (Number.isInteger(v) && v >= sc.min && v <= sc.max) { 
+      m['status/' + k] = v;   // ← ✅ status/xxx (يُضاف BASE تلقائياً)
+      n++; 
+    } 
+  }
+  await multi(m); 
+  toast(`تم حفظ ${n} إعداد`, 'success'); 
+  addEvent(`حفظ شامل: ${n} إعداد`, 'success');
 };
 $$('[data-preset]').forEach(b => b.onclick = async () => {
-  haptic(20); const m = {}; for (const [k, v] of Object.entries(PRESETS[b.dataset.preset])) m['status/' + k] = v;
-  await multi(m); toast('تم تطبيق: ' + PN[b.dataset.preset], 'success'); addEvent('إعداد جاهز: ' + PN[b.dataset.preset], 'success');
+  haptic(20); 
+  const m = {}; 
+  for (const [k, v] of Object.entries(PRESETS[b.dataset.preset])) m['status/' + k] = v;
+  await multi(m); 
+  toast('تم تطبيق: ' + PN[b.dataset.preset], 'success'); 
+  addEvent('إعداد جاهز: ' + PN[b.dataset.preset], 'success');
   $$('[data-preset]').forEach(x => x.classList.toggle('active', x === b));
 });
 $$('#oledModes button').forEach(b => b.onclick = async () => {
-  haptic(); $$('#oledModes button').forEach(x => x.classList.toggle('active', x === b)); await write('/status/oled_display_mode', Number(b.dataset.mode)); toast('تم تغيير نمط الشاشة', 'success');
+  haptic(); 
+  $$('#oledModes button').forEach(x => x.classList.toggle('active', x === b)); 
+  await write('/status/oled_display_mode', Number(b.dataset.mode));   // ← ✅ /Said/status/oled_display_mode
+  toast('تم تغيير نمط الشاشة', 'success');
 });
 
 /* ═══ RECONNECT / WIPE ═══ */
 const RL = { wifi: 'WiFi', firebase: 'Firebase', ntp: 'NTP', restart: 'إعادة التشغيل', all: 'تحديث الكل' };
 $$('[data-rc]').forEach(b => b.onclick = async () => {
-  haptic(15); const c = b.dataset.rc;
+  haptic(15); 
+  const c = b.dataset.rc;
   if (c === 'restart' && !confirm('إعادة تشغيل الجهاز؟')) return;
   b.disabled = true;
-  if (await write('/cmd/' + (c === 'all' ? 'refresh_all' : c), 1)) {
-    addEvent('أمر: ' + RL[c], 'warn'); await Promise.all([erase('/status'), erase('/info')]); toast('تم إرسال: ' + RL[c], 'warn');
+  if (await write('/cmd/' + (c === 'all' ? 'refresh_all' : c), 1)) {   // ← ✅ /Said/cmd/xxx
+    addEvent('أمر: ' + RL[c], 'warn'); 
+    await Promise.all([erase('/status'), erase('/info')]);   // ← ✅ /Said/status, /Said/info
+    toast('تم إرسال: ' + RL[c], 'warn');
   } else toast('تعذّر الإرسال الآن، سيُرسل لاحقاً', 'error');
   setTimeout(() => b.disabled = false, 1500);
 });
 $('wipe').onclick = async () => {
   haptic(30);
   if (!confirm('سيتم حذف بيانات هذا الجهاز من Firebase. متأكد؟') || !confirm('تأكيد نهائي!')) return;
-  await erase(''); S.log = []; S.unread = 0; LS.del('eventLog'); LS.del('offlineQueue'); queue.length = 0;
-  renderLog(); renderBadge(); toast('تم حذف البيانات', 'success');
+  await erase('');   // ← ✅ حذف /Said بالكامل
+  S.log = []; 
+  S.unread = 0; 
+  LS.del('eventLog'); 
+  LS.del('offlineQueue'); 
+  queue.length = 0;
+  renderLog(); 
+  renderBadge(); 
+  toast('تم حذف البيانات', 'success');
 };
 
 /* ═══ INIT HEADER ICONS ═══ */
@@ -736,9 +861,14 @@ document.querySelector('.hb[data-nav="params"]').innerHTML = I('sl');
 /* ═══ BOOT ═══ */
 (async function () {
   applyTheme(LS.get('theme', matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'));
-  paintMute(); renderLog(); renderBadge(); renderDevices(); rSched();
+  paintMute(); 
+  renderLog(); 
+  renderBadge(); 
+  renderDevices(); 
+  rSched();
   const dev = S.devices.find(d => d.id === S.activeId) || S.devices[0];
-  S.activeId = dev.id; await connect(dev);
+  S.activeId = dev.id; 
+  await connect(dev);
   go(LS.get('page', 'home'));
   addEvent('تشغيل ' + VERSION, 'success');
 })();
