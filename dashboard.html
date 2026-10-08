@@ -3,274 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0078d4">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>ESP32 IOT DASHBOARD — KC868-A6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;overflow-x:hidden;-webkit-text-size-adjust:100%}
 :root{
-  /* Windows 10 Fluent palette */
-  --bg:#f3f3f3;--card:#ffffff;--soft:#fafafa;--line:#e1e1e1;
-  --ink:#000000;--ink2:#323130;--ink3:#605e5c;
-  --brand:#0078d4;--brand-bg:#deecf9;--brand-hover:#106ebe;--brand-press:#005a9e;
-  --on:#107c10;--on-bg:#dff6dd;--off:#8a8886;
-  --danger:#d13438;--danger-bg:#fde7e9;--warn:#c19c00;--warn-bg:#fff4ce;
-  --hd1:#0b3a63;--hd2:#0078d4;
-  --sh:0 1.6px 3.6px rgba(0,0,0,.132),0 0.3px 0.9px rgba(0,0,0,.108);
-  --sh-lg:0 6.4px 14.4px rgba(0,0,0,.132),0 1.2px 3.6px rgba(0,0,0,.108);
-  --font:'Segoe UI','Cairo','Segoe UI',Tahoma,sans-serif;
+  --bg:#f2f4f7;--card:#ffffff;--soft:#f7f9fc;--line:#e8ecf1;
+  --ink:#0f172a;--ink2:#475569;--ink3:#8493a8;
+  --brand:#2563eb;--brand-bg:#e6efff;
+  --on:#059669;--on-bg:#d5f5e7;--off:#9aa8bb;
+  --danger:#e63946;--danger-bg:#fde4e4;--warn:#f59e0b;--warn-bg:#fef3c7;
+  --sh:0 1px 2px rgba(15,23,42,.04),0 4px 14px rgba(15,23,42,.06);
+  --sh-lg:0 10px 30px rgba(15,23,42,.12);
+  --font:'Cairo','Segoe UI',Tahoma,sans-serif;
   --top:env(safe-area-inset-top,0px);--bot:env(safe-area-inset-bottom,0px);
-  --btn-size:44px;
-  --h-input:32px;
-  --r-btn:2px;--r-input:2px;
-  --gap:6px;
-  --fs-btn:13px;--fs-input:13.5px;
-  --border:1px solid var(--line);
 }
 [data-theme=dark]{
-  --bg:#1f1f1f;--card:#2b2b2b;--soft:#252525;--line:#3d3d3d;
-  --ink:#ffffff;--ink2:#f3f2f1;--ink3:#a19f9d;
-  --brand:#2899f5;--brand-bg:#0d3a63;--brand-hover:#4cc2ff;--brand-press:#0b6cbf;
-  --on:#6ccb5f;--on-bg:#123d13;--off:#8a8886;
-  --danger:#ff99a4;--danger-bg:#442726;--warn:#ffd966;--warn-bg:#433519;
-  --hd1:#050a18;--hd2:#0d3a63;
-  --sh:0 1.6px 3.6px rgba(0,0,0,.4),0 0.3px 0.9px rgba(0,0,0,.3);
-  --sh-lg:0 6.4px 14.4px rgba(0,0,0,.5),0 1.2px 3.6px rgba(0,0,0,.4);
+  --bg:#0a1020;--card:#121b30;--soft:#18233c;--line:#223152;
+  --ink:#e9eefb;--ink2:#b4c0d6;--ink3:#7586a3;
+  --brand:#5b94ff;--brand-bg:#16264d;
+  --on:#34d399;--on-bg:#0d3a2e;--off:#4a5a78;
+  --danger:#f87171;--danger-bg:#4a1c1f;--warn:#fbbf24;--warn-bg:#47330c;
+  --sh:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  --sh-lg:0 10px 30px rgba(0,0,0,.5);
 }
 html,body{height:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:13.5px;line-height:1.5;min-height:100dvh;display:flex;flex-direction:column;transition:background .2s,color .2s}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.6;min-height:100dvh;transition:background .3s,color .3s}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 button:disabled{opacity:.5;cursor:not-allowed}
 input,select,textarea{font:inherit;color:inherit}
-.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block}
+.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;display:block}
 [data-i]{display:inline-grid;place-items:center}
 .hidden{display:none!important}
 
-/* ═══ HEADER — Windows 10 Title Bar ═══ */
-.top{position:sticky;top:0;z-index:50;padding:calc(var(--top) + 8px) 12px 8px;color:#fff;background:linear-gradient(135deg,var(--hd1),var(--hd2));box-shadow:var(--sh);flex:none;border-bottom:1px solid rgba(0,0,0,.15)}
-.top-row{display:flex;align-items:center;gap:var(--gap)}
-.top-actions{display:flex;align-items:center;gap:var(--gap);flex:1;min-width:0}
-.hb{height:var(--btn-size);width:var(--btn-size);min-width:var(--btn-size);flex:0 0 var(--btn-size);border-radius:var(--r-btn);background:rgba(255,255,255,.12);font-size:16px;transition:.1s;display:inline-flex;align-items:center;justify-content:center;aspect-ratio:1/1;border:1px solid rgba(255,255,255,.08)}
-.hb:hover{background:rgba(255,255,255,.24)}
-.hb:active{background:rgba(255,255,255,.32);transform:scale(.96)}
-.hb.active{background:rgba(255,255,255,.28);border-color:rgba(255,255,255,.4)}
-.hb .ic{width:20px;height:20px}
-.pill{display:flex;align-items:center;gap:6px;padding:0 12px;height:var(--btn-size);border-radius:var(--r-btn);background:rgba(255,255,255,.12);font-size:11.5px;font-weight:600;cursor:pointer;flex:none;border:1px solid rgba(255,255,255,.08)}
+/* ═══ HEADER ═══ */
+.top{position:sticky;top:0;z-index:50;padding:calc(var(--top) + 12px) 16px 12px;background:var(--bg);display:flex;align-items:center;gap:12px;flex:none;transition:background .3s}
+.top::after{content:"";position:absolute;inset-inline:0;bottom:0;height:1px;background:var(--line)}
+.hb{width:44px;height:44px;border-radius:12px;background:var(--card);font-size:20px;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center;box-shadow:var(--sh);transition:.15s;flex:none}
+.hb:active{transform:scale(.94)}
+.hb .ic{width:22px;height:22px}
+.brand{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
+.brand-ic{width:44px;height:44px;border-radius:12px;background:var(--brand-bg);color:var(--brand);display:grid;place-items:center;font-size:22px;flex:none}
+.brand-txt{flex:1;min-width:0}
+.brand-txt h1{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.brand-txt small{font-size:11px;color:var(--ink3);font-weight:600}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--card);font-size:11.5px;font-weight:700;cursor:pointer;box-shadow:var(--sh);flex:none}
 .pill i{width:8px;height:8px;border-radius:50%;background:#f87171}
-.pill.ok i{background:#6ccb5f;box-shadow:0 0 0 3px rgba(108,203,95,.25)}
-.pill.offline{background:rgba(255,215,102,.2)}
-.pill.offline i{background:#ffd966}
+.pill.ok i{background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.25)}
+.pill.offline{background:var(--warn-bg)}
+.pill.offline i{background:var(--warn)}
 
 /* ═══ MAIN ═══ */
-main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;flex-direction:column;min-height:0}
-.page{display:none;flex:1;flex-direction:column;min-height:0}
-.page.active{display:flex}
-.pt{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;margin-bottom:8px;flex:none;color:var(--ink2)}
-.pt [data-i]{width:32px;height:32px;border-radius:2px;background:var(--brand-bg);color:var(--brand);font-size:18px}
-.sec{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600;color:var(--ink3);margin:14px 4px 8px;flex:none;text-transform:none}
-.card{background:var(--card);border-radius:4px;padding:14px;box-shadow:var(--sh);border:var(--border);margin-bottom:12px;flex:none}
+main{max-width:720px;width:100%;margin:0 auto;padding:16px 14px 40px;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:calc(100dvh - 70px)}
+.page{display:none;animation:in .22s}
+.page.active{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ═══ COLLAPSE — ارتفاعات مضبوطة ═══ */
-.col{background:var(--card);border-radius:4px;box-shadow:var(--sh);border:var(--border);margin-bottom:12px;overflow:hidden;display:flex;flex-direction:column;flex:1 1 0;min-height:180px}
-.col-h{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;flex:none;border-bottom:1px solid transparent;transition:.15s}
-.col.open .col-h{border-bottom-color:var(--line);background:var(--soft)}
-.col-h:hover{background:var(--soft)}
-.col-h .t{flex:1;font-weight:600;font-size:13.5px}
-.col-h .cv{color:var(--ink3);transition:transform .2s}.col.open .cv{transform:rotate(180deg)}
-.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:2px;background:var(--brand-bg);color:var(--brand);min-width:44px;text-align:center;border:1px solid transparent}
-.badge.muted{background:var(--warn-bg);color:var(--warn)}
-.col-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s;flex:1 1 0;min-height:0}
+.pt{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:800;margin-bottom:14px;color:var(--ink)}
+.pt .pt-ic{width:44px;height:44px;border-radius:12px;background:var(--brand-bg);color:var(--brand);display:grid;place-items:center;font-size:22px}
+.sec{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:var(--ink3);margin:20px 4px 10px}
+.card{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--sh);margin-bottom:14px}
+
+/* Firebase status card */
+.fb-card{background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--sh);margin-bottom:18px;display:flex;align-items:center;gap:16px}
+.fb-ic{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4285f4,#34a853);color:#fff;display:grid;place-items:center;font-size:30px;flex:none;box-shadow:0 8px 20px rgba(66,133,244,.35)}
+.fb-info{flex:1;min-width:0}
+.fb-info h3{font-size:16px;font-weight:800;margin-bottom:4px}
+.fb-info .status{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);font-weight:700;justify-content:flex-end}
+.fb-info .status .ok-ic{color:var(--on);font-size:14px;display:grid;place-items:center;background:var(--on-bg);width:22px;height:22px;border-radius:50%}
+.fb-info .status .cloud{color:#4285f4;font-size:18px}
+
+/* Collapse */
+.col{background:var(--card);border-radius:16px;box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.col-h{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;user-select:none}
+.col-h .t{flex:1;font-weight:800;font-size:15px}
+.col-h .cv{color:var(--ink3);transition:transform .25s}.col.open .cv{transform:rotate(180deg)}
+.badge{font-size:11.5px;font-weight:800;padding:3px 12px;border-radius:99px;background:var(--brand-bg);color:var(--brand);min-width:48px;text-align:center}
+.col-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s}
 .col.open .col-b{grid-template-rows:1fr}
-.col-b>div{overflow:hidden;min-height:0}
-.col.open .col-b>div{overflow:auto;padding:10px}
+.col-b>div{overflow:hidden}
+.col.open .col-b>div{padding:0 14px 14px}
 
-/* ═══ TILES — ارتفاعات محسوبة ═══ */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;height:100%;min-height:0;padding:0}
-.tile{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:4px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:.15s;min-height:120px}
-.tile:hover{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
-.tile.on{background:var(--on-bg);border-color:var(--on)}
-.tile.scheduled::before{content:"";position:absolute;top:6px;inset-inline-start:6px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
-.lb{font-weight:600;font-size:12.5px;color:var(--ink2)}.lb b{font-size:15px;color:var(--ink);margin-inline-start:3px}
-.pwr,.ind{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--card);color:var(--off);border:2px solid var(--line);transition:.15s;flex:none}
-.pwr:hover{border-color:var(--brand)}
-.pwr:active{transform:scale(.94)}
-.tile.on .pwr{background:var(--on);color:#fff;border-color:var(--on);box-shadow:0 0 0 4px rgba(16,124,16,.15)}
-.tile.on .ind{background:var(--on);color:#fff;border-color:var(--on);box-shadow:0 0 0 4px rgba(16,124,16,.15)}
-.stt{font-size:11.5px;font-weight:600;color:var(--ink3)}.tile.on .stt{color:var(--on)}
-.sched-btn{position:absolute;top:4px;inset-inline-end:4px;width:26px;height:26px;border-radius:2px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--ink3);font-size:13px;transition:.15s}
-.sched-btn:hover{border-color:var(--brand);color:var(--brand)}
-.sched-btn:active{transform:scale(.94)}
-.sched-btn.active{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
-.tile.on .sched-btn{background:var(--card)}
-.sched-preview{font-size:10px;font-weight:600;color:var(--warn);direction:ltr;margin-top:2px;display:none}
+/* Tiles */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:.25s}
+.tile:hover{border-color:var(--brand)}
+.tile.on{background:var(--on-bg);border-color:transparent}
+.tile.scheduled::before{content:"";position:absolute;top:10px;inset-inline-start:10px;width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 3px rgba(245,158,11,.2)}
+.lb{font-weight:700;font-size:13.5px;color:var(--ink2)}.lb b{font-size:17px;color:var(--ink);margin-inline-start:3px}
+.pwr,.ind{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:30px;color:#fff;border:0;transition:.25s;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 0 0 6px rgba(230,57,70,.12),0 8px 20px rgba(230,57,70,.25)}
+.pwr:active{transform:scale(.93)}
+.tile.on .pwr{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 0 0 6px rgba(5,150,105,.15),0 8px 20px rgba(5,150,105,.35)}
+.ind{background:linear-gradient(135deg,#94a3b8,#64748b);box-shadow:0 0 0 6px rgba(148,163,184,.15),0 8px 20px rgba(148,163,184,.25)}
+.tile.on .ind{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 0 0 6px rgba(5,150,105,.15)}
+.stt{font-size:12.5px;font-weight:700;color:var(--ink3)}.tile.on .stt{color:var(--on)}
+.sched-btn{position:absolute;top:10px;inset-inline-end:10px;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--soft);border:1px solid var(--line);color:var(--ink3);font-size:14px;transition:.15s}
+.sched-btn:active{transform:scale(.9)}
+.sched-btn.active{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.sched-preview{font-size:10.5px;font-weight:700;color:var(--warn);direction:ltr;margin-top:2px;display:none}
 .tile.scheduled .sched-preview{display:block}
 
-/* ═══ ANALOG — ارتفاعات مرنة ═══ */
-#aoBox,#aiBox{display:flex;flex-direction:column;gap:8px;flex:1 1 0;min-height:0}
-.an{background:var(--card);border-radius:4px;padding:12px 14px;box-shadow:var(--sh);border:var(--border);display:flex;flex-direction:column;justify-content:center;flex:1 1 0;min-height:72px}
-.an-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;font-weight:600;font-size:13px}
-.an-h em{font-style:normal;font-size:17px;font-weight:600;color:var(--brand);font-variant-numeric:tabular-nums}
+/* Analog */
+.an{background:var(--card);border-radius:16px;padding:16px 18px;box-shadow:var(--sh);margin-bottom:10px}
+.an-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;font-weight:700}
+.an-h em{font-style:normal;font-size:20px;font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
 .an-h small{font-size:11px;color:var(--ink3);margin-inline-start:2px}
-.rs{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:0;direction:ltr;--p:0%;background:linear-gradient(to right,var(--brand) var(--p),var(--line) var(--p))}
-.rs::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--brand);border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
-.rs::-webkit-slider-thumb:hover{background:var(--brand-hover)}
-.rs::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--brand);border:3px solid #fff;cursor:pointer}
-.bar{height:4px;border-radius:2px;background:var(--line);overflow:hidden}
-.bar i{display:block;height:100%;width:0;border-radius:2px;transition:width .4s,background .3s}
+.rs{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:99px;outline:0;direction:ltr;--p:0%;background:linear-gradient(to right,var(--brand) var(--p),var(--line) var(--p))}
+.rs::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:3px solid var(--brand);box-shadow:0 2px 8px rgba(37,99,235,.4);cursor:pointer}
+.rs::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--brand);cursor:pointer}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .4s,background .3s}
 
-/* ═══ STATUS ═══ */
-.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
-.sc{background:var(--card);border-radius:4px;padding:10px 12px;box-shadow:var(--sh);border:var(--border);border-inline-start:3px solid var(--line);display:flex;flex-direction:column}
-.sc .l{font-size:11px;font-weight:600;color:var(--ink3)}
-.sc .v{font-size:13.5px;font-weight:600;direction:ltr;text-align:start;word-break:break-word}
-.sc.ok{border-inline-start-color:var(--on)}.sc.ok .v{color:var(--on)}
-.sc.warn{border-inline-start-color:var(--warn)}.sc.warn .v{color:var(--warn)}
-.sc.err{border-inline-start-color:var(--danger)}.sc.err .v{color:var(--danger)}
-.sc.info{border-inline-start-color:var(--brand)}.sc.info .v{color:var(--brand)}
-
-.log{background:var(--card);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--sh);border:var(--border);width:100%;flex:1;overflow-y:auto;min-height:0}
-.ev{display:grid;grid-template-columns:58px 1fr 26px;gap:8px;align-items:center;padding:8px 10px;background:var(--soft);border-radius:2px;border-inline-start:3px solid var(--brand);font-size:12.5px;flex:none;border:1px solid var(--line);border-inline-start-width:3px}
-.ev.success{border-inline-start-color:var(--on)}.ev.warn{border-inline-start-color:var(--warn)}.ev.error{border-inline-start-color:var(--danger)}
-.ev time{font-size:10.5px;font-weight:600;color:var(--ink3);direction:ltr}
-.ev button{width:26px;height:26px;border-radius:2px;display:grid;place-items:center;color:var(--ink3);font-size:12px}
+/* Status */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sc{background:var(--card);border-radius:14px;padding:12px 14px;box-shadow:var(--sh);border-inline-start:4px solid var(--line);display:flex;flex-direction:column}
+.sc .l{font-size:11px;font-weight:700;color:var(--ink3)}
+.sc .v{font-size:14px;font-weight:800;direction:ltr;text-align:start;word-break:break-word}
+.sc.ok{border-color:var(--on)}.sc.ok .v{color:var(--on)}
+.sc.warn{border-color:var(--warn)}.sc.warn .v{color:var(--warn)}
+.sc.err{border-color:var(--danger)}.sc.err .v{color:var(--danger)}
+.sc.info{border-color:var(--brand)}.sc.info .v{color:var(--brand)}
+.log{background:var(--card);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sh);width:100%}
+.ev{display:grid;grid-template-columns:62px 1fr 30px;gap:8px;align-items:center;padding:10px 12px;background:var(--soft);border-radius:10px;border-inline-start:3px solid var(--brand);font-size:12.5px}
+.ev.success{border-color:var(--on)}.ev.warn{border-color:var(--warn)}.ev.error{border-color:var(--danger)}
+.ev time{font-size:10.5px;font-weight:700;color:var(--ink3);direction:ltr}
+.ev button{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--ink3);font-size:13px}
 .ev button:hover{background:var(--danger-bg);color:var(--danger)}
 
-/* ═══ FORMS + BUTTONS — Windows 10 style ═══ */
-.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.f label{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:4px}
-.f input,.f select{width:100%;height:var(--h-input);background:var(--card);border:1px solid var(--line);border-radius:var(--r-input);color:var(--ink);font-size:var(--fs-input);font-weight:400;padding:0 10px;text-align:center;transition:.15s;border-bottom:2px solid var(--ink3)}
-.f input:focus,.f select:focus{outline:0;border-color:var(--brand);border-bottom-color:var(--brand)}
+/* Forms */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f label{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:5px}
+.f input,.f select{width:100%;height:46px;background:var(--soft);border:1.5px solid var(--line);border-radius:12px;color:var(--ink);font-size:15px;font-weight:700;padding:0 12px;text-align:center;transition:.15s}
+.f input:focus,.f select:focus{outline:0;border-color:var(--brand);background:var(--card);box-shadow:0 0 0 4px rgba(37,99,235,.14)}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;height:var(--h-input);border-radius:var(--r-btn);font-weight:600;font-size:var(--fs-btn);background:var(--card);color:var(--ink);border:1px solid var(--line);transition:.1s;padding:0 12px;white-space:nowrap}
-.btn:hover{background:var(--soft);border-color:var(--ink3)}
-.btn:active{background:var(--line);transform:scale(.98)}
-.btn .ic{width:16px;height:16px}
-.btn.p{background:var(--brand);border-color:var(--brand);color:#fff}
-.btn.p:hover{background:var(--brand-hover);border-color:var(--brand-hover)}
-.btn.p:active{background:var(--brand-press);border-color:var(--brand-press)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:12px;font-weight:700;font-size:14px;background:var(--card);border:1.5px solid var(--line);transition:.15s;padding:0 14px;white-space:nowrap;color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn .ic{width:18px;height:18px}
+.btn.p{background:linear-gradient(135deg,#2563eb,#1d4ed8);border-color:transparent;color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.35)}
 .btn.s{background:var(--brand-bg);color:var(--brand);border-color:transparent}
-.btn.s:hover{background:#c7e0f4;border-color:transparent}
-.btn.d{color:var(--danger);border-color:var(--line);background:var(--card)}
-.btn.d:hover{background:var(--danger-bg);border-color:var(--danger)}
-.btn.w{color:var(--warn);border-color:var(--line);background:var(--card)}
-.btn.w:hover{background:var(--warn-bg);border-color:var(--warn)}
-.btn.sm{height:28px;font-size:12px;border-radius:2px;padding:0 8px}
+.btn.d{color:#fff;border-color:transparent;background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 6px 16px rgba(220,38,38,.3)}
+.btn.w{color:#fff;border-color:transparent;background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 6px 16px rgba(245,158,11,.3)}
+.btn.sm{height:38px;font-size:12.5px;border-radius:10px;padding:0 12px}
 
-.btn-row{display:flex;gap:8px;margin-bottom:8px;flex:none}
+.btn-row{display:flex;gap:10px;margin-bottom:10px}
 .btn-row:last-child{margin-bottom:0}
 .btn-row>.btn{flex:1;min-width:0}
-.btn-grid{display:grid;gap:8px;margin-bottom:8px}
+.btn-grid{display:grid;gap:10px;margin-bottom:10px}
 .btn-grid:last-child{margin-bottom:0}
 .btn-grid.c2{grid-template-columns:1fr 1fr}
-.btn-grid.c3{grid-template-columns:repeat(3,1fr)}
-.btn-grid.c4{grid-template-columns:repeat(4,1fr)}
 
-.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 6px;border-radius:2px;background:var(--soft);border:1px solid var(--line);font-weight:600;font-size:12px;color:var(--ink2);transition:.15s;min-height:72px}
-.chip:hover{border-color:var(--brand);background:var(--card)}
-.chip .ic{width:20px;height:20px}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 6px;border-radius:14px;background:var(--soft);border:1.5px solid transparent;font-weight:700;font-size:12.5px;color:var(--ink2);transition:.15s;min-height:84px}
+.chip .ic{width:24px;height:24px}
 .chip.active{background:var(--brand-bg);border-color:var(--brand);color:var(--brand)}
 
-/* ═══ MODAL — Windows 10 Dialog ═══ */
-.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.4)}
-.modal.show{display:flex}
-.modal-box{width:100%;max-width:440px;background:var(--card);border-radius:4px;padding:18px;box-shadow:var(--sh-lg);border:var(--border);max-height:90vh;overflow-y:auto}
-.modal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-weight:600;font-size:15px;color:var(--ink2)}
-.modal-h button{width:30px;height:30px;border-radius:2px;display:grid;place-items:center;color:var(--ink3);font-size:15px}
-.modal-h button:hover{background:var(--danger);color:#fff}
-.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
-.switch-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:8px}
-.switch-row span{font-weight:600;font-size:13px}
-.switch{position:relative;width:40px;height:20px;border-radius:10px;background:var(--ink3);transition:.15s;flex:none;cursor:pointer;border:1px solid var(--ink3)}
-.switch::after{content:"";position:absolute;top:1px;inset-inline-start:1px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
-.switch.on{background:var(--brand);border-color:var(--brand)}
-.switch.on::after{transform:translateX(-20px)}
+/* ═══ MENU MODAL (نافذة منبثقة في الوسط) ═══ */
+.menu-overlay{position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:.25s;display:flex;align-items:center;justify-content:center;padding:20px}
+.menu-overlay.show{opacity:1;pointer-events:auto}
+.menu-box{width:100%;max-width:440px;background:var(--card);border-radius:24px;padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.35);transform:scale(.9) translateY(20px);opacity:0;transition:.3s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto}
+.menu-overlay.show .menu-box{transform:scale(1) translateY(0);opacity:1}
 
-/* ═══ BOTTOM NAV — نفس أبعاد الهيدر ═══ */
-.nav{position:sticky;bottom:0;z-index:60;display:flex;gap:var(--gap);padding:6px 12px calc(6px + var(--bot));background:var(--card);border-top:1px solid var(--line);flex:none;box-shadow:0 -1px 3px rgba(0,0,0,.05)}
-.tab{flex:1 1 0;min-width:0;height:var(--btn-size);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;border-radius:2px;color:var(--ink3);transition:.15s;border:1px solid transparent}
-.tab:hover{background:var(--soft)}
-.tab:active{background:var(--line)}
-.tab [data-i]{font-size:18px;padding:0;border-radius:99px;transition:.2s;position:relative;display:inline-grid;place-items:center}
-.tab .ic{width:20px;height:20px}
-.tab small{font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1}
-.tab.active{color:var(--brand);background:var(--brand-bg);border-color:var(--brand)}
-.tab.active::after{content:"";position:absolute;bottom:0;inset-inline:20%;height:2px;background:var(--brand)}
-.tab .dot{position:absolute;top:4px;inset-inline-end:20%;width:8px;height:8px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--card);display:none}
-.tab.has-notif .dot{display:block}
-.tab.muted .dot{display:none!important}
+.menu-h{display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.menu-h .brand-ic{width:48px;height:48px;font-size:24px}
+.menu-h .brand-txt h1{font-size:17px}
+.menu-h .menu-close{width:38px;height:38px;border-radius:12px;background:var(--soft);display:grid;place-items:center;color:var(--ink2);font-size:16px;flex:none;margin-inline-start:auto;transition:.15s}
+.menu-h .menu-close:active{transform:scale(.92)}
 
-/* ═══ TOAST ═══ */
-.toast{position:fixed;bottom:calc(80px + var(--bot));left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:99;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:2px;background:var(--ink2);color:#fff;font-weight:600;font-size:13px;box-shadow:var(--sh-lg);transition:.2s;max-width:calc(100vw - 32px);border:1px solid rgba(255,255,255,.1)}
+.menu-sec{font-size:11.5px;font-weight:800;color:var(--ink3);padding:10px 6px 8px;text-transform:uppercase;letter-spacing:.5px}
+.menu-item{display:flex;align-items:center;gap:14px;padding:12px;border-radius:14px;transition:.15s;cursor:pointer;margin-bottom:4px;border:0;width:100%;text-align:start;background:transparent}
+.menu-item:hover{background:var(--soft)}
+.menu-item:active{transform:scale(.98)}
+.menu-item.active{background:var(--brand-bg)}
+.menu-item .mi-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:20px;flex:none}
+.menu-item .mi-ic .ic{width:20px;height:20px}
+.menu-item .mi-txt{flex:1;min-width:0}
+.menu-item .mi-txt strong{display:block;font-size:14px;font-weight:800;color:var(--ink)}
+.menu-item .mi-txt small{font-size:11px;color:var(--ink3);font-weight:600}
+.menu-item .mi-arrow{color:var(--ink3);font-size:14px;flex:none}
+.menu-item .mi-toggle{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--soft);color:var(--ink3)}
+.menu-item .mi-toggle.on{background:var(--on-bg);color:var(--on)}
+
+.mi-ic.c-blue{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+.mi-ic.c-purple{background:linear-gradient(135deg,#8b5cf6,#7c3aed)}
+.mi-ic.c-gray{background:linear-gradient(135deg,#64748b,#475569)}
+.mi-ic.c-orange{background:linear-gradient(135deg,#fb923c,#f97316)}
+.mi-ic.c-green{background:linear-gradient(135deg,#10b981,#059669)}
+.mi-ic.c-teal{background:linear-gradient(135deg,#14b8a6,#0d9488)}
+.mi-ic.c-red{background:linear-gradient(135deg,#ef4444,#dc2626)}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.55);backdrop-filter:blur(4px)}
+.modal.show{display:flex;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{width:100%;max-width:460px;background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--sh-lg);max-height:90vh;overflow-y:auto;animation:slideUp .25s}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;font-weight:800;font-size:16px}
+.modal-h button{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink3);font-size:16px}
+.modal-h button:hover{background:var(--soft)}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin-bottom:8px}
+.switch-row span{font-weight:700;font-size:14px}
+.switch{position:relative;width:52px;height:30px;border-radius:99px;background:var(--line);transition:.25s;flex:none;cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.switch.on{background:var(--on)}
+.switch.on::after{transform:translateX(-22px)}
+
+.toast{position:fixed;bottom:calc(24px + var(--bot));left:50%;transform:translate(-50%,30px);opacity:0;pointer-events:none;z-index:99;display:flex;align-items:center;gap:9px;padding:12px 20px;border-radius:14px;background:#0f172a;color:#fff;font-weight:700;font-size:13px;box-shadow:var(--sh-lg);transition:.3s;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-.toast.success{background:var(--on)}.toast.error{background:var(--danger)}.toast.warn{background:var(--warn)}
+.toast.success{background:#047857}.toast.error{background:#b91c1c}.toast.warn{background:#b45309}
 
-/* ═══ DEVICE SELECTOR ═══ */
-.dev-select{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-bottom:2px solid var(--ink3);border-radius:var(--r-input);padding:0 10px;margin-bottom:12px;height:var(--h-input);flex:none}
-.dev-select:focus-within{border-bottom-color:var(--brand)}
-.dev-select .ic{color:var(--brand);width:18px;height:18px}
-.dev-select select{flex:1;background:transparent;border:0;font-weight:600;font-size:13px;outline:0;height:100%;cursor:pointer}
+.dev-select{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:0 14px;margin-bottom:14px;height:48px;box-shadow:var(--sh)}
+.dev-select .ic{color:var(--brand);width:20px;height:20px}
+.dev-select select{flex:1;background:transparent;border:0;font-weight:700;font-size:13.5px;outline:0;height:100%;cursor:pointer}
 
-/* ═══ OFFLINE ═══ */
-.offline-banner{background:var(--warn);color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px 10px;display:none;flex:none;border-bottom:1px solid rgba(0,0,0,.15)}
+.offline-banner{background:var(--warn);color:#fff;text-align:center;font-size:12px;font-weight:700;padding:8px 10px;display:none}
 .offline-banner.show{display:block}
 
-/* ═══ DEVICE LIST ═══ */
-.dev-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--soft);border-radius:2px;margin-bottom:6px;border:1px solid var(--line);cursor:pointer;transition:.15s}
-.dev-item:hover{border-color:var(--brand);background:var(--card)}
-.dev-item.active{border-color:var(--brand);background:var(--brand-bg);border-inline-start:3px solid var(--brand)}
-.dev-item .di{width:34px;height:34px;border-radius:2px;background:var(--card);color:var(--brand);display:grid;place-items:center;font-size:17px;flex:none;border:1px solid var(--line)}
+.dev-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--soft);border-radius:12px;margin-bottom:8px;border:1.5px solid transparent;cursor:pointer;transition:.15s}
+.dev-item.active{border-color:var(--brand);background:var(--brand-bg)}
+.dev-item .di{width:40px;height:40px;border-radius:11px;background:var(--card);color:var(--brand);display:grid;place-items:center;font-size:18px;flex:none}
 .dev-item .dt{flex:1;min-width:0}
-.dev-item .dt strong{display:block;font-size:13px;font-weight:600}
+.dev-item .dt strong{display:block;font-size:13.5px;font-weight:800}
 .dev-item .dt small{font-size:11px;color:var(--ink3);direction:ltr;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dev-item .da{color:var(--ink3);font-size:13px;padding:6px;width:30px;height:30px;display:grid;place-items:center;border-radius:2px;flex:none}
-.dev-item .da:hover{background:var(--danger-bg);color:var(--danger)}
+.dev-item .da{color:var(--danger);font-size:14px;padding:6px;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;flex:none}
 
-/* ═══ SCHEDULE DAYS ═══ */
-.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0}
-.day{padding:6px 0;border-radius:2px;background:var(--soft);border:1px solid var(--line);font-size:11px;font-weight:600;color:var(--ink2);text-align:center;transition:.15s;cursor:pointer;user-select:none}
-.day:hover{border-color:var(--brand)}
-.day.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:8px 0}
+.day{padding:8px 0;border-radius:10px;background:var(--soft);font-size:11.5px;font-weight:700;color:var(--ink2);text-align:center;transition:.15s;cursor:pointer;user-select:none}
+.day.active{background:var(--brand);color:#fff}
 .days-hint{font-size:11px;color:var(--ink3);text-align:center;margin-top:4px}
 
-/* ═══ NOTE ═══ */
-.note{background:var(--brand-bg);border-radius:2px;padding:10px 12px;font-size:11.5px;color:var(--ink2);margin-bottom:10px;line-height:1.5;flex:none;border-inline-start:3px solid var(--brand)}
-.note b{font-weight:600}
-.note.warn{background:var(--warn-bg);color:var(--ink2);border-inline-start-color:var(--warn)}
+.note{background:var(--brand-bg);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--brand);margin-bottom:14px;line-height:1.5}
+.note b{font-weight:800}
+.note.warn{background:var(--warn-bg);color:var(--warn)}
 
-/* ═══ RESPONSIVE ═══ */
-@media(min-width:640px){
-  .sg{grid-template-columns:repeat(3,1fr)}
-  main{max-width:860px;padding:16px}
-  .grid{grid-template-columns:repeat(3,1fr)}
-  :root{--btn-size:46px}
-}
+@media(min-width:640px){.sg{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:900px){
+  .grid{grid-template-columns:repeat(3,1fr)}
   .sg{grid-template-columns:repeat(4,1fr)}
-  main{max-width:1100px;padding:20px}
-  .grid{grid-template-columns:repeat(3,1fr);gap:10px}
-  :root{--btn-size:46px}
-  .pwr,.ind{width:60px;height:60px;font-size:24px}
-  .tile{min-height:140px;padding:14px}
-}
-@media(min-width:1200px){
-  main{max-width:1280px}
-}
-@media(max-width:380px){
-  :root{--btn-size:42px;--h-input:30px}
-  main{padding:8px}
-  .grid{gap:6px}
-  .tile{padding:10px 6px;min-height:100px}
-  .pwr,.ind{width:46px;height:46px;font-size:19px}
-  .lb{font-size:11.5px}
-  .lb b{font-size:13.5px}
-  .stt{font-size:10.5px}
-  .tab small{font-size:9px}
-  .tab .ic{width:18px;height:18px}
+  main{max-width:960px;padding:24px 20px 40px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -290,6 +265,8 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
 <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
 <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
 <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></symbol>
@@ -299,6 +276,7 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
 <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol>
 <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></symbol>
 <symbol id="i-flame" viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></symbol>
 <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
 <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol>
 <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
@@ -317,27 +295,39 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
 </defs></svg>
 
 <header class="top">
-  <div class="top-row">
-    <div class="top-actions">
-      <button class="hb" id="themeBtn" aria-label="الوضع الليلي"></button>
-      <button class="hb" data-nav="params" aria-label="الإعدادات"></button>
-      <button class="hb" data-nav="settings" aria-label="النظام"></button>
+  <button class="hb" id="menuBtn" aria-label="القائمة"><span data-i="menu"></span></button>
+  <div class="brand">
+    <div class="brand-ic"><span data-i="cpu"></span></div>
+    <div class="brand-txt">
+      <h1 id="viewTitle">ESP32 IOT DASHBOARD</h1>
+      <small>KC868-A6</small>
     </div>
-    <button class="pill" id="pill"><i></i><span>--</span></button>
   </div>
+  <button class="pill" id="pill"><i></i><span>--</span></button>
 </header>
 <div class="offline-banner" id="offlineBanner">⚠️ وضع Offline — التغييرات محفوظة محلياً</div>
 
 <main>
   <!-- HOME -->
   <div class="page active" id="page-home">
-    <h2 class="pt"><span data-i="target"></span>التحكم</h2>
+    <div class="fb-card">
+      <div class="fb-ic"><span data-i="cloud"></span></div>
+      <div class="fb-info">
+        <h3>Firebase Connection</h3>
+        <div class="status">
+          <span class="ok-ic"><span data-i="check"></span></span>
+          <span id="fbDeviceName">Said</span>
+          <span class="cloud"><span data-i="cloud"></span></span>
+        </div>
+      </div>
+    </div>
 
     <div class="sec">المخارج</div>
     <div class="col open" id="doCard">
       <div class="col-h" onclick="toggleCollapse('doCard')"><span class="cv" data-i="chev"></span><div class="t">المخارج الرقمية (DO)</div><div class="badge" id="doCnt">0/6</div></div>
       <div class="col-b"><div><div class="grid" id="doGrid"></div></div></div>
     </div>
+
     <div class="sec">المداخل</div>
     <div class="col open" id="diCard">
       <div class="col-h" onclick="toggleCollapse('diCard')"><span class="cv" data-i="chev"></span><div class="t">المداخل الرقمية (DI)</div><div class="badge" id="diCnt">0/6</div></div>
@@ -347,16 +337,16 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
 
   <!-- MONITOR -->
   <div class="page" id="page-monitor">
-    <h2 class="pt"><span data-i="activity"></span>المراقبة</h2>
+    <h2 class="pt"><span class="pt-ic" data-i="activity"></span>المراقبة</h2>
     <div class="sec">المخارج التناظرية</div><div id="aoBox"></div>
     <div class="sec">المداخل التناظرية</div><div id="aiBox"></div>
   </div>
 
   <!-- ALARMS -->
   <div class="page" id="page-alarms">
-    <h2 class="pt"><span data-i="bell"></span>التنبيهات</h2>
+    <h2 class="pt"><span class="pt-ic" data-i="bell"></span>التنبيهات</h2>
 
-    <div class="btn-row" style="margin-top:10px">
+    <div class="btn-row" style="margin-top:12px">
       <button class="btn w" id="muteAlarmsBtn"><span data-i="bell"></span>كتم التنبيهات</button>
       <button class="btn d" id="clearAlarmsBtn"><span data-i="trash"></span>حذف الكل</button>
     </div>
@@ -367,78 +357,130 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
 
   <!-- PARAMS -->
   <div class="page" id="page-params">
-    <h2 class="pt"><span data-i="sliders"></span>الإعدادات</h2>
+    <h2 class="pt"><span class="pt-ic" data-i="sliders"></span>الإعدادات</h2>
 
-    <div style="flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column;padding-inline-end:2px">
-      <button class="btn p" id="saveAllBtn" style="margin-top:8px;flex:none"><span data-i="save"></span>حفظ جميع الإعدادات</button>
+    <button class="btn p" id="saveAllBtn" style="margin-top:8px"><span data-i="save"></span>حفظ جميع الإعدادات</button>
 
-      <div class="sec">ضبط سريع</div>
-      <div class="card"><div class="chips">
-        <button class="chip" data-preset="default"><span data-i="scale"></span>افتراضي</button>
-        <button class="chip" data-preset="reliable"><span data-i="shield"></span>اعتمادية</button>
-        <button class="chip" data-preset="efficient"><span data-i="leaf"></span>توفير</button>
-      </div></div>
+    <div class="sec">ضبط سريع</div>
+    <div class="card"><div class="chips">
+      <button class="chip" data-preset="default"><span data-i="scale"></span>افتراضي</button>
+      <button class="chip" data-preset="reliable"><span data-i="shield"></span>اعتمادية</button>
+      <button class="chip" data-preset="efficient"><span data-i="leaf"></span>توفير</button>
+    </div></div>
 
-      <div class="sec">إعدادات شاشة OLED</div>
-      <div class="card">
-        <div class="chips" style="margin-bottom:12px">
-          <button class="chip active" data-mode="0"><span data-i="grid"></span>الكل</button>
-          <button class="chip" data-mode="1"><span data-i="hash"></span>رقمي</button>
-          <button class="chip" data-mode="2"><span data-i="trend"></span>تناظري</button>
-        </div>
-        <div class="fg">
-          <div class="f"><label>وقت DI / DO (2-60s)</label><input type="number" id="oled_cycle_do" min="2" max="60"></div>
-          <div class="f"><label>وقت AI / AO (2-60s)</label><input type="number" id="oled_cycle_ao" min="2" max="60"></div>
-          <div class="f"><label>مدة التثبيت (2-15s)</label><input type="number" id="hold_duration" min="2" max="15"></div>
-        </div>
+    <div class="sec">إعدادات شاشة OLED</div>
+    <div class="card">
+      <div class="chips" style="margin-bottom:14px">
+        <button class="chip active" data-mode="0"><span data-i="grid"></span>الكل</button>
+        <button class="chip" data-mode="1"><span data-i="hash"></span>رقمي</button>
+        <button class="chip" data-mode="2"><span data-i="trend"></span>تناظري</button>
       </div>
-
-      <div id="paramGroups"></div>
+      <div class="fg">
+        <div class="f"><label>وقت DI / DO (2-60s)</label><input type="number" id="oled_cycle_do" min="2" max="60"></div>
+        <div class="f"><label>وقت AI / AO (2-60s)</label><input type="number" id="oled_cycle_ao" min="2" max="60"></div>
+        <div class="f"><label>مدة التثبيت (2-15s)</label><input type="number" id="hold_duration" min="2" max="15"></div>
+      </div>
     </div>
+
+    <div id="paramGroups"></div>
   </div>
 
   <!-- SETTINGS -->
   <div class="page" id="page-settings">
-    <h2 class="pt"><span data-i="gear"></span>النظام</h2>
+    <h2 class="pt"><span class="pt-ic" data-i="gear"></span>النظام</h2>
 
-    <div style="flex:1;overflow-y:auto;min-height:0;padding-inline-end:2px">
-      <div class="sec">اختيار الجهاز</div>
-      <div class="dev-select">
-        <span data-i="server"></span>
-        <select id="deviceSelectSettings"></select>
-      </div>
-
-      <div class="sec">الأجهزة (Multi-Device)</div>
-      <div class="card">
-        <div id="devicesList"></div>
-        <button class="btn s" id="addDeviceBtn"><span data-i="plus"></span>إضافة جهاز</button>
-      </div>
-
-      <div class="sec">إعادة الاتصال</div>
-      <div class="card">
-        <div class="btn-grid c2">
-          <button class="btn" data-reconnect="wifi"><span data-i="wifi"></span>WiFi</button>
-          <button class="btn" data-reconnect="firebase"><span data-i="flame"></span>Firebase</button>
-          <button class="btn" data-reconnect="ntp"><span data-i="clock"></span>NTP</button>
-          <button class="btn d" data-reconnect="restart"><span data-i="zap"></span>RESTART</button>
-          <button class="btn s" data-reconnect="all"><span data-i="refresh"></span>إعادة الاتصال بالكل</button>
-          <button class="btn d" id="wipeDbBtn"><span data-i="trash"></span>حذف كل البيانات</button>
-        </div>
-      </div>
-
-      <div class="sec">حالة النظام</div><div class="sg" id="statusGrid"></div>
-      <div class="sec">تفاصيل WiFi</div><div class="sg" id="wifiGrid"></div>
-      <div class="sec">معلومات النظام</div><div class="sg" id="sysGrid"></div>
+    <div class="sec">اختيار الجهاز</div>
+    <div class="dev-select">
+      <span data-i="server"></span>
+      <select id="deviceSelectSettings"></select>
     </div>
+
+    <div class="sec">الأجهزة (Multi-Device)</div>
+    <div class="card">
+      <div id="devicesList"></div>
+      <button class="btn s" id="addDeviceBtn"><span data-i="plus"></span>إضافة جهاز</button>
+    </div>
+
+    <div class="sec">إعادة الاتصال</div>
+    <div class="card">
+      <div class="btn-grid c2">
+        <button class="btn" data-reconnect="wifi"><span data-i="wifi"></span>WiFi</button>
+        <button class="btn" data-reconnect="firebase"><span data-i="flame"></span>Firebase</button>
+        <button class="btn" data-reconnect="ntp"><span data-i="clock"></span>NTP</button>
+        <button class="btn d" data-reconnect="restart"><span data-i="zap"></span>RESTART</button>
+        <button class="btn s" data-reconnect="all"><span data-i="refresh"></span>إعادة الاتصال بالكل</button>
+        <button class="btn d" id="wipeDbBtn"><span data-i="trash"></span>حذف كل البيانات</button>
+      </div>
+    </div>
+
+    <div class="sec">حالة النظام</div><div class="sg" id="statusGrid"></div>
+    <div class="sec">تفاصيل WiFi</div><div class="sg" id="wifiGrid"></div>
+    <div class="sec">معلومات النظام</div><div class="sg" id="sysGrid"></div>
   </div>
 </main>
 
-<nav class="nav" id="topNavbar">
-  <button class="tab active" data-nav="home"><span data-i="home"></span><small>الرئيسية</small></button>
-  <button class="tab" data-nav="monitor"><span data-i="activity"></span><small>المراقبة</small></button>
-  <button class="tab" data-nav="alarms"><span data-i="bell"></span><span class="dot"></span><small>التنبيهات</small></button>
-  <button class="tab" id="refreshTab" aria-label="تحديث"><span data-i="refresh"></span><small>تحديث</small></button>
-</nav>
+<!-- ═══ MENU MODAL (نافذة منبثقة في وسط الشاشة) ═══ -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-box" id="menuBox">
+    <div class="menu-h">
+      <div class="brand-ic"><span data-i="cpu"></span></div>
+      <div class="brand-txt">
+        <h1>ESP32 IOT DASHBOARD</h1>
+        <small>KC868-A6</small>
+      </div>
+      <button class="menu-close" id="menuClose" aria-label="إغلاق">✕</button>
+    </div>
+
+    <!-- الأقسام الرئيسية -->
+    <div class="menu-sec">الأقسام</div>
+    <button class="menu-item active" data-nav="home">
+      <div class="mi-ic c-blue"><span data-i="home"></span></div>
+      <div class="mi-txt"><strong>الرئيسية</strong><small>التحكم بالمخارج والمداخل</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+    <button class="menu-item" data-nav="monitor">
+      <div class="mi-ic c-purple"><span data-i="activity"></span></div>
+      <div class="mi-txt"><strong>المراقبة</strong><small>المداخل والمخارج التناظرية</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+    <button class="menu-item" data-nav="alarms">
+      <div class="mi-ic c-orange"><span data-i="bell"></span></div>
+      <div class="mi-txt"><strong>التنبيهات</strong><small>سجل الأحداث والإشعارات</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+
+    <!-- الإعدادات -->
+    <div class="menu-sec">الإعدادات</div>
+    <button class="menu-item" data-nav="params">
+      <div class="mi-ic c-purple"><span data-i="sliders"></span></div>
+      <div class="mi-txt"><strong>الإعدادات</strong><small>ضبط المعاملات</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+    <button class="menu-item" data-nav="settings">
+      <div class="mi-ic c-gray"><span data-i="gear"></span></div>
+      <div class="mi-txt"><strong>النظام</strong><small>الاتصال بـ Firebase</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+
+    <!-- التحكم السريع -->
+    <div class="menu-sec">التحكم السريع</div>
+    <button class="menu-item" id="menuTheme">
+      <div class="mi-ic c-orange"><span data-i="moon"></span></div>
+      <div class="mi-txt"><strong>تبديل الثيم</strong><small id="menuThemeSub">الوضع الفاتح</small></div>
+      <span class="mi-toggle" id="menuThemeState">فاتح</span>
+    </button>
+    <button class="menu-item" id="menuNotify">
+      <div class="mi-ic c-green" id="menuNotifyIc"><span data-i="bell"></span></div>
+      <div class="mi-txt"><strong>الإشعارات</strong><small id="menuNotifySub">مفعّلة</small></div>
+      <span class="mi-toggle on" id="menuNotifyState">مفعّل</span>
+    </button>
+    <button class="menu-item" id="menuRefresh">
+      <div class="mi-ic c-teal"><span data-i="refresh"></span></div>
+      <div class="mi-txt"><strong>تحديث</strong><small>إعادة تحميل البيانات</small></div>
+      <span class="mi-arrow" data-i="chev-left"></span>
+    </button>
+  </div>
+</div>
 
 <div class="toast" id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
 
@@ -466,12 +508,12 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
     </div>
     <div class="days-hint">اختر الأيام التي تعمل فيها الجدولة</div>
 
-    <div class="sec" style="margin:12px 0 6px">وقت التشغيل (ON)</div>
+    <div class="sec" style="margin:14px 0 6px">وقت التشغيل (ON)</div>
     <div class="fg">
       <div class="f"><label>الساعة (0-23)</label><input type="number" id="on_hour" min="0" max="23" value="8"></div>
       <div class="f"><label>الدقيقة (0-59)</label><input type="number" id="on_min" min="0" max="59" value="0"></div>
     </div>
-    <div class="sec" style="margin:12px 0 6px">وقت الإطفاء (OFF)</div>
+    <div class="sec" style="margin:14px 0 6px">وقت الإطفاء (OFF)</div>
     <div class="fg">
       <div class="f"><label>الساعة (0-23)</label><input type="number" id="off_hour" min="0" max="23" value="18"></div>
       <div class="f"><label>الدقيقة (0-59)</label><input type="number" id="off_min" min="0" max="59" value="0"></div>
@@ -490,15 +532,15 @@ main{flex:1;max-width:760px;width:100%;margin:0 auto;padding:12px;display:flex;f
       <span id="deviceModalTitle">إضافة جهاز</span>
       <button id="deviceModalClose" aria-label="إغلاق">✕</button>
     </div>
-    <div class="f" style="margin-bottom:10px">
+    <div class="f" style="margin-bottom:12px">
       <label>اسم الجهاز</label>
       <input type="text" id="devName" placeholder="مثال: المنزل">
     </div>
-    <div class="f" style="margin-bottom:10px">
+    <div class="f" style="margin-bottom:12px">
       <label>رابط Firebase (databaseURL)</label>
-      <input type="text" id="devUrl" placeholder="https://xxx.firebaseio.com" style="direction:ltr;text-align:left;font-size:12px">
+      <input type="text" id="devUrl" placeholder="https://xxx.firebaseio.com" style="direction:ltr;text-align:left;font-size:12.5px">
     </div>
-    <div class="f" style="margin-bottom:10px">
+    <div class="f" style="margin-bottom:12px">
       <label>المسار الأساسي (BASE)</label>
       <input type="text" id="devBase" placeholder="Said" value="Said" style="direction:ltr;text-align:left">
     </div>
@@ -514,7 +556,7 @@ import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.
 import { getDatabase, ref, onValue, set, update, remove, off } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const AI_MAX = 4095;
-const APP_VERSION = 'Dashboard v7.0 — Win10';
+const APP_VERSION = 'Dashboard v7.2 — Center Menu';
 
 const $ = id => document.getElementById(id);
 const $$ = sel => document.querySelectorAll(sel);
@@ -668,7 +710,7 @@ function toast(msg, type = 'info'){
   $('toastMsg').textContent = msg;
   $('toast').className = 'toast show ' + type;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 3200);
 }
 
 function addEvent(msg, type = 'info'){
@@ -678,16 +720,7 @@ function addEvent(msg, type = 'info'){
   LS.set('eventLog', state.eventLog.slice(0, 100));
   if(type !== 'info' && !state.notifyMuted){
     state.notifCount++;
-    updateNotifBadge();
   }
-}
-
-function updateNotifBadge(){
-  const tab = document.querySelector('.tab[data-nav="alarms"]');
-  if(!tab) return;
-  const show = state.notifCount > 0 && !state.notifyMuted;
-  tab.classList.toggle('has-notif', show);
-  tab.classList.toggle('muted', state.notifyMuted);
 }
 
 const renderEventLog = throttle(() => {
@@ -697,7 +730,7 @@ const renderEventLog = throttle(() => {
     ? state.eventLog.slice(0, 60).map(e =>
         `<div class="ev ${e.type}"><time>${e.time}</time><span>${e.msg}</span><button data-del="${e.id}" aria-label="حذف">${I('x')}</button></div>`
       ).join('')
-    : '<div style="text-align:center;color:var(--ink3);padding:20px;font-size:12px">لا توجد أحداث بعد</div>';
+    : '<div style="text-align:center;color:var(--ink3);padding:22px;font-size:12.5px">لا توجد أحداث بعد</div>';
   $('eventLog').innerHTML = html;
 }, 150);
 
@@ -713,9 +746,19 @@ function setMuteUI(){
   const ab = $('muteAlarmsBtn');
   if(ab){
     ab.className = 'btn ' + (muted ? 'p' : 'w');
-    ab.innerHTML = I(muted ? 'bell' : 'bell-off') + `<span>${muted ? 'تفعيل التنبيهات' : 'كتم التنبيهات'}</span>`;
+    ab.innerHTML = I(muted ? 'bell' : 'bell-off') + `<span>${muted ? 'تفعيل' : 'كتم'}</span>`;
   }
-  updateNotifBadge();
+  // Menu notify UI
+  const mi = $('menuNotifyIc');
+  const ms = $('menuNotifySub');
+  const mst = $('menuNotifyState');
+  if(mi) mi.className = 'mi-ic ' + (muted ? 'c-gray' : 'c-green');
+  if(mi) mi.innerHTML = I(muted ? 'bell-off' : 'bell');
+  if(ms) ms.textContent = muted ? 'معطّلة' : 'مفعّلة';
+  if(mst){
+    mst.textContent = muted ? 'معطّل' : 'مفعّل';
+    mst.classList.toggle('on', !muted);
+  }
 }
 setMuteUI();
 
@@ -725,7 +768,7 @@ function toggleMute(){
   LS.set('notifyMuted', state.notifyMuted);
   if(state.notifyMuted) state.notifCount = 0;
   setMuteUI();
-  toast(state.notifyMuted ? 'تم كتم الإشعارات والتنبيهات' : 'تم تفعيل الإشعارات والتنبيهات',
+  toast(state.notifyMuted ? 'تم كتم الإشعارات' : 'تم تفعيل الإشعارات',
         state.notifyMuted ? 'info' : 'success');
 }
 $('muteAlarmsBtn').addEventListener('click', toggleMute);
@@ -735,28 +778,49 @@ const PAGE_TITLES = { home:'ESP32 IOT DASHBOARD', monitor:'المراقبة', al
 function switchPage(page){
   $$('.page').forEach(p => p.classList.remove('active'));
   $('page-' + page)?.classList.add('active');
-  document.title = (PAGE_TITLES[page] || 'ESP32') + ' — IOT';
-  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.nav === page));
-  $$('.hb[data-nav]').forEach(t => t.classList.toggle('active', t.dataset.nav === page));
-  window.scrollTo({ top: 0 });
+  $('viewTitle').textContent = PAGE_TITLES[page] || 'ESP32 IOT DASHBOARD';
+  $$('.menu-item[data-nav]').forEach(t => t.classList.toggle('active', t.dataset.nav === page));
+  const m = document.querySelector('main');
+  if(m) m.scrollTo({ top: 0, behavior: 'smooth' });
   LS.set('page', page);
-  if(page === 'alarms'){ state.notifCount = 0; updateNotifBadge(); }
+  closeMenu();
+  if(page === 'alarms'){ state.notifCount = 0; }
 }
-$$('.tab[data-nav]').forEach(t => t.addEventListener('click', () => { haptic(); switchPage(t.dataset.nav); }));
-$$('.hb[data-nav]').forEach(t => t.addEventListener('click', () => { haptic(); switchPage(t.dataset.nav); }));
+$$('.menu-item[data-nav]').forEach(t => t.addEventListener('click', () => { haptic(); switchPage(t.dataset.nav); }));
+
+/* ═══ MENU (Center Modal) ═══ */
+const menuOverlay = $('menuOverlay');
+function openMenu(){ menuOverlay.classList.add('show'); }
+function closeMenu(){ menuOverlay.classList.remove('show'); }
+$('menuBtn').addEventListener('click', () => { haptic(); openMenu(); });
+$('menuClose').addEventListener('click', closeMenu);
+menuOverlay.addEventListener('click', e => { if(e.target === menuOverlay) closeMenu(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeMenu(); });
+
+/* ═══ MENU ACTIONS ═══ */
+$('menuTheme').addEventListener('click', () => {
+  haptic();
+  applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark');
+});
+$('menuNotify').addEventListener('click', toggleMute);
+$('menuRefresh').addEventListener('click', () => {
+  haptic();
+  closeMenu();
+  toast('تحديث البيانات...');
+  setTimeout(() => location.reload(), 300);
+});
 
 /* ═══ THEME ═══ */
 function applyTheme(t){
   document.body.setAttribute('data-theme', t);
-  const b = $('themeBtn');
-  b.innerHTML = I(t === 'dark' ? 'sun' : 'moon');
-  b.setAttribute('aria-label', t === 'dark' ? 'الوضع الفاتح' : 'الوضع الليلي');
-  document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0d3a63' : '#0078d4';
+  document.querySelector('meta[name=theme-color]').content = t === 'dark' ? '#0a1020' : '#ffffff';
+  const sub = $('menuThemeSub'); if(sub) sub.textContent = t === 'dark' ? 'الوضع الداكن' : 'الوضع الفاتح';
+  const st = $('menuThemeState'); if(st) st.textContent = t === 'dark' ? 'داكن' : 'فاتح';
+  const ic = $('menuTheme')?.querySelector('.mi-ic');
+  if(ic) ic.innerHTML = I(t === 'dark' ? 'sun' : 'moon');
   LS.set('theme', t);
 }
-$('themeBtn').addEventListener('click', () => { haptic(); applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'); });
 
-$('refreshTab').addEventListener('click', () => { haptic(); toast('تحديث البيانات...'); location.reload(); });
 window.toggleCollapse = id => { haptic(); $(id).classList.toggle('open'); };
 
 /* ═══ DO / DI TILES ═══ */
@@ -821,7 +885,7 @@ for(let i = 1; i <= 4; i++){
   aiMeters[i] = $('aiF' + i); aiValues[i] = $('aiV' + i);
 }
 
-const getAiColor = p => p < 30 ? '#0078d4' : p < 60 ? '#107c10' : p < 85 ? '#c19c00' : '#d13438';
+const getAiColor = p => p < 30 ? '#3b82f6' : p < 60 ? '#10b981' : p < 85 ? '#f59e0b' : '#ef4444';
 
 /* ═══ SCHEDULE ═══ */
 function openSchedule(i){
@@ -881,6 +945,9 @@ function renderDevices(){
     `<option value="${d.id}" ${d.id === state.activeDeviceId ? 'selected' : ''}>${d.name}</option>`
   ).join('');
   $('deviceSelectSettings').innerHTML = opts;
+  const fbName = $('fbDeviceName');
+  const dev = state.devices.find(d => d.id === state.activeDeviceId);
+  if(fbName && dev) fbName.textContent = dev.name;
   $('devicesList').innerHTML = state.devices.map(d => `
     <div class="dev-item ${d.id === state.activeDeviceId ? 'active' : ''}" data-dev="${d.id}">
       <div class="di">${I('cpu')}</div>
@@ -990,7 +1057,7 @@ const card = (id, vid, label, cls='') => `<div class="sc ${cls}" id="${id}"><spa
 $('statusGrid').innerHTML = [['scWifi','WiFi'],['scFb','Firebase'],['scI2c','I2C'],['scNtp','NTP'],['scInteg','Integrity'],['scSsl','SSL'],['scFbFail','FB Failures'],['scRecovery','Recovery']].map(([id,l]) => card(id, id+'Val', l)).join('');
 $('wifiGrid').innerHTML = card('scIp','infoWifiIp','IP','info') + card('scSsid','infoWifiSsid','SSID','info') + card('scMac','infoMac','MAC','info') + card('scRssi','infoRssi','RSSI');
 $('sysGrid').innerHTML = card('scFw','infoFwVersion','Firmware','info') + card('scUp','infoUptime','Uptime','info') + card('scHeap','infoHeapFree','Heap') + card('scBoot','infoBootCount','Boot','info');
-$('infoMac').style.fontSize = '11px';
+$('infoMac').style.fontSize = '11.5px';
 
 /* ═══ RENDER ═══ */
 function renderDO(d){
@@ -1202,7 +1269,6 @@ $('clearAlarmsBtn').addEventListener('click', () => {
   state.eventLog = [];
   state.notifCount = 0;
   renderEventLog();
-  updateNotifBadge();
   LS.del('eventLog');
   toast('تم حذف كل التنبيهات', 'success');
 });
@@ -1218,7 +1284,6 @@ $('wipeDbBtn').addEventListener('click', async () => {
   state.eventLog = [];
   state.notifCount = 0;
   renderEventLog();
-  updateNotifBadge();
   toast('تم حذف كل البيانات (الثيم والإعدادات محفوظة)', 'success');
   setTimeout(() => { LS.set('page', 'settings'); location.reload(); }, 1000);
 });
