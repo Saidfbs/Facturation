@@ -173,6 +173,7 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 <symbol id="i-cc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
 <symbol id="i-xc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6"/></symbol>
 </defs></svg>
 
 <header class="top">
@@ -209,6 +210,23 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 
   <div class="page" id="page-params">
     <h2 class="pt"><span data-i="sliders"></span>الإعدادات</h2>
+
+    <button class="btn p" id="saveAllBtn" style="margin-top:12px"><span data-i="save"></span>حفظ جميع الإعدادات</button>
+
+    <div class="sec">إعدادات شاشة OLED</div>
+    <div class="card">
+      <div class="chips" style="margin-bottom:14px">
+        <button class="chip active" data-mode="0"><span data-i="grid"></span>الكل</button>
+        <button class="chip" data-mode="1"><span data-i="hash"></span>رقمي</button>
+        <button class="chip" data-mode="2"><span data-i="trend"></span>تناظري</button>
+      </div>
+      <div class="fg">
+        <div class="f"><label>وقت DI / DO (2-60s)</label><input type="number" id="oled_cycle_do" min="2" max="60"></div>
+        <div class="f"><label>وقت AI / AO (2-60s)</label><input type="number" id="oled_cycle_ao" min="2" max="60"></div>
+        <div class="f"><label>مدة التثبيت (2-15s)</label><input type="number" id="hold_duration" min="2" max="15"></div>
+      </div>
+    </div>
+
     <div class="sec">ضبط سريع</div>
     <div class="card"><div class="chips">
       <button class="chip" data-preset="default"><span data-i="scale"></span>افتراضي</button>
@@ -216,14 +234,19 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
       <button class="chip" data-preset="efficient"><span data-i="leaf"></span>توفير</button>
     </div></div>
     <div id="paramGroups"></div>
-    <button class="btn p" id="saveAllBtn"><span data-i="save"></span>حفظ جميع الإعدادات</button>
   </div>
 
   <div class="page" id="page-settings">
     <h2 class="pt"><span data-i="gear"></span>النظام</h2>
-    <div class="sec">حالة النظام</div><div class="sg" id="statusGrid"></div>
-    <div class="sec">تفاصيل WiFi</div><div class="sg" id="wifiGrid"></div>
-    <div class="sec">معلومات النظام</div><div class="sg" id="sysGrid"></div>
+
+    <div class="sec">تفضيلات الواجهة</div>
+    <div class="card">
+      <div class="two" style="margin:0">
+        <button class="btn" id="themeBtn"><span class="bi" data-i="moon"></span><span class="bt">الوضع الليلي</span></button>
+        <button class="btn" id="notifyBtn"><span class="bi" data-i="bell"></span><span class="bt">الإشعارات</span></button>
+      </div>
+    </div>
+
     <div class="sec">إعادة الاتصال</div>
     <div class="card">
       <div class="two">
@@ -232,15 +255,15 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
         <button class="btn" data-reconnect="ntp"><span data-i="clock"></span>NTP</button>
         <button class="btn d" data-reconnect="restart"><span data-i="zap"></span>RESTART</button>
       </div>
-      <button class="btn s" data-reconnect="all"><span data-i="refresh"></span>إعادة الاتصال بالكل</button>
-    </div>
-    <div class="sec">تفضيلات الواجهة</div>
-    <div class="card">
-      <div class="two" style="margin:0">
-        <button class="btn" id="themeBtn"><span class="bi" data-i="moon"></span><span class="bt">الوضع الليلي</span></button>
-        <button class="btn" id="notifyBtn"><span class="bi" data-i="bell"></span><span class="bt">الإشعارات</span></button>
+      <div class="two" style="margin-bottom:0">
+        <button class="btn s" data-reconnect="all"><span data-i="refresh"></span>إعادة الاتصال بالكل</button>
+        <button class="btn d" id="wipeDbBtn"><span data-i="trash"></span>حذف كل البيانات</button>
       </div>
     </div>
+
+    <div class="sec">حالة النظام</div><div class="sg" id="statusGrid"></div>
+    <div class="sec">تفاصيل WiFi</div><div class="sg" id="wifiGrid"></div>
+    <div class="sec">معلومات النظام</div><div class="sg" id="sysGrid"></div>
   </div>
 </main>
 
@@ -256,10 +279,10 @@ main{max-width:720px;margin:0 auto;padding:16px 14px calc(96px + var(--bot))}
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getDatabase, ref, onValue, set, update } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
 const db = getDatabase(initializeApp({ databaseURL: "https://said-rahil-default-rtdb.firebaseio.com" }));
-const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v4.0';
+const BASE = "/Said", AI_MAX = 4095, APP_VERSION = 'Mobile v4.1';
 
 /* ── helpers ── */
 const $ = id => document.getElementById(id);
@@ -277,16 +300,14 @@ const GROUPS = [
  ['المزامنة والحساسية',[['sync_interval','وقت المزامنة','s',5,600],['sync_before_integrity','فحص السلامة','',5,100],['ai_threshold','حساسية AI','',10,500]]],
  ['التوقيتات الدورية',[['read_inputs','قراءة المداخل','s',5,300],['check_i2c','فحص I2C','s',1,30],['check_heap','فحص الذاكرة','s',10,300],['save_eeprom','حفظ EEPROM','s',5,120],['serial_print','طباعة Serial','s',5,300]]],
  ['الشبكة والاستعادة',[['fb_retry','محاولة Firebase','s',5,60],['max_fb_failures','حد فشل Firebase','',1,5],['max_consecutive_reinits','حد Reinits','',1,10],['ssl_lockout_base','SSL Lockout base','s',10,120],['ssl_lockout_max','SSL Lockout max','s',60,600]]],
- ['شاشة OLED',[['oled_cycle_do','وقت DI / DO','s',2,60],['oled_cycle_ao','وقت AI / AO','s',2,60],['hold_duration','مدة التثبيت','s',2,15]]],
 ];
 const SETTINGS_SCHEMA = { oled_display_mode:{min:0,max:2} };
+/* OLED settings registered manually */
+[['oled_cycle_do',2,60],['oled_cycle_ao',2,60],['hold_duration',2,15]].forEach(([id,min,max]) => SETTINGS_SCHEMA[id] = {min,max});
+
 $('paramGroups').innerHTML = GROUPS.map(([title, fields]) => `
   <div class="sec">${title}</div>
   <div class="card">
-    ${title === 'شاشة OLED' ? `<div class="chips" style="margin-bottom:14px">
-      <button class="chip active" data-mode="0"><span data-i="grid"></span>الكل</button>
-      <button class="chip" data-mode="1"><span data-i="hash"></span>رقمي</button>
-      <button class="chip" data-mode="2"><span data-i="trend"></span>تناظري</button></div>` : ''}
     <div class="fg">${fields.map(([id,l,u,min,max]) => {
       SETTINGS_SCHEMA[id] = {min,max};
       return `<div class="f"><label>${l} (${min}-${max}${u})</label><input type="number" id="${id}" min="${min}" max="${max}"></div>`;
@@ -497,6 +518,21 @@ document.querySelectorAll('[data-reconnect]').forEach(btn => btn.addEventListene
     toast(`تم: ${RL[cmd]}`, 'success'); addEvent(`إعادة اتصال: ${RL[cmd]}`, 'warn');
   }catch(e){ toast('تعذّر الإرسال', 'error'); }
 }));
+
+/* ── wipe database ── */
+$('wipeDbBtn').addEventListener('click', async () => {
+  haptic(30);
+  if(!confirm('⚠️ سيتم حذف كل بيانات قاعدة البيانات (DO, DI, AO, AI, status, info, cmd) نهائياً. هل أنت متأكد؟')) return;
+  if(!confirm('تأكيد نهائي: لا يمكن التراجع عن هذه العملية!')) return;
+  try{
+    await remove(ref(db, BASE));
+    toast('تم حذف كل البيانات', 'success');
+    addEvent('حذف كل بيانات قاعدة البيانات', 'error');
+  }catch(e){
+    toast('تعذّر الحذف', 'error');
+    addEvent('فشل حذف البيانات', 'error');
+  }
+});
 
 /* ── render ── */
 function renderDO(d){
