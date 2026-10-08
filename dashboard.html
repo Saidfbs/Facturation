@@ -33,10 +33,7 @@ input,select{font:inherit;color:inherit}
 .hb{width:var(--h-btn);height:var(--h-btn);border-radius:var(--r-btn);display:grid;place-items:center;background:var(--panel);border:1px solid var(--line);color:var(--ink2);transition:.15s;position:relative;flex:none}
 .hb:active{transform:scale(.94)}
 .hb.active{background:var(--sig-bg);color:var(--sig);border-color:var(--sig)}
-.hb.on{color:var(--grn)}
 .hb .ic{width:20px;height:20px}
-.hb .badge{position:absolute;top:-2px;inset-inline-end:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--red);color:#fff;font:700 9.5px/16px var(--mono);text-align:center;display:none}
-.hb.has-badge .badge{display:block}
 .led{width:9px;height:9px;border-radius:50%;background:var(--ink3);transition:.2s}
 .led.on{background:var(--grn);box-shadow:0 0 0 3px var(--grn-bg),0 0 8px var(--grn)}
 .led.warn{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
@@ -192,8 +189,8 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
 <header class="top">
   <div class="ttl"><h1 id="devTitle">KC868-A6</h1><small id="viewTitle">الرئيسية</small></div>
   <button class="hb" id="btnTheme" aria-label="الثيم"></button>
-  <button class="hb" data-nav="system" aria-label="النظام">${I('cpu')}</button>
-  <button class="hb" data-nav="params" aria-label="الإعدادات">${I('sl')}</button>
+  <button class="hb" data-nav="system" aria-label="النظام"></button>
+  <button class="hb" data-nav="params" aria-label="الإعدادات"></button>
   <button class="hb" id="btnConn" aria-label="حالة الاتصال"><i class="led" id="pillLed"></i></button>
 </header>
 <div class="banner" id="offBanner">لا يوجد اتصال بالإنترنت — الأوامر محفوظة وستُرسل لاحقاً</div>
@@ -252,12 +249,12 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
   </section>
 </main>
 
-<!-- ═══ BOTTOM NAV — 4 أزرار ملء العرض ═══ -->
+<!-- ═══ BOTTOM NAV — 4 أزرار (بدون الإشعارات) ═══ -->
 <nav class="bottom-nav">
   <button class="bn-btn active" data-nav="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
   <button class="bn-btn" data-nav="monitor"><svg class="ic"><use href="#i-act"/></svg>المراقبة</button>
   <button class="bn-btn" data-nav="log" id="bnLog"><svg class="ic"><use href="#i-list"/></svg>السجل<span class="nb" id="nb">0</span></button>
-  <button class="bn-btn" id="bnMute"><svg class="ic"><use href="#i-bell"/></svg>الإشعارات</button>
+  <button class="bn-btn" id="bnRefresh"><svg class="ic"><use href="#i-rf"/></svg>تحديث</button>
 </nav>
 
 <div class="toast" id="toast"></div>
@@ -288,7 +285,7 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
 import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getDatabase, ref, onValue, set, update, remove, off } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
 
-const VERSION = 'Dashboard v8.2 — Flat Header + Bottom 4';
+const VERSION = 'Dashboard v8.3 — Bottom 4 (no notify)';
 const AI_MAX = 4095, HIST = 40, STALE_MS = 90000;
 const $ = id => document.getElementById(id), $$ = s => document.querySelectorAll(s);
 const I = n => `<svg class="ic"><use href="#i-${n}"/></svg>`;
@@ -356,9 +353,6 @@ $('clearLog').addEventListener('click', () => {
 /* ═══ MUTE / THEME ═══ */
 function paintMute() {
   $('muteBtn').innerHTML = I(S.muted ? 'bell' : 'bellx') + (S.muted ? 'تفعيل الإشعارات' : 'كتم الإشعارات');
-  const bn = $('bnMute');
-  bn.innerHTML = I(S.muted ? 'bellx' : 'bell') + 'الإشعارات';
-  bn.classList.toggle('muted', S.muted);
   renderBadge();
 }
 function toggleMute() {
@@ -368,7 +362,6 @@ function toggleMute() {
   toast(S.muted ? 'تم كتم الإشعارات' : 'تم تفعيل الإشعارات');
 }
 $('muteBtn').onclick = toggleMute;
-$('bnMute').onclick = toggleMute;
 
 function applyTheme(t) {
   document.body.dataset.theme = t;
@@ -377,6 +370,13 @@ function applyTheme(t) {
   LS.set('theme', t);
 }
 $('btnTheme').onclick = () => { haptic(); applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark'); };
+
+/* زر التحديث في الشريط السفلي */
+$('bnRefresh').onclick = () => {
+  haptic();
+  toast('تحديث البيانات...');
+  setTimeout(() => location.reload(), 300);
+};
 
 /* ═══ NAV ═══ */
 const TITLES = { home: 'الرئيسية', monitor: 'المراقبة', log: 'سجل الأحداث', params: 'الإعدادات', system: 'النظام' };
