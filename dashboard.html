@@ -184,12 +184,12 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
 .k.ok{border-inline-start-color:var(--grn)}.k.warn{border-inline-start-color:var(--amber)}.k.err{border-inline-start-color:var(--red)}
 .k.ok .v{color:var(--grn)}.k.warn .v{color:var(--amber)}.k.err .v{color:var(--red)}
 
-/* ═══ LOG ═══ */
-.ev{display:grid;grid-template-columns:64px 1fr 36px;gap:8px;align-items:center;padding:9px 12px;background:var(--panel);border:1px solid var(--line);border-inline-start:4px solid var(--sig);border-radius:10px;margin-bottom:6px;font-size:13px}
+/* ═══ LOG (in modal) ═══ */
+.ev{display:grid;grid-template-columns:64px 1fr 36px;gap:8px;align-items:center;padding:9px 12px;background:var(--well);border:1px solid var(--line);border-inline-start:4px solid var(--sig);border-radius:10px;margin-bottom:6px;font-size:13px}
 .ev.success{border-inline-start-color:var(--grn)}.ev.warn{border-inline-start-color:var(--amber)}.ev.error{border-inline-start-color:var(--red)}
 .ev time{font:600 11px var(--mono);color:var(--ink3)}
 .ev button{width:36px;height:36px;color:var(--ink3);display:grid;place-items:center;border-radius:8px}
-.ev button:active{background:var(--well)}
+.ev button:active{background:var(--panel)}
 .empty{text-align:center;color:var(--ink3);padding:26px;font-size:13px}
 
 /* ═══ DEVICE PICK ITEM (اختيار فقط) ═══ */
@@ -424,18 +424,16 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
     <h1 id="devTitle">KC868-A6</h1>
     <small id="viewTitle">الرئيسية</small>
   </div>
-  <!-- زر اختيار الجهاز (اختيار فقط) -->
   <button class="hb" id="btnPickDevice" aria-label="اختيار الجهاز">
     <svg class="ic"><use href="#i-dev"/></svg>
     <i class="conn-led" id="connLed"></i>
   </button>
-  <!-- زر إدارة الأجهزة (إضافة/تعديل/حذف) -->
   <button class="hb" id="btnManageDevices" aria-label="إدارة الأجهزة">
     <svg class="ic"><use href="#i-cog"/></svg>
   </button>
   <button class="hb" id="btnTheme" aria-label="تبديل الثيم"></button>
   <button class="hb" id="btnRefresh" aria-label="تحديث"></button>
-  <button class="hb" id="btnLog" data-nav="log" aria-label="سجل الأحداث">
+  <button class="hb" id="btnLog" aria-label="سجل الأحداث">
     <svg class="ic"><use href="#i-list"/></svg>
     <span class="nb" id="nb">0</span>
   </button>
@@ -461,15 +459,6 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
   <section class="page" id="page-monitor">
     <div class="sec"><span>المخارج التناظرية</span></div><div id="aoBox"></div>
     <div class="sec"><span>المداخل التناظرية</span></div><div id="aiBox"></div>
-  </section>
-
-  <section class="page" id="page-log">
-    <div class="bg2">
-      <button class="btn s" id="muteBtn"></button>
-      <button class="btn d" id="clearLogBtn"><svg class="ic"><use href="#i-tr"/></svg>حذف السجل</button>
-    </div>
-    <div class="sec"><span>سجل الأحداث</span><span class="cnt" id="logCnt">0</span></div>
-    <div id="eventLog"></div>
   </section>
 
   <section class="page" id="page-params">
@@ -523,6 +512,21 @@ main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:14px 14px 24px;over
     <svg class="ic"><use href="#i-cpu"/></svg>النظام
   </button>
 </nav>
+
+<!-- ═══ LOG MODAL (سجل الأحداث) ═══ -->
+<div class="modal" id="logModal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+  <div class="box">
+    <div class="mh">
+      <span id="logModalTitle">سجل الأحداث <span class="cnt" id="logCnt" style="margin-inline-start:6px">0</span></span>
+      <button class="ib" id="logClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="bg2" style="margin-bottom:12px">
+      <button class="btn s sm" id="muteBtn"></button>
+      <button class="btn d sm" id="clearLogBtn"><svg class="ic"><use href="#i-tr"/></svg>حذف السجل</button>
+    </div>
+    <div id="eventLog"></div>
+  </div>
+</div>
 
 <!-- ═══ SCHEDULE MODAL ═══ -->
 <div class="modal" id="schedModal" role="dialog" aria-modal="true" aria-labelledby="schedTitle">
@@ -612,7 +616,7 @@ import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gsta
 /* ═══════════════════════════════════════════════════════════
    CONSTANTS & HELPERS
    ═══════════════════════════════════════════════════════════ */
-const VERSION = 'Dashboard v11.0 — Split Device Controls';
+const VERSION = 'Dashboard v12.1 — Bottom Nav Fixed';
 const AI_MAX = 4095;
 const HIST = 40;
 const STALE_MS = 90_000;
@@ -854,7 +858,7 @@ function addEvent(msg, type = 'info') {
   state.log.unshift({ id: uid(), time: nowTime(), msg, type });
   if (state.log.length > LOG_MAX) state.log.pop();
   LS.set('eventLog', state.log.slice(0, LOG_PERSIST_MAX));
-  if (type !== 'info' && !state.muted && !$('page-log').classList.contains('active')) {
+  if (type !== 'info' && !state.muted && !$('logModal').classList.contains('show')) {
     state.unread++;
   }
   scheduleLogRender();
@@ -910,6 +914,26 @@ $('clearLogBtn').addEventListener('click', async () => {
 });
 
 /* ═══════════════════════════════════════════════════════════
+   LOG MODAL
+   ═══════════════════════════════════════════════════════════ */
+function openLogModal() {
+  haptic();
+  state.unread = 0;
+  renderBadge();
+  $('logModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLogModal() {
+  $('logModal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+$('btnLog').onclick = openLogModal;
+$('logClose').onclick = closeLogModal;
+$('logModal').onclick = e => { if (e.target === $('logModal')) closeLogModal(); };
+
+/* ═══════════════════════════════════════════════════════════
    MUTE / THEME
    ═══════════════════════════════════════════════════════════ */
 function paintMute() {
@@ -952,7 +976,6 @@ $('btnRefresh').onclick = () => {
 const TITLES = Object.freeze({
   home: 'الرئيسية',
   monitor: 'المراقبة',
-  log: 'سجل الأحداث',
   params: 'الإعدادات',
   system: 'النظام'
 });
@@ -961,16 +984,13 @@ function go(page) {
   if (!TITLES[page]) page = 'home';
   $$('.page').forEach(x => x.classList.toggle('active', x.id === 'page-' + page));
   $$('.bn-btn[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === page));
-  $$('.hb[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === page));
   $('viewTitle').textContent = TITLES[page];
   const m = document.querySelector('main');
   m?.scrollTo({ top: 0, behavior: 'smooth' });
   LS.set('page', page);
-  if (page === 'log') { state.unread = 0; renderBadge(); }
 }
 
 $$('.bn-btn[data-nav]').forEach(b => b.onclick = () => { haptic(); go(b.dataset.nav); });
-$$('.hb[data-nav]').forEach(b => b.onclick = () => { haptic(); go(b.dataset.nav); });
 
 /* ═══════════════════════════════════════════════════════════
    CONNECTION STATUS
@@ -1396,12 +1416,10 @@ $('devPickerList').addEventListener('click', async e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && $('devPickerModal').classList.contains('show')) {
-    closeDevPicker();
-  }
-  if (e.key === 'Escape' && $('devManagerModal').classList.contains('show')) {
-    closeDevManager();
-  }
+  if (e.key !== 'Escape') return;
+  if ($('devPickerModal').classList.contains('show')) closeDevPicker();
+  if ($('devManagerModal').classList.contains('show')) closeDevManager();
+  if ($('logModal').classList.contains('show')) closeLogModal();
 });
 
 async function switchDevice(id) {
