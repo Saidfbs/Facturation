@@ -641,7 +641,7 @@ main{
 @media(max-width:360px){.confirm-actions{grid-template-columns:1fr}}
 
 /* ═══════════════════════════════════════════════════════════
-   LOG RTC (Device Log)
+   RTC LOG (Device Log)
    ═══════════════════════════════════════════════════════════ */
 .rtc-log{
   background:var(--well);border-radius:12px;padding:12px;
@@ -747,9 +747,6 @@ main{
 <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
 <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
 <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
-<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/></symbol>
-<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
-<symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></symbol>
 </defs></svg>
 
 <!-- ═══ TOP BAR ═══ -->
@@ -823,9 +820,8 @@ main{
         <svg class="ic" style="color:var(--sig);flex:none"><use href="#i-info"/></svg>
         <div style="font-size:12.5px;line-height:1.6;color:var(--ink2)">
           <b style="color:var(--ink)">ملاحظة:</b>
-          في الإصدار v49.7.4 من ESP32، معظم الإعدادات التقنية ثابتة في الكود.
-          الإعدادات القابلة للتعديل من هذه الواجهة هي:
-          <b>sync_interval, oled_display_mode, oled_cycle_do, oled_cycle_ao, hold_duration, ai_threshold</b>.
+          هذه الإعدادات تُحفظ في Firebase تحت <code style="background:var(--panel);padding:1px 5px;border-radius:4px">/status</code>.
+          يجب رفع <b>ESP32 v49.7.5</b> أو أحدث لتفعيل جميع الحقول.
         </div>
       </div>
     </div>
@@ -867,7 +863,7 @@ main{
     <div class="sec"><span>معلومات الجهاز</span></div>
     <div class="kv-group"><div class="kv" id="sysGrid"></div></div>
     
-    <!-- Advanced Diagnostics (Collapsible) -->
+    <!-- Advanced Diagnostics -->
     <div class="sec"><span>تشخيص متقدم</span></div>
     
     <div class="diag-group" id="diagBoot">
@@ -1020,7 +1016,7 @@ import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gsta
 /* ═══════════════════════════════════════════════════════════
    CONSTANTS
    ═══════════════════════════════════════════════════════════ */
-const VERSION = 'Dashboard v14.0 — ESP32 v49.7.4';
+const VERSION = 'Dashboard v14.1 — ESP32 v49.7.5';
 const AI_MAX = 4095;
 const HIST = 60;
 const STALE_MS = 90_000;
@@ -1974,12 +1970,27 @@ $('devDel').onclick = async () => {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   SETTINGS SCHEMA — مطابق لـ ESP32 v49.7.4
+   SETTINGS SCHEMA — إعادة كل الحقول (17 إعداد)
    ═══════════════════════════════════════════════════════════ */
 const GROUPS = [
   ['المزامنة والحساسية', [
     ['sync_interval','وقت المزامنة','s',5,600],
+    ['sync_before_integrity','فحص السلامة','',5,100],
     ['ai_threshold','حساسية AI','',10,500]
+  ]],
+  ['التوقيتات الدورية', [
+    ['read_inputs','قراءة المداخل','s',5,300],
+    ['check_i2c','فحص I2C','s',1,30],
+    ['check_heap','فحص الذاكرة','s',10,300],
+    ['save_eeprom','حفظ EEPROM','s',5,120],
+    ['serial_print','طباعة Serial','s',5,300]
+  ]],
+  ['الشبكة والاستعادة', [
+    ['fb_retry','محاولة Firebase','s',5,60],
+    ['max_fb_failures','حد فشل Firebase','',1,5],
+    ['max_consecutive_reinits','حد Reinits','',1,10],
+    ['ssl_lockout_base','SSL base','s',10,120],
+    ['ssl_lockout_max','SSL max','s',60,600]
   ]]
 ];
 
@@ -2004,30 +2015,41 @@ $('paramGroups').innerHTML = GROUPS.map(([title, fields]) => `
   </div></div>
 `).join('');
 
-// PRESETS — فقط الإعدادات المدعومة في v49.7.4
+// PRESETS — كاملة مع كل الإعدادات
 const PRESETS = {
-  default:   { sync_interval:60, oled_cycle_do:5, oled_cycle_ao:5, hold_duration:5, oled_display_mode:0, ai_threshold:50 },
-  reliable:  { sync_interval:30, oled_cycle_do:5, oled_cycle_ao:5, hold_duration:5, oled_display_mode:0, ai_threshold:30 },
-  efficient: { sync_interval:300, oled_cycle_do:60, oled_cycle_ao:60, hold_duration:15, oled_display_mode:1, ai_threshold:100 }
+  default: { 
+    sync_interval:30, sync_before_integrity:15, ai_threshold:50,
+    read_inputs:30, check_i2c:5, check_heap:30, save_eeprom:10, serial_print:30,
+    oled_cycle_do:5, oled_cycle_ao:5, hold_duration:5, oled_display_mode:0,
+    fb_retry:30, max_fb_failures:1, max_consecutive_reinits:3,
+    ssl_lockout_base:30, ssl_lockout_max:120
+  },
+  reliable: { 
+    sync_interval:10, sync_before_integrity:5, ai_threshold:20,
+    read_inputs:5, check_i2c:1, check_heap:10, save_eeprom:5, serial_print:15,
+    oled_cycle_do:5, oled_cycle_ao:5, hold_duration:5, oled_display_mode:0,
+    fb_retry:30, max_fb_failures:1, max_consecutive_reinits:5,
+    ssl_lockout_base:10, ssl_lockout_max:60
+  },
+  efficient: { 
+    sync_interval:300, sync_before_integrity:100, ai_threshold:100,
+    read_inputs:300, check_i2c:30, check_heap:300, save_eeprom:120, serial_print:300,
+    oled_cycle_do:60, oled_cycle_ao:60, hold_duration:15, oled_display_mode:1,
+    fb_retry:60, max_fb_failures:3, max_consecutive_reinits:2,
+    ssl_lockout_base:120, ssl_lockout_max:600
+  }
 };
 const PRESET_NAMES = { default:'افتراضي', reliable:'اعتمادية', efficient:'توفير' };
 
 const kvHTML = (id, label) =>
   `<div class="k" id="k_${id}"><div class="l">${label}</div><div class="v" id="v_${id}">--</div></div>`;
 
-// Connection grid
 $('connGrid').innerHTML  = [['wifi','WiFi'],['fb','Firebase'],['ntp','NTP'],['i2c','I2C']].map(a => kvHTML(...a)).join('');
-// Health grid
 $('healthGrid').innerHTML= [['integ','Integrity'],['heap','Heap'],['largest','Largest'],['uptime','Uptime']].map(a => kvHTML(...a)).join('');
-// Errors grid
 $('errGrid').innerHTML   = [['ssl','SSL Errors'],['ff','FB Failures'],['rec','Recovery'],['phase','Sync Phase']].map(a => kvHTML(...a)).join('');
-// SSL grid
 $('sslGrid').innerHTML   = [['hardRst','Hard Resets'],['refreshes','Refreshes'],['cooldown','Cooldown'],['backoff','Backoff']].map(a => kvHTML(...a)).join('');
-// WiFi grid
 $('wfGrid').innerHTML    = [['ip','IP'],['ssid','SSID'],['mac','MAC'],['rssi','RSSI']].map(a => kvHTML(...a)).join('');
-// System grid
 $('sysGrid').innerHTML   = [['fw','Firmware'],['up','Uptime'],['boot','Boot Count'],['reason','Boot Reason']].map(a => kvHTML(...a)).join('');
-// Sync grid
 $('syncGrid').innerHTML  = [['lastSync','آخر مزامنة'],['countdown','العدّاد'],['lastCmd','آخر أمر'],['cmdStatus','حالة الأمر']].map(a => kvHTML(...a)).join('');
 
 const setKv = (id, text, cls = '') => {
@@ -2132,7 +2154,7 @@ const formatUptime = s => {
 
 function renderStatus(v) {
   if (!v || !Object.keys(v).length) {
-    ['wifi','fb','ntp','i2c','integ','ssl','ff','rec','phase','hardRst','refreshes','cooldown','backoff','lastSync','countdown','largest','uptime'].forEach(k => setKv(k, '--'));
+    ['wifi','fb','ntp','i2c','integ','ssl','ff','rec','phase','hardRst','refreshes','cooldown','backoff','lastSync','countdown','largest','uptime','lastCmd','cmdStatus'].forEach(k => setKv(k, '--'));
     return;
   }
   const yn = (id, ok, a, b) => setKv(id, ok ? a : b, ok ? 'ok' : 'err');
@@ -2166,17 +2188,14 @@ function renderStatus(v) {
     setKv('rssi', r + ' dBm', r > -60 ? 'ok' : r > -75 ? 'warn' : 'err');
   }
 
-  // Recovery
   const rl = num(v.recovery_level, 0);
   const rlNames = ['سليم','Firebase','WiFi','Deep Reset','Restart'];
   setKv('rec', `${rlNames[rl] || rl} (${num(v.recovery_attempts)})`, rl === 0 ? 'ok' : 'warn');
 
-  // Sync phase
   const phase = num(v.sync_phase, 0);
   const phaseNames = ['Idle','Read','Write'];
   setKv('phase', phaseNames[phase] || phase, phase === 0 ? 'ok' : 'warn');
 
-  // SSL Hard Resets
   const hr = num(v.ssl_hard_resets, 0);
   setKv('hardRst', hr, hr === 0 ? 'ok' : hr < 5 ? 'warn' : 'err');
 
@@ -2189,7 +2208,6 @@ function renderStatus(v) {
   const boff = num(v.ssl_backoff_remaining_s, 0);
   setKv('backoff', boff + 's', boff === 0 ? 'ok' : 'warn');
 
-  // Sync details
   const lastSync = num(v.last_sync_ago_s, -1);
   if (lastSync >= 0) setKv('lastSync', lastSync + 's', lastSync < 120 ? 'ok' : 'warn');
   else setKv('lastSync', '--');
@@ -2208,7 +2226,6 @@ function renderStatus(v) {
   const cmdStatusText = cmdStatus === 0 ? 'idle' : cmdStatus === 1 ? 'sent' : 'done';
   setKv('cmdStatus', cmdStatusText, cmdStatus === 2 ? 'ok' : '');
 
-  // Settings
   if (v.oled_display_mode != null) {
     $$('#oledModes button').forEach(b =>
       b.classList.toggle('active', Number(b.dataset.mode) === num(v.oled_display_mode))
@@ -2237,7 +2254,6 @@ function renderInfo(i) {
   setKv('up', formatUptime(i.uptime_s));
   setKv('reason', i.last_boot_reason || '--');
 
-  // Boot Analytics
   if (i.boot_analytics) {
     const ba = i.boot_analytics;
     const items = [
@@ -2256,7 +2272,6 @@ function renderInfo(i) {
     `).join('');
   }
 
-  // RTC Log
   if (i.rtc_log) {
     const entries = Object.entries(i.rtc_log).sort((a, b) => {
       const na = parseInt(a[0].slice(1), 10);
@@ -2372,17 +2387,16 @@ $('wipeBtn').onclick = async () => {
   haptic(30);
   const ok1 = await confirmDialog({
     title:'حذف بيانات الجهاز',
-    message:'سيتم حذف جميع بيانات هذا الجهاز من Firebase (الحالة، المعلومات، الجدولة، الأوامر). هذا الإجراء لا يمكن التراجع عنه.',
+    message:'سيتم حذف جميع بيانات هذا الجهاز من Firebase. هذا الإجراء لا يمكن التراجع عنه.',
     variant:'danger', confirmText:'متابعة', confirmStyle:'d'
   });
   if (!ok1) return;
   
-  // ✅ تأخير بسيط لمنع تصادم المودالات
   await new Promise(r => setTimeout(r, 200));
   
   const ok2 = await confirmDialog({
     title:'تأكيد نهائي',
-    message:'هل أنت متأكد تماماً؟ سيتم حذف كل شيء تحت المسار الأساسي.',
+    message:'هل أنت متأكد تماماً؟',
     variant:'danger', confirmText:'نعم، احذف', confirmStyle:'d'
   });
   if (!ok2) return;
