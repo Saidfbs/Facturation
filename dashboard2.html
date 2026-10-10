@@ -12,9 +12,6 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
-/* ═══════════════════════════════════════════════════════════
-   DESIGN TOKENS
-   ═══════════════════════════════════════════════════════════ */
 :root{
   --bg:#f0f3f6;--panel:#fff;--well:#e8edf2;--line:#d6dde5;
   --ink:#14202b;--ink2:#4a5b6b;--ink3:#7a8998;
@@ -66,9 +63,7 @@ input,select{font:inherit;color:inherit}
 .ic{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block;flex:none}
 .mono{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
 
-/* ═══════════════════════════════════════════════════════════
-   TOP BAR
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ TOP BAR ═══ */
 .top{
   position:sticky;top:0;z-index:50;background:var(--bg);
   padding:calc(var(--top) + 10px) 12px 10px;
@@ -91,6 +86,11 @@ input,select{font:inherit;color:inherit}
 .ttl small .status-dot.on{background:var(--grn);box-shadow:0 0 6px var(--grn)}
 .ttl small .status-dot.warn{background:var(--amber)}
 .ttl small .status-dot.bad{background:var(--red)}
+.ttl small .status-dot.local{background:var(--amber);animation:pulseDot 1.5s infinite}
+@keyframes pulseDot{
+  0%,100%{box-shadow:0 0 0 0 var(--amber)}
+  50%{box-shadow:0 0 0 4px rgba(217,138,0,.3)}
+}
 
 .hb{
   width:var(--h-btn);height:var(--h-btn);border-radius:var(--r-btn);
@@ -101,7 +101,6 @@ input,select{font:inherit;color:inherit}
 }
 .hb:hover{background:var(--well)}
 .hb:active{transform:scale(.94)}
-.hb.active{background:var(--sig-bg);color:var(--sig);border-color:var(--sig)}
 .hb .ic{width:20px;height:20px}
 .hb .nb{
   position:absolute;top:-4px;inset-inline-end:-4px;
@@ -116,17 +115,24 @@ input,select{font:inherit;color:inherit}
 
 .led{width:9px;height:9px;border-radius:50%;background:var(--ink3);transition:.2s}
 .led.on{background:var(--grn);box-shadow:0 0 0 3px var(--grn-bg),0 0 8px var(--grn)}
-.led.warn{background:var(--amber);box-shadow:0 0 0 3px var(--amber-bg)}
-.led.bad{background:var(--red);box-shadow:0 0 0 3px var(--red-bg)}
+
+/* ═══ BANNER ═══ */
 .banner{
   display:none;background:var(--amber);color:#1b1300;text-align:center;
-  font-weight:800;font-size:12px;padding:6px;
+  font-weight:800;font-size:12px;padding:8px 12px;
+  position:sticky;top:60px;z-index:49;
+  border-bottom:1px solid rgba(0,0,0,.1);
 }
-.banner.show{display:block}
+.banner.show{display:block;animation:slideDown .3s var(--easing)}
+.banner.local{background:var(--amber);color:#1b1300}
+.banner.syncing{background:var(--sig);color:#fff}
+.banner.offline-net{background:var(--red);color:#fff}
+@keyframes slideDown{
+  from{transform:translateY(-100%);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
 
-/* ═══════════════════════════════════════════════════════════
-   TOAST
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ TOAST ═══ */
 .toast{
   position:fixed;
   top:calc(var(--top) + 72px);
@@ -145,9 +151,7 @@ input,select{font:inherit;color:inherit}
 .toast.error{background:#a02a24}
 .toast.warn{background:#8a5a00}
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ MAIN ═══ */
 main{
   flex:1;width:100%;max-width:880px;margin:0 auto;
   padding:14px 14px 24px;overflow-y:auto;
@@ -179,9 +183,7 @@ main{
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
 
-/* ═══════════════════════════════════════════════════════════
-   RELAY CARD
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ RELAY CARD ═══ */
 .rel{
   background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-card);padding:14px;
@@ -195,6 +197,19 @@ main{
   background:linear-gradient(var(--sig-soft),var(--panel) 70%);
   box-shadow:0 0 0 1px var(--sig),0 4px 14px rgba(11,143,140,.15);
 }
+.rel.queued{
+  border-color:var(--amber);
+  box-shadow:0 0 0 1px var(--amber),0 4px 14px rgba(217,138,0,.15);
+}
+.rel.queued::after{
+  content:'⏳';
+  position:absolute;
+  top:8px;
+  inset-inline-end:8px;
+  font-size:14px;
+  opacity:.8;
+}
+.rel{position:relative}
 .rel-h{display:flex;align-items:center;gap:8px}
 .rel-n{
   flex:1;min-width:0;text-align:start;font-weight:800;font-size:14px;
@@ -243,9 +258,7 @@ main{
   50%{box-shadow:0 0 0 6px var(--grn-bg),0 0 16px var(--grn)}
 }
 
-/* ═══════════════════════════════════════════════════════════
-   DIGITAL IN
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ DIGITAL IN ═══ */
 .di{
   display:flex;align-items:center;gap:10px;padding:12px 14px;
   border-radius:12px;background:var(--panel);border:1px solid var(--line);
@@ -255,9 +268,7 @@ main{
 .di.on{border-color:var(--grn);background:var(--grn-bg)}
 .di.on .s{color:var(--grn)}
 
-/* ═══════════════════════════════════════════════════════════
-   ANALOG
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ ANALOG ═══ */
 .an-h{
   display:flex;justify-content:space-between;align-items:baseline;
   margin-bottom:12px;font-weight:800;
@@ -285,12 +296,6 @@ main{
 }
 .pre button:active{background:var(--sig-bg);color:var(--sig);transform:scale(.96)}
 
-.meter{height:14px;border-radius:99px;background:var(--well);overflow:hidden}
-.meter i{
-  display:block;height:100%;width:0;border-radius:99px;
-  transition:width .5s var(--easing),background .3s;
-}
-
 .ai-card{padding:16px}
 .ai-header{
   display:flex;justify-content:space-between;align-items:center;
@@ -315,9 +320,7 @@ main{
 .ai-meta .delta.down{color:var(--red)}
 .ai-meta .delta.stable{color:var(--ink3)}
 
-/* ═══════════════════════════════════════════════════════════
-   BUTTONS
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ BUTTONS ═══ */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   width:100%;height:50px;border-radius:14px;
@@ -376,9 +379,7 @@ main{
   box-shadow:var(--shadow-sm);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   KV (System Page)
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ KV ═══ */
 .kv-group{
   background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-card);overflow:hidden;margin-bottom:12px;
@@ -424,10 +425,10 @@ main{
 .k.ok .v{color:var(--grn)}
 .k.warn .v{color:var(--amber)}
 .k.err .v{color:var(--red)}
+.k.stale .v{opacity:.5}
+.k.stale::before{background:var(--ink3)}
 
-/* ═══════════════════════════════════════════════════════════
-   LOG
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ LOG ═══ */
 .ev{
   display:flex;align-items:flex-start;gap:12px;
   padding:12px;background:var(--well);border-radius:12px;
@@ -472,11 +473,8 @@ main{
 .empty p{font-size:14px;font-weight:800;color:var(--ink2)}
 .empty small{font-size:12px;opacity:.8}
 
-/* ═══════════════════════════════════════════════════════════
-   DEVICE ITEMS
-   ═══════════════════════════════════════════════════════════ */
-.dev-pick-item,
-.dev-manage-item{
+/* ═══ DEVICE ITEMS ═══ */
+.dev-pick-item,.dev-manage-item{
   display:flex;align-items:center;gap:12px;width:100%;
   padding:14px;background:var(--well);
   border:1.5px solid transparent;border-radius:14px;
@@ -510,12 +508,10 @@ main{
   color:var(--sig);flex:none;opacity:0;transition:opacity var(--motion-base);
 }
 .dev-pick-item.active .check{opacity:1}
-.dev-pick-item .check .ic{width:24px;height:24px}
 .dev-pick-item .badge-active{
   font:800 10px var(--mono);padding:3px 8px;border-radius:99px;
   background:var(--sig);color:#fff;flex:none;
 }
-[data-theme=dark] .dev-pick-item .badge-active{color:#04201f}
 .dev-manage-item .ib{
   width:38px;height:38px;border-radius:10px;
   display:grid;place-items:center;
@@ -524,9 +520,7 @@ main{
 }
 .dev-manage-item .ib:active{transform:scale(.92);background:var(--sig-bg);color:var(--sig)}
 
-/* ═══════════════════════════════════════════════════════════
-   BOTTOM NAV
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ BOTTOM NAV ═══ */
 .bottom-nav{
   position:sticky;bottom:0;z-index:60;background:var(--panel);
   border-top:1px solid var(--line);
@@ -549,10 +543,15 @@ main{
 }
 .bn-btn .ic{width:22px;height:22px}
 .bn-btn.active .ic{filter:drop-shadow(0 0 6px var(--sig))}
+.bn-btn .badge-local{
+  position:absolute;top:4px;inset-inline-end:14px;
+  width:8px;height:8px;border-radius:50%;background:var(--amber);
+  display:none;
+  animation:pulseDot 1.5s infinite;
+}
+.bn-btn.offline .badge-local{display:block}
 
-/* ═══════════════════════════════════════════════════════════
-   MODAL
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ MODAL ═══ */
 .modal{
   position:fixed;inset:0;z-index:100;display:none;
   align-items:center;justify-content:center;
@@ -570,11 +569,6 @@ main{
   box-shadow:var(--shadow-lg);
 }
 @keyframes popIn{from{transform:scale(.94);opacity:0}}
-
-@media(max-height:600px){
-  .modal{align-items:flex-start;padding-top:20px;padding-bottom:20px}
-  .box{max-height:calc(100dvh - 40px)}
-}
 
 .mh{
   display:flex;justify-content:space-between;align-items:center;
@@ -605,9 +599,7 @@ main{
 }
 .day.active{background:var(--sig);color:#fff;box-shadow:var(--shadow-sm)}
 
-/* ═══════════════════════════════════════════════════════════
-   CONFIRM MODAL
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ CONFIRM ═══ */
 .confirm-modal{
   position:fixed;inset:0;z-index:200;display:none;
   align-items:center;justify-content:center;
@@ -638,11 +630,8 @@ main{
 }
 .confirm-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .confirm-actions .btn{height:48px}
-@media(max-width:360px){.confirm-actions{grid-template-columns:1fr}}
 
-/* ═══════════════════════════════════════════════════════════
-   RTC LOG (Device Log)
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ RTC LOG ═══ */
 .rtc-log{
   background:var(--well);border-radius:12px;padding:12px;
   font:600 11px/1.7 var(--mono);direction:ltr;
@@ -653,9 +642,7 @@ main{
   border-bottom:1px dashed var(--line);
 }
 .rtc-log .line:last-child{border-bottom:0}
-.rtc-log .lvl{
-  flex:none;width:44px;font-weight:700;
-}
+.rtc-log .lvl{flex:none;width:44px;font-weight:700}
 .rtc-log .lvl.INFO{color:var(--sig)}
 .rtc-log .lvl.WARN{color:var(--amber)}
 .rtc-log .lvl.ERR{color:var(--red)}
@@ -663,7 +650,7 @@ main{
 .rtc-log .code{flex:none;width:80px;color:var(--ink2)}
 .rtc-log .val{color:var(--ink3)}
 
-/* Boot analytics bar */
+/* ═══ BOOT ANALYTICS ═══ */
 .ba-grid{
   display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
 }
@@ -681,9 +668,7 @@ main{
 .ba-item.warn .num{color:var(--amber)}
 .ba-item.err .num{color:var(--red)}
 
-/* ═══════════════════════════════════════════════════════════
-   ADVANCED DIAG (Collapsible)
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ DIAGNOSTICS ═══ */
 .diag-group{
   background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-card);overflow:hidden;margin-bottom:12px;
@@ -697,14 +682,31 @@ main{
   width:20px;height:20px;transition:transform var(--motion-base);
 }
 .diag-group.open .chev{transform:rotate(180deg)}
-.diag-body{
-  display:none;padding:14px;
-}
+.diag-body{display:none;padding:14px}
 .diag-group.open .diag-body{display:block}
 
-/* ═══════════════════════════════════════════════════════════
-   SCROLLBAR
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ QUEUE VIEW ═══ */
+.queue-view{
+  background:var(--well);border-radius:12px;padding:12px;
+}
+.queue-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;background:var(--panel);
+  border-radius:8px;margin-bottom:6px;
+  font:600 12px var(--mono);
+}
+.queue-item:last-child{margin-bottom:0}
+.queue-item .type{
+  padding:2px 8px;border-radius:6px;
+  background:var(--sig-bg);color:var(--sig);
+  font-weight:800;
+}
+.queue-item .val{
+  margin-inline-start:auto;
+  color:var(--ink2);
+}
+
+/* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -716,7 +718,7 @@ main{
 </head>
 <body data-theme="light">
 
-<!-- SVG ICON SPRITE -->
+<!-- SVG SPRITE -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
 <symbol id="i-act" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
@@ -734,8 +736,6 @@ main{
 <symbol id="i-ed" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
 <symbol id="i-tr" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6"/></symbol>
 <symbol id="i-sv" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8"/></symbol>
-<symbol id="i-rf" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/></symbol>
-<symbol id="i-wifi" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></symbol>
 <symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></symbol>
 <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
 <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
@@ -746,7 +746,10 @@ main{
 <symbol id="i-cog" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
 <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol>
 <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
-<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M2 2l20 20M8.5 16.5a5 5 0 0 1 7 0M5 12.55a11 11 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M16.85 11.25a10.96 10.96 0 0 1 2.16 1.3M12 20h.01"/></symbol>
+<symbol id="i-loader" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
 </defs></svg>
 
 <!-- ═══ TOP BAR ═══ -->
@@ -773,12 +776,15 @@ main{
   </button>
 </header>
 
-<div class="banner" id="offBanner">لا يوجد اتصال بالإنترنت — الأوامر محفوظة وستُرسل لاحقاً</div>
+<!-- 🆕 BANNERS -->
+<div class="banner offline-net" id="offNetBanner">⚠️ لا يوجد اتصال بالإنترنت — الأوامر محفوظة وستُرسل لاحقاً</div>
+<div class="banner local" id="localBanner"></div>
+<div class="banner syncing" id="syncingBanner"></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <main>
-  <!-- ═══ HOME ═══ -->
+  <!-- HOME -->
   <section class="page active" id="page-home">
     <div class="sec"><span>المخارج الرقمية</span><span class="cnt" id="doCnt">0/6</span></div>
     <div class="grid" id="doGrid"></div>
@@ -790,13 +796,13 @@ main{
     <div class="grid" id="diGrid"></div>
   </section>
 
-  <!-- ═══ MONITOR ═══ -->
+  <!-- MONITOR -->
   <section class="page" id="page-monitor">
     <div class="sec"><span>المخارج التناظرية</span></div><div id="aoBox"></div>
     <div class="sec"><span>المداخل التناظرية</span></div><div id="aiBox"></div>
   </section>
 
-  <!-- ═══ PARAMS ═══ -->
+  <!-- PARAMS -->
   <section class="page" id="page-params">
     <button class="btn p" id="saveAll"><svg class="ic"><use href="#i-sv"/></svg>حفظ جميع الإعدادات</button>
     <div class="sec"><span>ضبط سريع</span></div>
@@ -815,19 +821,9 @@ main{
       <div class="fg" id="oledFields"></div>
     </div>
     <div id="paramGroups"></div>
-    <div class="card" style="background:var(--sig-soft);border-color:var(--sig)">
-      <div style="display:flex;gap:10px;align-items:flex-start">
-        <svg class="ic" style="color:var(--sig);flex:none"><use href="#i-info"/></svg>
-        <div style="font-size:12.5px;line-height:1.6;color:var(--ink2)">
-          <b style="color:var(--ink)">ملاحظة:</b>
-          هذه الإعدادات تُحفظ في Firebase تحت <code style="background:var(--panel);padding:1px 5px;border-radius:4px">/status</code>.
-          يجب رفع <b>ESP32 v49.7.5</b> أو أحدث لتفعيل جميع الحقول.
-        </div>
-      </div>
-    </div>
   </section>
 
-  <!-- ═══ SYSTEM ═══ -->
+  <!-- SYSTEM -->
   <section class="page" id="page-system">
     <div class="sec"><span>إعادة الاتصال</span></div>
     <div class="card"><div class="bg2">
@@ -838,6 +834,13 @@ main{
       <button class="btn s" data-rc="all">تحديث الكل</button>
       <button class="btn d" id="wipeBtn">حذف البيانات</button>
     </div></div>
+    
+    <!-- 🆕 وضع العمل -->
+    <div class="sec"><span>حالة العمل</span></div>
+    <div class="kv-group">
+      <div class="kv-group-title"><span class="dot amber"></span>الوضع الحالي</div>
+      <div class="kv" id="workGrid"></div>
+    </div>
     
     <div class="sec"><span>حالة النظام</span></div>
     <div class="kv-group">
@@ -853,7 +856,7 @@ main{
       <div class="kv" id="errGrid"></div>
     </div>
     <div class="kv-group">
-      <div class="kv-group-title"><span class="dot red"></span>SSL Hard Resets</div>
+      <div class="kv-group-title"><span class="dot red"></span>SSL Recovery</div>
       <div class="kv" id="sslGrid"></div>
     </div>
     
@@ -863,8 +866,25 @@ main{
     <div class="sec"><span>معلومات الجهاز</span></div>
     <div class="kv-group"><div class="kv" id="sysGrid"></div></div>
     
-    <!-- Advanced Diagnostics -->
+    <!-- 🆕 Firebase Cache -->
+    <div class="sec"><span>Firebase Cache</span></div>
+    <div class="kv-group">
+      <div class="kv-group-title"><span class="dot"></span>آخر حالة محفوظة محلياً</div>
+      <div class="kv" id="cacheGrid"></div>
+    </div>
+    
+    <!-- Diagnostics -->
     <div class="sec"><span>تشخيص متقدم</span></div>
+    
+    <div class="diag-group" id="diagQueue">
+      <div class="diag-head">
+        <span>📋 أوامر معلقة</span>
+        <svg class="ic chev"><use href="#i-chev"/></svg>
+      </div>
+      <div class="diag-body">
+        <div class="queue-view" id="queueView"></div>
+      </div>
+    </div>
     
     <div class="diag-group" id="diagBoot">
       <div class="diag-head">
@@ -910,15 +930,16 @@ main{
   </button>
   <button class="bn-btn" data-nav="system" aria-label="النظام">
     <svg class="ic"><use href="#i-cpu"/></svg>النظام
+    <span class="badge-local"></span>
   </button>
 </nav>
 
-<!-- ═══ LOG MODAL ═══ -->
-<div class="modal" id="logModal" role="dialog" aria-modal="true" aria-labelledby="logModalTitle">
+<!-- LOG MODAL -->
+<div class="modal" id="logModal" role="dialog" aria-modal="true">
   <div class="box">
     <div class="mh">
-      <span id="logModalTitle">سجل الأحداث <span class="cnt" id="logCnt" style="margin-inline-start:6px">0</span></span>
-      <button class="ib hb" id="logClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+      <span>سجل الأحداث <span class="cnt" id="logCnt" style="margin-inline-start:6px">0</span></span>
+      <button class="ib hb" id="logClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="bg2" style="margin-bottom:14px">
       <button class="btn s sm" id="muteBtn"></button>
@@ -928,24 +949,24 @@ main{
   </div>
 </div>
 
-<!-- ═══ SCHEDULE MODAL ═══ -->
-<div class="modal" id="schedModal" role="dialog" aria-modal="true" aria-labelledby="schedTitle">
+<!-- SCHEDULE MODAL -->
+<div class="modal" id="schedModal" role="dialog" aria-modal="true">
   <div class="box">
     <div class="mh">
       <span id="schedTitle">جدولة</span>
-      <button class="ib hb" id="schedClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+      <button class="ib hb" id="schedClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="row">
       <span>تفعيل الجدولة</span>
-      <div class="tg" id="schedEn" role="switch" aria-checked="false" tabindex="0"></div>
+      <div class="tg" id="schedEn" role="switch" tabindex="0"></div>
     </div>
     <div class="f"><label>الأيام</label></div>
     <div class="days" id="schedDays"></div>
     <div class="fg" style="margin-bottom:14px">
-      <div class="f"><label>ساعة التشغيل</label><input type="number" id="onH" min="0" max="23" step="1" inputmode="numeric"></div>
-      <div class="f"><label>دقيقة التشغيل</label><input type="number" id="onM" min="0" max="59" step="1" inputmode="numeric"></div>
-      <div class="f"><label>ساعة الإطفاء</label><input type="number" id="offH" min="0" max="23" step="1" inputmode="numeric"></div>
-      <div class="f"><label>دقيقة الإطفاء</label><input type="number" id="offM" min="0" max="59" step="1" inputmode="numeric"></div>
+      <div class="f"><label>ساعة التشغيل</label><input type="number" id="onH" min="0" max="23"></div>
+      <div class="f"><label>دقيقة التشغيل</label><input type="number" id="onM" min="0" max="59"></div>
+      <div class="f"><label>ساعة الإطفاء</label><input type="number" id="offH" min="0" max="23"></div>
+      <div class="f"><label>دقيقة الإطفاء</label><input type="number" id="offM" min="0" max="59"></div>
     </div>
     <div class="bg2">
       <button class="btn d" id="schedClear">مسح</button>
@@ -954,15 +975,15 @@ main{
   </div>
 </div>
 
-<!-- ═══ DEVICE EDIT MODAL ═══ -->
-<div class="modal" id="devModal" role="dialog" aria-modal="true" aria-labelledby="devModalTitle">
+<!-- DEVICE MODAL -->
+<div class="modal" id="devModal" role="dialog" aria-modal="true">
   <div class="box">
     <div class="mh">
       <span id="devModalTitle">جهاز</span>
-      <button class="ib hb" id="devClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+      <button class="ib hb" id="devClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="f" style="margin-bottom:12px"><label>اسم الجهاز</label><input type="text" id="devName"></div>
-    <div class="f" style="margin-bottom:12px"><label>رابط Firebase</label><input type="text" id="devUrl" placeholder="https://xxx.firebaseio.com"></div>
+    <div class="f" style="margin-bottom:12px"><label>رابط Firebase</label><input type="text" id="devUrl"></div>
     <div class="f" style="margin-bottom:16px"><label>المسار الأساسي</label><input type="text" id="devBase"></div>
     <div class="bg2">
       <button class="btn d" id="devDel">حذف</button>
@@ -971,31 +992,31 @@ main{
   </div>
 </div>
 
-<!-- ═══ DEVICE PICKER MODAL ═══ -->
-<div class="modal" id="devPickerModal" role="dialog" aria-modal="true" aria-labelledby="devPickerTitle">
+<!-- DEVICE PICKER -->
+<div class="modal" id="devPickerModal" role="dialog" aria-modal="true">
   <div class="box">
     <div class="mh">
-      <span id="devPickerTitle">اختيار الجهاز</span>
-      <button class="ib hb" id="devPickerClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+      <span>اختيار الجهاز</span>
+      <button class="ib hb" id="devPickerClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
-    <div id="devPickerList" role="listbox" aria-label="قائمة الأجهزة"></div>
+    <div id="devPickerList" role="listbox"></div>
   </div>
 </div>
 
-<!-- ═══ DEVICE MANAGER MODAL ═══ -->
-<div class="modal" id="devManagerModal" role="dialog" aria-modal="true" aria-labelledby="devManagerTitle">
+<!-- DEVICE MANAGER -->
+<div class="modal" id="devManagerModal" role="dialog" aria-modal="true">
   <div class="box">
     <div class="mh">
-      <span id="devManagerTitle">إدارة الأجهزة</span>
-      <button class="ib hb" id="devManagerClose" aria-label="إغلاق"><svg class="ic"><use href="#i-x"/></svg></button>
+      <span>إدارة الأجهزة</span>
+      <button class="ib hb" id="devManagerClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div id="devManagerList"></div>
     <button class="btn s" id="addDev" style="margin-top:12px"><svg class="ic"><use href="#i-plus"/></svg>إضافة جهاز</button>
   </div>
 </div>
 
-<!-- ═══ CONFIRM MODAL ═══ -->
-<div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMsg">
+<!-- CONFIRM -->
+<div class="confirm-modal" id="confirmModal" role="alertdialog" aria-modal="true">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirmIcon">
       <svg class="ic"><use href="#i-help"/></svg>
@@ -1016,10 +1037,11 @@ import { getDatabase, ref, onValue, set, update, remove } from 'https://www.gsta
 /* ═══════════════════════════════════════════════════════════
    CONSTANTS
    ═══════════════════════════════════════════════════════════ */
-const VERSION = 'Dashboard v14.1 — ESP32 v49.7.5';
+const VERSION = 'Dashboard v14.2 — ESP32 v50.0.0';
 const AI_MAX = 4095;
 const HIST = 60;
 const STALE_MS = 90_000;
+const STALE_DATA_S = 300;   // 5 دقائق = بيانات قديمة
 const QUEUE_MAX = 100;
 const LOG_MAX = 150;
 const LOG_PERSIST_MAX = 100;
@@ -1071,16 +1093,14 @@ const LS = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   RIPPLE EFFECT
+   RIPPLE
    ═══════════════════════════════════════════════════════════ */
 document.addEventListener('pointerdown', e => {
   const el = e.target.closest('.btn, .sw');
   if (!el) return;
   const rect = el.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width * 100;
-  const y = (e.clientY - rect.top) / rect.height * 100;
-  el.style.setProperty('--x', x + '%');
-  el.style.setProperty('--y', y + '%');
+  el.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+  el.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
 }, { passive: true });
 
 /* ═══════════════════════════════════════════════════════════
@@ -1120,8 +1140,7 @@ const ConfirmDialog = (() => {
     titleEl.textContent = title || TITLES[variant] || 'تأكيد';
     msgEl.textContent = message;
     okBtn.textContent = confirmText;
-    const style = confirmStyle ?? (variant === 'danger' ? 'd' : 'p');
-    okBtn.className = 'btn ' + style;
+    okBtn.className = 'btn ' + (confirmStyle ?? (variant === 'danger' ? 'd' : 'p'));
     cancelBtn.textContent = cancelText;
     cancelBtn.style.display = hideCancel ? 'none' : '';
     document.querySelector('.confirm-actions').style.gridTemplateColumns = hideCancel ? '1fr' : '';
@@ -1218,7 +1237,11 @@ const state = {
   names: LS.get('relayNames', {}),
   hist: { 1: [], 2: [], 3: [], 4: [] },
   sending: new Set(),
-  prevAI: { 1: 0, 2: 0, 3: 0, 4: 0 }
+  prevAI: { 1: 0, 2: 0, 3: 0, 4: 0 },
+  // 🆕
+  offlineMode: false,
+  queuedCommands: 0,
+  dataFreshness: 'fresh'  // fresh | stale | offline
 };
 
 let queue = LS.get('offlineQueue', []);
@@ -1229,6 +1252,19 @@ function qPush(path, value) {
   if (queue.length >= QUEUE_MAX) queue.shift();
   queue.push({ path, value, dev: state.activeId, ts: Date.now() });
   persistQueue();
+  updateLocalQueueIndicator();
+}
+
+function updateLocalQueueIndicator() {
+  const localCount = queue.filter(q => q.dev === state.activeId).length;
+  // Show combined: local queue + device queue
+  const total = localCount + state.queuedCommands;
+  if (total > 0) {
+    $('syncingBanner').textContent = `🔄 ${total} أوامر معلقة — ستُزامن عند العودة`;
+    $('syncingBanner').classList.add('show');
+  } else {
+    $('syncingBanner').classList.remove('show');
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1279,7 +1315,7 @@ const renderLogNow = () => {
           <div class="ev-msg">${escapeHTML(e.msg)}</div>
           <div class="ev-time">${e.time}</div>
         </div>
-        <button class="ev-del" data-del="${e.id}" aria-label="حذف الحدث">${icon('x')}</button>
+        <button class="ev-del" data-del="${e.id}">${icon('x')}</button>
       </div>`;
   }).join('');
 };
@@ -1383,7 +1419,7 @@ function go(page) {
 $$('.bn-btn[data-nav]').forEach(b => b.onclick = () => { haptic(); go(b.dataset.nav); });
 
 /* ═══════════════════════════════════════════════════════════
-   COLLAPSIBLE DIAGNOSTICS
+   COLLAPSIBLE
    ═══════════════════════════════════════════════════════════ */
 $$('.diag-head').forEach(h => {
   h.onclick = () => {
@@ -1397,12 +1433,47 @@ $$('.diag-head').forEach(h => {
    ═══════════════════════════════════════════════════════════ */
 function paintConn() {
   const online = navigator.onLine;
-  $('offBanner').classList.toggle('show', !online);
   const stale = state.fbOnline && state.lastBeat && Date.now() - state.lastBeat > STALE_MS;
-  const statusClass = !online ? 'bad' : !state.fbOnline ? 'bad' : stale ? 'warn' : 'on';
-  const statusText = !online ? 'Offline' : !state.fbOnline ? 'غير متصل' : stale ? 'لا يستجيب' : 'متصل';
+  
+  // 🆕: حالة الاتصال
+  $('offNetBanner').classList.toggle('show', !online);
+
+  let statusClass, statusText;
+  
+  if (!online) {
+    statusClass = 'bad';
+    statusText = 'لا يوجد إنترنت';
+  } else if (!state.fbOnline) {
+    statusClass = 'bad';
+    statusText = 'غير متصل بـ Firebase';
+  } else if (state.offlineMode) {
+    statusClass = 'local';
+    statusText = 'ESP32 في وضع محلي';
+  } else if (stale) {
+    statusClass = 'warn';
+    statusText = 'لا يستجيب';
+  } else {
+    statusClass = 'on';
+    statusText = 'متصل';
+  }
+  
   $('statusDot').className = 'status-dot ' + statusClass;
   $('connStatus').textContent = statusText;
+  
+  // 🆕: banner للـ offline من ESP32
+  if (state.offlineMode) {
+    $('localBanner').textContent = `⚠️ ESP32 في وضع محلي — ${state.queuedCommands} أوامر معلقة`;
+    $('localBanner').classList.add('show');
+  } else {
+    $('localBanner').classList.remove('show');
+  }
+  
+  // 🆕: badge على النظام tab
+  $$('.bn-btn[data-nav="system"]').forEach(b => 
+    b.classList.toggle('offline', state.offlineMode));
+  
+  // 🆕: تحديث local queue indicator
+  updateLocalQueueIndicator();
 }
 setInterval(paintConn, 5000);
 addEventListener('online', () => { paintConn(); flushQueue(); });
@@ -1422,12 +1493,15 @@ async function flushQueue() {
   }
   queue = [...rest, ...failed];
   persistQueue();
+  updateLocalQueueIndicator();
 }
+
 async function write(path, value) {
   if (!state.db || !state.fbOnline) { qPush(path, value); return false; }
   try { await set(ref(state.db, state.basePath + path), value); return true; }
   catch { qPush(path, value); return false; }
 }
+
 async function multi(map) {
   if (!state.db || !state.fbOnline) {
     for (const k in map) qPush(k, map[k]);
@@ -1436,6 +1510,7 @@ async function multi(map) {
   try { await update(ref(state.db, state.basePath), map); return true; }
   catch { for (const k in map) qPush(k, map[k]); return false; }
 }
+
 async function erase(path = '') {
   if (!state.db || !state.fbOnline) return false;
   try { await remove(ref(state.db, state.basePath + path)); return true; }
@@ -1443,12 +1518,13 @@ async function erase(path = '') {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   CONNECT / DETACH
+   CONNECT
    ═══════════════════════════════════════════════════════════ */
 function detach() {
   state.unsubscribers.forEach(unsub => { try { unsub(); } catch {} });
   state.unsubscribers = [];
 }
+
 async function connect(device) {
   detach();
   if (state.app) {
@@ -1463,6 +1539,8 @@ async function connect(device) {
   state.fbOnline = false;
   state.hist = { 1: [], 2: [], 3: [], 4: [] };
   state.prevAI = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  state.offlineMode = false;
+  state.queuedCommands = 0;
 
   try {
     state.app = initializeApp({ databaseURL: device.url }, `app-${device.id}-${uid()}`);
@@ -1477,6 +1555,7 @@ async function connect(device) {
   renderRelayNames();
   paintConn();
 }
+
 function attachListeners() {
   const bind = (path, handler) => {
     const r = ref(state.db, state.basePath + path);
@@ -1518,8 +1597,8 @@ function buildRelayUI() {
     el.innerHTML = `
       <div class="rel-h">
         <i class="led"></i>
-        <button class="rel-n" data-ren="${i}" aria-label="إعادة تسمية المرحل ${i}"></button>
-        <button class="sch" data-sch="${i}" aria-label="جدولة المرحل ${i}">${icon('tm')}</button>
+        <button class="rel-n" data-ren="${i}"></button>
+        <button class="sch" data-sch="${i}">${icon('tm')}</button>
       </div>
       <button class="sw" data-do="${i}">
         <span class="stt">مغلق</span>
@@ -1622,7 +1701,7 @@ for (let i = 1; i <= 2; i++) {
   card.className = 'card';
   card.innerHTML = `
     <div class="an-h"><span>AO${i}</span><span class="mono"><b id="aoV${i}">0</b>%</span></div>
-    <input type="range" class="rs" min="0" max="255" value="0" id="aoS${i}" aria-label="AO${i}">
+    <input type="range" class="rs" min="0" max="255" value="0" id="aoS${i}">
     <div class="pre">
       ${[0,25,50,75,100].map(p => `<button data-ao="${i}" data-p="${p}">${p}</button>`).join('')}
     </div>
@@ -1697,39 +1776,29 @@ function drawAISpark(canvas, data, color) {
   ctx.beginPath();
   data.forEach((v, i) => {
     const x = i * step, y = toY(v);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   const lastX = (data.length - 1) * step;
   const lastY = toY(data[data.length - 1]);
 
   ctx.save();
-  ctx.lineTo(lastX, H);
-  ctx.lineTo(0, H);
-  ctx.closePath();
-  ctx.fillStyle = grad;
-  ctx.fill();
+  ctx.lineTo(lastX, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
   ctx.restore();
 
   ctx.beginPath();
   data.forEach((v, i) => {
     const x = i * step, y = toY(v);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.stroke();
 
   ctx.beginPath();
   ctx.arc(lastX, lastY, 4, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.fillStyle = color; ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
 }
 
 const drawAISparkThrottled = throttle((i, data, color) => drawAISpark(aiCanvas[i], data, color), 60);
@@ -1821,7 +1890,7 @@ function renderDevPickerList() {
   $('devPickerList').innerHTML = state.devices.map(d => {
     const isActive = d.id === state.activeId;
     return `
-      <button class="dev-pick-item ${isActive ? 'active' : ''}" data-pick="${escapeHTML(d.id)}" role="option" aria-selected="${isActive}">
+      <button class="dev-pick-item ${isActive ? 'active' : ''}" data-pick="${escapeHTML(d.id)}">
         <i class="led"></i>
         <div class="t">
           <strong>${escapeHTML(d.name)}</strong>
@@ -1879,7 +1948,7 @@ function renderDevManagerList() {
           <strong>${escapeHTML(d.name)}</strong>
           <small>${escapeHTML(d.url)}</small>
         </div>
-        <button class="ib" data-editdev="${escapeHTML(d.id)}" aria-label="تعديل">${icon('ed')}</button>
+        <button class="ib" data-editdev="${escapeHTML(d.id)}">${icon('ed')}</button>
       </div>
     `;
   }).join('');
@@ -1970,7 +2039,7 @@ $('devDel').onclick = async () => {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   SETTINGS SCHEMA — إعادة كل الحقول (17 إعداد)
+   SETTINGS SCHEMA (17)
    ═══════════════════════════════════════════════════════════ */
 const GROUPS = [
   ['المزامنة والحساسية', [
@@ -2015,7 +2084,6 @@ $('paramGroups').innerHTML = GROUPS.map(([title, fields]) => `
   </div></div>
 `).join('');
 
-// PRESETS — كاملة مع كل الإعدادات
 const PRESETS = {
   default: { 
     sync_interval:30, sync_before_integrity:15, ai_threshold:50,
@@ -2044,12 +2112,15 @@ const PRESET_NAMES = { default:'افتراضي', reliable:'اعتمادية', ef
 const kvHTML = (id, label) =>
   `<div class="k" id="k_${id}"><div class="l">${label}</div><div class="v" id="v_${id}">--</div></div>`;
 
+// 🆕 Work grid
+$('workGrid').innerHTML  = [['mode','وضع ESP32'],['queue','أوامر معلقة'],['offline','مدة محلي'],['freshness','حداثة البيانات']].map(a => kvHTML(...a)).join('');
 $('connGrid').innerHTML  = [['wifi','WiFi'],['fb','Firebase'],['ntp','NTP'],['i2c','I2C']].map(a => kvHTML(...a)).join('');
 $('healthGrid').innerHTML= [['integ','Integrity'],['heap','Heap'],['largest','Largest'],['uptime','Uptime']].map(a => kvHTML(...a)).join('');
 $('errGrid').innerHTML   = [['ssl','SSL Errors'],['ff','FB Failures'],['rec','Recovery'],['phase','Sync Phase']].map(a => kvHTML(...a)).join('');
 $('sslGrid').innerHTML   = [['hardRst','Hard Resets'],['refreshes','Refreshes'],['cooldown','Cooldown'],['backoff','Backoff']].map(a => kvHTML(...a)).join('');
 $('wfGrid').innerHTML    = [['ip','IP'],['ssid','SSID'],['mac','MAC'],['rssi','RSSI']].map(a => kvHTML(...a)).join('');
 $('sysGrid').innerHTML   = [['fw','Firmware'],['up','Uptime'],['boot','Boot Count'],['reason','Boot Reason']].map(a => kvHTML(...a)).join('');
+$('cacheGrid').innerHTML = [['cacheVal','الحالة'],['cacheAge','العمر'],['cacheDO','DO State'],['cacheAO','AO Value']].map(a => kvHTML(...a)).join('');
 $('syncGrid').innerHTML  = [['lastSync','آخر مزامنة'],['countdown','العدّاد'],['lastCmd','آخر أمر'],['cmdStatus','حالة الأمر']].map(a => kvHTML(...a)).join('');
 
 const setKv = (id, text, cls = '') => {
@@ -2152,11 +2223,53 @@ const formatUptime = s => {
   return `${m}m ${s % 60}s`;
 };
 
+const formatDuration = s => {
+  s = num(s);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s / 60) + 'm';
+  return Math.floor(s / 3600) + 'h';
+};
+
 function renderStatus(v) {
   if (!v || !Object.keys(v).length) {
-    ['wifi','fb','ntp','i2c','integ','ssl','ff','rec','phase','hardRst','refreshes','cooldown','backoff','lastSync','countdown','largest','uptime','lastCmd','cmdStatus'].forEach(k => setKv(k, '--'));
+    ['wifi','fb','ntp','i2c','integ','ssl','ff','rec','phase','hardRst','refreshes','cooldown','backoff',
+     'lastSync','countdown','largest','uptime','lastCmd','cmdStatus',
+     'mode','queue','offline','freshness'].forEach(k => setKv(k, '--'));
     return;
   }
+
+  // 🆕: قراءة offline_mode و queued_commands
+  const offlineMode = num(v.offline_mode, 0);
+  const queued = num(v.queued_commands, 0);
+  state.offlineMode = !!offlineMode;
+  state.queuedCommands = queued;
+
+  // 🆕: بيانات حديثة؟
+  const lastSyncAgo = num(v.last_sync_ago_s, -1);
+  const isStale = lastSyncAgo > STALE_DATA_S || lastSyncAgo < 0;
+  state.dataFreshness = !state.fbOnline ? 'offline' : (isStale ? 'stale' : 'fresh');
+
+  // Work grid
+  setKv('mode', offlineMode ? 'محلي' : 'متصل', offlineMode ? 'warn' : 'ok');
+  setKv('queue', queued + ' / 5', queued === 0 ? 'ok' : queued >= 3 ? 'err' : 'warn');
+  
+  // 🆕 مدة الوضع المحلي
+  if (offlineMode && v.last_sync_ago_s >= 0) {
+    setKv('offline', formatDuration(lastSyncAgo), 'warn');
+  } else {
+    setKv('offline', '--');
+  }
+  
+  // 🆕 حداثة البيانات
+  if (!state.fbOnline) {
+    setKv('freshness', 'لا اتصال', 'err');
+  } else if (isStale) {
+    setKv('freshness', `قديم (${formatDuration(lastSyncAgo)})`, 'warn');
+  } else {
+    setKv('freshness', 'حديث', 'ok');
+  }
+
+  // Connection
   const yn = (id, ok, a, b) => setKv(id, ok ? a : b, ok ? 'ok' : 'err');
   yn('wifi', v.wifi === 1, 'متصل', 'غير متصل');
   yn('fb',   v.firebase === 1, 'متصل', 'غير متصل');
@@ -2185,7 +2298,8 @@ function renderStatus(v) {
 
   if (v.rssi != null) {
     const r = num(v.rssi);
-    setKv('rssi', r + ' dBm', r > -60 ? 'ok' : r > -75 ? 'warn' : 'err');
+    const staleCls = isStale ? 'stale' : '';
+    setKv('rssi', r + ' dBm' + (isStale ? ' (قديم)' : ''), r > -60 ? 'ok' : r > -75 ? 'warn' : 'err');
   }
 
   const rl = num(v.recovery_level, 0);
@@ -2208,15 +2322,17 @@ function renderStatus(v) {
   const boff = num(v.ssl_backoff_remaining_s, 0);
   setKv('backoff', boff + 's', boff === 0 ? 'ok' : 'warn');
 
-  const lastSync = num(v.last_sync_ago_s, -1);
-  if (lastSync >= 0) setKv('lastSync', lastSync + 's', lastSync < 120 ? 'ok' : 'warn');
-  else setKv('lastSync', '--');
+  if (lastSyncAgo >= 0) {
+    setKv('lastSync', lastSyncAgo + 's', isStale ? 'warn' : 'ok');
+  } else {
+    setKv('lastSync', '--');
+  }
 
   const countdown = num(v.sync_countdown_s, -1);
   if (countdown >= 0) setKv('countdown', countdown + 's', 'ok');
-  else if (countdown === -1) setKv('countdown', 'Locked', 'warn');
-  else if (countdown === -2) setKv('countdown', 'Error', 'err');
-  else if (countdown === -3) setKv('countdown', 'No WiFi', 'err');
+  else if (countdown === -1) setKv('countdown', 'مقفل', 'warn');
+  else if (countdown === -2) setKv('countdown', 'خطأ', 'err');
+  else if (countdown === -3) setKv('countdown', 'لا WiFi — محلي', 'err');
   else setKv('countdown', '--');
 
   const lastCmd = v.last_cmd || '--';
@@ -2226,6 +2342,27 @@ function renderStatus(v) {
   const cmdStatusText = cmdStatus === 0 ? 'idle' : cmdStatus === 1 ? 'sent' : 'done';
   setKv('cmdStatus', cmdStatusText, cmdStatus === 2 ? 'ok' : '');
 
+  // 🆕 Firebase Cache
+  const cacheValid = num(v.fb_cache_valid, 0);
+  const cacheAge = num(v.fb_cache_age_s, -1);
+  if (cacheValid && cacheAge >= 0) {
+    setKv('cacheVal', 'فعال', 'ok');
+    setKv('cacheAge', formatDuration(cacheAge), cacheAge < 300 ? 'ok' : 'warn');
+    setKv('cacheDO', '0x' + num(v.fb_cache_do, 0).toString(16).toUpperCase().padStart(2, '0'), 'ok');
+    const ao1 = num(v.fb_cache_ao1, 0);
+    const ao2 = num(v.fb_cache_ao2, 0);
+    setKv('cacheAO', `[${ao1}, ${ao2}]`, 'ok');
+  } else {
+    setKv('cacheVal', 'غير فعال', 'warn');
+    setKv('cacheAge', '--');
+    setKv('cacheDO', '--');
+    setKv('cacheAO', '--');
+  }
+
+  // 🆕 Queue view
+  renderQueueView(v);
+
+  // Settings display
   if (v.oled_display_mode != null) {
     $$('#oledModes button').forEach(b =>
       b.classList.toggle('active', Number(b.dataset.mode) === num(v.oled_display_mode))
@@ -2235,6 +2372,30 @@ function renderStatus(v) {
     const el = $(key);
     if (el && document.activeElement !== el && v[key] != null) el.value = v[key];
   }
+}
+
+// 🆕 Render queue view
+function renderQueueView(v) {
+  const qCount = num(v.queued_commands, 0);
+  if (qCount === 0) {
+    $('queueView').innerHTML = '<div style="color:var(--ink3);text-align:center;padding:12px">لا توجد أوامر معلقة ✅</div>';
+    return;
+  }
+  
+  // ESP32 لا يُرسل تفاصيل Queue — نعرض عدد فقط
+  $('queueView').innerHTML = `
+    <div style="text-align:center;padding:12px">
+      <div style="font-size:24px;font-weight:800;color:var(--amber);margin-bottom:8px">
+        ${qCount} / 5
+      </div>
+      <div style="font-size:13px;color:var(--ink2)">
+        أوامر في الانتظار على ESP32
+      </div>
+      <div style="font-size:11px;color:var(--ink3);margin-top:6px">
+        ستُنفذ تلقائياً عند عودة الاتصال
+      </div>
+    </div>
+  `;
 }
 
 function renderInfo(i) {
@@ -2391,9 +2552,7 @@ $('wipeBtn').onclick = async () => {
     variant:'danger', confirmText:'متابعة', confirmStyle:'d'
   });
   if (!ok1) return;
-  
   await new Promise(r => setTimeout(r, 200));
-  
   const ok2 = await confirmDialog({
     title:'تأكيد نهائي',
     message:'هل أنت متأكد تماماً؟',
@@ -2422,7 +2581,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ═══════════════════════════════════════════════════════════
-   RESIZE HANDLER
+   RESIZE
    ═══════════════════════════════════════════════════════════ */
 addEventListener('resize', debounce(() => {
   for (let i = 1; i <= 4; i++) {
@@ -2431,7 +2590,7 @@ addEventListener('resize', debounce(() => {
 }, 200));
 
 /* ═══════════════════════════════════════════════════════════
-   GLOBAL ERROR HANDLER
+   ERROR HANDLING
    ═══════════════════════════════════════════════════════════ */
 addEventListener('error', e => console.error('[Global]', e.error || e.message));
 addEventListener('unhandledrejection', e => console.error('[Unhandled]', e.reason));
@@ -2451,6 +2610,7 @@ addEventListener('unhandledrejection', e => console.error('[Unhandled]', e.reaso
   renderDevPickerList();
   renderDevManagerList();
   renderSchedule();
+  paintConn();
 
   const dev = state.devices.find(d => d.id === state.activeId) || state.devices[0];
   state.activeId = dev.id;
