@@ -8,6 +8,8 @@
 <script>try{document.documentElement.dataset.theme=localStorage.getItem('cp-theme')||'light'}catch(e){}</script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--wd:#0F2438;--wl:#0B5CAD;--wt:#F2A900;--lk:#0B5CAD;--acs:#E3EEF9;--bg:#ECEFF2;--cd:#fff;--bd:#D3D9DF;--ink:#101C28;--mut:#566474;--dg:#B3261E;--ok:#1B7F5C;--sh:0 1px 2px rgba(16,28,40,.08);--sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);color-scheme:light}
 [data-theme=dark]{--bg:#0D1620;--cd:#15222F;--bd:#25364A;--ink:#E7EDF3;--mut:#9AABBB;--dg:#FF8A80;--lk:#6AB0F3;--acs:#1B3148;--wl:#2E78C7;--sh:none;color-scheme:dark}
@@ -24,44 +26,37 @@ header{position:fixed;inset:0 0 auto;height:calc(60px + var(--st));padding-top:v
 main{max-width:800px;margin:0 auto;padding:calc(72px + var(--st)) 12px calc(88px + var(--sb))}
 .tab{display:none}.tab.on{display:block}
 
-/* ═══ الشريط السفلي مع FAB في المنتصف ═══ */
 nav{position:fixed;inset:auto 0 0;height:calc(62px + var(--sb));padding-bottom:var(--sb);z-index:30;background:var(--cd);border-top:1px solid var(--bd);display:flex;align-items:stretch}
 nav button.nv{flex:1;color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11.5px;gap:1px;position:relative;min-width:0;padding:0 2px}
 nav button.nv.on{color:var(--lk);font-weight:700}
 nav button.nv.on::before{content:"";position:absolute;top:0;width:32px;height:3px;background:var(--wt);border-radius:0 0 3px 3px}
 nav i{font-size:18px}
 .nb{position:absolute;top:6px;inset-inline-start:calc(50% + 6px);background:var(--wl);color:#fff;border-radius:9px;font-size:10.5px;min-width:17px;padding:0 3px;font-weight:700;text-align:center}
-/* زر الفلترة الدائري البارز */
 .fab-slot{flex:0 0 auto;width:70px;position:relative}
 .fab{position:absolute;left:50%;top:-22px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--wt);color:var(--wd);display:grid;place-items:center;font-size:22px;box-shadow:0 6px 16px rgba(15,36,56,.25),0 2px 4px rgba(15,36,56,.15);border:3px solid var(--cd);transition:.15s}
-.fab:hover{transform:translateX(-50%) scale(1.06)}
-.fab:active{transform:translateX(-50%) scale(.95)}
+.fab:hover{transform:translateX(-50%) scale(1.06)}.fab:active{transform:translateX(-50%) scale(.95)}
 .fab.on{background:var(--wl);color:#fff}
 .fab .fc{position:absolute;top:-2px;inset-inline-start:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--dg);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;border:2px solid var(--cd)}
 .fab-lbl{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--mut);font-weight:600;white-space:nowrap}
 
 .gl{background:var(--cd);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh)}
-.g2,.g4{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}@media(min-width:560px){.g4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.g4{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:12px}@media(min-width:560px){.g4{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .sc{padding:12px 8px;text-align:center;min-width:0;display:flex;flex-direction:column;align-items:center}
 .sc i{color:var(--lk);font-size:20px;margin-bottom:2px}.sc b{font-size:24px;line-height:1.2}.sc span{font-size:13px;color:var(--mut)}
 h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
-.pn{padding:14px;margin-bottom:12px}.cv{max-width:260px;margin:auto}
+.pn{padding:14px;margin-bottom:12px}
 .av{width:46px;height:46px;border-radius:10px;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
-
 .sr{display:flex;align-items:center;gap:8px;padding:0 12px;height:48px;position:relative}
 .sr input{flex:1;min-width:0;height:100%;background:none;border:0;outline:0;font-size:16px}.sr i{color:var(--mut)}.sr button{width:36px;height:36px;color:var(--mut);border-radius:50%;display:grid;place-items:center}
 .sr button:hover{background:var(--acs)}
 .fchips{display:flex;flex-wrap:wrap;gap:6px;padding:6px 2px 8px}
 .fchips:empty{display:none}
-.fchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px 0 12px;background:var(--wl);color:#fff;border-radius:16px;font-size:13px}
-.fchip .lbl{opacity:.85;font-size:11.5px;margin-inline-end:2px}
-.fchip .x{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;display:grid;place-items:center;font-size:10px}
-.fchip .x:hover{background:rgba(255,255,255,.35)}
-.fchips .fclr{height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--bd);background:var(--cd);color:var(--dg);font-size:13px;font-weight:600}
+.fchip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 8px 0 10px;background:var(--wl);color:#fff;border-radius:15px;font-size:12.5px}
+.fchip .x{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;display:grid;place-items:center;font-size:9px}
+.fchip .x:hover{background:rgba(255,255,255,.4)}
+.fchips .fclr{height:30px;padding:0 12px;border-radius:15px;border:1px solid var(--bd);background:var(--cd);color:var(--dg);font-size:12.5px;font-weight:600}
 .inf{font-size:13px;color:var(--mut);margin:2px 4px 8px}
 .ls{display:grid;gap:8px}
-
-/* بطاقة القائمة */
 .card{display:flex;align-items:center;gap:10px;padding:10px;cursor:pointer;min-width:0;background:var(--cd);border:1px solid var(--bd);border-radius:12px;box-shadow:var(--sh)}
 .card:hover{border-color:var(--lk)}
 .cm{flex:1;min-width:0}.cm b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:4px}
@@ -69,15 +64,13 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .chs{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}.ch{font-size:11.5px;padding:0 8px;border-radius:8px;background:var(--wl);color:#fff}.ch.o{background:transparent;border:1px solid var(--bd);color:var(--mut)}.ch.v{background:var(--ok);color:#fff}
 .ca{display:flex;flex:none}.ca button{width:34px;height:40px;color:var(--mut)}.ca .on{color:#e5a900}.ca .dl{color:var(--dg)}
 .vbadge{color:var(--ok);font-size:13px}
-
 .em{text-align:center;padding:36px 12px;color:var(--mut)}.em i{font-size:36px;color:var(--lk);display:block;margin-bottom:8px}
 .cr{display:flex;flex-wrap:wrap;gap:2px;align-items:center;margin-bottom:8px;font-size:14px}.cr button{min-height:34px;padding:0 6px;color:var(--lk);font-weight:700}.cr i{font-size:10px;color:var(--mut)}
 .rw{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;margin-bottom:8px;text-align:start;background:var(--cd);border:1px solid var(--bd);border-radius:12px}.rw span{flex:1;min-width:0;overflow-wrap:anywhere}.rw em{font-style:normal;color:var(--mut)}.rw>i:first-child{color:var(--lk);width:20px}
 .bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border-radius:12px;background:var(--wl);color:#fff;font-weight:700;text-decoration:none;min-width:0}
-.bt.g{background:transparent;border:1px solid var(--bd);color:var(--ink)}.bt.d{background:var(--dg);color:#fff}.bt.w{background:var(--ok);color:#fff}
+.bt.g{background:transparent;border:1px solid var(--bd);color:var(--ink)}.bt.d{background:var(--dg);color:#fff}.bt.w{background:var(--ok);color:#fff}.bt.o{background:var(--wt);color:var(--wd)}
 .bt:disabled{opacity:.5;cursor:not-allowed}
 
-/* ═══ المودال المركزي ═══ */
 #md{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:none;place-items:center;padding:12px;overflow-y:auto}
 #md.on{display:grid}
 .mb{width:100%;max-width:440px;max-height:92vh;overflow-y:auto;padding:18px;background:var(--bg);border:1px solid var(--bd);border-radius:20px;animation:sc .18s ease-out;margin:auto}
@@ -89,7 +82,6 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .fl{display:block;margin-bottom:10px}.fl span{font-size:13px;font-weight:700}.fl input,.fl select{width:100%;height:46px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);padding:0 10px;font-size:16px}.fl.er input{border-color:var(--dg)}
 .pr{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--bd)}.pr i{color:var(--lk);width:20px;margin-top:5px}.pr small{display:block;color:var(--mut);font-size:12px}.pr div{min-width:0;overflow-wrap:anywhere}
 
-/* ═══ بطاقة العمل (carte visite) ═══ */
 .vcard{border-radius:20px;overflow:hidden;background:var(--cd);border:1px solid var(--bd);margin-bottom:14px;box-shadow:0 6px 20px rgba(15,36,56,.12)}
 .vhead{background:linear-gradient(135deg,var(--wd) 0%,#1a3a5c 100%);color:#fff;padding:22px 18px 18px;text-align:center;position:relative;overflow:hidden}
 .vhead::before{content:"";position:absolute;inset-inline-end:-40px;top:-40px;width:140px;height:140px;border-radius:50%;background:rgba(242,169,0,.14)}
@@ -113,10 +105,7 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .vfoot{padding:12px 18px 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .vfoot .bt{min-height:42px;font-size:13.5px}
 .vfoot .full{grid-column:1/-1}
-.qrwrap{display:grid;place-items:center;padding:12px;background:var(--bg);border-radius:12px;margin-bottom:10px}
-.qrwrap canvas{border-radius:8px;background:#fff;padding:6px}
 
-/* ═══ نافذة الفلترة (نمط modal) ═══ */
 .fmodal-h{text-align:center;margin-bottom:14px}
 .fmodal-h h2{font-size:18px;margin-bottom:2px}
 .fmodal-h .sub{font-size:12.5px;color:var(--mut)}
@@ -126,17 +115,20 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .fsect .ic{width:30px;height:30px;border-radius:9px;background:var(--acs);color:var(--lk);display:grid;place-items:center;flex:none;font-size:13px}
 .fsect.on .ic{background:var(--wl);color:#fff}
 .fsect .name{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
-.fsect .val{font-size:13px;color:var(--wl);font-weight:700;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsect .val{font-size:12.5px;color:var(--wl);font-weight:700;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fsect .num{font-size:12px;color:var(--mut);min-width:22px;text-align:center}
 .fsect .chev{color:var(--mut);font-size:11px}
 .fback{display:flex;align-items:center;gap:6px;color:var(--lk);font-weight:700;font-size:13.5px;margin-bottom:10px;padding:6px 4px}
 .fback i{font-size:11px}
+.sortbar{display:flex;gap:6px;margin-bottom:10px}
+.sortbtn{flex:1;height:34px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--mut);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px}
+.sortbtn.on{background:var(--acs);border-color:var(--wl);color:var(--wl)}
+.sortbtn i{font-size:11px}
 .fopt{display:flex;align-items:center;gap:10px;width:100%;padding:12px;border-radius:12px;text-align:start;background:var(--cd);border:1px solid var(--bd);margin-bottom:6px;transition:.15s}
 .fopt:hover{border-color:var(--lk)}
 .fopt.on{background:var(--acs);border-color:var(--wl)}
-.fopt .dot{width:20px;height:20px;border-radius:50%;flex:none;border:2px solid var(--bd);display:grid;place-items:center}
-.fopt.on .dot{border-color:var(--wl);background:var(--wl)}
-.fopt.on .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff}
+.fopt .box{width:20px;height:20px;border-radius:6px;flex:none;border:2px solid var(--bd);display:grid;place-items:center;color:transparent;font-size:11px}
+.fopt.on .box{border-color:var(--wl);background:var(--wl);color:#fff}
 .fopt .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .fopt.on .name{font-weight:700;color:var(--wl)}
 .fopt .n{font-size:12.5px;color:var(--mut)}
@@ -145,11 +137,26 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .fopt.clear{border-style:dashed;color:var(--dg)}
 .fopt.clear .name{color:var(--dg)}
 
+.code-box{display:flex;align-items:center;gap:8px;padding:12px;background:var(--acs);border:2px dashed var(--wl);border-radius:12px;margin:10px 0}
+.code-box .code{flex:1;font-family:'Courier New',monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:var(--wl);text-align:center;direction:ltr;user-select:all;padding:6px 0}
+.code-box .cp{width:40px;height:40px;border-radius:10px;background:var(--wl);color:#fff;display:grid;place-items:center;flex:none}
+.code-box .cp:hover{opacity:.85}
+.code-hint{font-size:12px;color:var(--mut);text-align:center;margin-top:6px}
+.code-note{font-size:12.5px;color:var(--mut);padding:10px;background:var(--bg);border-radius:10px;margin:10px 0;line-height:1.7}
+.code-note b{color:var(--wl)}
+
+.pill{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11.5px;font-weight:700}
+.pill.w{background:#FEF3C7;color:#92400E}
+.pill.o{background:var(--acs);color:var(--wl)}
+.pill.g{background:#D1FAE5;color:#065F46}
+.pill.r{background:#FEE2E2;color:#991B1B}
+[data-theme=dark] .pill.w{background:#78350F;color:#FEF3C7}
+[data-theme=dark] .pill.g{background:#065F46;color:#D1FAE5}
+[data-theme=dark] .pill.r{background:#991B1B;color:#FEE2E2}
+
 #ts{position:fixed;inset-inline:0;bottom:calc(84px + var(--sb));margin:auto;width:max-content;max-width:calc(100% - 24px);background:var(--wd);color:#fff;padding:10px 18px;border-radius:10px;border-inline-start:4px solid var(--wt);z-index:80;opacity:0;pointer-events:none;transition:.2s;transform:translateY(12px)}#ts.on{opacity:1;transform:none}
 #ld{position:fixed;inset:0;z-index:99;background:var(--wd);display:none;place-items:center}#ld.on{display:grid}#ld i{font-size:44px;color:var(--wt);animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
-
 .stk{position:sticky;top:calc(60px + var(--st));z-index:5;background:var(--bg);padding:8px 0 2px}
-.rw.sel{border-color:var(--wl);background:var(--acs)}
 .hz{height:6px;border-radius:3px;margin-bottom:10px;background:repeating-linear-gradient(-45deg,var(--wt) 0 10px,var(--wd) 10px 20px)}
 .seg{display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px}.seg i{display:block;min-width:4px}
 .cols{display:grid;gap:0 12px;grid-template-columns:minmax(0,1fr)}@media(min-width:640px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -198,10 +205,11 @@ const FBC={apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",authDomain:"said-rah
 const CSV_EXPERTS="https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
 const CSV_FOURNISSEURS="https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
 const ADMIN_PASS='admin123';
+const ADMIN_WHATSAPP='212600000000';
+const RESET_TTL=60*60*1000;
 const TK={fournisseurs:'FOURNISSEURS',experts:'EXPERTS'},CK={services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
 const TL={fournisseurs:'مورّد',experts:'خبير'},CL={services:'خدمات',products:'منتجات',maqola:'مقاولة','yad-amila':'يد عاملة'};
 const CI={services:'fa-screwdriver-wrench',products:'fa-boxes-stacked',maqola:'fa-helmet-safety',['yad-amila']:'fa-people-carry-box'};
-/* أيقونة تلقائية حسب القطاع */
 const DOMI={'البناء':'fa-hard-hat','التجارة':'fa-store','تكنولوجيا':'fa-laptop-code','الصناعة':'fa-industry','السياحة':'fa-plane','الصحة':'fa-heart-pulse','الثقافة':'fa-landmark','التعليم':'fa-graduation-cap','الفلاحة':'fa-seedling','النقل':'fa-truck','المالية':'fa-coins','الغذاء':'fa-utensils','الطاقة':'fa-bolt'};
 const domIcon=d=>DOMI[String(d||'').trim()]||'fa-briefcase';
 const FLD={type:'type',cat:'categorie',dom:'domaine',spe:'specialite',ville:'ville'},FN={type:'النوع',cat:'التصنيف',dom:'القطاع',spe:'التخصص',ville:'المدينة'};
@@ -215,7 +223,7 @@ const SECTIONS=[
 ];
 
 /* ═══ STATE ═══ */
-const S={db:[],f:{type:'',cat:'',dom:'',ville:'',spe:'',q:''},tab:'home',fav:[],admin:sessionStorage.getItem('cp-admin')==='1',exp:{t:'',d:'',s:''},cur:null,fb:null,lim:60,busy:false,fp:'sections',fk:null,mode:null,pk:null,pi:[]};
+const S={db:[],f:{type:[],cat:[],dom:[],ville:[],spe:[],q:''},tab:'home',fav:[],admin:sessionStorage.getItem('cp-admin')==='1',exp:{t:'',d:'',s:''},expQ:'',cur:null,fb:null,lim:60,busy:false,fp:'sections',fk:null,sortF:{},mode:null,xq:''};
 try{S.fav=JSON.parse(localStorage.getItem('cp-fav')||'[]')}catch{}
 
 /* ═══ HELPERS ═══ */
@@ -236,12 +244,14 @@ const closeOverlay=()=>{$('#md').classList.remove('on');document.body.style.over
 const uniq=k=>[...new Set(S.db.map(r=>(r[k]||'').trim()).filter(Boolean))];
 const byId=id=>S.db.find(r=>r.id===id);
 const lbl=(k,v)=>k==='type'?TL[v]||v:k==='cat'?CL[v]||v:v;
+const clearFilters=()=>{S.f={type:[],cat:[],dom:[],ville:[],spe:[],q:''};$('#q').value='';S.lim=60};
+const activeCount=()=>Object.keys(FLD).reduce((n,k)=>n+S.f[k].length,0);
 
 /* ═══ THEME ═══ */
 function theme(){const d=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=d;try{localStorage.setItem('cp-theme',d)}catch{}themeIcon()}
 const themeIcon=()=>$('#hth').innerHTML=`<i class="fa-solid ${document.documentElement.dataset.theme==='dark'?'fa-sun':'fa-moon'}"></i>`;
 
-/* ═══ NAVIGATION + FAB ═══ */
+/* ═══ NAV ═══ */
 function nav(){
   const items=[
     {id:'home', label:'الرئيسية', icon:'fa-house'},
@@ -249,7 +259,7 @@ function nav(){
     {id:'exp',  label:'المستكشف', icon:'fa-sitemap'},
     {id:'fav',  label:'المفضلة',  icon:'fa-star'}
   ];
-  const nf=Object.keys(FLD).filter(k=>S.f[k]).length;
+  const nf=activeCount();
   const btn=i=>`<button class="nv ${S.tab===i.id?'on':''}" data-a="tab" data-v="${i.id}"><i class="fa-solid ${i.icon}"></i>${i.label}${i.id==='fav'&&S.fav.length?`<span class="nb">${S.fav.length}</span>`:''}</button>`;
   $('#nav').innerHTML=
     btn(items[0])+btn(items[1])+
@@ -259,43 +269,70 @@ function nav(){
 function go(t){S.tab=t;document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-'+t));nav();({home:dashboard,dir:directory,exp:explorer,fav:bookmarks})[t]();scrollTo(0,0)}
 
 /* ═══ FILTER ENGINE ═══ */
-const match=(r,skip)=>{for(const k in FLD)if(k!==skip&&S.f[k]&&norm(r[FLD[k]])!==norm(S.f[k]))return false;return!S.f.q||hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email].join(' '),S.f.q)};
+function match(r,skip){
+  for(const k in FLD){
+    if(k===skip)continue;
+    const arr=S.f[k];
+    if(arr.length && !arr.some(v=>norm(r[FLD[k]])===norm(v)))return false;
+  }
+  return !S.f.q || hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email].join(' '),S.f.q);
+}
 const results=()=>S.db.filter(r=>match(r)).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
-function facet(k){const m=new Map();S.db.filter(r=>match(r,k)).forEach(r=>{const v=(r[FLD[k]]||'').trim();if(v)m.set(v,(m.get(v)||0)+1)});
-  return[...m].sort((a,b)=>k==='type'||k==='cat'?a[0].localeCompare(b[0]):a[0].localeCompare(b[0],'ar'))}
+function facet(k,sortBy='count'){
+  const m=new Map();
+  S.db.filter(r=>match(r,k)).forEach(r=>{
+    const v=(r[FLD[k]]||'').trim();
+    if(v)m.set(v,(m.get(v)||0)+1);
+  });
+  const arr=[...m];
+  if(sortBy==='count') return arr.sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ar'));
+  return arr.sort((a,b)=>a[0].localeCompare(b[0],'ar'));
+}
 
 /* ═══ DIRECTORY ═══ */
 const vBadge=r=>r.verified?' <i class="fa-solid fa-circle-check vbadge" title="موثّق"></i>':'';
 const card=r=>`<div class="card" data-a="open" data-v="${esc(r.id)}" role="button" tabindex="0"><div class="av" style="background:${color(r.name)}">${esc(getInits(r.name))}</div><div class="cm"><b>${esc(r.name)}${vBadge(r)}</b><small>${esc([shown(r.domaine),r.ville].filter(Boolean).join(' · '))}</small><div class="chs"><span class="ch">${TL[r.type]}</span><span class="ch o">${CL[r.categorie]}</span>${r.verified?'<span class="ch v">موثّق</span>':''}</div></div><div class="ca"><button data-a="fav" data-v="${esc(r.id)}" aria-label="مفضلة" class="${S.fav.includes(r.id)?'on':''}"><i class="fa-${S.fav.includes(r.id)?'solid':'regular'} fa-star"></i></button><button data-a="shr" data-v="${esc(r.id)}" aria-label="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>${canEdit(r)?`<button data-a="edit" data-v="${esc(r.id)}" aria-label="تعديل"><i class="fa-solid fa-pen"></i></button>`:''}${S.admin?`<button class="dl" data-a="del" data-v="${esc(r.id)}" aria-label="حذف"><i class="fa-solid fa-trash"></i></button>`:''}</div></div>`;
 const empty=t=>`<div class="em"><i class="fa-regular fa-face-frown"></i><b>${t}</b></div>`;
+
 function directory(){
   const chips=[];
   for(const k of Object.keys(FLD)){
-    if(!S.f[k])continue;
-    chips.push(`<span class="fchip"><span class="lbl">${esc(FN[k])}:</span>${esc(lbl(k,S.f[k]))}<button class="x" data-a="chipx" data-k="${k}" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button></span>`);
+    for(const v of S.f[k]){
+      chips.push(`<span class="fchip">${esc(lbl(k,v))}<button class="x" data-a="chipx" data-k="${k}" data-v="${esc(v)}" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button></span>`);
+    }
   }
-  if(S.f.q.trim())chips.push(`<span class="fchip"><span class="lbl">بحث:</span>${esc(S.f.q.trim())}<button class="x" data-a="qx" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button></span>`);
+  if(S.f.q.trim())chips.push(`<span class="fchip">بحث: ${esc(S.f.q.trim())}<button class="x" data-a="qx" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button></span>`);
   if(chips.length>1)chips.push(`<button class="fclr" data-a="clr">مسح الكل</button>`);
   $('#fchips').innerHTML=chips.join('');
+
   const r=results();
   $('#inf').textContent=`${r.length} من أصل ${S.db.length}`;
   $('#qx').hidden=!S.f.q;
-  $('#ls').innerHTML=r.length?r.slice(0,S.lim).map(card).join('')+(r.length>S.lim?`<button class="bt g" data-a="more">عرض المزيد (${r.length-S.lim})</button>`:''):empty('لا توجد نتائج مطابقة');
+  $('#ls').innerHTML=r.length
+    ? r.slice(0,S.lim).map(card).join('') + (r.length>S.lim?`<button class="bt g" data-a="more">عرض المزيد (${r.length-S.lim})</button>`:'')
+    : empty('لا توجد نتائج مطابقة');
 }
 
 /* ═══ FILTER MODAL ═══ */
-function openFilter(){
-  S.fp='sections';S.fk=null;
-  renderFilter();
-  $('#md').classList.add('on');document.body.style.overflow='hidden';
+function openFilter(presetK=null,presetV=null){
+  S.fp=presetK?'pick':'sections';S.fk=presetK;
+  if(presetK&&presetV){
+    const arr=S.f[presetK];
+    if(!arr.some(x=>norm(x)===norm(presetV)))arr.push(presetV);
+    S.lim=60;
+  }
+  renderFilter();$('#md').classList.add('on');document.body.style.overflow='hidden';
 }
 function renderFilter(){
   let html='';
   if(S.fp==='sections'){
     html=`<div class="fmodal-h"><h2>الفلاتر</h2><div class="sub">اختر قسمًا لتصفية النتائج</div></div>`;
     html+=SECTIONS.map(s=>{
-      const active=!!S.f[s.k];
-      const val=active?lbl(s.k,S.f[s.k]):'';
+      const arr=S.f[s.k];
+      const active=arr.length>0;
+      let val='';
+      if(arr.length===1)val=lbl(s.k,arr[0]);
+      else if(arr.length>1)val=`${arr.length} مختارة`;
       const count=facet(s.k).length;
       return `<button class="fsect${active?' on':''}" data-a="fsect" data-v="${s.k}">
         <span class="ic"><i class="fa-solid ${s.icon}"></i></span>
@@ -304,42 +341,53 @@ function renderFilter(){
         <span class="chev"><i class="fa-solid fa-chevron-left"></i></span>
       </button>`;
     }).join('');
-    const n=Object.keys(FLD).filter(k=>S.f[k]).length;
+    const n=activeCount();
     html+=`<div class="ac">
-      <button class="bt g" data-a="fclr">مسح الكل</button>
-      <button class="bt" data-a="fcls">تم</button>
+      <button class="bt g" data-a="fclr"${n?'':' disabled'}>مسح الكل</button>
+      <button class="bt" data-a="fdone">عرض النتائج${n?` (${n})`:''}</button>
     </div>`;
   }else{
     const sect=SECTIONS.find(s=>s.k===S.fk);
+    const curSort=S.sortF[S.fk]||'count';
     html=`<button class="fback" data-a="fback"><i class="fa-solid fa-chevron-right"></i> رجوع</button>
-      <div class="fmodal-h"><h2>${esc(sect.label)}</h2><div class="sub">اختر قيمة أو أزل الفلتر</div></div>`;
-    const avail=facet(S.fk);
+      <div class="fmodal-h"><h2>${esc(sect.label)}</h2><div class="sub">اختيار متعدد مسموح</div></div>
+      <div class="sortbar">
+        <button class="sortbtn${curSort==='count'?' on':''}" data-a="fsort" data-v="count"><i class="fa-solid fa-arrow-down-wide-short"></i> الأكثر</button>
+        <button class="sortbtn${curSort==='name'?' on':''}" data-a="fsort" data-v="name"><i class="fa-solid fa-arrow-down-a-z"></i> أبجدي</button>
+      </div>`;
+    const avail=facet(S.fk,curSort);
+    const selected=S.f[S.fk];
     html+=avail.map(([v,n])=>{
-      const on=norm(S.f[S.fk])===norm(v);
+      const on=selected.some(x=>norm(x)===norm(v));
       const disabled=n===0&&!on;
       return `<button class="fopt${on?' on':''}" data-a="fpick" data-v="${esc(v)}" ${disabled?'disabled':''}>
-        <span class="dot"></span>
+        <span class="box"><i class="fa-solid fa-check"></i></span>
         <span class="name">${esc(lbl(S.fk,v))}</span>
         <span class="n">${n}</span>
       </button>`;
     }).join('')||'<p class="em">لا توجد قيم متاحة</p>';
-    if(S.f[S.fk])html+=`<button class="fopt clear" data-a="fpick" data-v=""><span class="dot" style="border-color:transparent;background:transparent"></span><span class="name">إزالة هذا الفلتر</span></button>`;
+    if(selected.length)html+=`<button class="fopt clear" data-a="fclearsec"><span class="box" style="border-color:transparent;color:transparent"></span><span class="name">إزالة كل قيم هذا القسم (${selected.length})</span></button>`;
   }
   openOverlay(html);
 }
 
-/* ═══ EXPLORER ═══ */
+/* ═══ EXPLORER (بحث متطور) ═══ */
 const grp=(l,k)=>{const m=new Map();l.forEach(r=>{const v=r[k]||'—';m.set(v,(m.get(v)||0)+1)});return[...m].sort((a,b)=>a[0].localeCompare(b[0],'ar'))};
+const matchExp=r=>!S.expQ||hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email,TL[r.type],CL[r.categorie]].join(' '),S.expQ);
 function explorer(){
   const{t,d,s}=S.exp,cs=[['الرئيسية','']];if(t)cs.push([TL[t]+'ون','t']);if(d)cs.push([d,'d']);if(s)cs.push([s,'s']);
   const row=(ic,n,c,a,v)=>`<button class="rw" data-a="${a}" data-v="${esc(v)}"><i class="fa-solid ${ic}"></i><span>${esc(n)}</span><em>${c}</em><i class="fa-solid fa-chevron-left"></i></button>`;
-  let h='',base=S.db.filter(r=>!t||r.type===t);
-  if(!t)h=['fournisseurs','experts'].map(x=>row(x==='experts'?'fa-user-tie':'fa-truck-field',TL[x]+'ون',S.db.filter(r=>r.type===x).length,'xt',x)).join('');
+  let h='',base=S.db.filter(r=>!t||r.type===t).filter(matchExp);
+  if(S.expQ){
+    h = base.length?'<div class="ls">'+base.map(card).join('')+'</div>':empty('لا نتائج مطابقة للبحث');
+  } else if(!t)h=['fournisseurs','experts'].map(x=>row(x==='experts'?'fa-user-tie':'fa-truck-field',TL[x]+'ون',S.db.filter(r=>r.type===x).length,'xt',x)).join('');
   else if(!d)h=grp(base,'domaine').map(g=>row('fa-industry',g[0],g[1],'xd',g[0])).join('');
   else if(!s)h=grp(base.filter(r=>r.domaine===d),'specialite').map(g=>row('fa-screwdriver-wrench',g[0],g[1],'xs',g[0])).join('');
   else h='<div class="ls">'+base.filter(r=>r.domaine===d&&r.specialite===s).map(card).join('')+'</div>';
-  $('#t-exp').innerHTML=`<div class="sr gl" style="margin-bottom:8px"><i class="fa-solid fa-magnifying-glass"></i><input id="xq" placeholder="بحث سريع..." aria-label="بحث سريع"></div><div class="cr">${cs.map((c,i)=>(i?'<i class="fa-solid fa-chevron-left"></i>':'')+`<button data-a="xc" data-v="${c[1]}">${esc(c[0])}</button>`).join('')}</div><div id="xl">${h||empty('لا توجد عناصر')}</div>`;
-  $('#xq').oninput=ev=>{const q=ev.target.value;document.querySelectorAll('#xl .rw,#xl .card').forEach(e=>e.style.display=!q||hit(e.textContent,q)?'':'none')};
+  $('#t-exp').innerHTML=`<div class="sr gl" style="margin-bottom:8px"><i class="fa-solid fa-magnifying-glass"></i><input id="xq" value="${esc(S.expQ)}" placeholder="بحث متطور: اسم، قطاع، تخصص، مدينة، هاتف..." aria-label="بحث سريع"><button id="xqc" ${S.expQ?'':'hidden'} aria-label="مسح"><i class="fa-solid fa-xmark"></i></button></div><div class="cr">${cs.map((c,i)=>(i?'<i class="fa-solid fa-chevron-left"></i>':'')+`<button data-a="xc" data-v="${c[1]}">${esc(c[0])}</button>`).join('')}</div><div id="xl">${h||empty('لا توجد عناصر')}</div>`;
+  const xq=$('#xq');
+  xq.oninput=ev=>{clearTimeout(xq._t);xq._t=setTimeout(()=>{S.expQ=ev.target.value;explorer();$('#xq').focus();$('#xq').setSelectionRange(9999,9999)},200)};
+  const xqc=$('#xqc');if(xqc)xqc.onclick=()=>{S.expQ='';explorer()};
 }
 
 /* ═══ BOOKMARKS ═══ */
@@ -350,10 +398,10 @@ function toggleFav(id){const i=S.fav.indexOf(id);i<0?S.fav.push(id):S.fav.splice
 /* ═══ DASHBOARD ═══ */
 function dashboard(){
   const c=(k,v)=>S.db.filter(r=>r[k]===v).length;
-  const st=[['fa-truck-field','موردون',c('type','fournisseurs'),'type:fournisseurs'],['fa-user-tie','خبراء',c('type','experts'),'type:experts'],['fa-city','مدن',uniq('ville').length,'ville'],['fa-industry','قطاعات',uniq('domaine').length,'dom']];
+  const st=[['fa-truck-field','موردون',c('type','fournisseurs'),'type:fournisseurs'],['fa-user-tie','خبراء',c('type','experts'),'type:experts'],['fa-city','مدن',uniq('ville').length,'ville:__pick__'],['fa-industry','قطاعات',uniq('domaine').length,'dom:__pick__']];
   const CC={services:'#3D8BDB',products:'#F2A900',maqola:'#2FA37A','yad-amila':'#A66BD0'};
   const cats=Object.keys(CL).map(k=>[CI[k],CL[k],c('categorie',k),'cat:'+k,CC[k]]);
-  const top=(k,f)=>{const g=grp(S.db,f).filter(x=>!['—','Autre','Général'].includes(x[0])).sort((a,b)=>b[1]-a[1]).slice(0,5),mx=g[0]?g[0][1]:1;return g.map(([v,n])=>`<button class="bar2" data-a="bar" data-v="${k}:${esc(v)}"><i style="width:${Math.round(n/mx*100)}%"></i><span>${esc(v)}</span><b>${n}</b></button>`).join('')||'<p class="inf">—</p>'};
+  const top=(k,f)=>{const g=grp(S.db,f).filter(x=>!['—','Autre','Général'].includes(x[0])).sort((a,b)=>b[1]-a[1]).slice(0,5),mx=g[0]?g[0][1]:1;return g.map(([v,n])=>`<button class="bar2" data-a="barbtn" data-k="${f}" data-v="${esc(v)}"><i style="width:${Math.round(n/mx*100)}%"></i><span>${esc(v)}</span><b>${n}</b></button>`).join('')||'<p class="inf">—</p>'};
   const cta=!S.user&&!S.admin?`<div class="pn gl" style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-user-shield" style="color:var(--wl);font-size:22px"></i><div style="flex:1;font-size:13.5px">تتصفح كزائر. سجّل دخولك لتعديل ملفك أو إضافته.</div><button class="bt" data-a="acc">دخول</button></div>`:'';
   const sc=x=>`<button class="sc gl" data-a="stat" data-v="${x[3]}"${x[4]?` style="border-top:3px solid ${x[4]}"`:''}><i class="fa-solid ${x[0]}"></i><b>${x[2]}</b><span>${x[1]}</span></button>`;
   $('#sub').textContent=`${S.db.length} ملف · ${uniq('domaine').length} قطاع`;
@@ -361,10 +409,10 @@ function dashboard(){
   <h3 class="t" style="margin-top:0">نظرة عامة</h3><div class="g4">${st.map(sc).join('')}</div>
   <h3 class="t">التصنيفات</h3><div class="seg">${cats.filter(x=>x[2]).map(x=>`<i style="flex:${x[2]} 0 0;background:${x[4]}"></i>`).join('')}</div><div class="g4" style="margin-top:10px">${cats.map(sc).join('')}</div>
   <div class="cols"><div class="pn gl"><b>أكثر القطاعات</b>${top('dom','domaine')}</div><div class="pn gl"><b>أكثر المدن</b>${top('ville','ville')}</div></div>
-  <div class="pn gl ab"><b>أدوات المدير</b><div class="ac"><button class="bt" data-a="sync"><i class="fa-solid fa-cloud-arrow-down"></i> مزامنة CSV</button><button class="bt g" data-a="exp"><i class="fa-solid fa-file-csv"></i> تصدير CSV</button><button class="bt g full" data-a="usr"><i class="fa-solid fa-users-gear"></i> المستخدمون وسجل النشاط</button></div></div>`;
+  <div class="pn gl ab"><b>أدوات المدير</b><div class="ac"><button class="bt" data-a="sync"><i class="fa-solid fa-cloud-arrow-down"></i> مزامنة CSV</button><button class="bt g" data-a="exp"><i class="fa-solid fa-file-csv"></i> تصدير CSV</button><button class="bt g full" data-a="usr"><i class="fa-solid fa-users-gear"></i> المستخدمون وسجل النشاط</button><button class="bt g full" data-a="resetpanel"><i class="fa-solid fa-key"></i> إدارة رموز الاستعادة</button></div></div>`;
 }
 
-/* ═══ PROFILE (بطاقة عمل) ═══ */
+/* ═══ PROFILE ═══ */
 function profile(id){
   const r=byId(id);if(!r)return;S.cur=r;
   const p=fmtPhone(r.phone),w=url(r.web),f=S.fav.includes(id);
@@ -385,6 +433,8 @@ function profile(id){
     ${w?`<a class="bt g" href="${esc(w)}" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> الموقع</a>`:''}
     <button class="bt g" data-a="fav" data-v="${esc(id)}"><i class="fa-${f?'solid':'regular'} fa-star"></i> ${f?'إزالة':'حفظ'}</button>
     <button class="bt g" data-a="shr" data-v="${esc(id)}"><i class="fa-solid fa-share-nodes"></i> مشاركة</button>
+    <button class="bt o" data-a="pdf" data-v="${esc(id)}"><i class="fa-solid fa-file-pdf"></i> بطاقة PDF</button>
+    <button class="bt g" data-a="resetreq" data-v="${esc(id)}"><i class="fa-solid fa-key"></i> طلب الرمز</button>
     ${canEdit(r)?`<button class="bt g" data-a="edit" data-v="${esc(id)}"><i class="fa-solid fa-pen"></i> تعديل</button>`:''}
     ${S.admin?`<button class="bt ${r.verified?'g':'w'}" data-a="vrf" data-v="${esc(id)}"><i class="fa-solid fa-${r.verified?'circle-xmark':'circle-check'}"></i> ${r.verified?'إلغاء التوثيق':'توثيق'}</button>`:''}
     ${S.admin?`<button class="bt d" data-a="del" data-v="${esc(id)}"><i class="fa-solid fa-trash"></i> حذف</button>`:''}
@@ -392,7 +442,7 @@ function profile(id){
   `;
 
   openOverlay(`
-    <div class="vcard">
+    <div class="vcard" id="vcard-${esc(id)}">
       <div class="vhead">
         <div class="vlogo"><i class="fa-solid ${domIcon(r.domaine)}"></i></div>
         <div class="vname">${esc(r.name)} ${r.verified?'<i class="fa-solid fa-circle-check vbadge"></i>':''}</div>
@@ -406,9 +456,56 @@ function profile(id){
     </div>
   `);
 }
-const info=r=>[r.name,`${TL[r.type]} · ${CL[r.categorie]}`,shown(r.domaine),r.ville,fmtPhone(r.phone),r.email,r.web].filter(Boolean).join('\n');
-async function share(id){const r=byId(id);if(!r)return;if(navigator.share){try{await navigator.share({title:r.name,text:info(r)});return}catch(e){if(e.name==='AbortError')return}}
-  try{await navigator.clipboard.writeText(info(r));toast('تم النسخ')}catch{toast('تعذر النسخ')}window.open('https://wa.me/?text='+encodeURIComponent(info(r)),'_blank','noopener')}
+
+/* مشاركة تفصيلية */
+function info(r){
+  const L=[
+    `👤 ${r.name}`,
+    `🏷️ ${TL[r.type]} · ${CL[r.categorie]}`,
+    shown(r.domaine)?`🏭 القطاع: ${r.domaine}`:'',
+    shown(r.specialite)?`🛠️ التخصص: ${r.specialite}`:'',
+    r.ville?`📍 المدينة: ${r.ville}`:'',
+    fmtPhone(r.phone)?`📞 الهاتف: ${fmtPhone(r.phone)}`:'',
+    r.email?`✉️ البريد: ${r.email}`:'',
+    r.web?`🌐 الموقع: ${url(r.web)}`:'',
+    r.verified?'✅ ملف موثّق':'',
+    '',
+    `🔗 ${location.origin}${location.pathname}#p=${r.id}`
+  ];
+  return L.filter(Boolean).join('\n');
+}
+async function share(id){
+  const r=byId(id);if(!r)return;
+  const text=info(r);
+  if(navigator.share){try{await navigator.share({title:r.name,text});return}catch(e){if(e.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(text);toast('تم نسخ البطاقة')}catch{toast('تعذر النسخ')}
+  window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
+}
+
+/* توليد PDF من بطاقة العمل */
+async function makePDF(id){
+  const r=byId(id);if(!r)return;
+  if(!window.html2canvas||!window.jspdf){toast('مكتبة PDF غير محمّلة');return}
+  setLoading(true);
+  try{
+    /* إن لم يكن الملف مفتوحًا، افتحه مؤقتًا لالتقاط البطاقة */
+    if(!$('#vcard-'+id)){profile(id);await new Promise(r=>setTimeout(r,300))}
+    const el=$('#vcard-'+id);
+    if(!el){toast('تعذر توليد البطاقة');return}
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true,logging:false});
+    const img=canvas.toDataURL('image/png');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a6'});
+    const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
+    const ratio=canvas.width/canvas.height;
+    let w=pw-10,h=w/ratio;
+    if(h>ph-10){h=ph-10;w=h*ratio}
+    pdf.addImage(img,'PNG',(pw-w)/2,(ph-h)/2,w,h);
+    pdf.save(`ConnectPro-${r.name.replace(/\s+/g,'_')}.pdf`);
+    log('pdf',r.name);toast('تم توليد PDF');
+  }catch(e){console.error(e);toast('تعذر توليد PDF')}
+  finally{setLoading(false)}
+}
 
 /* ═══ ADMIN ═══ */
 function adminUI(){document.body.classList.toggle('adm',S.admin);document.body.classList.toggle('cadd',canAdd());$('#hsh').classList.toggle('on',S.admin);$('#hus').classList.toggle('on',!!S.user);$('#hsh').setAttribute('aria-label',S.admin?'خروج المدير':'دخول المدير')}
@@ -491,68 +588,251 @@ async function refreshUser(){let id;try{id=JSON.parse(localStorage.getItem('cp-u
   if(!S.user)saveSess()}
 const field=(id,l,t='text',x='')=>`<label class="fl" id="w_${id}"><span>${l}</span><input id="${id}" type="${t}" ${x}></label>`;
 
-/* البحث عن ملف مطابق للربط (هاتف أو بريد) */
-function findMatch(i){return S.db.find(r=>!r.owner&&(
-  i.includes('@')?norm(r.email)===norm(i):fmtPhone(r.phone)===fmtPhone(i)
-))}
+function findMatch(i){return S.db.find(r=>!r.owner&&(i.includes('@')?norm(r.email)===norm(i):fmtPhone(r.phone)===fmtPhone(i)))}
+function genCode(){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 
+/* ═══ تسجيل الدخول ═══ */
 function account(){
   if(S.user){
     const u=S.user;
     const st=u.profileId?'ملفك مرتبط ويمكنك تعديله':u.claim?`طلب ربط ملفك قيد مراجعة المدير${byId(u.claim)?` (${esc(byId(u.claim).name)})`:''}`:'لا يوجد ملف مرتبط بحسابك بعد';
-    const action = u.profileId
+    const action=u.profileId
       ? `<button class="bt" data-a="open" data-v="${esc(u.profileId)}">عرض ملفي</button><button class="bt g" data-a="edit" data-v="${esc(u.profileId)}">تعديل ملفي</button>`
       : u.claim
         ? `<button class="bt g full" data-a="findme">إلغاء طلب الربط</button>`
         : canAdd() ? `<button class="bt full" data-a="add">إنشاء ملفي المهني</button><button class="bt g full" data-a="claimsearch">لدي ملف موجود — ابحث عنه</button>` : '';
-    return openOverlay(`<div class="av xl" style="background:${color(u.name)};width:84px;height:84px;font-size:30px;border-radius:20px;margin:0 auto 8px;display:grid">${esc(getInits(u.name))}</div><h2>${esc(u.name)}</h2><p style="text-align:center;color:var(--mut);direction:ltr">${esc(u.ident)}</p><p style="text-align:center;margin:10px 0;font-size:13.5px">${st}</p><div class="ac">${action}<button class="bt g" data-a="cls">إغلاق</button><button class="bt d full" data-a="uout">خروج</button></div>`)
+    return openOverlay(`<div class="av" style="background:${color(u.name)};width:84px;height:84px;font-size:30px;border-radius:20px;margin:0 auto 8px;display:grid">${esc(getInits(u.name))}</div><h2>${esc(u.name)}</h2><p style="text-align:center;color:var(--mut);direction:ltr">${esc(u.ident)}</p><p style="text-align:center;margin:10px 0;font-size:13.5px">${st}</p><div class="ac">${action}<button class="bt g" data-a="cls">إغلاق</button><button class="bt d full" data-a="uout">خروج</button></div>`)
   }
-  const su=S.mode==='signup';
-  openOverlay(`<h2>${su?'إنشاء حساب':'تسجيل الدخول'}</h2>
-    <p class="lead">${su?'سجّل بهاتفك أو بريدك. إذا وُجد ملف مطابق في الدليل سيُرسل طلب ربط للمدير.':'أدخل بريدك أو هاتفك للمتابعة.'}</p>
-    ${su?field('u_n','الاسم الكامل','text','autocomplete="name"'):''}
+  openOverlay(`<h2>تسجيل الدخول</h2>
+    <p class="lead">أدخل رقم هاتفك أو بريدك للتحقق من وجود الحساب</p>
     ${field('u_i','البريد أو الهاتف','text','dir="ltr" autocomplete="username"')}
-    ${field('u_p','كلمة المرور (6 أحرف على الأقل)','password','autocomplete="'+(su?'new':'current')+'-password"')}
-    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="${su?'usignup':'ulogin'}">${su?'تسجيل':'دخول'}</button><button class="bt g full" data-a="amode">${su?'لدي حساب بالفعل':'ليس لدي حساب؟ أنشئ حساباً'}</button></div>`);
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <button class="bt" data-a="ucheck">التالي</button>
+      <button class="bt g full" data-a="amode">ليس لدي حساب؟ أنشئ حساباً</button>
+    </div>`);
+  setTimeout(()=>$('#u_i').focus(),50);
 }
-async function ulogin(){if(!needFb())return;const i=ident($('#u_i').value),p=$('#u_p').value;if(!i||!p)return toast('أدخل بيانات الدخول');setLoading(true);
-  try{const u=await uidOf(i),r=(await S.fb.ref('users/'+u).once('value')).val();
-    if(!r||r.hash!==await sha(r.salt+p)){toast('بيانات الدخول غير صحيحة');return}
-    S.user={id:u,name:r.name,ident:r.ident,profileId:r.profileId||'',claim:r.claim||''};saveSess();adminUI();log('login','');closeOverlay();toast('مرحباً '+r.name);go(S.tab)}
-  catch(e){console.error(e);toast('خطأ أثناء الدخول')}finally{setLoading(false)}}
-async function usignup(){if(!needFb())return;const n=$('#u_n').value.trim(),i=ident($('#u_i').value),p=$('#u_p').value;
-  if(!n)return toast('الاسم مطلوب');if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i)&&!/^\+\d{8,15}$/.test(i))return toast('أدخل بريداً أو هاتفاً صالحاً');if(p.length<6)return toast('كلمة المرور قصيرة');
+async function ucheck(){
+  if(!needFb())return;
+  const i=ident($('#u_i').value);
+  if(!i)return toast('أدخل رقم الهاتف أو البريد');
   setLoading(true);
-  try{const u=await uidOf(i);if((await S.fb.ref('users/'+u).once('value')).exists()){toast('الحساب موجود، سجّل الدخول');return}
-    const salt=uid(),m=findMatch(i),rec={name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()};if(m)rec.claim=m.id;
-    await S.fb.ref('users/'+u).set(rec);S.user={id:u,name:n,ident:i,profileId:'',claim:m?m.id:''};saveSess();adminUI();log('signup',n);closeOverlay();
-    toast(m?'تم إنشاء الحساب — أُرسل طلب ربط ملفك للمدير':'تم إنشاء الحساب');go(S.tab)}
-  catch(e){console.error(e);toast('خطأ أثناء إنشاء الحساب')}finally{setLoading(false)}}
-
-/* البحث عن ملف للربط (من حساب المستخدم) */
+  try{
+    const u=await uidOf(i);
+    const r=(await S.fb.ref('users/'+u).once('value')).val();
+    if(!r){S.mode='signup';openSignup(i);return}
+    S.tmpUid=u;S.tmpRec=r;
+    openPasswordStep(r);
+  }catch(e){console.error(e);toast('خطأ في التحقق')}
+  finally{setLoading(false)}
+}
+function openPasswordStep(rec){
+  openOverlay(`<h2>تسجيل الدخول</h2>
+    <div style="border:1px solid var(--bd);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:12px">
+      <i class="fa-solid fa-user-check" style="color:var(--ok);font-size:20px"></i>
+      <div style="flex:1"><b>${esc(rec.name)}</b><br><small style="color:var(--mut)">${esc(rec.ident)}</small></div>
+    </div>
+    <label class="fl"><span>كلمة المرور</span><input id="u_p" type="password" autocomplete="current-password"></label>
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <button class="bt" data-a="ulogin">دخول</button>
+      <button class="bt g full" data-a="forgot">نسيت الرمز السري؟</button>
+    </div>`);
+  setTimeout(()=>$('#u_p').focus(),50);
+}
+function openSignup(prefill=''){
+  openOverlay(`<h2>إنشاء حساب</h2>
+    <p class="lead">سجّل بهاتفك أو بريدك. إذا وُجد ملف مطابق سيُرسل طلب ربط للمدير.</p>
+    ${field('u_n','الاسم الكامل','text','autocomplete="name"')}
+    <label class="fl"><span>البريد أو الهاتف</span><input id="u_i" type="text" dir="ltr" autocomplete="username" value="${esc(prefill)}"></label>
+    ${field('u_p','كلمة المرور (6 أحرف على الأقل)','password','autocomplete="new-password"')}
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="usignup">تسجيل</button><button class="bt g full" data-a="amode">لدي حساب بالفعل</button></div>`);
+}
+async function ulogin(){
+  if(!needFb())return;
+  const p=$('#u_p').value;if(!p)return toast('أدخل كلمة المرور');
+  setLoading(true);
+  try{
+    const u=S.tmpUid,r=S.tmpRec;
+    const check=await sha(r.salt+p);
+    const resetOK=r.resetCode&&r.resetExpiry>Date.now()&&r.resetCode===await sha('reset:'+p+':'+r.salt);
+    if(r.hash!==check&&!resetOK){toast('كلمة المرور غير صحيحة');return}
+    if(resetOK){
+      openOverlay(`<h2>تعيين كلمة مرور جديدة</h2>
+        <p class="lead">الرمز المؤقت صحيح. اختر كلمة مرور جديدة.</p>
+        ${field('np','كلمة المرور الجديدة (6+)','password','autocomplete="new-password"')}
+        <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="setnew">حفظ</button></div>`);
+      return;
+    }
+    S.user={id:u,name:r.name,ident:r.ident,profileId:r.profileId||'',claim:r.claim||''};
+    saveSess();adminUI();log('login','');closeOverlay();toast('مرحباً '+r.name);go(S.tab);
+  }catch(e){console.error(e);toast('خطأ أثناء الدخول')}
+  finally{setLoading(false)}
+}
+async function setnew(){
+  const np=$('#np').value;if(np.length<6)return toast('كلمة المرور قصيرة');
+  setLoading(true);
+  try{
+    const u=S.tmpUid;
+    const r=(await S.fb.ref('users/'+u).once('value')).val();
+    const salt=r.salt||uid(),hash=await sha(salt+np);
+    await S.fb.ref('users/'+u).update({salt,hash,resetCode:null,resetExpiry:null});
+    S.user={id:u,name:r.name,ident:r.ident,profileId:r.profileId||'',claim:r.claim||''};
+    saveSess();adminUI();log('pass-change',r.name);closeOverlay();toast('تم تعيين كلمة المرور');go(S.tab);
+  }catch(e){console.error(e);toast('حدث خطأ')}
+  finally{setLoading(false)}
+}
+async function usignup(){
+  if(!needFb())return;
+  const n=$('#u_n').value.trim(),i=ident($('#u_i').value),p=$('#u_p').value;
+  if(!n)return toast('الاسم مطلوب');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i)&&!/^\+\d{8,15}$/.test(i))return toast('أدخل بريداً أو هاتفاً صالحاً');
+  if(p.length<6)return toast('كلمة المرور قصيرة');
+  setLoading(true);
+  try{
+    const u=await uidOf(i);
+    if((await S.fb.ref('users/'+u).once('value')).exists()){toast('الحساب موجود، سجّل الدخول');return}
+    const salt=uid(),m=findMatch(i),rec={name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()};
+    if(m)rec.claim=m.id;
+    await S.fb.ref('users/'+u).set(rec);
+    S.user={id:u,name:n,ident:i,profileId:'',claim:m?m.id:''};
+    saveSess();adminUI();log('signup',n);closeOverlay();
+    toast(m?'تم إنشاء الحساب — أُرسل طلب ربط ملفك للمدير':'تم إنشاء الحساب');go(S.tab);
+  }catch(e){console.error(e);toast('خطأ أثناء إنشاء الحساب')}
+  finally{setLoading(false)}
+}
 function claimSearch(){
   if(!S.user||!needFb())return;
-  const i=S.user.ident;
-  const match=findMatch(i);
-  if(!match){toast('لم يُعثر على ملف مطابق لهاتفك/بريدك');return}
+  const m=findMatch(S.user.ident);
+  if(!m){toast('لم يُعثر على ملف مطابق لهاتفك/بريدك');return}
   openOverlay(`<h2>طلب ربط ملف</h2>
     <p class="lead">وجدنا ملفًا مطابقًا لبياناتك:</p>
-    <div class="pr" style="border:1px solid var(--bd);border-radius:12px;padding:12px"><div style="flex:1"><b>${esc(match.name)}</b><small>${esc([shown(match.domaine),match.ville].filter(Boolean).join(' · '))}</small></div></div>
+    <div style="border:1px solid var(--bd);border-radius:12px;padding:12px;margin:6px 0"><div style="flex:1"><b>${esc(m.name)}</b><br><small style="color:var(--mut)">${esc([shown(m.domaine),m.ville].filter(Boolean).join(' · '))}</small></div></div>
     <p style="font-size:13px;color:var(--mut);margin-top:10px">سيُرسل طلب للمدير للموافقة على ربط هذا الملف بحسابك.</p>
-    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="claimsend" data-v="${esc(match.id)}">إرسال الطلب</button></div>`);
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="claimsend" data-v="${esc(m.id)}">إرسال الطلب</button></div>`);
 }
-async function claimSend(id){
-  if(!S.user||!needFb())return;setLoading(true);
+async function claimSend(id){if(!S.user||!needFb())return;setLoading(true);
   try{await S.fb.ref('users/'+S.user.id).update({claim:id});S.user.claim=id;log('claim-req',S.user.name);closeOverlay();toast('أُرسل طلب الربط للمدير');account()}
   catch(e){console.error(e);toast('حدث خطأ')}finally{setLoading(false)}}
-async function claimCancel(){
-  if(!S.user||!needFb())return;setLoading(true);
+async function claimCancel(){if(!S.user||!needFb())return;setLoading(true);
   try{await S.fb.ref('users/'+S.user.id).update({claim:null});S.user.claim='';closeOverlay();toast('تم إلغاء الطلب');account()}
   catch(e){console.error(e);toast('حدث خطأ')}finally{setLoading(false)}}
 
+/* ═══ طلب الرمز من بطاقة الملف ═══ */
+function resetReq(id){
+  const r=byId(id);if(!r)return;
+  const rec=S.db.find(x=>x.phone&&fmtPhone(x.phone)===fmtPhone(r.phone));
+  const target=r.phone?fmtPhone(r.phone):'';
+  if(!target)return toast('لا يوجد رقم هاتف لهذا الملف');
+  const msg=`مرحباً،\nأطلب استعادة الرمز السري لحسابي المرتبط بالملف:\n👤 ${r.name}\n📱 ${target}\n🕐 ${new Date().toLocaleString('ar-MA')}\n\nشكرًا.`;
+  openOverlay(`<h2>طلب الرمز السري</h2>
+    <div class="code-note">
+      <b>كيف تعمل؟</b><br>
+      1. اضغط زر واتساب لإرسال طلبك إلى المدير.<br>
+      2. سيتحقق المدير من هويتك ويولّد رمزًا مؤقتًا.<br>
+      3. ادخل إلى "تسجيل الدخول" وضع رقمك، ثم ضع الرمز في حقل كلمة المرور.
+    </div>
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <a class="bt w" href="https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> إرسال الطلب</a>
+    </div>`);
+}
+
+/* ═══ استعادة الرمز من الشاشة الرئيسية ═══ */
+function forgot(){
+  const rec=S.tmpRec;if(!rec)return;
+  const msg=`مرحباً،\nأطلب استعادة الرمز السري للحساب:\n👤 ${rec.name}\n📱 ${rec.ident}\n🕐 ${new Date().toLocaleString('ar-MA')}`;
+  openOverlay(`<h2>استعادة الرمز السري</h2>
+    <div class="code-note">
+      <b>كيف تعمل؟</b><br>
+      1. اضغط زر واتساب لإرسال طلبك إلى المدير.<br>
+      2. سيتحقق المدير من هويتك ويولّد رمزًا مؤقتًا.<br>
+      3. ارجع إلى تسجيل الدخول وضع رقمك، ثم ضع الرمز في حقل كلمة المرور.
+    </div>
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <a class="bt w" href="https://wa.me/${ADMIN_WHATSAPP}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> طلب عبر واتساب</a>
+    </div>`);
+}
+
+/* ═══ لوحة رموز الاستعادة (المدير) ═══ */
+function resetPanel(){
+  if(!S.admin||!needFb())return;
+  openOverlay(`<h2>إدارة رموز الاستعادة</h2>
+    <p class="lead">ابحث عن المستخدم برقم هاتفه أو بريده لتوليد رمز مؤقت</p>
+    <label class="fl"><span>رقم الهاتف / البريد</span><input id="rf_i" type="text" dir="ltr" placeholder="+2126..." autocomplete="off"></label>
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <button class="bt" data-a="rfind">بحث</button>
+    </div>
+    <div id="rf_res" style="margin-top:12px"></div>`);
+  setTimeout(()=>$('#rf_i').focus(),50);
+  $('#rf_i').onkeydown=e=>e.key==='Enter'&&A.rfind();
+}
+async function rfind(){
+  if(!S.admin||!needFb())return;
+  const i=ident($('#rf_i').value);
+  if(!i)return toast('أدخل رقم الهاتف');
+  setLoading(true);
+  try{
+    const u=await uidOf(i);
+    const r=(await S.fb.ref('users/'+u).once('value')).val();
+    if(!r){
+      $('#rf_res').innerHTML=`<div class="em" style="padding:20px"><i class="fa-solid fa-user-xmark"></i><b>لا يوجد حساب بهذا الرقم/البريد</b><div style="font-size:12px;margin-top:4px">${esc(i)}</div></div>`;
+      return;
+    }
+    const now=Date.now();
+    const hasCode=r.resetCode&&r.resetExpiry>now;
+    $('#rf_res').innerHTML=`
+      <div style="border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av" style="background:${color(r.name)}">${esc(getInits(r.name))}</div>
+          <div style="flex:1"><b>${esc(r.name)}</b><br><small dir="ltr" style="color:var(--mut)">${esc(r.ident)}</small></div>
+          ${r.profileId?'<span class="pill g">مرتبط</span>':'<span class="pill o">غير مرتبط</span>'}
+        </div>
+      </div>
+      ${hasCode?`
+        <div class="code-note" style="background:#FEF3C7;color:#92400E">
+          <b>يوجد رمز نشط بالفعل</b><br>
+          ينتهي: ${esc(new Date(r.resetExpiry).toLocaleString('ar-MA'))}
+        </div>
+        <button class="bt o" style="width:100%" data-a="rgen" data-v="${esc(u)}">توليد رمز جديد (يُلغي القديم)</button>
+      `:`
+        <button class="bt" style="width:100%" data-a="rgen" data-v="${esc(u)}"><i class="fa-solid fa-key"></i> توليد رمز سري</button>
+      `}
+      <div id="rout" style="margin-top:10px"></div>`;
+  }catch(e){console.error(e);toast('حدث خطأ')}
+  finally{setLoading(false)}
+}
+async function rgen(userId){
+  if(!S.admin||!needFb()||!userId)return;
+  const code=genCode();
+  setLoading(true);
+  try{
+    const r=(await S.fb.ref('users/'+userId).once('value')).val();
+    const hash=await sha('reset:'+code+':'+r.salt);
+    const expiry=Date.now()+RESET_TTL;
+    await S.fb.ref('users/'+userId).update({resetCode:hash,resetExpiry:expiry});
+    log('reset-gen',r.name);
+    const msg=`مرحباً ${r.name}،\nرمز الاستعادة الخاص بك هو: *${code}*\nصالح لمدة ساعة واحدة من الآن.\n\nادخل إلى المنصة → تسجيل الدخول → ضع رقم هاتفك → في حقل كلمة المرور ضع هذا الرمز.`;
+    $('#rout').innerHTML=`
+      <div class="code-box">
+        <div class="code" id="rcode">${code}</div>
+        <button class="cp" data-a="rcopy" data-v="${esc(code)}" aria-label="نسخ"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div class="code-hint">ينتهي في: ${esc(new Date(expiry).toLocaleString('ar-MA'))}</div>
+      <div class="ac" style="margin-top:12px">
+        <a class="bt w full" href="https://wa.me/${esc(r.ident.replace(/\D/g,''))}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> إرسال الرمز للمستخدم</a>
+      </div>`;
+    toast('تم توليد الرمز — أرسله للمستخدم');
+  }catch(e){console.error(e);toast('حدث خطأ')}
+  finally{setLoading(false)}
+}
+
 async function adminPanel(){if(!S.admin||!needFb())return;setLoading(true);
   try{const us=Object.entries((await S.fb.ref('users').once('value')).val()||{}),lg=Object.values((await S.fb.ref('logs').limitToLast(25).once('value')).val()||{}).reverse(),ib=(c,a,id,l,i)=>`<button class="hb" style="color:${c}" data-a="${a}" data-v="${esc(id)}" aria-label="${l}"><i class="fa-solid ${i}"></i></button>`;
-    openOverlay(`<h2>المستخدمون (${us.length})</h2>${us.map(([id,u])=>`<div class="pr"><div style="flex:1"><b>${esc(u.name)}</b><small dir="ltr">${esc(u.ident)}</small>${u.profileId?'<small>مرتبط بملف</small>':u.claim?`<small>يطلب ربط: ${esc(byId(u.claim)?.name||u.claim)}</small>`:''}</div>${u.claim&&!u.profileId?ib('var(--wl)','appr',id,'قبول','fa-check')+ib('var(--dg)','rej',id,'رفض','fa-xmark'):''}${ib('var(--dg)','udel',id,'حذف المستخدم','fa-user-slash')}</div>`).join('')||'<p class="em">لا يوجد مستخدمون</p>'}<h2 style="margin-top:14px">سجل النشاط</h2>${lg.map(l=>`<div class="pr"><div><small>${esc(new Date(l.t).toLocaleString('ar-MA'))} · ${esc(l.u)}</small>${esc(l.a)} ${esc(l.d)}</div></div>`).join('')||'<p class="em">لا نشاط</p>'}<div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`)}
+    openOverlay(`<h2>المستخدمون (${us.length})</h2>${us.map(([id,u])=>`<div class="pr"><div style="flex:1"><b>${esc(u.name)}</b><small dir="ltr">${esc(u.ident)}</small>${u.profileId?'<small>مرتبط بملف</small>':u.claim?`<small>يطلب ربط: ${esc(byId(u.claim)?.name||u.claim)}</small>`:''}${u.resetCode&&u.resetExpiry>Date.now()?'<small style="color:#92400E">🔑 رمز استعادة نشط</small>':''}</div>${u.claim&&!u.profileId?ib('var(--wl)','appr',id,'قبول','fa-check')+ib('var(--dg)','rej',id,'رفض','fa-xmark'):''}${ib('var(--dg)','udel',id,'حذف المستخدم','fa-user-slash')}</div>`).join('')||'<p class="em">لا يوجد مستخدمون</p>'}<h2 style="margin-top:14px">سجل النشاط</h2>${lg.map(l=>`<div class="pr"><div><small>${esc(new Date(l.t).toLocaleString('ar-MA'))} · ${esc(l.u)}</small>${esc(l.a)} ${esc(l.d)}</div></div>`).join('')||'<p class="em">لا نشاط</p>'}<div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`)}
   catch(e){console.error(e);toast('تعذر تحميل البيانات')}finally{setLoading(false)}}
 async function appr(id){if(!S.admin||!needFb())return;setLoading(true);
   try{const u=(await S.fb.ref('users/'+id).once('value')).val(),it=byId(u?.claim);if(!it){toast('الملف غير موجود');return}
@@ -564,31 +844,51 @@ async function udel(id){if(!S.admin||!needFb()||!confirm('حذف هذا المس
 
 /* ═══ EVENTS ═══ */
 const A={
-  theme,adm,add:()=>canAdd()?form(null):toast('غير مسموح'),acc:account,usr:adminPanel,ulogin,usignup,appr,rej,udel,
+  theme,adm,add:()=>canAdd()?form(null):toast('غير مسموح'),acc:account,usr:adminPanel,ulogin,usignup,appr,rej,udel,ucheck,setnew,
   uout(){S.user=null;saveSess();adminUI();closeOverlay();toast('تم الخروج');go(S.tab)},
-  amode(){S.mode=S.mode==='signup'?'login':'signup';account()},
-  findme:claimCancel,claimsearch:claimSearch,claimsend:claimSend,
-  tab:v=>S.tab===v?(v==='dir'?(S.f={type:'',cat:'',dom:'',ville:'',spe:'',q:''},$('#q').value='',directory()):v==='exp'?(S.exp={t:'',d:'',s:''},explorer()):scrollTo({top:0,behavior:'smooth'})):go(v),
-  cls:closeOverlay,open:profile,fav:toggleFav,shr:share,
+  amode(){S.mode=S.mode==='signup'?'login':'signup';S.mode==='signup'?openSignup():account()},
+  findme:claimCancel,claimsearch:claimSearch,claimsend:claimSend,forgot,resetreq:resetReq,
+  resetpanel:resetPanel,rfind,rgen,
+  rcopy(v){navigator.clipboard?.writeText(v).then(()=>toast('تم النسخ')).catch(()=>toast('تعذر النسخ'))},
+  tab:v=>S.tab===v?(v==='dir'?(clearFilters(),directory()):v==='exp'?(S.exp={t:'',d:'',s:''},S.expQ='',explorer()):scrollTo({top:0,behavior:'smooth'})):go(v),
+  cls:closeOverlay,open:profile,fav:toggleFav,shr:share,pdf:makePDF,
   edit:id=>{const r=byId(id);canEdit(r)?form(r):toast('غير مسموح')},
   del:delAsk,delok:delOk,save,sync,exp:exportCSV,vrf:verifyToggle,
   login(){if($('#pw').value===ADMIN_PASS){S.admin=true;sessionStorage.setItem('cp-admin','1');adminUI();closeOverlay();toast('مرحباً أيها المدير');go(S.tab)}else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور غير صحيحة')}},
-  stat(v){S.f={type:'',cat:'',dom:'',ville:'',spe:'',q:''};$('#q').value='';const[k,x]=v.split(':');S.f[k]=x;go('dir')},
-  chipx(v,el){S.f[el.dataset.k]='';S.lim=60;directory()},
-  clr(){S.f={type:'',cat:'',dom:'',ville:'',spe:'',q:''};$('#q').value='';directory()},
+  /* النقر على إحصائية في الرئيسية */
+  stat(v){
+    const i=v.indexOf(':'),k=v.slice(0,i),x=v.slice(i+1);
+    if(x==='__pick__'){openFilter(k);return}
+    clearFilters();S.f[k]=[x];go('dir');
+  },
+  barbtn(v,el){openFilter(el.dataset.k,v)},
+  chipx(v,el){const k=el.dataset.k;S.f[k]=S.f[k].filter(x=>norm(x)!==norm(el.dataset.v));S.lim=60;directory();nav()},
+  clr(){clearFilters();directory();nav()},
   more(){S.lim+=60;directory()},
   qx(){S.f.q='';$('#q').value='';directory()},
-  bar(v){const i=v.indexOf(':');S.f={type:'',cat:'',dom:'',ville:'',spe:'',q:''};S.f[v.slice(0,i)]=v.slice(i+1);$('#q').value='';go('dir')},
   favclr(){if(confirm('مسح كل المفضلة؟')){S.fav=[];try{localStorage.removeItem('cp-fav')}catch{}nav();bookmarks()}},
-  xt:v=>{S.exp={t:v,d:'',s:''};explorer()},xd:v=>{S.exp.d=v;S.exp.s='';explorer()},xs:v=>{S.exp.s=v;explorer()},
-  xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:''}:v==='t'?{t:x.t,d:'',s:''}:v==='d'?{t:x.t,d:x.d,s:''}:x;explorer()},
+  xt:v=>{S.exp={t:v,d:'',s:''};S.expQ='';explorer()},xd:v=>{S.exp.d=v;S.exp.s='';S.expQ='';explorer()},xs:v=>{S.exp.s=v;S.expQ='';explorer()},
+  xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:''}:v==='t'?{t:x.t,d:'',s:''}:v==='d'?{t:x.t,d:x.d,s:''}:x;S.expQ='';explorer()},
   /* الفلترة */
   fopen:openFilter,
   fcls:closeOverlay,
-  fclr(){S.f={type:'',cat:'',dom:'',ville:'',spe:'',q:''};$('#q').value='';S.lim=60;renderFilter();directory();nav()},
+  fclr(){clearFilters();renderFilter();directory();nav()},
   fsect(v){S.fp='pick';S.fk=v;renderFilter()},
   fback(){S.fp='sections';S.fk=null;renderFilter()},
-  fpick(v){S.f[S.fk]=v;S.lim=60;S.fp='sections';S.fk=null;renderFilter();directory();nav()}
+  fsort(v){S.sortF[S.fk]=v;renderFilter()},
+  fclearsec(){S.f[S.fk]=[];S.lim=60;renderFilter();directory();nav()},
+  fpick(v){
+    const k=S.fk,arr=S.f[k];
+    const i=arr.findIndex(x=>norm(x)===norm(v));
+    if(i>=0)arr.splice(i,1);else arr.push(v);
+    S.lim=60;
+    if(arr.length===0&&i>=0){renderFilter();directory();nav();return}
+    closeOverlay();
+    S.tab='dir';
+    document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-dir'));
+    nav();directory();scrollTo(0,0);
+  },
+  fdone(){closeOverlay();S.tab='dir';document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-dir'));nav();directory();scrollTo(0,0)}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&A[el.dataset.a]){e.stopPropagation();A[el.dataset.a](el.dataset.v,el)}else if(e.target.id==='md')closeOverlay()});
 document.addEventListener('keydown',e=>{
@@ -602,6 +902,8 @@ let dt;$('#q').addEventListener('input',e=>{clearTimeout(dt);dt=setTimeout(()=>{
   themeIcon();adminUI();nav();
   try{if(window.firebase){firebase.initializeApp(FBC);S.fb=firebase.database()}}catch(e){console.warn(e)}
   await loadDB();await refreshUser();adminUI();go('home');setLoading(false);
+  const m=location.hash.match(/^#p=(.+)$/);
+  if(m)setTimeout(()=>{const r=byId(m[1]);if(r)profile(r.id)},300);
 })();
 })();
 </script>
