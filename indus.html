@@ -139,12 +139,11 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .code-note{font-size:12.5px;color:var(--mut);padding:10px;background:var(--bg);border-radius:10px;margin:10px 0;line-height:1.7}
 .code-note b{color:var(--wl)}
 
-/* ═══ قائمة اختيار رئيسية (دخول / إنشاء) ═══ */
 .auth-hub{display:flex;flex-direction:column;gap:10px;margin-top:4px}
 .auth-btn{display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;background:var(--cd);border:1px solid var(--bd);text-align:start;transition:.15s}
 .auth-btn:hover{border-color:var(--wl);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,36,56,.1)}
 .auth-btn.primary{background:linear-gradient(135deg,var(--wd),#1a3a5c);color:#fff;border-color:transparent}
-.auth-btn.primary:hover{border-color:transparent;box-shadow:0 6px 18px rgba(15,36,56,.25)}
+.auth-btn.primary:hover{box-shadow:0 6px 18px rgba(15,36,56,.25)}
 .auth-btn .ai{width:48px;height:48px;border-radius:14px;background:var(--acs);color:var(--lk);display:grid;place-items:center;font-size:20px;flex:none}
 .auth-btn.primary .ai{background:var(--wt);color:var(--wd)}
 .auth-btn .at{flex:1;min-width:0}
@@ -154,7 +153,19 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .auth-btn .chev{color:var(--mut);font-size:14px}
 .auth-btn.primary .chev{color:rgba(255,255,255,.7)}
 
-/* ═══ PDF Card (احترافي أفقي) ═══ */
+/* شريط التبديل للمدير */
+.srcbar{display:flex;gap:6px;margin-bottom:12px;padding:4px;background:var(--cd);border:1px solid var(--bd);border-radius:12px}
+.srcbar button{flex:1;height:40px;border-radius:9px;font-size:13px;font-weight:700;color:var(--mut);display:flex;align-items:center;justify-content:center;gap:6px}
+.srcbar button.on{background:var(--wl);color:#fff}
+.srcbar button i{font-size:13px}
+
+/* شريط ترتيب المستكشف */
+.sortbar2{display:flex;gap:6px;margin-bottom:10px}
+.sortbar2 button{flex:1;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--mut);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px}
+.sortbar2 button.on{background:var(--acs);border-color:var(--wl);color:var(--wl)}
+.sortbar2 button i{font-size:12px}
+
+/* ═══ PDF Card احترافي ═══ */
 .pdf-stage{position:fixed;left:-99999px;top:0;width:1200px;height:auto}
 .pdf-card{width:1200px;background:#fff;color:#101C28;font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;display:flex;flex-direction:row;min-height:520px;overflow:hidden;position:relative}
 .pdf-left{flex:0 0 480px;background:#0F2438;color:#fff;padding:60px 50px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;overflow:hidden}
@@ -247,7 +258,17 @@ const SECTIONS=[
 ];
 
 /* ═══ STATE ═══ */
-const S={db:[],f:{type:[],cat:[],dom:[],ville:[],spe:[],q:''},tab:'home',fav:[],admin:sessionStorage.getItem('cp-admin')==='1',exp:{t:'',d:'',s:''},expQ:'',cur:null,fb:null,lim:60,busy:false,fp:'sections',fk:null,sortF:{},mode:null,tmpUid:null,tmpRec:null,gview:false};
+const S={
+  db:[],            /* البيانات الحالية المعروضة */
+  fbCache:[],       /* نسخة من Firebase */
+  csvCache:[],      /* نسخة من CSV */
+  viewSrc:'fb',     /* 'fb' أو 'csv' — للمدير فقط */
+  f:{type:[],cat:[],dom:[],ville:[],spe:[],q:''},
+  tab:'home',fav:[],
+  admin:sessionStorage.getItem('cp-admin')==='1',
+  exp:{t:'',d:'',s:''},expQ:'',expSort:'name',
+  cur:null,fb:null,lim:60,busy:false,fp:'sections',fk:null,sortF:{},mode:null,tmpUid:null,tmpRec:null
+};
 try{S.fav=JSON.parse(localStorage.getItem('cp-fav')||'[]')}catch{}
 
 /* ═══ HELPERS ═══ */
@@ -270,6 +291,10 @@ const byId=id=>S.db.find(r=>r.id===id);
 const lbl=(k,v)=>k==='type'?TL[v]||v:k==='cat'?CL[v]||v:v;
 const clearFilters=()=>{S.f={type:[],cat:[],dom:[],ville:[],spe:[],q:''};$('#q').value='';S.lim=60};
 const activeCount=()=>Object.keys(FLD).reduce((n,k)=>n+S.f[k].length,0);
+/* تحديث S.db حسب المصدر المختار */
+function applySource(){
+  S.db = (S.admin && S.viewSrc==='csv') ? S.csvCache : S.fbCache;
+}
 
 /* ═══ THEME ═══ */
 function theme(){const d=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=d;try{localStorage.setItem('cp-theme',d)}catch{}themeIcon()}
@@ -396,20 +421,28 @@ function renderFilter(){
   openOverlay(html);
 }
 
-/* ═══ EXPLORER ═══ */
+/* ═══ EXPLORER (مع ترتيب) ═══ */
 const grp=(l,k)=>{const m=new Map();l.forEach(r=>{const v=r[k]||'—';m.set(v,(m.get(v)||0)+1)});return[...m].sort((a,b)=>a[0].localeCompare(b[0],'ar'))};
 const matchExp=r=>!S.expQ||hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email,TL[r.type],CL[r.categorie]].join(' '),S.expQ);
 function explorer(){
   const{t,d,s}=S.exp,cs=[['الرئيسية','']];if(t)cs.push([TL[t]+'ون','t']);if(d)cs.push([d,'d']);if(s)cs.push([s,'s']);
+  const sortBar=`<div class="sortbar2">
+    <button class="${S.expSort==='count'?'on':''}" data-a="expSort" data-v="count"><i class="fa-solid fa-arrow-down-wide-short"></i> الأكثر</button>
+    <button class="${S.expSort==='name'?'on':''}" data-a="expSort" data-v="name"><i class="fa-solid fa-arrow-down-a-z"></i> أبجدي</button>
+  </div>`;
   const row=(ic,n,c,a,v)=>`<button class="rw" data-a="${a}" data-v="${esc(v)}"><i class="fa-solid ${ic}"></i><span>${esc(n)}</span><em>${c}</em><i class="fa-solid fa-chevron-left"></i></button>`;
   let h='',base=S.db.filter(r=>!t||r.type===t).filter(matchExp);
+  const sortGroups=(arr)=>{
+    if(S.expSort==='count') return arr.sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ar'));
+    return arr.sort((a,b)=>a[0].localeCompare(b[0],'ar'));
+  };
   if(S.expQ){
     h = base.length?'<div class="ls">'+base.map(card).join('')+'</div>':empty('لا نتائج مطابقة للبحث');
-  } else if(!t)h=['fournisseurs','experts'].map(x=>row(x==='experts'?'fa-user-tie':'fa-truck-field',TL[x]+'ون',S.db.filter(r=>r.type===x).length,'xt',x)).join('');
-  else if(!d)h=grp(base,'domaine').map(g=>row('fa-industry',g[0],g[1],'xd',g[0])).join('');
-  else if(!s)h=grp(base.filter(r=>r.domaine===d),'specialite').map(g=>row('fa-screwdriver-wrench',g[0],g[1],'xs',g[0])).join('');
+  } else if(!t)h=sortGroups(['fournisseurs','experts'].map(x=>[x,S.db.filter(r=>r.type===x).length])).map(([x,c])=>row(x==='experts'?'fa-user-tie':'fa-truck-field',TL[x]+'ون',c,'xt',x)).join('');
+  else if(!d)h=sortGroups(grp(base,'domaine')).map(g=>row('fa-industry',g[0],g[1],'xd',g[0])).join('');
+  else if(!s)h=sortGroups(grp(base.filter(r=>r.domaine===d),'specialite')).map(g=>row('fa-screwdriver-wrench',g[0],g[1],'xs',g[0])).join('');
   else h='<div class="ls">'+base.filter(r=>r.domaine===d&&r.specialite===s).map(card).join('')+'</div>';
-  $('#t-exp').innerHTML=`<div class="sr gl" style="margin-bottom:8px"><i class="fa-solid fa-magnifying-glass"></i><input id="xq" value="${esc(S.expQ)}" placeholder="بحث متطور: اسم، قطاع، تخصص، مدينة، هاتف..." aria-label="بحث سريع"><button id="xqc" ${S.expQ?'':'hidden'} aria-label="مسح"><i class="fa-solid fa-xmark"></i></button></div><div class="cr">${cs.map((c,i)=>(i?'<i class="fa-solid fa-chevron-left"></i>':'')+`<button data-a="xc" data-v="${c[1]}">${esc(c[0])}</button>`).join('')}</div><div id="xl">${h||empty('لا توجد عناصر')}</div>`;
+  $('#t-exp').innerHTML=`<div class="sr gl" style="margin-bottom:8px"><i class="fa-solid fa-magnifying-glass"></i><input id="xq" value="${esc(S.expQ)}" placeholder="بحث متطور: اسم، قطاع، تخصص، مدينة، هاتف..." aria-label="بحث سريع"><button id="xqc" ${S.expQ?'':'hidden'} aria-label="مسح"><i class="fa-solid fa-xmark"></i></button></div>${sortBar}<div class="cr">${cs.map((c,i)=>(i?'<i class="fa-solid fa-chevron-left"></i>':'')+`<button data-a="xc" data-v="${c[1]}">${esc(c[0])}</button>`).join('')}</div><div id="xl">${h||empty('لا توجد عناصر')}</div>`;
   const xq=$('#xq');
   xq.oninput=ev=>{clearTimeout(xq._t);xq._t=setTimeout(()=>{S.expQ=ev.target.value;explorer();const el=$('#xq');if(el){el.focus();el.setSelectionRange(9999,9999)}},200)};
   const xqc=$('#xqc');if(xqc)xqc.onclick=()=>{S.expQ='';explorer()};
@@ -429,12 +462,23 @@ function dashboard(){
   const top=(k,f)=>{const g=grp(S.db,f).filter(x=>!['—','Autre','Général'].includes(x[0])).sort((a,b)=>b[1]-a[1]).slice(0,5),mx=g[0]?g[0][1]:1;return g.map(([v,n])=>`<button class="bar2" data-a="bardirect" data-k="${f}" data-v="${esc(v)}"><i style="width:${Math.round(n/mx*100)}%"></i><span>${esc(v)}</span><b>${n}</b></button>`).join('')||'<p class="inf">—</p>'};
   const cta=!S.user&&!S.admin?`<div class="pn gl" style="display:flex;align-items:center;gap:10px"><i class="fa-solid fa-user-shield" style="color:var(--wl);font-size:22px"></i><div style="flex:1;font-size:13.5px">تتصفح كزائر. سجّل دخولك لتعديل ملفك أو إضافته.</div><button class="bt" data-a="acc">دخول</button></div>`:'';
   const sc=x=>`<button class="sc gl" data-a="stat" data-v="${x[3]}"${x[4]?` style="border-top:3px solid ${x[4]}"`:''}><i class="fa-solid ${x[0]}"></i><b>${x[2]}</b><span>${x[1]}</span></button>`;
+  const srcbar=S.admin?`<div class="srcbar">
+    <button class="${S.viewSrc==='fb'?'on':''}" data-a="srcfb"><i class="fa-solid fa-database"></i> Firebase (${S.fbCache.length})</button>
+    <button class="${S.viewSrc==='csv'?'on':''}" data-a="srccsv"><i class="fa-solid fa-file-csv"></i> CSV (${S.csvCache.length})</button>
+  </div>`:'';
+  const csvSync=S.admin&&S.viewSrc==='csv'?`<div class="pn gl" style="border:2px solid var(--wt)"><b style="color:var(--wt)">⚠️ أنت تعرض البيانات من CSV</b><p style="font-size:13px;color:var(--mut);margin:6px 0">هذه معاينة فقط. اضغط المزامنة لحفظها في Firebase.</p><div class="ac"><button class="bt o full" data-a="csvpush"><i class="fa-solid fa-cloud-arrow-up"></i> مزامنة إلى قاعدة البيانات</button></div></div>`:'';
+  const adminTools=S.admin&&S.viewSrc==='fb'?`<div class="pn gl ab"><b>أدوات المدير</b><div class="ac">
+    <button class="bt" data-a="csvfetch"><i class="fa-solid fa-cloud-arrow-down"></i> جلب من CSV</button>
+    <button class="bt g" data-a="exp"><i class="fa-solid fa-file-csv"></i> تصدير</button>
+    <button class="bt g full" data-a="usr"><i class="fa-solid fa-users-gear"></i> المستخدمون وسجل النشاط</button>
+  </div></div>`:'';
   $('#sub').textContent=`${S.db.length} ملف · ${uniq('domaine').length} قطاع`;
-  $('#t-home').innerHTML=`${cta}<div class="hz"></div>
+  $('#t-home').innerHTML=`${cta}${srcbar}${csvSync}
+  <div class="hz"></div>
   <h3 class="t" style="margin-top:0">نظرة عامة</h3><div class="g4">${st.map(sc).join('')}</div>
   <h3 class="t">التصنيفات</h3><div class="seg">${cats.filter(x=>x[2]).map(x=>`<i style="flex:${x[2]} 0 0;background:${x[4]}"></i>`).join('')}</div><div class="g4" style="margin-top:10px">${cats.map(sc).join('')}</div>
   <div class="cols"><div class="pn gl"><b>أكثر القطاعات</b>${top('dom','domaine')}</div><div class="pn gl"><b>أكثر المدن</b>${top('ville','ville')}</div></div>
-  <div class="pn gl ab"><b>أدوات المدير</b><div class="ac"><button class="bt" data-a="csvupd"><i class="fa-solid fa-cloud-arrow-down"></i> تحديث من CSV</button><button class="bt g" data-a="exp"><i class="fa-solid fa-file-csv"></i> تصدير CSV</button><button class="bt g full" data-a="usr"><i class="fa-solid fa-users-gear"></i> المستخدمون وسجل النشاط</button></div></div>`;
+  ${adminTools}`;
 }
 
 /* ═══ PROFILE ═══ */
@@ -451,13 +495,9 @@ function profile(id){
 
   const vtags=`<span class="vtag">${esc(TL[r.type])}</span><span class="vtag">${esc(CL[r.categorie])}</span>${r.verified?'<span class="vtag v"><i class="fa-solid fa-circle-check"></i> موثّق</span>':''}`;
 
-  /* زر طلب الرمز: للمدير = توليد، للمستخدم صاحب الملف = طلب، للزائر = طلب */
   let resetBtn='';
-  if(S.admin){
-    resetBtn=`<button class="bt o" data-a="rgenfile" data-v="${esc(id)}"><i class="fa-solid fa-key"></i> توليد رمز سري</button>`;
-  } else {
-    resetBtn=`<button class="bt o" data-a="resetreq" data-v="${esc(id)}"><i class="fa-solid fa-key"></i> طلب الرمز السري</button>`;
-  }
+  if(S.admin){resetBtn=`<button class="bt o" data-a="rgenfile" data-v="${esc(id)}"><i class="fa-solid fa-key"></i> توليد رمز سري</button>`}
+  else{resetBtn=`<button class="bt o" data-a="resetreq" data-v="${esc(id)}"><i class="fa-solid fa-key"></i> طلب الرمز السري</button>`}
 
   const btns=`
     ${p?`<a class="bt" href="tel:${esc(p)}"><i class="fa-solid fa-phone"></i> اتصال</a>`:''}
@@ -514,7 +554,7 @@ async function share(id){
   window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener');
 }
 
-/* ═══ PDF CARD (احترافي أفقي مع QR) ═══ */
+/* ═══ PDF ═══ */
 function buildPdfHtml(r){
   const p=fmtPhone(r.phone),w=url(r.web);
   const rows=[];
@@ -561,8 +601,7 @@ async function makePDF(id){
     const img=canvas.toDataURL('image/jpeg',0.95);
     const {jsPDF}=window.jspdf;
     const ratio=canvas.height/canvas.width;
-    const wmm=200;
-    const hmm=wmm*ratio;
+    const wmm=200,hmm=wmm*ratio;
     const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:[wmm,hmm]});
     pdf.addImage(img,'JPEG',0,0,wmm,hmm);
     pdf.save(`ConnectPro-${r.name.replace(/\s+/g,'_')}.pdf`);
@@ -573,7 +612,7 @@ async function makePDF(id){
 
 /* ═══ ADMIN ═══ */
 function adminUI(){document.body.classList.toggle('adm',S.admin);document.body.classList.toggle('cadd',canAdd());$('#hsh').classList.toggle('on',S.admin);$('#hus').classList.toggle('on',!!S.user);$('#hsh').setAttribute('aria-label',S.admin?'خروج المدير':'دخول المدير')}
-function adm(){if(S.admin){S.admin=false;sessionStorage.removeItem('cp-admin');adminUI();toast('تم تسجيل الخروج');return go(S.tab)}
+function adm(){if(S.admin){S.admin=false;sessionStorage.removeItem('cp-admin');S.viewSrc='fb';applySource();adminUI();toast('تم تسجيل الخروج');return go(S.tab)}
   openOverlay(`<h2>دخول المدير</h2><label class="fl"><span>كلمة المرور</span><input id="pw" type="password" autocomplete="current-password"></label><div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="login">دخول</button></div>`);setTimeout(()=>$('#pw').focus(),50);
   $('#pw').onkeydown=e=>e.key==='Enter'&&A.login()}
 
@@ -615,46 +654,63 @@ async function verifyToggle(id){
 
 /* ═══ DATA ═══ */
 function mapRaw(raw){const o=[];for(const[T,tv]of Object.entries(TK))for(const[C,cv]of Object.entries(CK))toArr(raw?.[tv]?.[cv]).forEach(i=>i.name&&o.push({...i,type:T,categorie:C,id:i.id||uid(),domaine:i.domaine||'Autre',specialite:i.specialite||'Général'}));return o}
-async function loadDB(){let raw=null,ok=false;
+async function loadDB(){
+  let raw=null,ok=false;
   try{if(!S.fb)throw 0;raw=(await S.fb.ref('professionals').once('value')).val();ok=true}catch{toast('تعذر الاتصال بـ Firebase')}
-  S.db=mapRaw(raw);
-  if(ok&&S.db.length)try{localStorage.setItem('cp-cache',JSON.stringify(S.db))}catch{}
-  if(!S.db.length){if(!ok)try{S.db=JSON.parse(localStorage.getItem('cp-cache')||'[]')}catch{}
-    if(!S.db.length)try{S.db=await csvAll();toast('عرض مؤقت من Google Sheets')}catch{}}}
+  S.fbCache=mapRaw(raw);
+  if(ok&&S.fbCache.length)try{localStorage.setItem('cp-cache',JSON.stringify(S.fbCache))}catch{}
+  /* في وضع الزائر: دائمًا من Firebase — وعند الفشل من الكاش */
+  if(!S.fbCache.length&&!ok){
+    try{S.fbCache=JSON.parse(localStorage.getItem('cp-cache')||'[]')}catch{}
+  }
+  applySource();
+}
 function splitCSV(l){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const h=l[i];if(h==='"'){if(q&&l[i+1]==='"'){c+='"';i++}else q=!q}else if(h===','&&!q){o.push(c);c=''}else c+=h}o.push(c);return o}
 const parseCSV=(txt,type,cat)=>{const cl=s=>(s||'').replace(/^["'\s]+|["'\s]+$/g,'');return txt.split(/\r?\n/).slice(1).map(splitCSV).filter(c=>cl(c[1])).map(c=>({id:sid(type,cl(c[1]),cl(c[5])),name:cl(c[1]),domaine:cl(c[2])||'Autre',specialite:cl(c[3])||'Général',ville:cl(c[4]),phone:fmtPhone(cl(c[5])),email:cl(c[6]),web:cl(c[7]),type,categorie:cat}))};
 async function csvAll(){const g=async(u,t,c)=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return parseCSV(await r.text(),t,c)};
   const[e,f]=await Promise.all([g(CSV_EXPERTS,'experts','yad-amila'),g(CSV_FOURNISSEURS,'fournisseurs','services')]);const m=new Map();[...f,...e].forEach(r=>m.has(r.id)||m.set(r.id,r));return[...m.values()]}
 
-async function csvUpdate(){
-  if(S.busy||!S.admin||!needFb())return;
+/* للمدير: جلب CSV ومعاينة */
+async function csvFetch(){
+  if(!S.admin||!needFb())return;
+  setLoading(true);
+  try{
+    S.csvCache=await csvAll();
+    S.viewSrc='csv';applySource();
+    go('home');
+    toast(`تم جلب ${S.csvCache.length} ملف من CSV — عاينها ثم اضغط "مزامنة"`);
+  }catch(e){console.error(e);toast('فشل الجلب')}
+  finally{setLoading(false)}
+}
+/* للمدير: مزامنة CSV → Firebase */
+async function csvPush(){
+  if(!S.admin||!needFb()||S.busy)return;
+  if(!S.csvCache.length)return toast('لا توجد بيانات CSV — اجلبها أولاً');
+  const old=S.fbCache;
+  const cr=new Map(old.map(r=>[r.id,r.createdAt]));
+  const vr=new Map(old.map(r=>[r.id,r.verified]));
+  const owned=new Map(old.filter(r=>r.owner).map(r=>[r.id,r]));
+  const oldIds=new Set(old.map(r=>r.id));
+  let added=0,updated=0,kept=0;
+  const now=Date.now();
+  const tree={};
+  const put=r=>{const{type,categorie,...x}=r,T=TK[type],C=CK[categorie];tree[T]=tree[T]||{};(tree[T][C]=tree[T][C]||[]).push(x)};
+  S.csvCache.forEach(r=>{
+    if(owned.has(r.id)){kept++;return}
+    const v={...r,createdAt:cr.get(r.id)||now};
+    if(vr.get(r.id))v.verified=true;
+    if(oldIds.has(r.id))updated++;else added++;
+    put(v);
+  });
+  owned.forEach(put);
+  if(!confirm(`📊 مزامنة CSV → Firebase:\n\n➕ ${added} جديد\n✏️ ${updated} محدّث\n🔒 ${kept} محمي (عدّله المستخدمون)\n\nمتابعة؟`))return;
   S.busy=true;setLoading(true);
   try{
-    const all=await csvAll();
-    const old=mapRaw((await S.fb.ref('professionals').once('value')).val());
-    const cr=new Map(old.map(r=>[r.id,r.createdAt]));
-    const vr=new Map(old.map(r=>[r.id,r.verified]));
-    const owned=new Map(old.filter(r=>r.owner).map(r=>[r.id,r]));
-    const oldIds=new Set(old.map(r=>r.id));
-    const now=Date.now();
-    let added=0,updated=0,kept=0;
-    const tree={};
-    const put=r=>{const{type,categorie,...x}=r,T=TK[type],C=CK[categorie];tree[T]=tree[T]||{};(tree[T][C]=tree[T][C]||[]).push(x)};
-    all.forEach(r=>{
-      if(owned.has(r.id)){kept++;return}
-      const v={...r,createdAt:cr.get(r.id)||now};
-      if(vr.get(r.id))v.verified=true;
-      if(oldIds.has(r.id))updated++;else added++;
-      put(v);
-    });
-    owned.forEach(put);
-    const summary=`📊 سيتم تحديث البيانات من CSV:\n\n➕ ${added} ملف جديد\n✏️ ${updated} ملف محدّث\n🔒 ${kept} ملف محمي (عدّله المستخدمون)\n\nمتابعة؟`;
-    if(!confirm(summary)){S.busy=false;setLoading(false);return}
     await S.fb.ref('professionals').set(tree);
-    log('csv-update',`${added}+ ${updated}~ ${kept}🔒`);
-    await loadDB();go(S.tab);
-    toast(`تم التحديث: ${added} جديد، ${updated} محدّث`);
-  }catch(e){console.error(e);toast('فشل التحديث، تحقق من الاتصال')}
+    log('csv-push',`${added}+ ${updated}~ ${kept}🔒`);
+    await loadDB();S.viewSrc='fb';applySource();go('home');
+    toast(`تمت المزامنة: ${added} جديد، ${updated} محدّث`);
+  }catch(e){console.error(e);toast('فشلت المزامنة')}
   finally{S.busy=false;setLoading(false)}
 }
 function exportCSV(){const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const h=['id','name','domaine','specialite','ville','phone','email','web','type','categorie','verified'];
@@ -680,7 +736,7 @@ const field=(id,l,t='text',x='')=>`<label class="fl" id="w_${id}"><span>${l}</sp
 function findMatch(i){return S.db.find(r=>!r.owner&&(i.includes('@')?norm(r.email)===norm(i):fmtPhone(r.phone)===fmtPhone(i)))}
 function genCode(){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=A[Math.floor(Math.random()*A.length)];return s}
 
-/* ═══ شاشة الدخول / إنشاء حساب ═══ */
+/* ═══ شاشة الدخول ═══ */
 function account(){
   if(S.user){
     const u=S.user;
@@ -692,7 +748,6 @@ function account(){
         : canAdd() ? `<button class="bt full" data-a="add">إنشاء ملفي المهني</button><button class="bt g full" data-a="claimsearch">لدي ملف موجود — ابحث عنه</button>` : '';
     return openOverlay(`<div class="av" style="background:${color(u.name)};width:84px;height:84px;font-size:30px;border-radius:20px;margin:0 auto 8px;display:grid">${esc(getInits(u.name))}</div><h2>${esc(u.name)}</h2><p style="text-align:center;color:var(--mut);direction:ltr">${esc(u.ident)}</p><p style="text-align:center;margin:10px 0;font-size:13.5px">${st}</p><div class="ac">${action}<button class="bt g" data-a="cls">إغلاق</button><button class="bt d full" data-a="uout">خروج</button></div>`)
   }
-  /* شاشة رئيسية: خياران */
   openOverlay(`<h2>مرحباً بك</h2>
     <p class="lead">اختر إحدى الطرق للمتابعة</p>
     <div class="auth-hub">
@@ -703,7 +758,7 @@ function account(){
       </button>
       <button class="auth-btn" data-a="asignup">
         <div class="ai"><i class="fa-solid fa-user-plus"></i></div>
-        <div class="at"><b>إنشاء حساب جديد</b><small>اسم + هاتف + رمز سري خاص بك</small></div>
+        <div class="at"><b>إنشاء حساب جديد</b><small>كل بياناتك + رمزك السري</small></div>
         <i class="fa-solid fa-chevron-left chev"></i>
       </button>
     </div>`);
@@ -719,17 +774,25 @@ function openLogin(){
       <button class="bt g full" data-a="acc">رجوع</button>
     </div>
     <p style="font-size:12.5px;color:var(--mut);text-align:center;margin-top:10px;line-height:1.7">
-      ليس لديك حساب؟ اضغط "رجوع" ثم "إنشاء حساب".<br>
       نسيت رمزك السري؟ ابحث عن ملفك في <b>الدليل</b> واضغط <b>"طلب الرمز السري"</b>.
     </p>`);
   setTimeout(()=>$('#li_i').focus(),50);
 }
 function openSignup(){
   openOverlay(`<h2>إنشاء حساب</h2>
-    <p class="lead">املأ بياناتك واختر رمزًا سريًا خاصًا بك</p>
-    <label class="fl" id="w_su_n"><span>الاسم الكامل</span><input id="su_n" type="text" autocomplete="name"></label>
-    <label class="fl" id="w_su_i"><span>رقم الهاتف</span><input id="su_i" type="tel" dir="ltr" placeholder="+2126..." autocomplete="username"></label>
-    <label class="fl" id="w_su_p"><span>الرمز السري (6 أحرف على الأقل)</span><input id="su_p" type="password" autocomplete="new-password"></label>
+    <p class="lead">املأ كل بياناتك — سيُنشأ ملفك تلقائيًا</p>
+    <label class="fl" id="w_su_n"><span>الاسم الكامل *</span><input id="su_n" type="text" autocomplete="name"></label>
+    <label class="fl" id="w_su_i"><span>رقم الهاتف *</span><input id="su_i" type="tel" dir="ltr" placeholder="+2126..." autocomplete="username"></label>
+    <label class="fl" id="w_su_p"><span>الرمز السري (6+) *</span><input id="su_p" type="password" autocomplete="new-password"></label>
+    <label class="fl"><span>النوع</span><select id="su_t">${Object.entries(TL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+    <label class="fl"><span>التصنيف</span><select id="su_c">${Object.entries(CL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+    <label class="fl"><span>القطاع</span><input id="su_d" type="text" list="dd2"></label>
+    <label class="fl"><span>التخصص</span><input id="su_s" type="text"></label>
+    <label class="fl"><span>المدينة</span><input id="su_v" type="text" list="dv2"></label>
+    <label class="fl"><span>البريد</span><input id="su_m" type="email" dir="ltr"></label>
+    <label class="fl"><span>الموقع</span><input id="su_w" type="url" dir="ltr"></label>
+    <datalist id="dd2">${[...new Set(S.db.map(r=>r.domaine).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+    <datalist id="dv2">${[...new Set(S.db.map(r=>r.ville).filter(Boolean))].map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
     <div class="ac">
       <button class="bt g" data-a="cls">إلغاء</button>
       <button class="bt" data-a="doSignup">إنشاء</button>
@@ -750,7 +813,6 @@ async function doLogin(){
     if(r.hash!==okPass&&!okReset){toast('الرمز السري غير صحيح');return}
     try{localStorage.setItem('cp-lastphone',i)}catch{}
     if(okReset){
-      /* رمز مؤقت صحيح — يجب تعيين رمز دائم */
       S.tmpUid=u;S.tmpRec=r;
       openOverlay(`<h2>رمز مؤقت — تعيين رمز دائم</h2>
         <p class="lead">الرمز المؤقت صحيح. اختر رمزًا سريًا دائمًا خاصًا بك.</p>
@@ -779,33 +841,41 @@ async function setDurable(){
 async function doSignup(){
   if(!needFb())return;
   const n=$('#su_n').value.trim(),i=ident($('#su_i').value),p=$('#su_p').value;
+  const t=$('#su_t').value,c=$('#su_c').value;
+  const d=$('#su_d').value.trim()||'Autre',sp=$('#su_s').value.trim()||'Général',v=$('#su_v').value.trim();
+  const m=$('#su_m').value.trim(),w=$('#su_w').value.trim();
   if(!n)return toast('الاسم مطلوب');
-  if(!/^\+\d{8,15}$/.test(i)&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i))return toast('رقم الهاتف غير صالح');
+  if(!/^\+\d{8,15}$/.test(i)&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(i))return toast('هاتف غير صالح');
   if(p.length<6)return toast('الرمز قصير');
   setLoading(true);
   try{
     const u=await uidOf(i);
-    const exists=(await S.fb.ref('users/'+u).once('value')).exists();
-    if(exists){toast('الحساب موجود، سجّل الدخول');return}
-    const salt=uid(),m=findMatch(i),rec={name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()};
-    if(m)rec.claim=m.id;
+    if((await S.fb.ref('users/'+u).once('value')).exists()){toast('الحساب موجود، سجّل الدخول');return}
+    const salt=uid();
+    const rec={name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()};
     await S.fb.ref('users/'+u).set(rec);
-    S.user={id:u,name:n,ident:i,profileId:'',claim:m?m.id:''};
+    /* إنشاء الملف تلقائيًا */
+    const item={id:uid(),name:n,type:t,categorie:c,domaine:d,specialite:sp,ville:v,phone:fmtPhone(i),email:m,web:w,owner:u,createdAt:Date.now()};
+    const pp=path(t,c);
+    const arr=await fbArr(pp);
+    arr.push(item);
+    await S.fb.ref(pp).set(arr);
+    await S.fb.ref('users/'+u+'/profileId').set(item.id);
+    S.user={id:u,name:n,ident:i,profileId:item.id,claim:''};
     saveSess();adminUI();log('signup',n);closeOverlay();
     try{localStorage.setItem('cp-lastphone',i)}catch{}
-    toast(m?'تم إنشاء الحساب — أُرسل طلب ربط ملفك للمدير':'تم إنشاء الحساب');go(S.tab);
+    toast('تم إنشاء الحساب وملفك المهني');go(S.tab);
   }catch(e){console.error(e);toast('خطأ')}
   finally{setLoading(false)}
 }
 function claimSearch(){
   if(!S.user||!needFb())return;
   const m=findMatch(S.user.ident);
-  if(!m){toast('لم يُعثر على ملف مطابق لهاتفك');return}
+  if(!m){toast('لم يُعثر على ملف مطابق');return}
   openOverlay(`<h2>طلب ربط ملف</h2>
-    <p class="lead">وجدنا ملفًا مطابقًا لبياناتك:</p>
+    <p class="lead">وجدنا ملفًا مطابقًا:</p>
     <div style="border:1px solid var(--bd);border-radius:12px;padding:12px;margin:6px 0"><div style="flex:1"><b>${esc(m.name)}</b><br><small style="color:var(--mut)">${esc([shown(m.domaine),m.ville].filter(Boolean).join(' · '))}</small></div></div>
-    <p style="font-size:13px;color:var(--mut);margin-top:10px">سيُرسل طلب للمدير للموافقة.</p>
-    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="claimsend" data-v="${esc(m.id)}">إرسال الطلب</button></div>`);
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="claimsend" data-v="${esc(m.id)}">إرسال</button></div>`);
 }
 async function claimSend(id){if(!S.user||!needFb())return;setLoading(true);
   try{await S.fb.ref('users/'+S.user.id).update({claim:id});S.user.claim=id;log('claim-req',S.user.name);closeOverlay();toast('أُرسل الطلب');account()}
@@ -814,7 +884,6 @@ async function claimCancel(){if(!S.user||!needFb())return;setLoading(true);
   try{await S.fb.ref('users/'+S.user.id).update({claim:null});S.user.claim='';closeOverlay();toast('تم الإلغاء');account()}
   catch(e){console.error(e);toast('حدث خطأ')}finally{setLoading(false)}}
 
-/* ═══ طلب الرمز (زائر من بطاقة الملف) ═══ */
 function resetReq(id){
   const r=byId(id);if(!r)return;
   const phone=r.phone?fmtPhone(r.phone):'';
@@ -825,7 +894,7 @@ function resetReq(id){
       <b>كيف تعمل؟</b><br>
       1. اضغط زر واتساب لإرسال الطلب للمدير.<br>
       2. سيتحقق المدير ويرسل لك رمزًا مؤقتًا.<br>
-      3. ادخل إلى "تسجيل الدخول" → ضع رقمك → في حقل الرمز ضع الرمز المؤقت.<br>
+      3. ادخل إلى "تسجيل الدخول" → ضع رقمك → ثم ضع الرمز المؤقت.<br>
       4. بعد الدخول، سيُطلب منك تعيين رمز دائم.
     </div>
     <div class="ac">
@@ -834,7 +903,6 @@ function resetReq(id){
     </div>`);
 }
 
-/* ═══ توليد الرمز (مدير من بطاقة الملف) ═══ */
 async function rgenFile(id){
   if(!S.admin||!needFb())return;
   const r=byId(id);if(!r)return;
@@ -859,20 +927,20 @@ async function rgenFile(id){
       </div>
       <div class="code-hint">ينتهي: ${esc(new Date(expiry).toLocaleString('ar-MA'))}</div>
       <div class="code-note" style="margin-top:10px">
-        📌 عند دخول المستخدم بهذا الرمز، سيُطلب منه تعيين رمز سري دائم خاص به.
+        📌 عند الدخول بهذا الرمز، سيُطلب من المستخدم تعيين رمز دائم.
       </div>
       <div class="ac">
         <button class="bt g" data-a="cls">إغلاق</button>
         <a class="bt w" href="https://wa.me/${esc(phone.replace(/\D/g,''))}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> إرسال</a>
       </div>`);
-    toast('تم التوليد — أرسله للمستخدم');
+    toast('تم التوليد');
   }catch(e){console.error(e);toast('حدث خطأ')}
   finally{setLoading(false)}
 }
 
 async function adminPanel(){if(!S.admin||!needFb())return;setLoading(true);
   try{const us=Object.entries((await S.fb.ref('users').once('value')).val()||{}),lg=Object.values((await S.fb.ref('logs').limitToLast(25).once('value')).val()||{}).reverse(),ib=(c,a,id,l,i)=>`<button class="hb" style="color:${c}" data-a="${a}" data-v="${esc(id)}" aria-label="${l}"><i class="fa-solid ${i}"></i></button>`;
-    openOverlay(`<h2>المستخدمون (${us.length})</h2>${us.map(([id,u])=>`<div class="pr"><div style="flex:1"><b>${esc(u.name)}</b><small dir="ltr">${esc(u.ident)}</small>${u.profileId?'<small>مرتبط بملف</small>':u.claim?`<small>يطلب ربط: ${esc(byId(u.claim)?.name||u.claim)}</small>`:''}${u.resetCode&&u.resetExpiry>Date.now()?'<small style="color:#92400E">🔑 رمز نشط</small>':''}</div>${u.claim&&!u.profileId?ib('var(--wl)','appr',id,'قبول','fa-check')+ib('var(--dg)','rej',id,'رفض','fa-xmark'):''}${ib('var(--dg)','udel',id,'حذف','fa-user-slash')}</div>`).join('')||'<p class="em">لا يوجد مستخدمون</p>'}<h2 style="margin-top:14px">سجل النشاط</h2>${lg.map(l=>`<div class="pr"><div><small>${esc(new Date(l.t).toLocaleString('ar-MA'))} · ${esc(l.u)}</small>${esc(l.a)} ${esc(l.d)}</div></div>`).join('')||'<p class="em">لا نشاط</p>'}<div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`)}
+    openOverlay(`<h2>المستخدمون (${us.length})</h2>${us.map(([id,u])=>`<div class="pr"><div style="flex:1"><b>${esc(u.name)}</b><small dir="ltr">${esc(u.ident)}</small>${u.profileId?'<small>مرتبط</small>':''}${u.resetCode&&u.resetExpiry>Date.now()?'<small style="color:#92400E">🔑 رمز نشط</small>':''}</div>${ib('var(--dg)','udel',id,'حذف','fa-user-slash')}</div>`).join('')||'<p class="em">لا يوجد مستخدمون</p>'}<h2 style="margin-top:14px">سجل النشاط</h2>${lg.map(l=>`<div class="pr"><div><small>${esc(new Date(l.t).toLocaleString('ar-MA'))} · ${esc(l.u)}</small>${esc(l.a)} ${esc(l.d)}</div></div>`).join('')||'<p class="em">لا نشاط</p>'}<div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`)}
   catch(e){console.error(e);toast('تعذر التحميل')}finally{setLoading(false)}}
 async function appr(id){if(!S.admin||!needFb())return;setLoading(true);
   try{const u=(await S.fb.ref('users/'+id).once('value')).val(),it=byId(u?.claim);if(!it){toast('الملف غير موجود');return}
@@ -889,17 +957,26 @@ const A={
   uout(){S.user=null;saveSess();adminUI();closeOverlay();toast('تم الخروج');go(S.tab)},
   findme:claimCancel,claimsearch:claimSearch,claimsend:claimSend,resetreq:resetReq,rgenfile:rgenFile,
   rcopy(v){navigator.clipboard?.writeText(v).then(()=>toast('تم النسخ')).catch(()=>toast('تعذر النسخ'))},
+  /* تبديل المصدر — للمدير فقط */
+  srcfb(){if(!S.admin)return;S.viewSrc='fb';applySource();go('home')},
+  srccsv(){if(!S.admin)return;if(!S.csvCache.length){toast('اضغط "جلب من CSV" أولاً');return}S.viewSrc='csv';applySource();go('home')},
+  csvfetch:csvFetch,csvpush:csvPush,
   tab:v=>S.tab===v?(v==='dir'?(clearFilters(),directory()):v==='exp'?(S.exp={t:'',d:'',s:''},S.expQ='',explorer()):scrollTo({top:0,behavior:'smooth'})):go(v),
   cls:closeOverlay,open:profile,fav:toggleFav,shr:share,pdf:makePDF,
   edit:id=>{const r=byId(id);canEdit(r)?form(r):toast('غير مسموح')},
-  del:delAsk,delok:delOk,save,csvupd:csvUpdate,exp:exportCSV,vrf:verifyToggle,
+  del:delAsk,delok:delOk,save,exp:exportCSV,vrf:verifyToggle,
   login(){if($('#pw').value===ADMIN_PASS){S.admin=true;sessionStorage.setItem('cp-admin','1');adminUI();closeOverlay();toast('مرحباً');go(S.tab)}else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور خاطئة')}},
   stat(v){
     const i=v.indexOf(':'),k=v.slice(0,i),x=v.slice(i+1);
     if(x==='__pick__'){openFilter(k);return}
     clearFilters();S.f[k]=[x];go('dir');
   },
-  bardirect(v,el){clearFilters();S.f[el.dataset.k]=[v];go('dir')},
+  /* مسح كل الفلاتر ثم تطبيق فلتر واحد فقط */
+  bardirect(v,el){
+    clearFilters();
+    S.f[el.dataset.k]=[v];
+    go('dir');
+  },
   chipx(v,el){const k=el.dataset.k;S.f[k]=S.f[k].filter(x=>norm(x)!==norm(el.dataset.v));S.lim=60;directory();nav()},
   clr(){clearFilters();directory();nav()},
   more(){S.lim+=60;directory()},
@@ -907,6 +984,7 @@ const A={
   favclr(){if(confirm('مسح كل المفضلة؟')){S.fav=[];try{localStorage.removeItem('cp-fav')}catch{}nav();bookmarks()}},
   xt:v=>{S.exp={t:v,d:'',s:''};S.expQ='';explorer()},xd:v=>{S.exp.d=v;S.exp.s='';S.expQ='';explorer()},xs:v=>{S.exp.s=v;S.expQ='';explorer()},
   xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:''}:v==='t'?{t:x.t,d:'',s:''}:v==='d'?{t:x.t,d:x.d,s:''}:x;S.expQ='';explorer()},
+  expSort(v){S.expSort=v;explorer()},
   fopen:openFilter,fcls:closeOverlay,
   fclr(){clearFilters();renderFilter();directory();nav()},
   fsect(v){S.fp='pick';S.fk=v;renderFilter()},
