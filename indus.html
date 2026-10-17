@@ -153,19 +153,16 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 .auth-btn .chev{color:var(--mut);font-size:14px}
 .auth-btn.primary .chev{color:rgba(255,255,255,.7)}
 
-/* شريط التبديل للمدير */
 .srcbar{display:flex;gap:6px;margin-bottom:12px;padding:4px;background:var(--cd);border:1px solid var(--bd);border-radius:12px}
 .srcbar button{flex:1;height:40px;border-radius:9px;font-size:13px;font-weight:700;color:var(--mut);display:flex;align-items:center;justify-content:center;gap:6px}
 .srcbar button.on{background:var(--wl);color:#fff}
 .srcbar button i{font-size:13px}
 
-/* شريط ترتيب المستكشف */
 .sortbar2{display:flex;gap:6px;margin-bottom:10px}
 .sortbar2 button{flex:1;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--cd);color:var(--mut);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px}
 .sortbar2 button.on{background:var(--acs);border-color:var(--wl);color:var(--wl)}
 .sortbar2 button i{font-size:12px}
 
-/* ═══ PDF Card احترافي ═══ */
 .pdf-stage{position:fixed;left:-99999px;top:0;width:1200px;height:auto}
 .pdf-card{width:1200px;background:#fff;color:#101C28;font-family:'IBM Plex Sans Arabic',sans-serif;direction:rtl;display:flex;flex-direction:row;min-height:520px;overflow:hidden;position:relative}
 .pdf-left{flex:0 0 480px;background:#0F2438;color:#fff;padding:60px 50px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;overflow:hidden}
@@ -239,7 +236,7 @@ h3.t{font-size:16px;margin:14px 2px 8px;color:var(--ink)}
 const FBC={apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",authDomain:"said-rahil-default-rtdb.firebaseio.com",databaseURL:"https://said-rahil-default-rtdb.firebaseio.com/",projectId:"said-rahil",storageBucket:"said-rahil.firebasestorage.app"};
 const CSV_EXPERTS="https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
 const CSV_FOURNISSEURS="https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
-const ADMIN_PASS='admin123';
+const ADMIN_PASS='1';
 const ADMIN_WHATSAPP='212690292010';
 const RESET_TTL=60*60*1000;
 const TK={fournisseurs:'FOURNISSEURS',experts:'EXPERTS'},CK={services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
@@ -259,10 +256,11 @@ const SECTIONS=[
 
 /* ═══ STATE ═══ */
 const S={
-  db:[],            /* البيانات الحالية المعروضة */
-  fbCache:[],       /* نسخة من Firebase */
-  csvCache:[],      /* نسخة من CSV */
-  viewSrc:'fb',     /* 'fb' أو 'csv' — للمدير فقط */
+  db:[],
+  fbCache:[],
+  csvCache:[],
+  csvBusy:false,
+  viewSrc:'fb',
   f:{type:[],cat:[],dom:[],ville:[],spe:[],q:''},
   tab:'home',fav:[],
   admin:sessionStorage.getItem('cp-admin')==='1',
@@ -291,9 +289,12 @@ const byId=id=>S.db.find(r=>r.id===id);
 const lbl=(k,v)=>k==='type'?TL[v]||v:k==='cat'?CL[v]||v:v;
 const clearFilters=()=>{S.f={type:[],cat:[],dom:[],ville:[],spe:[],q:''};$('#q').value='';S.lim=60};
 const activeCount=()=>Object.keys(FLD).reduce((n,k)=>n+S.f[k].length,0);
-/* تحديث S.db حسب المصدر المختار */
 function applySource(){
-  S.db = (S.admin && S.viewSrc==='csv') ? S.csvCache : S.fbCache;
+  if(S.admin&&S.viewSrc==='csv'&&S.csvCache.length){
+    S.db=S.csvCache;
+  } else {
+    S.db=S.fbCache;
+  }
 }
 
 /* ═══ THEME ═══ */
@@ -464,7 +465,7 @@ function dashboard(){
   const sc=x=>`<button class="sc gl" data-a="stat" data-v="${x[3]}"${x[4]?` style="border-top:3px solid ${x[4]}"`:''}><i class="fa-solid ${x[0]}"></i><b>${x[2]}</b><span>${x[1]}</span></button>`;
   const srcbar=S.admin?`<div class="srcbar">
     <button class="${S.viewSrc==='fb'?'on':''}" data-a="srcfb"><i class="fa-solid fa-database"></i> Firebase (${S.fbCache.length})</button>
-    <button class="${S.viewSrc==='csv'?'on':''}" data-a="srccsv"><i class="fa-solid fa-file-csv"></i> CSV (${S.csvCache.length})</button>
+    <button class="${S.viewSrc==='csv'?'on':''}" data-a="srccsv"><i class="fa-solid fa-file-csv"></i> CSV ${S.csvBusy?'⏳':`(${S.csvCache.length})`}</button>
   </div>`:'';
   const csvSync=S.admin&&S.viewSrc==='csv'?`<div class="pn gl" style="border:2px solid var(--wt)"><b style="color:var(--wt)">⚠️ أنت تعرض البيانات من CSV</b><p style="font-size:13px;color:var(--mut);margin:6px 0">هذه معاينة فقط. اضغط المزامنة لحفظها في Firebase.</p><div class="ac"><button class="bt o full" data-a="csvpush"><i class="fa-solid fa-cloud-arrow-up"></i> مزامنة إلى قاعدة البيانات</button></div></div>`:'';
   const adminTools=S.admin&&S.viewSrc==='fb'?`<div class="pn gl ab"><b>أدوات المدير</b><div class="ac">
@@ -659,10 +660,7 @@ async function loadDB(){
   try{if(!S.fb)throw 0;raw=(await S.fb.ref('professionals').once('value')).val();ok=true}catch{toast('تعذر الاتصال بـ Firebase')}
   S.fbCache=mapRaw(raw);
   if(ok&&S.fbCache.length)try{localStorage.setItem('cp-cache',JSON.stringify(S.fbCache))}catch{}
-  /* في وضع الزائر: دائمًا من Firebase — وعند الفشل من الكاش */
-  if(!S.fbCache.length&&!ok){
-    try{S.fbCache=JSON.parse(localStorage.getItem('cp-cache')||'[]')}catch{}
-  }
+  if(!S.fbCache.length&&!ok){try{S.fbCache=JSON.parse(localStorage.getItem('cp-cache')||'[]')}catch{}}
   applySource();
 }
 function splitCSV(l){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const h=l[i];if(h==='"'){if(q&&l[i+1]==='"'){c+='"';i++}else q=!q}else if(h===','&&!q){o.push(c);c=''}else c+=h}o.push(c);return o}
@@ -670,18 +668,22 @@ const parseCSV=(txt,type,cat)=>{const cl=s=>(s||'').replace(/^["'\s]+|["'\s]+$/g
 async function csvAll(){const g=async(u,t,c)=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return parseCSV(await r.text(),t,c)};
   const[e,f]=await Promise.all([g(CSV_EXPERTS,'experts','yad-amila'),g(CSV_FOURNISSEURS,'fournisseurs','services')]);const m=new Map();[...f,...e].forEach(r=>m.has(r.id)||m.set(r.id,r));return[...m.values()]}
 
-/* للمدير: جلب CSV ومعاينة */
-async function csvFetch(){
+/* للمدير: جلب CSV */
+async function csvFetch(silent=false){
   if(!S.admin||!needFb())return;
-  setLoading(true);
+  if(S.csvBusy){if(!silent)toast('جاري الجلب...');return}
+  S.csvBusy=true;
+  if(!silent)setLoading(true);
+  if(S.tab==='home'&&S.admin)dashboard();
   try{
     S.csvCache=await csvAll();
     S.viewSrc='csv';applySource();
+    if(!silent)toast(`تم جلب ${S.csvCache.length} ملف — عاينها ثم اضغط "مزامنة"`);
     go('home');
-    toast(`تم جلب ${S.csvCache.length} ملف من CSV — عاينها ثم اضغط "مزامنة"`);
-  }catch(e){console.error(e);toast('فشل الجلب')}
-  finally{setLoading(false)}
+  }catch(e){console.error(e);if(!silent)toast('فشل الجلب، تحقق من الاتصال')}
+  finally{S.csvBusy=false;if(!silent)setLoading(false);if(S.tab==='home'&&S.admin)dashboard()}
 }
+
 /* للمدير: مزامنة CSV → Firebase */
 async function csvPush(){
   if(!S.admin||!needFb()||S.busy)return;
@@ -854,7 +856,6 @@ async function doSignup(){
     const salt=uid();
     const rec={name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()};
     await S.fb.ref('users/'+u).set(rec);
-    /* إنشاء الملف تلقائيًا */
     const item={id:uid(),name:n,type:t,categorie:c,domaine:d,specialite:sp,ville:v,phone:fmtPhone(i),email:m,web:w,owner:u,createdAt:Date.now()};
     const pp=path(t,c);
     const arr=await fbArr(pp);
@@ -957,26 +958,25 @@ const A={
   uout(){S.user=null;saveSess();adminUI();closeOverlay();toast('تم الخروج');go(S.tab)},
   findme:claimCancel,claimsearch:claimSearch,claimsend:claimSend,resetreq:resetReq,rgenfile:rgenFile,
   rcopy(v){navigator.clipboard?.writeText(v).then(()=>toast('تم النسخ')).catch(()=>toast('تعذر النسخ'))},
-  /* تبديل المصدر — للمدير فقط */
+  /* تبديل المصدر */
   srcfb(){if(!S.admin)return;S.viewSrc='fb';applySource();go('home')},
-  srccsv(){if(!S.admin)return;if(!S.csvCache.length){toast('اضغط "جلب من CSV" أولاً');return}S.viewSrc='csv';applySource();go('home')},
-  csvfetch:csvFetch,csvpush:csvPush,
+  srccsv(){if(!S.admin)return;if(!S.csvCache.length){toast('اضغط "جلب من CSV" أولاً');csvFetch();return}S.viewSrc='csv';applySource();go('home')},
+  csvfetch:()=>csvFetch(false),csvpush:csvPush,
   tab:v=>S.tab===v?(v==='dir'?(clearFilters(),directory()):v==='exp'?(S.exp={t:'',d:'',s:''},S.expQ='',explorer()):scrollTo({top:0,behavior:'smooth'})):go(v),
   cls:closeOverlay,open:profile,fav:toggleFav,shr:share,pdf:makePDF,
   edit:id=>{const r=byId(id);canEdit(r)?form(r):toast('غير مسموح')},
   del:delAsk,delok:delOk,save,exp:exportCSV,vrf:verifyToggle,
-  login(){if($('#pw').value===ADMIN_PASS){S.admin=true;sessionStorage.setItem('cp-admin','1');adminUI();closeOverlay();toast('مرحباً');go(S.tab)}else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور خاطئة')}},
+  login(){if($('#pw').value===ADMIN_PASS){S.admin=true;sessionStorage.setItem('cp-admin','1');adminUI();closeOverlay();
+    toast('مرحباً أيها المدير');
+    /* جلب CSV تلقائيًا في الخلفية بعد الدخول */
+    csvFetch(true);
+    go(S.tab)}else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور خاطئة')}},
   stat(v){
     const i=v.indexOf(':'),k=v.slice(0,i),x=v.slice(i+1);
     if(x==='__pick__'){openFilter(k);return}
     clearFilters();S.f[k]=[x];go('dir');
   },
-  /* مسح كل الفلاتر ثم تطبيق فلتر واحد فقط */
-  bardirect(v,el){
-    clearFilters();
-    S.f[el.dataset.k]=[v];
-    go('dir');
-  },
+  bardirect(v,el){clearFilters();S.f[el.dataset.k]=[v];go('dir')},
   chipx(v,el){const k=el.dataset.k;S.f[k]=S.f[k].filter(x=>norm(x)!==norm(el.dataset.v));S.lim=60;directory();nav()},
   clr(){clearFilters();directory();nav()},
   more(){S.lim+=60;directory()},
@@ -1015,6 +1015,8 @@ let dt;$('#q').addEventListener('input',e=>{clearTimeout(dt);dt=setTimeout(()=>{
   themeIcon();adminUI();nav();
   try{if(window.firebase){firebase.initializeApp(FBC);S.fb=firebase.database()}}catch(e){console.warn(e)}
   await loadDB();await refreshUser();adminUI();go('home');setLoading(false);
+  /* إذا كان المدير مسجلًا من جلسة سابقة → اجلب CSV تلقائيًا */
+  if(S.admin)csvFetch(true);
   const m=location.hash.match(/^#p=(.+)$/);
   if(m)setTimeout(()=>{const r=byId(m[1]);if(r)profile(r.id)},300);
 })();
