@@ -256,11 +256,7 @@ const SECTIONS=[
 
 /* ═══ STATE ═══ */
 const S={
-  db:[],
-  fbCache:[],
-  csvCache:[],
-  csvBusy:false,
-  viewSrc:'fb',
+  db:[],fbCache:[],csvCache:[],csvBusy:false,viewSrc:'fb',
   f:{type:[],cat:[],dom:[],ville:[],spe:[],q:''},
   tab:'home',fav:[],
   admin:sessionStorage.getItem('cp-admin')==='1',
@@ -290,11 +286,8 @@ const lbl=(k,v)=>k==='type'?TL[v]||v:k==='cat'?CL[v]||v:v;
 const clearFilters=()=>{S.f={type:[],cat:[],dom:[],ville:[],spe:[],q:''};$('#q').value='';S.lim=60};
 const activeCount=()=>Object.keys(FLD).reduce((n,k)=>n+S.f[k].length,0);
 function applySource(){
-  if(S.admin&&S.viewSrc==='csv'&&S.csvCache.length){
-    S.db=S.csvCache;
-  } else {
-    S.db=S.fbCache;
-  }
+  if(S.admin&&S.viewSrc==='csv'&&S.csvCache.length){S.db=S.csvCache;}
+  else{S.db=S.fbCache;}
 }
 
 /* ═══ THEME ═══ */
@@ -422,7 +415,7 @@ function renderFilter(){
   openOverlay(html);
 }
 
-/* ═══ EXPLORER (مع ترتيب) ═══ */
+/* ═══ EXPLORER ═══ */
 const grp=(l,k)=>{const m=new Map();l.forEach(r=>{const v=r[k]||'—';m.set(v,(m.get(v)||0)+1)});return[...m].sort((a,b)=>a[0].localeCompare(b[0],'ar'))};
 const matchExp=r=>!S.expQ||hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email,TL[r.type],CL[r.categorie]].join(' '),S.expQ);
 function explorer(){
@@ -471,6 +464,7 @@ function dashboard(){
   const adminTools=S.admin&&S.viewSrc==='fb'?`<div class="pn gl ab"><b>أدوات المدير</b><div class="ac">
     <button class="bt" data-a="csvfetch"><i class="fa-solid fa-cloud-arrow-down"></i> جلب من CSV</button>
     <button class="bt g" data-a="exp"><i class="fa-solid fa-file-csv"></i> تصدير</button>
+    <button class="bt o full" data-a="admingen"><i class="fa-solid fa-key"></i> توليد رمز سري لحساب</button>
     <button class="bt g full" data-a="usr"><i class="fa-solid fa-users-gear"></i> المستخدمون وسجل النشاط</button>
   </div></div>`:'';
   $('#sub').textContent=`${S.db.length} ملف · ${uniq('domaine').length} قطاع`;
@@ -668,7 +662,6 @@ const parseCSV=(txt,type,cat)=>{const cl=s=>(s||'').replace(/^["'\s]+|["'\s]+$/g
 async function csvAll(){const g=async(u,t,c)=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return parseCSV(await r.text(),t,c)};
   const[e,f]=await Promise.all([g(CSV_EXPERTS,'experts','yad-amila'),g(CSV_FOURNISSEURS,'fournisseurs','services')]);const m=new Map();[...f,...e].forEach(r=>m.has(r.id)||m.set(r.id,r));return[...m.values()]}
 
-/* للمدير: جلب CSV */
 async function csvFetch(silent=false){
   if(!S.admin||!needFb())return;
   if(S.csvBusy){if(!silent)toast('جاري الجلب...');return}
@@ -684,7 +677,6 @@ async function csvFetch(silent=false){
   finally{S.csvBusy=false;if(!silent)setLoading(false);if(S.tab==='home'&&S.admin)dashboard()}
 }
 
-/* للمدير: مزامنة CSV → Firebase */
 async function csvPush(){
   if(!S.admin||!needFb()||S.busy)return;
   if(!S.csvCache.length)return toast('لا توجد بيانات CSV — اجلبها أولاً');
@@ -939,6 +931,72 @@ async function rgenFile(id){
   finally{setLoading(false)}
 }
 
+/* ═══ توليد رمز لحساب (من أدوات المدير) ═══ */
+function adminGen(){
+  if(!S.admin||!needFb())return;
+  openOverlay(`<h2>توليد رمز سري لحساب</h2>
+    <p class="lead">أدخل رقم هاتف المستخدم للبحث عن حسابه</p>
+    <label class="fl"><span>رقم الهاتف</span><input id="ag_phone" type="tel" dir="ltr" placeholder="+2126..." autocomplete="off"></label>
+    <div class="ac">
+      <button class="bt g" data-a="cls">إلغاء</button>
+      <button class="bt" data-a="agFind">بحث</button>
+    </div>
+    <div id="ag_result" style="margin-top:12px"></div>`);
+  setTimeout(()=>$('#ag_phone').focus(),50);
+  $('#ag_phone').onkeydown=e=>e.key==='Enter'&&A.agFind();
+}
+async function agFind(){
+  if(!S.admin||!needFb())return;
+  const phone=fmtPhone($('#ag_phone').value.trim());
+  if(!phone)return toast('أدخل رقم الهاتف');
+  setLoading(true);
+  try{
+    const u=await uidOf(phone);
+    const rec=(await S.fb.ref('users/'+u).once('value')).val();
+    if(!rec){
+      $('#ag_result').innerHTML=`<div class="em" style="padding:20px"><i class="fa-solid fa-user-xmark"></i><b>لا يوجد حساب بهذا الرقم</b><div style="font-size:12px;margin-top:4px">${esc(phone)}</div></div>`;
+      return;
+    }
+    $('#ag_result').innerHTML=`
+      <div style="border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="av" style="background:${color(rec.name)}">${esc(getInits(rec.name))}</div>
+          <div style="flex:1"><b>${esc(rec.name)}</b><br><small dir="ltr" style="color:var(--mut)">${esc(rec.ident)}</small></div>
+          ${rec.profileId?'<span style="background:var(--ok);color:#fff;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700">مرتبط</span>':''}
+        </div>
+      </div>
+      <button class="bt w full" data-a="agGen" data-v="${esc(u)}" data-p="${esc(phone)}"><i class="fa-solid fa-key"></i> توليد رمز سري</button>`;
+  }catch(e){console.error(e);toast('خطأ')}
+  finally{setLoading(false)}
+}
+async function agGen(uidVal,phone){
+  if(!S.admin||!needFb())return;
+  setLoading(true);
+  try{
+    const rec=(await S.fb.ref('users/'+uidVal).once('value')).val();
+    if(!rec){toast('الحساب غير موجود');return}
+    const code=genCode();
+    const hash=await sha('reset:'+code+':'+rec.salt);
+    const expiry=Date.now()+RESET_TTL;
+    await S.fb.ref('users/'+uidVal).update({resetCode:hash,resetExpiry:expiry});
+    log('admin-gen',rec.name+' / '+phone);
+    const msg=`مرحباً ${rec.name}،\nرمزك السري المؤقت هو: *${code}*\n\nادخل إلى المنصة → تسجيل الدخول → ضع رقمك → ثم ضع هذا الرمز في حقل الرمز السري.\n\nصالح لمدة ساعة.`;
+    openOverlay(`<h2>تم توليد الرمز</h2>
+      <p class="lead">أرسل هذا الرمز إلى <b>${esc(rec.name)}</b> (${esc(phone)})</p>
+      <div class="code-box">
+        <div class="code" id="rcode">${code}</div>
+        <button class="cp" data-a="rcopy" data-v="${esc(code)}" aria-label="نسخ"><i class="fa-solid fa-copy"></i></button>
+      </div>
+      <div class="code-hint">ينتهي: ${esc(new Date(expiry).toLocaleString('ar-MA'))}</div>
+      <div class="ac">
+        <button class="bt g" data-a="cls">إغلاق</button>
+        <a class="bt w" href="https://wa.me/${esc(phone.replace(/\D/g,''))}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> إرسال</a>
+      </div>`);
+    toast('تم التوليد');
+  }catch(e){console.error(e);toast('حدث خطأ')}
+  finally{setLoading(false)}
+}
+
 async function adminPanel(){if(!S.admin||!needFb())return;setLoading(true);
   try{const us=Object.entries((await S.fb.ref('users').once('value')).val()||{}),lg=Object.values((await S.fb.ref('logs').limitToLast(25).once('value')).val()||{}).reverse(),ib=(c,a,id,l,i)=>`<button class="hb" style="color:${c}" data-a="${a}" data-v="${esc(id)}" aria-label="${l}"><i class="fa-solid ${i}"></i></button>`;
     openOverlay(`<h2>المستخدمون (${us.length})</h2>${us.map(([id,u])=>`<div class="pr"><div style="flex:1"><b>${esc(u.name)}</b><small dir="ltr">${esc(u.ident)}</small>${u.profileId?'<small>مرتبط</small>':''}${u.resetCode&&u.resetExpiry>Date.now()?'<small style="color:#92400E">🔑 رمز نشط</small>':''}</div>${ib('var(--dg)','udel',id,'حذف','fa-user-slash')}</div>`).join('')||'<p class="em">لا يوجد مستخدمون</p>'}<h2 style="margin-top:14px">سجل النشاط</h2>${lg.map(l=>`<div class="pr"><div><small>${esc(new Date(l.t).toLocaleString('ar-MA'))} · ${esc(l.u)}</small>${esc(l.a)} ${esc(l.d)}</div></div>`).join('')||'<p class="em">لا نشاط</p>'}<div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`)}
@@ -957,8 +1015,8 @@ const A={
   alogin:openLogin,asignup:openSignup,doLogin,doSignup,setDurable,
   uout(){S.user=null;saveSess();adminUI();closeOverlay();toast('تم الخروج');go(S.tab)},
   findme:claimCancel,claimsearch:claimSearch,claimsend:claimSend,resetreq:resetReq,rgenfile:rgenFile,
+  admingen:adminGen,agFind,agGen,
   rcopy(v){navigator.clipboard?.writeText(v).then(()=>toast('تم النسخ')).catch(()=>toast('تعذر النسخ'))},
-  /* تبديل المصدر */
   srcfb(){if(!S.admin)return;S.viewSrc='fb';applySource();go('home')},
   srccsv(){if(!S.admin)return;if(!S.csvCache.length){toast('اضغط "جلب من CSV" أولاً');csvFetch();return}S.viewSrc='csv';applySource();go('home')},
   csvfetch:()=>csvFetch(false),csvpush:csvPush,
@@ -968,7 +1026,6 @@ const A={
   del:delAsk,delok:delOk,save,exp:exportCSV,vrf:verifyToggle,
   login(){if($('#pw').value===ADMIN_PASS){S.admin=true;sessionStorage.setItem('cp-admin','1');adminUI();closeOverlay();
     toast('مرحباً أيها المدير');
-    /* جلب CSV تلقائيًا في الخلفية بعد الدخول */
     csvFetch(true);
     go(S.tab)}else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور خاطئة')}},
   stat(v){
@@ -1015,7 +1072,6 @@ let dt;$('#q').addEventListener('input',e=>{clearTimeout(dt);dt=setTimeout(()=>{
   themeIcon();adminUI();nav();
   try{if(window.firebase){firebase.initializeApp(FBC);S.fb=firebase.database()}}catch(e){console.warn(e)}
   await loadDB();await refreshUser();adminUI();go('home');setLoading(false);
-  /* إذا كان المدير مسجلًا من جلسة سابقة → اجلب CSV تلقائيًا */
   if(S.admin)csvFetch(true);
   const m=location.hash.match(/^#p=(.+)$/);
   if(m)setTimeout(()=>{const r=byId(m[1]);if(r)profile(r.id)},300);
