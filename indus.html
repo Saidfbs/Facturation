@@ -1,1629 +1,391 @@
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#0078D7">
-<title>Connect Industry - السجل المرجعي للصناعة</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Connect Industry — السجل المرجعي للصناعة</title>
+<meta name="theme-color" content="#0F2438">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --win10-blue:#0078D7;
-  --win10-blue-light:#0086F0;
-  --win10-blue-dark:#005A9E;
-  --win10-green:#107C10;
-  --win10-green-light:#13A10E;
-  --win10-red:#E81123;
-  --win10-orange:#FF8C00;
-  --win10-purple:#9B4F96;
-  --win10-teal:#00A7AF;
-  
-  --win10-bg:#F3F5F7;
-  --win10-card:#FFFFFF;
-  --win10-sidebar:#FFFFFF;
-  --win10-header:#FFFFFF;
-  --win10-hover:#E5E8EB;
-  --win10-selected:#E5E8EB;
-  --win10-border:#D1D4D9;
-  --win10-text:#1A1A1A;
-  --win10-text-secondary:#6B6F76;
-  --win10-text-tertiary:#8F9399;
-  
-  --nav-h:56px;
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-  --shadow-sm:0 1px 3px rgba(0,0,0,0.08);
-  --shadow-md:0 2px 6px rgba(0,0,0,0.1);
-  --shadow-lg:0 4px 16px rgba(0,0,0,0.12);
-  --radius-sm:4px;
-  --radius-md:8px;
-  --radius-lg:12px;
-  --radius-xl:16px;
-}
-html, body{
-  height:100%;
-  background:var(--win10-bg);
-  color:var(--win10-text);
-  font-family:'Segoe UI','Inter',sans-serif;
-  overflow-x:hidden;
-  -webkit-tap-highlight-color:transparent;
-}
-body.dark{
-  --win10-bg:#1A1A1A;
-  --win10-card:#2D2D30;
-  --win10-sidebar:#252526;
-  --win10-header:#2D2D30;
-  --win10-hover:#3E3E42;
-  --win10-selected:#3E3E42;
-  --win10-border:#3E3E42;
-  --win10-text:#CCCCCC;
-  --win10-text-secondary:#9A9A9A;
-  --win10-text-tertiary:#6A6A6A;
-  --win10-blue:#0078D7;
-}
-
-/* Windows 10 Header */
-.win-header{
-  position:fixed;top:0;left:0;right:0;height:60px;
-  background:var(--win10-header);
-  display:flex;align-items:center;
-  padding:0 16px;z-index:400;gap:12px;
-  border-bottom:1px solid var(--win10-border);
-  box-shadow:var(--shadow-sm);
-}
-.header-avatar{
-  width:40px;height:40px;border-radius:var(--radius-md);
-  background:linear-gradient(135deg,var(--win10-blue) 0%,var(--win10-blue-dark) 100%);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:#fff;font-size:0.9rem;cursor:default;
-  transition:all 0.1s;
-  box-shadow:0 2px 8px rgba(0,120,215,0.3);
-}
-.header-info{flex:1;min-width:0;}
-.header-name{
-  font-weight:600;color:var(--win10-text);font-size:0.85rem;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.header-sub{
-  font-size:0.55rem;color:var(--win10-text-secondary);margin-top:2px;
-}
-.header-actions{
-  display:flex;align-items:center;gap:6px;
-}
-.hbtn{
-  width:36px;height:36px;border-radius:var(--radius-sm);
-  background:transparent;border:none;cursor:pointer;
-  color:var(--win10-text-secondary);display:flex;align-items:center;
-  justify-content:center;font-size:0.9rem;transition:all 0.15s;
-}
-.hbtn:hover{background:var(--win10-hover);color:var(--win10-blue);}
-.hbtn.active{color:var(--win10-blue);}
-#appTime{
-  font-size:0.6rem;
-  color:var(--win10-text-secondary);
-  padding:0 6px;
-  font-weight:500;
-  min-width:50px;
-  text-align:center;
-}
-.header-sep{
-  width:1px;
-  height:28px;
-  background:var(--win10-border);
-  margin:0 2px;
-}
-
-/* Windows 10 Bottom Navigation */
-.win-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  height:56px;
-  background:var(--win10-card);
-  display:flex;
-  z-index:400;
-  border-top:1px solid var(--win10-border);
-  box-shadow:0 -2px 10px rgba(0,0,0,0.05);
-}
-.nav-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:2px;background:transparent;border:none;
-  cursor:pointer;color:var(--win10-text-secondary);transition:all 0.15s;
-  font-size:0.5rem;font-weight:500;position:relative;
-}
-.nav-item i{font-size:1.1rem;margin-bottom:2px;transition:all 0.15s;}
-.nav-item:hover{color:var(--win10-blue);}
-.nav-item:hover i{transform:translateY(-1px);}
-.nav-item.active{color:var(--win10-blue);}
-.nav-item.active::after{
-  content:'';position:absolute;top:0;left:20%;right:20%;
-  height:2px;background:var(--win10-blue);
-  border-radius:0 0 2px 2px;
-}
-.nav-item .nav-badge{
-  position:absolute;top:4px;right:50%;
-  transform:translateX(calc(50% + 16px));
-  background:var(--win10-red);color:#fff;
-  font-size:0.4rem;padding:1px 6px;border-radius:10px;
-  font-weight:600;
-}
-
-.main{
-  padding-top:60px;
-  padding-bottom:56px;
-  min-height:100vh;
-  height:100%;
-}
-.section{
-  display:none;
-  padding:0 16px 16px 16px;
-  height:100%;
-}
-.section.active{
-  display:flex;
-  flex-direction:column;
-  animation:fadeIn 0.2s ease;
-}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* ==================== HOME SECTION - Full Height Stats ==================== */
-#homeSection{
-  padding:0;
-}
-.home-container{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  padding:0 16px 16px 16px;
-}
-.home-banner{
-  background:linear-gradient(135deg,var(--win10-blue) 0%,var(--win10-blue-dark) 100%);
-  margin:0 -16px 16px -16px;
-  padding:24px 20px 28px;
-  position:relative;overflow:hidden;
-  flex-shrink:0;
-}
-.home-banner::after{
-  content:'';position:absolute;top:-50%;right:-20%;
-  width:200px;height:200px;border-radius:50%;
-  background:rgba(255,255,255,0.05);
-}
-.home-banner h1{
-  font-size:1.1rem;font-weight:600;color:#fff;position:relative;
-  display:flex;align-items:center;gap:10px;
-}
-.home-banner h1 i{font-size:1.2rem;}
-.home-banner p{
-  font-size:0.65rem;color:rgba(255,255,255,0.85);margin-top:6px;
-  position:relative;
-}
-.home-stats{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  padding-bottom:8px;
-}
-.stats-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  flex:1;
-}
-.stat-card{
-  background:var(--win10-card);
-  border-radius:var(--radius-md);
-  padding:14px 16px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  border:1px solid var(--win10-border);
-  transition:all 0.2s;
-  cursor:pointer;
-  box-shadow:var(--shadow-sm);
-  flex:1;
-}
-.stat-card:hover{
-  border-color:var(--win10-blue);
-  background:var(--win10-hover);
-  transform:translateY(-2px);
-  box-shadow:var(--shadow-md);
-}
-.stat-card:active{transform:scale(0.97);}
-.stat-card-icon{
-  width:44px;
-  height:44px;
-  border-radius:var(--radius-sm);
-  background:rgba(0,120,215,0.1);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--win10-blue);
-  font-size:1.1rem;
-  flex-shrink:0;
-}
-.stat-num{font-size:1.3rem;font-weight:700;color:var(--win10-text);line-height:1;}
-.stat-lbl{font-size:0.5rem;color:var(--win10-text-secondary);text-transform:uppercase;letter-spacing:.3px;margin-top:2px;}
-
-/* ==================== REPERTOIRE SECTION ==================== */
-#repertoireSection{
-  padding:0 16px 16px 16px;
-}
-.rep-container{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-.search-bar{
-  background:transparent;
-  padding:12px 0 8px 0;
-  position:sticky;
-  top:60px;
-  z-index:100;
-  flex-shrink:0;
-}
-.search-container{
-  display:flex;align-items:center;gap:10px;
-  background:var(--win10-card);border:2px solid var(--win10-border);
-  border-radius:var(--radius-md);
-  padding:10px 14px;
-  box-shadow:var(--shadow-sm);
-  transition:all 0.2s;
-}
-.search-container:focus-within{
-  border-color:var(--win10-blue);
-  box-shadow:0 0 0 3px rgba(0,120,215,0.15),var(--shadow-md);
-}
-.search-container i{color:var(--win10-text-secondary);font-size:0.85rem;}
-.search-container input{
-  flex:1;background:transparent;border:none;outline:none;
-  color:var(--win10-text);font-size:0.85rem;font-family:inherit;
-}
-.search-container input::placeholder{color:var(--win10-text-tertiary);}
-.search-clear{
-  width:24px;height:24px;border-radius:50%;
-  background:var(--win10-text-tertiary);border:none;cursor:pointer;
-  color:#fff;display:none;align-items:center;
-  justify-content:center;font-size:0.6rem;
-}
-.search-active .search-clear{display:flex;}
-
-.filter-row{
-  display:flex;gap:8px;padding:10px 0 6px 0;
-  overflow-x:auto;background:transparent;
-  flex-shrink:0;
-}
-.filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--win10-card);border:1px solid var(--win10-border);
-  border-radius:20px;padding:6px 16px;cursor:pointer;
-  color:var(--win10-text-secondary);font-size:0.6rem;font-weight:500;
-  white-space:nowrap;transition:all 0.2s;flex-shrink:0;
-  box-shadow:var(--shadow-sm);
-}
-.filter-chip i{font-size:0.6rem;}
-.filter-chip:hover{border-color:var(--win10-blue);color:var(--win10-blue);transform:translateY(-1px);}
-.filter-chip.active{background:var(--win10-blue);color:#fff;border-color:var(--win10-blue);}
-.filter-chip.reset{color:var(--win10-red);}
-.filter-chip.reset:hover{border-color:var(--win10-red);color:var(--win10-red);}
-
-.active-filters{
-  display:flex;gap:8px;flex-wrap:wrap;padding:6px 0;
-  flex-shrink:0;
-}
-.filter-tag{
-  background:rgba(0,120,215,0.12);padding:4px 12px;border-radius:20px;
-  font-size:0.55rem;color:var(--win10-blue);
-  display:inline-flex;align-items:center;gap:6px;
-  border:1px solid rgba(0,120,215,0.2);
-}
-.filter-tag button{background:none;border:none;cursor:pointer;color:var(--win10-blue);font-size:0.6rem;padding:0 2px;}
-
-.result-info{
-  background:var(--win10-card);padding:10px 14px;font-size:0.65rem;
-  color:var(--win10-text-secondary);display:none;align-items:center;gap:10px;
-  border:1px solid var(--win10-border);border-radius:var(--radius-sm);
-  margin:8px 0;
-  flex-shrink:0;
-}
-.result-info.visible{display:flex;}
-.result-info i{color:var(--win10-blue);}
-
-.contact-list-wrap{
-  flex:1;
-  overflow-y:auto;
-  padding-bottom:8px;
-}
-.contact-list-wrap::-webkit-scrollbar{
-  width:4px;
-}
-.contact-list-wrap::-webkit-scrollbar-track{
-  background:transparent;
-}
-.contact-list-wrap::-webkit-scrollbar-thumb{
-  background:var(--win10-border);
-  border-radius:99px;
-}
-
-/* Windows 10 Contact List - NO ACTION BUTTONS */
-.contact-item{
-  display:flex;align-items:center;
-  padding:14px 0;border-bottom:1px solid var(--win10-border);
-  cursor:pointer;gap:14px;transition:all 0.2s;
-  border-radius:var(--radius-sm);
-}
-.contact-item:hover{
-  background:var(--win10-selected);
-  margin:0 -16px;
-  padding:14px 16px;
-}
-.contact-item:active{transform:scale(0.98);}
-.contact-avatar{
-  width:48px;height:48px;border-radius:var(--radius-md);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:0.9rem;color:#fff;flex-shrink:0;
-  box-shadow:0 2px 8px rgba(0,0,0,0.1);
-}
-.contact-info{flex:1;min-width:0;}
-.contact-name{
-  font-weight:600;font-size:0.85rem;color:var(--win10-text);
-}
-.contact-details{
-  font-size:0.55rem;color:var(--win10-text-secondary);margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.contact-badges{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
-.badge{
-  font-size:0.4rem;padding:2px 10px;border-radius:12px;
-  font-weight:600;text-transform:uppercase;letter-spacing:0.3px;
-}
-.badge-fourn{background:rgba(0,120,215,0.12);color:var(--win10-blue);}
-.badge-expert{background:rgba(19,161,14,0.12);color:var(--win10-green);}
-.badge-service{background:rgba(0,120,215,0.12);color:var(--win10-blue);}
-.badge-product{background:rgba(255,140,0,0.12);color:var(--win10-orange);}
-.badge-maqola{background:rgba(255,140,0,0.12);color:var(--win10-orange);}
-.badge-yad{background:rgba(155,79,150,0.12);color:var(--win10-purple);}
-
-.empty-state{
-  text-align:center;
-  padding:60px 20px;
-  color:var(--win10-text-secondary);
-}
-.empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:.4;}
-.empty-title{font-size:0.9rem;font-weight:500;}
-.empty-sub{font-size:0.65rem;margin-top:4px;opacity:.7;}
-
-/* ==================== FULL PAGE MODALS (Pages) ==================== */
-.page-overlay{
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
-  background:var(--win10-bg);
-  z-index:900;
-  opacity:0;
-  visibility:hidden;
-  transition:all 0.3s ease;
-  overflow-y:auto;
-}
-.page-overlay.show{
-  opacity:1;
-  visibility:visible;
-}
-.page-overlay .page-header{
-  position:sticky;
-  top:0;
-  background:var(--win10-header);
-  padding:16px 20px;
-  border-bottom:1px solid var(--win10-border);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  z-index:1;
-  box-shadow:var(--shadow-sm);
-}
-.page-overlay .page-header h2{
-  font-size:1rem;
-  font-weight:600;
-  color:var(--win10-text);
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.page-overlay .page-header h2 i{
-  color:var(--win10-blue);
-}
-.page-overlay .page-close{
-  width:36px;
-  height:36px;
-  border-radius:var(--radius-sm);
-  background:transparent;
-  border:none;
-  cursor:pointer;
-  color:var(--win10-text-secondary);
-  font-size:1.1rem;
-  transition:all 0.15s;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.page-overlay .page-close:hover{
-  background:var(--win10-hover);
-  color:var(--win10-text);
-}
-.page-overlay .page-body{
-  padding:20px;
-  max-width:600px;
-  margin:0 auto;
-}
-
-/* Detail Page */
-.detail-avatar{
-  width:80px;
-  height:80px;
-  border-radius:var(--radius-md);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.8rem;
-  font-weight:700;
-  color:#fff;
-  margin:0 auto 16px;
-  box-shadow:0 4px 16px rgba(0,0,0,0.15);
-}
-.detail-name{
-  font-size:1.2rem;
-  font-weight:600;
-  text-align:center;
-  color:var(--win10-text);
-}
-.detail-type{
-  font-size:0.65rem;
-  color:var(--win10-text-secondary);
-  text-align:center;
-  margin-top:4px;
-}
-.detail-badges{
-  display:flex;
-  gap:8px;
-  justify-content:center;
-  margin:12px 0 20px;
-  flex-wrap:wrap;
-}
-.detail-row{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:12px 0;
-  border-bottom:1px solid var(--win10-border);
-}
-.detail-row:last-child{border-bottom:none;}
-.detail-icon{
-  width:32px;
-  color:var(--win10-blue);
-  font-size:0.9rem;
-  text-align:center;
-}
-.detail-label{
-  font-size:0.5rem;
-  color:var(--win10-text-secondary);
-  text-transform:uppercase;
-  letter-spacing:0.5px;
-  margin-bottom:2px;
-}
-.detail-value{
-  font-size:0.8rem;
-  color:var(--win10-text);
-  word-break:break-word;
-}
-.detail-actions{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:20px;
-  padding-top:16px;
-  border-top:1px solid var(--win10-border);
-  justify-content:center;
-}
-.detail-btn{
-  min-width:64px;
-  padding:10px 16px;
-  border-radius:var(--radius-sm);
-  background:var(--win10-card);
-  border:1px solid var(--win10-border);
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-  transition:all 0.15s;
-  color:var(--win10-text-secondary);
-}
-.detail-btn i{font-size:0.9rem;}
-.detail-btn span{font-size:0.5rem;font-weight:500;}
-.detail-btn:hover{
-  background:var(--win10-hover);
-  border-color:var(--win10-blue);
-  color:var(--win10-blue);
-  transform:translateY(-1px);
-}
-.detail-btn.whatsapp{color:var(--win10-green);}
-.detail-btn.whatsapp:hover{border-color:var(--win10-green);background:rgba(16,124,16,0.08);}
-.detail-btn.share-btn{color:var(--win10-orange);}
-.detail-btn.share-btn:hover{border-color:var(--win10-orange);background:rgba(255,140,0,0.08);}
-.detail-btn.danger{color:var(--win10-red);}
-.detail-btn.danger:hover{border-color:var(--win10-red);background:rgba(232,17,35,0.08);}
-
-/* Form Page */
-.form-group{margin-bottom:16px;}
-.form-group label{
-  font-size:0.6rem;font-weight:600;color:var(--win10-text-secondary);
-  margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.3px;
-}
-.form-input{
-  width:100%;background:var(--win10-card);border:1px solid var(--win10-border);
-  border-radius:var(--radius-sm);padding:10px 14px;color:var(--win10-text);
-  font-size:0.8rem;outline:none;font-family:inherit;
-  transition:all 0.15s;
-}
-.form-input:focus{border-color:var(--win10-blue);box-shadow:0 0 0 3px rgba(0,120,215,0.15);}
-select.form-input{padding:10px 14px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B6F76' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
-.btn{
-  display:inline-flex;align-items:center;gap:8px;padding:10px 20px;
-  border-radius:var(--radius-sm);cursor:pointer;font-weight:600;border:none;
-  transition:all 0.15s;font-size:0.75rem;font-family:inherit;
-}
-.btn-primary{background:var(--win10-blue);color:#fff;}
-.btn-primary:hover{background:var(--win10-blue-light);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
-.btn-ghost{background:transparent;border:1px solid var(--win10-border);color:var(--win10-text-secondary);}
-.btn-ghost:hover{background:var(--win10-hover);}
-.btn-danger{background:rgba(232,17,35,0.12);color:var(--win10-red);}
-.btn-danger:hover{background:rgba(232,17,35,0.2);}
-.btn-full{width:100%;justify-content:center;}
-.btn-group{display:flex;gap:10px;margin-top:16px;}
-.btn-group .btn{flex:1;}
-
-/* Menu List Page */
-.menu-item{
-  display:flex;align-items:center;gap:14px;padding:12px 16px;
-  cursor:pointer;border-bottom:1px solid var(--win10-border);transition:all 0.15s;
-}
-.menu-item:hover{background:var(--win10-hover);}
-.menu-icon{
-  width:36px;height:36px;border-radius:var(--radius-sm);
-  display:flex;align-items:center;justify-content:center;font-size:0.8rem;
-}
-.menu-label{font-size:0.8rem;color:var(--win10-text);}
-
-/* Toast & Loading */
-.toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
-  background:rgba(0,0,0,0.9);color:#fff;border-radius:var(--radius-md);
-  padding:10px 20px;font-size:0.7rem;z-index:9999;
-  opacity:0;visibility:hidden;transition:all 0.3s;white-space:nowrap;
-  box-shadow:0 4px 16px rgba(0,0,0,0.2);
-}
-.toast.show{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);}
-.loading-screen{
-  position:fixed;inset:0;background:var(--win10-bg);z-index:99999;
-  display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:16px;transition:all 0.3s;
-}
-.loading-screen.hide{opacity:0;pointer-events:none;}
-.loading-logo{
-  width:60px;height:60px;border-radius:var(--radius-md);
-  background:linear-gradient(135deg,var(--win10-blue) 0%,var(--win10-blue-dark) 100%);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.4rem;font-weight:700;color:#fff;
-  box-shadow:0 4px 16px rgba(0,120,215,0.3);
-}
-.loading-bar{width:160px;height:3px;background:var(--win10-border);border-radius:99px;overflow:hidden;}
-.loading-fill{width:40%;height:100%;background:var(--win10-blue);animation:load .9s ease infinite;}
-@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
-
-/* Explorer */
-.explorer-breadcrumb{
-  background:transparent;padding:10px 0;
-  display:flex;gap:8px;flex-wrap:wrap;
-  flex-shrink:0;
-}
-.bc{
-  font-size:0.65rem;font-weight:500;color:var(--win10-text-secondary);
-  cursor:pointer;padding:4px 8px;border-radius:var(--radius-sm);
-  transition:all 0.15s;
-}
-.bc:hover{color:var(--win10-blue);background:var(--win10-hover);}
-.bc-sep{color:var(--win10-text-tertiary);font-size:0.6rem;}
-.explorer-item{
-  display:flex;align-items:center;padding:14px 0;
-  background:transparent;border-bottom:1px solid var(--win10-border);
-  cursor:pointer;gap:14px;transition:all 0.2s;border-radius:var(--radius-sm);
-}
-.explorer-item:hover{background:var(--win10-selected);margin:0 -16px;padding:14px 16px;}
-.explorer-icon{
-  width:44px;height:44px;border-radius:var(--radius-md);
-  background:rgba(0,120,215,0.08);
-  display:flex;align-items:center;justify-content:center;
-  color:var(--win10-blue);font-size:1rem;flex-shrink:0;
-}
-.explorer-name{font-weight:500;color:var(--win10-text);font-size:0.85rem;}
-.explorer-count{font-size:0.55rem;color:var(--win10-text-secondary);margin-top:2px;}
-.explorer-arrow{color:var(--win10-text-tertiary);margin-left:auto;font-size:0.7rem;}
-
-#explorerSection .explorer-container{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-}
-#explorerSection .explorer-content{
-  flex:1;
-  overflow-y:auto;
-}
-
-/* Responsive */
-@media (max-width:768px){
-  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
-  .stat-card{padding:10px 12px;}
-  .stat-card-icon{width:36px;height:36px;font-size:0.9rem;}
-  .stat-num{font-size:1.1rem;}
-  .page-body{padding:16px;}
-  .header-avatar{width:36px;height:36px;font-size:0.8rem;}
-  .hbtn{width:32px;height:32px;font-size:0.8rem;}
-  .header-sep{height:20px;}
-  #appTime{font-size:0.5rem;min-width:40px;}
-  .detail-avatar{width:64px;height:64px;font-size:1.4rem;}
-}
-@media (max-width:480px){
-  .stats-grid{grid-template-columns:1fr 1fr;gap:6px;}
-  .stat-card{padding:8px 10px;gap:8px;}
-  .stat-card-icon{width:32px;height:32px;font-size:0.8rem;}
-  .stat-num{font-size:1rem;}
-  .contact-item{padding:10px 0;gap:10px;}
-  .contact-avatar{width:40px;height:40px;font-size:0.8rem;}
-  .contact-name{font-size:0.75rem;}
-  .filter-chip{padding:4px 12px;font-size:0.55rem;}
-  .search-container{padding:8px 12px;}
-  .search-container input{font-size:0.75rem;}
-  .header-name{font-size:0.75rem;}
-  .header-sub{font-size:0.5rem;}
-}
+:root{--bg:#ECEFF2;--sf:#fff;--ink:#101C28;--mut:#566474;--line:#D3D9DF;--ac:#0B5CAD;--acs:#E3EEF9;--sig:#F2A900;--dg:#B3261E;--nv:#0F2438;--sh:0 1px 2px rgba(16,28,40,.08);--nav:64px;--sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);color-scheme:light}
+[data-theme=dark]{--bg:#0D1620;--sf:#15222F;--ink:#E7EDF3;--mut:#9AABBB;--line:#25364A;--ac:#6AB0F3;--acs:#1B3148;--dg:#FF8A80;--sh:none;color-scheme:dark}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font:15px/1.45 'IBM Plex Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+.ar{font-family:'IBM Plex Sans Arabic','IBM Plex Sans',sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px;border-radius:6px}
+svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+header{position:fixed;inset:0 0 auto;z-index:20;background:var(--nv);color:#fff;padding:calc(var(--st) + 6px) 8px 6px 12px;display:flex;align-items:center;gap:8px;border-bottom:3px solid var(--sig)}
+.logo{width:34px;height:34px;border-radius:8px;background:var(--sig);color:var(--nv);display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+.ht{flex:1;min-width:0}.ht b{display:block;font-size:16px;line-height:1.2}.ht small{display:block;font-size:12px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ib{width:44px;height:44px;display:grid;place-items:center;border-radius:10px;color:#fff}.ib:hover{background:rgba(255,255,255,.12)}
+#clk{font-size:13px;opacity:.85;font-variant-numeric:tabular-nums;display:none}
+@media(min-width:400px){#clk{display:block}}
+main{padding:calc(62px + var(--st)) 12px calc(var(--nav) + var(--sb) + 16px);max-width:1100px;margin:0 auto}
+.tab{display:none}.tab.on{display:block;animation:in .18s ease-out}
+@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+nav{position:fixed;inset:auto 0 0;z-index:20;height:calc(var(--nav) + var(--sb));padding-bottom:var(--sb);background:var(--sf);border-top:1px solid var(--line);display:flex}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;color:var(--mut);position:relative;min-height:44px}
+nav button.on{color:var(--ac);font-weight:600}
+nav button.on::before{content:"";position:absolute;top:0;width:36px;height:3px;background:var(--sig);border-radius:0 0 3px 3px}
+.bd{position:absolute;top:6px;left:calc(50% + 8px);background:var(--ac);color:var(--bg);font-size:11px;font-weight:700;border-radius:9px;padding:0 6px;min-width:18px;text-align:center}
+[data-theme=dark] .bd{color:#0D1620}
+.ban{background:var(--nv);color:#fff;border-radius:12px;padding:20px 16px 22px;margin-bottom:14px;position:relative;overflow:hidden}
+.ban::after{content:"";position:absolute;inset:auto 0 0;height:8px;background:repeating-linear-gradient(-45deg,var(--sig) 0 10px,var(--nv) 10px 20px)}
+.ban h1{font-size:22px;line-height:1.2}.ban p{margin-top:6px;font-size:15px;opacity:.9}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:768px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.st{background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:2px;min-height:112px;box-shadow:var(--sh);transition:transform .12s,border-color .12s}
+.st:active{transform:scale(.97)}.st:hover{border-color:var(--ac)}
+.st svg{color:var(--ac);margin-bottom:6px}.st b{font-size:28px;line-height:1;font-variant-numeric:tabular-nums}.st span{font-weight:500}.st small{color:var(--mut);font-size:13px}
+.sb{position:sticky;top:calc(56px + var(--st));z-index:5;background:var(--bg);padding:6px 0}
+.sr{display:flex;align-items:center;gap:8px;background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:0 4px 0 12px;height:48px}
+.sr:focus-within{border-color:var(--ac);box-shadow:0 0 0 2px var(--acs)}
+.sr input{flex:1;min-width:0;border:0;background:none;height:100%;outline:0;font-size:16px}
+.sr svg{color:var(--mut)}
+.chips{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;padding:6px 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{scroll-snap-align:start;flex:none;min-height:40px;padding:0 14px;border:1px solid var(--line);border-radius:20px;background:var(--sf);font-size:14px;white-space:nowrap}
+.chip.on{background:var(--ac);border-color:var(--ac);color:var(--bg);font-weight:600}
+[data-theme=dark] .chip.on{color:#0D1620}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px}
+.tag{display:inline-flex;align-items:center;gap:4px;background:var(--acs);color:var(--ac);border-radius:6px;padding:4px 4px 4px 10px;font-size:13px;font-weight:500}
+.tag button{width:28px;height:28px;display:grid;place-items:center;color:inherit}.tag svg{width:14px;height:14px}
+.inf{font-size:13px;color:var(--mut);margin:4px 2px 8px}
+.list{display:grid;gap:8px}
+@media(min-width:768px){.list{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(min-width:1024px){.list{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.it{display:flex;gap:12px;align-items:center;background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;width:100%;min-height:68px;box-shadow:var(--sh)}
+.it:hover{border-color:var(--ac)}
+.av{width:44px;height:44px;border-radius:10px;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.av.lg{width:72px;height:72px;font-size:26px;border-radius:16px}
+.im{flex:1;min-width:0}.im b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.im small{display:block;color:var(--mut);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bg{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.b{font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:5px;background:var(--acs);color:var(--ac)}.b.c{background:transparent;border:1px solid var(--line);color:var(--mut)}
+.em{text-align:center;padding:40px 16px;color:var(--mut)}.em b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}.em .btn{margin-top:14px}
+.crumb{display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-bottom:10px;font-size:14px}
+.crumb button{min-height:36px;padding:0 6px;color:var(--ac);font-weight:500}.crumb span:last-child,.crumb .cur{font-weight:600;padding:0 6px}.crumb i{color:var(--mut);font-style:normal}
+.row{display:flex;align-items:center;gap:12px;background:var(--sf);border:1px solid var(--line);border-radius:12px;padding:0 14px;min-height:56px;width:100%;text-align:left;margin-bottom:8px}
+.row:hover{border-color:var(--ac)}.row svg:first-child{color:var(--ac)}.row .im{font-weight:500}.row em{font-style:normal;color:var(--mut);font-variant-numeric:tabular-nums}.row.sel{border-color:var(--ac);background:var(--acs)}
+#pg{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;transform:translateY(100%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+#pg.on{transform:none;visibility:visible;transition:transform .22s ease}
+.ph{display:flex;align-items:center;gap:4px;padding:calc(var(--st) + 6px) 8px 6px;background:var(--sf);border-bottom:1px solid var(--line)}
+.ph h2{font-size:17px;flex:1}.ph .ib{color:var(--ink)}.ph .ib:hover{background:var(--acs)}
+.pb{flex:1;overflow-y:auto;padding:14px 12px calc(24px + var(--sb));max-width:640px;width:100%;margin:0 auto}
+.hero{display:flex;gap:14px;align-items:center;margin-bottom:16px}.hero h3{font-size:20px;line-height:1.25}
+.dr{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}.dr svg{color:var(--ac);margin-top:2px}.dr small{display:block;color:var(--mut);font-size:12.5px}.dr div{min-width:0;overflow-wrap:anywhere}
+.acts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--sf);font-weight:600;text-decoration:none;color:var(--ink)}
+.btn.p{background:var(--ac);border-color:var(--ac);color:var(--bg)}[data-theme=dark] .btn.p{color:#0D1620}
+.btn.d{background:var(--dg);border-color:var(--dg);color:#fff}[data-theme=dark] .btn.d{color:#0D1620}
+.btn.g{background:transparent}.btn.w{grid-column:1/-1}
+.fl{display:block;margin-bottom:14px}.fl span{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.fl input,.fl select{width:100%;height:48px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--sf);font-size:16px}
+.fl input:focus,.fl select:focus{outline:0;border-color:var(--ac);box-shadow:0 0 0 2px var(--acs)}
+.fl.er input{border-color:var(--dg)}.fl small{color:var(--dg);font-size:12.5px;display:none}.fl.er small{display:block}
+.fr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}@media(max-width:400px){.fr{grid-template-columns:minmax(0,1fr)}}
+.wr{text-align:center;padding:30px 0}.wr svg{width:44px;height:44px;color:var(--dg)}.wr p{margin:10px 0 24px;font-size:17px}
+#toast{position:fixed;left:50%;bottom:calc(var(--nav) + var(--sb) + 12px);transform:translate(-50%,20px);background:var(--nv);color:#fff;padding:12px 18px;border-radius:10px;z-index:60;max-width:calc(100% - 24px);opacity:0;pointer-events:none;transition:.2s;font-size:14px;border-left:4px solid var(--sig)}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#ld{position:fixed;inset:0;z-index:100;background:var(--nv);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .3s}
+#ld.off{opacity:0;pointer-events:none}#ld .logo{width:64px;height:64px;font-size:28px;border-radius:14px}
+.bar{width:160px;height:6px;border-radius:3px;background:repeating-linear-gradient(-45deg,var(--sig) 0 8px,#243b52 8px 16px);background-size:23px 23px;animation:mv .6s linear infinite}
+@keyframes mv{to{background-position:23px 0}}
+#bz{position:fixed;inset:0;z-index:70;background:rgba(15,36,56,.45);display:none;place-items:center}#bz.on{display:grid}#bz .bar{border:3px solid var(--sf)}
+html{overflow-x:hidden}main,.pb,.sb,.chips,.list{width:100%;min-width:0}.st,.it,.row,.btn,.dr,.tag{min-width:0;max-width:100%}.btn{padding:0 10px;text-align:center;overflow-wrap:anywhere}.hero>div:last-child{min-width:0}.hero h3,.em,.tag,.row .im,.crumb,.ban p{overflow-wrap:anywhere}.row .im{min-width:0}.st span,.st small{overflow-wrap:anywhere}.ph h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-
-<!-- Windows 10 Header -->
-<div class="win-header">
-  <div class="header-avatar">
-    <i class="fas fa-industry"></i>
-  </div>
-  <div class="header-info">
-    <div class="header-name" id="headerName">Connect Industry</div>
-    <div class="header-sub" id="headerSub">Maroc · B2B</div>
-  </div>
-  <div class="header-actions">
-    <button class="hbtn" id="themeBtn" title="Thème">
-      <i class="fas fa-moon"></i>
-    </button>
-    <div class="header-sep"></div>
-    <button class="hbtn" onclick="openAddPage()" title="Ajouter un professionnel">
-      <i class="fas fa-plus-circle"></i>
-    </button>
-    <button class="hbtn" onclick="syncData()" title="Synchroniser les données">
-      <i class="fas fa-sync-alt"></i>
-    </button>
-    <div class="header-sep"></div>
-    <span id="appTime"></span>
-  </div>
-</div>
-
-<!-- Windows 10 Bottom Navigation -->
-<nav class="win-nav">
-  <button class="nav-item active" data-sec="home">
-    <i class="fas fa-home"></i>
-    <span>Accueil</span>
-  </button>
-  <button class="nav-item" data-sec="explorer">
-    <i class="fas fa-compass"></i>
-    <span>Explorer</span>
-  </button>
-  <button class="nav-item" data-sec="repertoire">
-    <i class="fas fa-users"></i>
-    <span>Répertoire</span>
-    <span class="nav-badge" id="navBadge">0</span>
-  </button>
-</nav>
-
-<main class="main">
-
-  <!-- HOME SECTION - Full Height -->
-  <div id="homeSection" class="section active">
-    <div class="home-container">
-      <div class="home-banner">
-        <h1><i class="fas fa-industry"></i> Connect Industry</h1>
-        <p>السجل المرجعي الرقمي للفاعلين في القطاع الصناعي بالمغرب</p>
-      </div>
-      <div class="home-stats">
-        <div class="stats-grid">
-          <div class="stat-card" onclick="filterByTypeFromStats('fournisseurs')">
-            <div class="stat-card-icon"><i class="fas fa-industry"></i></div>
-            <div><div class="stat-num" id="statFour">0</div><div class="stat-lbl">Fournisseurs</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByTypeFromStats('experts')">
-            <div class="stat-card-icon" style="background:rgba(19,161,14,0.1);color:var(--win10-green)"><i class="fas fa-microchip"></i></div>
-            <div><div class="stat-num" id="statExp">0</div><div class="stat-lbl">Experts</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByVilleFromStats()">
-            <div class="stat-card-icon" style="background:rgba(255,140,0,0.1);color:var(--win10-orange)"><i class="fas fa-map-marker-alt"></i></div>
-            <div><div class="stat-num" id="statVilles">0</div><div class="stat-lbl">Villes</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByDomaineFromStats()">
-            <div class="stat-card-icon" style="background:rgba(155,79,150,0.1);color:var(--win10-purple)"><i class="fas fa-layer-group"></i></div>
-            <div><div class="stat-num" id="statDomaines">0</div><div class="stat-lbl">Domaines</div></div>
-          </div>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card" onclick="filterByCategorieFromStats('services')">
-            <div class="stat-card-icon"><i class="fas fa-cogs"></i></div>
-            <div><div class="stat-num" id="statServices">0</div><div class="stat-lbl">Services</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByCategorieFromStats('products')">
-            <div class="stat-card-icon" style="background:rgba(0,167,175,0.1);color:var(--win10-teal)"><i class="fas fa-boxes"></i></div>
-            <div><div class="stat-num" id="statProduits">0</div><div class="stat-lbl">Produits</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByCategorieFromStats('maqola')">
-            <div class="stat-card-icon" style="background:rgba(255,140,0,0.1);color:var(--win10-orange)"><i class="fas fa-hard-hat"></i></div>
-            <div><div class="stat-num" id="statMaqola">0</div><div class="stat-lbl">Maqaola</div></div>
-          </div>
-          <div class="stat-card" onclick="filterByCategorieFromStats('yad-amila')">
-            <div class="stat-card-icon" style="background:rgba(155,79,150,0.1);color:var(--win10-purple)"><i class="fas fa-hands"></i></div>
-            <div><div class="stat-num" id="statYadAmila">0</div><div class="stat-lbl">Yad Amila</div></div>
-          </div>
-        </div>
-      </div>
+<div id="ld"><div class="logo">CI</div><b>Connect Industry</b><div class="bar"></div></div>
+<div id="bz"><div class="bar"></div></div>
+<header>
+  <div class="logo" aria-hidden="true">CI</div>
+  <div class="ht"><b>Connect Industry</b><small id="sub">Chargement…</small></div>
+  <span id="clk" aria-label="Heure"></span>
+  <button class="ib" data-a="theme" aria-label="Changer de thème" id="thb"></button>
+  <button class="ib" data-a="add" aria-label="Ajouter un professionnel"></button>
+  <button class="ib" data-a="sync" aria-label="Synchroniser"></button>
+</header>
+<main>
+  <section class="tab on" id="t-home"></section>
+  <section class="tab" id="t-exp"></section>
+  <section class="tab" id="t-rep">
+    <div class="sb">
+      <div class="sr"><span id="sic"></span><input id="q" type="search" placeholder="Rechercher un fournisseur, expert, ville, domaine..." aria-label="Rechercher" autocomplete="off"><button class="ib" id="qx" data-a="qclear" aria-label="Effacer la recherche" hidden style="color:var(--mut)"></button></div>
+      <div class="chips" id="chips"></div>
     </div>
-  </div>
-
-  <!-- EXPLORER SECTION -->
-  <div id="explorerSection" class="section">
-    <div class="explorer-container">
-      <div class="explorer-breadcrumb" id="explorerBreadcrumb"></div>
-      <div class="explorer-content" id="explorerContent"></div>
-    </div>
-  </div>
-
-  <!-- REPERTOIRE SECTION -->
-  <div id="repertoireSection" class="section">
-    <div class="rep-container">
-      <div class="search-bar" id="repSearchWrap">
-        <div class="search-container">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Rechercher un fournisseur, expert, ville, domaine...">
-          <button class="search-clear" id="searchClear"><i class="fas fa-times"></i></button>
-        </div>
-      </div>
-      <div class="filter-row">
-        <div class="filter-chip" id="filterTypeBtn"><i class="fas fa-tag"></i> Type</div>
-        <div class="filter-chip" id="filterCatBtn"><i class="fas fa-layer-group"></i> Catégorie</div>
-        <div class="filter-chip" id="filterVilleBtn"><i class="fas fa-map-marker-alt"></i> Ville</div>
-        <div class="filter-chip" id="filterDomaineBtn"><i class="fas fa-folder"></i> Domaine</div>
-        <div class="filter-chip reset" id="filterResetBtn"><i class="fas fa-eraser"></i> Effacer</div>
-      </div>
-      <div class="active-filters" id="activeFilters"></div>
-      <div id="resultInfo" class="result-info"></div>
-      <div class="contact-list-wrap" id="contactListWrap">
-        <div id="contactList"></div>
-      </div>
-    </div>
-  </div>
-
+    <div class="tags" id="tags"></div><div class="inf" id="inf"></div><div class="list" id="lst"></div>
+  </section>
 </main>
+<nav id="nav"></nav>
+<div id="pg" role="dialog" aria-modal="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
-<!-- ==================== FULL PAGE: DETAIL ==================== -->
-<div class="page-overlay" id="detailPage">
-  <div class="page-header">
-    <h2><i class="fas fa-user-circle"></i> Détails du professionnel</h2>
-    <button class="page-close" onclick="closeDetailPage()"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="page-body" id="detailPageBody"></div>
-</div>
-
-<!-- ==================== FULL PAGE: ADD/EDIT ==================== -->
-<div class="page-overlay" id="editPage">
-  <div class="page-header">
-    <h2 id="editPageTitle"><i class="fas fa-plus-circle"></i> Ajouter un professionnel</h2>
-    <button class="page-close" onclick="closeEditPage()"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="page-body">
-    <input type="hidden" id="editId">
-    <div class="form-group">
-      <label>Nom *</label>
-      <input type="text" id="editName" class="form-input" placeholder="Nom complet de la société ou du professionnel">
-    </div>
-    <div class="form-group">
-      <label>Type *</label>
-      <select id="editType" class="form-input">
-        <option value="fournisseurs">Fournisseur</option>
-        <option value="experts">Expert</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Catégorie *</label>
-      <select id="editCat" class="form-input">
-        <option value="services">Services</option>
-        <option value="products">Produits</option>
-        <option value="maqola">Maqaola</option>
-        <option value="yad-amila">Yad Amila</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Domaine</label>
-      <input type="text" id="editDomaine" class="form-input" placeholder="Ex: Électricité, Mécanique, Hydraulique...">
-    </div>
-    <div class="form-group">
-      <label>Spécialité</label>
-      <input type="text" id="editSpecialite" class="form-input" placeholder="Ex: PLC, Automatisme, Soudure...">
-    </div>
-    <div class="form-group">
-      <label>Ville</label>
-      <input type="text" id="editVille" class="form-input" placeholder="Ex: Casablanca, Rabat, Tanger...">
-    </div>
-    <div class="form-group">
-      <label>Téléphone</label>
-      <input type="tel" id="editPhone" class="form-input" placeholder="Ex: 0612345678">
-    </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="editEmail" class="form-input" placeholder="contact@entreprise.ma">
-    </div>
-    <div class="form-group">
-      <label>Site Web</label>
-      <input type="url" id="editWeb" class="form-input" placeholder="https://www.entreprise.ma">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-ghost" onclick="closeEditPage()">Annuler</button>
-      <button class="btn btn-primary" onclick="saveItem()"><i class="fas fa-save"></i> Enregistrer</button>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== FULL PAGE: LIST ==================== -->
-<div class="page-overlay" id="listPage">
-  <div class="page-header">
-    <h2 id="listPageTitle"><i class="fas fa-list"></i> Liste</h2>
-    <button class="page-close" onclick="closeListPage()"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="page-body" id="listPageBody"></div>
-</div>
-
-<!-- ==================== FULL PAGE: DELETE CONFIRM ==================== -->
-<div class="page-overlay" id="deletePage">
-  <div class="page-header">
-    <h2><i class="fas fa-trash-alt" style="color:var(--win10-red)"></i> Confirmer la suppression</h2>
-    <button class="page-close" onclick="closeDeletePage()"><i class="fas fa-times"></i></button>
-  </div>
-  <div class="page-body">
-    <p id="deleteMsg" style="font-size:0.9rem;color:var(--win10-text);margin-bottom:20px;"></p>
-    <div class="btn-group">
-      <button class="btn btn-ghost" onclick="closeDeletePage()">Annuler</button>
-      <button class="btn btn-danger" onclick="confirmDeleteItem()"><i class="fas fa-trash"></i> Supprimer</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-<div class="loading-screen" id="loadingScreen">
-  <div class="loading-logo"><i class="fas fa-industry"></i></div>
-  <div class="loading-bar"><div class="loading-fill"></div></div>
-</div>
-
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
-// ==================== CONFIG ====================
+(()=>{'use strict';
+/* ═══ CONFIG ═══ */
+const FB_CFG={apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",authDomain:"said-rahil-default-rtdb.firebaseio.com",databaseURL:"https://said-rahil-default-rtdb.firebaseio.com/",projectId:"said-rahil",storageBucket:"said-rahil.firebasestorage.app"};
 const CSV_EXPERTS="https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
 const CSV_FOURNISSEURS="https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
+const TK={fournisseurs:'FOURNISSEURS',experts:'EXPERTS'},CK={services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
+const TL={fournisseurs:'Fournisseur',experts:'Expert'},CL={services:'Services',products:'Produits',maqola:'Maqaola','yad-amila':'Yad Amila'};
+const PAL=['#0B5CAD','#1B7F5C','#8A4B08','#7A3E9D','#B3261E','#0F6E7A','#4C5A9E','#5B6B1F','#9A3B5C','#3F4B57'];
+const IC={home:'M3 11l9-8 9 8v10h-6v-6H9v6H3z',compass:'M12 2a10 10 0 100 20 10 10 0 000-20zM15.5 8.5l-2 5-5 2 2-5z',users:'M9 11a4 4 0 100-8 4 4 0 000 8zM2 21c0-4 3-6 7-6s7 2 7 6M17 4a4 4 0 010 7M22 21c0-3-2-5-4-5.5',truck:'M2 6h12v10H2zM14 9h4l4 4v3h-8zM6 19a2 2 0 100-4 2 2 0 000 4zM18 19a2 2 0 100-4 2 2 0 000 4z',expert:'M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 3.5-6 8-6s8 2 8 6M16 17l2 2 3-3',pin:'M12 22s7-6.5 7-12a7 7 0 10-14 0c0 5.5 7 12 7 12zM12 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',grid:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',wrench:'M14.7 6.3a4 4 0 005 5L21 13l-8 8-4-4 8-8zM3 21l5-5',box:'M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8',hammer:'M3 21l9-9M14 4l6 6-3 3-6-6zM9 9l-4 4',hat:'M3 17h18M5 17a7 7 0 0114 0M12 6v5',search:'M11 18a7 7 0 100-14 7 7 0 000 14zM21 21l-5-5',x:'M6 6l12 12M18 6L6 18',moon:'M21 13A9 9 0 1111 3a7 7 0 0010 10z',sun:'M12 16a4 4 0 100-8 4 4 0 000 8zM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5',plus:'M12 5v14M5 12h14',sync:'M21 12a9 9 0 01-15 6.7L3 16M3 12a9 9 0 0115-6.7L21 8M3 21v-5h5M21 3v5h-5',phone:'M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z',chat:'M21 12a9 9 0 01-13.5 7.8L3 21l1.3-4.4A9 9 0 1121 12z',mail:'M3 5h18v14H3zM3 6l9 7 9-7',globe:'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18',share:'M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4',copy:'M9 9h11v11H9zM5 15V4h11',card:'M4 4h16v16H4zM9 11a2 2 0 100-4 2 2 0 000 4zM6 17c0-2 1.5-3 3-3s3 1 3 3M14 9h4M14 13h4',edit:'M4 20h4L19 9l-4-4L4 16zM14 6l4 4',trash:'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13',chev:'M9 6l6 6-6 6',back:'M15 6l-6 6 6 6',tool:'M4 20l6-6M14 4l6 6-3 3-6-6z'};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${IC[n]}"/></svg>`;
 
-const firebaseConfig={
-  apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
-  authDomain:"said-rahil-default-rtdb.firebaseio.com",
-  databaseURL:"https://said-rahil-default-rtdb.firebaseio.com/",
-  projectId:"said-rahil",
-  storageBucket:"said-rahil.firebasestorage.app"
+/* ═══ STATE ═══ */
+const S={db:[],f:{type:'',categorie:'',ville:'',domaine:'',specialite:'',q:''},exp:{t:'',d:'',s:''},tab:'home',lim:60,fb:null,off:false,cur:null,list:[],cb:null,csv:null,busy:false};
+
+/* ═══ HELPERS ═══ */
+const $=s=>document.querySelector(s);
+const escHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const e=escHtml;
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+const getColor=n=>{let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))>>>0;return PAL[h%PAL.length]};
+const getInitials=n=>String(n).trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
+const formatPhone=p=>{let d=String(p||'').replace(/[^\d+]/g,'');if(!d)return'';if(d.startsWith('00'))return'+'+d.slice(2);if(d.startsWith('+'))return d;if(d.startsWith('0'))return'+212'+d.slice(1);if(d.startsWith('212'))return'+'+d;return d};
+const uid=()=>`${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+const webUrl=w=>{if(!w)return'';const u=/^https?:\/\//i.test(w)?w:'https://'+w;return/^https?:\/\/[^\s]+$/i.test(u)?u:''};
+const debounce=(f,t)=>{let i;return(...a)=>{clearTimeout(i);i=setTimeout(()=>f(...a),t)}};
+let tt;const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),3000)};
+const showLoading=b=>$('#bz').classList.toggle('on',b);
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true}catch{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch{}a.remove();return ok}}
+const uniq=k=>{const m=new Map();S.db.forEach(r=>{const v=(r[k]||'').trim();if(v&&!m.has(norm(v)))m.set(norm(v),v)});return[...m.values()].sort((a,b)=>a.localeCompare(b,'fr'))};
+const count=(k,v)=>S.db.filter(r=>norm(r[k])===norm(v)).length;
+
+/* ═══ SEARCH ENGINE ═══ */
+class SearchEngine{
+  constructor(){this.idx=[]}
+  normalizeStr(s){return norm(s)}
+  buildIndex(recs){this.idx=recs.map(r=>{const n=norm(r.name),d=norm(r.domaine),s=norm(r.specialite),v=norm(r.ville);
+    return{r,n,v,t:norm([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email].join(' ')),k:new Set([n,d,s,v].join(' ').split(' ').filter(w=>w.length>2))}})}
+  applyFilters(list,f){const m=(a,b)=>!b||norm(a)===norm(b);return list.filter(x=>m(x.r.type,f.type)&&m(x.r.categorie,f.categorie)&&m(x.r.ville,f.ville)&&m(x.r.domaine,f.domaine)&&m(x.r.specialite,f.specialite))}
+  search(q,f){const L=this.applyFilters(this.idx,f),nq=norm(q);
+    if(nq.length<2)return L.map(x=>x.r);
+    const terms=nq.split(' ');const out=[];
+    for(const x of L){let sc=0,ok=true;
+      for(const t of terms){const p=x.t.indexOf(t);if(p<0){ok=false;break}
+        sc+=10-Math.min(p,10);if([...x.k].some(w=>w.includes(t)))sc+=5;if(x.n.includes(t))sc+=3;if(x.v.includes(t))sc+=2}
+      if(ok)out.push({...x.r,_score:sc})}
+    return out.sort((a,b)=>b._score-a._score)}
+}
+const eng=new SearchEngine();
+
+/* ═══ FILTER LOGIC ═══ */
+const filtered=()=>eng.search(S.f.q,S.f);
+const hasF=()=>!!(S.f.type||S.f.categorie||S.f.ville||S.f.domaine||S.f.specialite||norm(S.f.q).length>0);
+const resetF=()=>{S.f={type:'',categorie:'',ville:'',domaine:'',specialite:'',q:''};S.lim=60;$('#q').value=''};
+
+/* ═══ RENDERING ═══ */
+const itemHTML=r=>`<button class="it" data-a="open" data-v="${e(r.id)}"><div class="av" style="background:${getColor(r.name)}" aria-hidden="true">${e(getInitials(r.name))}</div><div class="im"><b>${e(r.name)}</b><small>${e([r.domaine,r.ville,r.specialite].filter(Boolean).join(' · '))}</small><div class="bg"><span class="b">${TL[r.type]}</span><span class="b c">${CL[r.categorie]}</span></div></div>${ic('chev')}</button>`;
+const emptyHTML=()=>`<div class="em" style="grid-column:1/-1"><b>Aucun résultat</b>Essayez un autre mot-clé ou retirez un filtre.<br><button class="btn" data-a="clear">Effacer les filtres</button></div>`;
+
+function renderStats(){
+  const t=S.db.length,d=uniq('domaine').length;
+  $('#sub').textContent=`${t} professionnel${t>1?'s':''} · ${d} domaine${d>1?'s':''}`;
+  const c=(k,v)=>count(k,v);
+  const cards=[['truck','Fournisseurs','موردون',c('type','fournisseurs'),'type:fournisseurs'],['expert','Experts','خبراء',c('type','experts'),'type:experts'],['pin','Villes','مدن',uniq('ville').length,'villes'],['grid','Domaines','مجالات',d,'domaines'],['wrench','Services','خدمات',c('categorie','services'),'categorie:services'],['box','Produits','منتجات',c('categorie','products'),'categorie:products'],['hammer','Maqaola','مقاولون',c('categorie','maqola'),'categorie:maqola'],['hat','Yad Amila','يد عاملة',c('categorie','yad-amila'),'categorie:yad-amila']];
+  $('#t-home').innerHTML=`<div class="ban"><h1>Connect Industry</h1><p class="ar" dir="rtl">السجل المرجعي الرقمي للفاعلين في القطاع الصناعي بالمغرب</p></div><div class="grid">${cards.map(x=>`<button class="st" data-a="stat" data-v="${x[4]}">${ic(x[0])}<b>${x[3]}</b><span>${x[1]}</span><small class="ar">${x[2]}</small></button>`).join('')}</div>`;
+}
+function renderChips(){
+  const f=S.f,ch=(k,l,v)=>`<button class="chip${v?' on':''}" data-a="chip" data-v="${k}">${e(v||l)}</button>`;
+  $('#chips').innerHTML=ch('type','Type',f.type&&TL[f.type])+ch('categorie','Catégorie',f.categorie&&CL[f.categorie])+ch('ville','Ville',f.ville)+ch('domaine','Domaine',f.domaine)+ch('specialite','Spécialité',f.specialite)+(hasF()?`<button class="chip" data-a="clear" style="color:var(--dg)">Effacer</button>`:'');
+}
+function renderRep(){
+  renderChips();
+  const f=S.f,tg=[];
+  if(f.type)tg.push(['type',TL[f.type]]);if(f.categorie)tg.push(['categorie',CL[f.categorie]]);if(f.ville)tg.push(['ville',f.ville]);if(f.domaine)tg.push(['domaine',f.domaine]);if(f.specialite)tg.push(['specialite',f.specialite]);if(norm(f.q))tg.push(['q','« '+f.q.trim()+' »']);
+  $('#tags').innerHTML=tg.map(t=>`<span class="tag">${e(t[1])}<button data-a="rmf" data-v="${t[0]}" aria-label="Retirer ${e(t[1])}">${ic('x')}</button></span>`).join('');
+  const res=filtered();
+  $('#inf').textContent=hasF()?`${res.length} résultat${res.length>1?'s':''}`:'';
+  $('#lst').innerHTML=res.length?res.slice(0,S.lim).map(itemHTML).join('')+(res.length>S.lim?`<button class="btn w" style="grid-column:1/-1" data-a="more">Afficher plus (${res.length-S.lim})</button>`:''):emptyHTML();
+  $('#qx').hidden=!f.q;
+  renderNav(res.length);
+}
+function renderExp(){
+  const{t,d,s}=S.exp;let crumbs=[['Accueil','']];
+  if(t)crumbs.push([TL[t]+'s','t']);if(d)crumbs.push([d,'d']);if(s)crumbs.push([s,'s']);
+  const cr=`<div class="crumb">${crumbs.map((c,i)=>(i?'<i>›</i>':'')+(i===crumbs.length-1&&i>0?`<span class="cur">${e(c[0])}</span>`:`<button data-a="crumb" data-v="${c[1]}">${e(c[0])}</button>`)).join('')}</div>`;
+  const row=(icon,name,n,a,v)=>`<button class="row" data-a="${a}" data-v="${e(v)}">${ic(icon)}<span class="im">${e(name)}</span><em>${n}</em>${ic('chev')}</button>`;
+  let body='';
+  if(!t)body=row('truck','Fournisseurs',count('type','fournisseurs'),'xt','fournisseurs')+row('expert','Experts',count('type','experts'),'xt','experts');
+  else{const base=S.db.filter(r=>r.type===t);
+    if(!d)body=group(base,'domaine').map(g=>row('grid',g[0],g[1],'xd',g[0])).join('');
+    else if(!s)body=group(base.filter(r=>norm(r.domaine)===norm(d)),'specialite').map(g=>row('tool',g[0],g[1],'xs',g[0])).join('');
+    else body='<div class="list">'+base.filter(r=>norm(r.domaine)===norm(d)&&norm(r.specialite)===norm(s)).map(itemHTML).join('')+'</div>'}
+  $('#t-exp').innerHTML=cr+(body||emptyHTML());
+}
+function group(list,k){const m=new Map();list.forEach(r=>{const v=r[k]||'—',n=norm(v);m.has(n)?m.get(n)[1]++:m.set(n,[v,1])});return[...m.values()].sort((a,b)=>a[0].localeCompare(b[0],'fr'))}
+function renderNav(n){
+  if(n===undefined)n=filtered().length;
+  const tabs=[['home','Accueil','home'],['exp','Explorer','compass'],['rep','Répertoire','users']];
+  $('#nav').innerHTML=tabs.map(x=>`<button data-a="tab" data-v="${x[0]}" class="${S.tab===x[0]?'on':''}" ${S.tab===x[0]?'aria-current="page"':''}>${ic(x[2])}<span>${x[1]}</span>${x[0]==='rep'&&n>0?`<span class="bd">${n>999?'999+':n}</span>`:''}</button>`).join('');
+}
+const refresh=()=>{renderStats();renderExp();renderRep()};
+
+/* ═══ PAGES (full-screen overlays) ═══ */
+function openPage(title,body,back=true){
+  $('#pg').innerHTML=`<div class="ph"><button class="ib" data-a="close" aria-label="Retour" id="pgx">${ic(back?'back':'x')}</button><h2>${e(title)}</h2></div><div class="pb">${body}</div>`;
+  $('#pg').classList.add('on');setTimeout(()=>$('#pgx')?.focus(),50);
+}
+const closePage=()=>$('#pg').classList.remove('on');
+function detailPage(r){
+  S.cur=r;const url=webUrl(r.web),ph=formatPhone(r.phone);
+  const rows=[['grid','Domaine',r.domaine],['tool','Spécialité',r.specialite],['pin','Ville',r.ville],['phone','Téléphone',ph],['mail','Email',r.email],['globe','Site web',r.web]].filter(x=>x[2]);
+  const acts=[];
+  if(ph)acts.push(`<a class="btn p" href="tel:${e(ph)}">${ic('phone')}Appeler</a>`,`<a class="btn" href="https://wa.me/${e(ph.replace(/\D/g,''))}" target="_blank" rel="noopener">${ic('chat')}WhatsApp</a>`);
+  if(r.email)acts.push(`<a class="btn" href="mailto:${e(r.email)}">${ic('mail')}Email</a>`);
+  if(url)acts.push(`<a class="btn" href="${e(url)}" target="_blank" rel="noopener">${ic('globe')}Site web</a>`);
+  acts.push(`<button class="btn" data-a="share">${ic('share')}Partager</button>`,`<button class="btn" data-a="copy">${ic('copy')}Copier</button>`,`<button class="btn w" data-a="vcf">${ic('card')}Ajouter aux contacts (.vcf)</button>`);
+  if(r.id)acts.push(`<button class="btn g" data-a="edit">${ic('edit')}Modifier</button>`,`<button class="btn g" data-a="del" style="color:var(--dg)">${ic('trash')}Supprimer</button>`);
+  openPage('Détails',`<div class="hero"><div class="av lg" style="background:${getColor(r.name)}">${e(getInitials(r.name))}</div><div><h3>${e(r.name)}</h3><div class="bg"><span class="b">${TL[r.type]}</span><span class="b c">${CL[r.categorie]}</span></div></div></div>${rows.map(x=>`<div class="dr">${ic(x[0])}<div><small>${x[1]}</small>${e(x[2])}</div></div>`).join('')}<div class="acts">${acts.join('')}</div>`);
+}
+function editPage(r){
+  S.cur=r||null;r=r||{type:'fournisseurs',categorie:'services'};
+  const sel=(id,l,o,v)=>`<label class="fl"><span>${l}</span><select id="${id}">${Object.entries(o).map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${t}</option>`).join('')}</select></label>`;
+  const inp=(id,l,v,t='text',x='')=>`<label class="fl" id="w_${id}"><span>${l}</span><input id="${id}" type="${t}" value="${e(v||'')}" ${x}><small></small></label>`;
+  const dl=(id,k)=>`<datalist id="${id}">${uniq(k).map(v=>`<option value="${e(v)}">`).join('')}</datalist>`;
+  openPage(r.id?'Modifier':'Ajouter',`<form id="ef" novalidate>${inp('f_name','Nom *',r.name,'text','required autocomplete="off"')}<div class="fr">${sel('f_type','Type',TL,r.type)}${sel('f_cat','Catégorie',CL,r.categorie)}</div>${inp('f_dom','Domaine',r.domaine,'text','list="dl_d"')}${inp('f_spe','Spécialité',r.specialite)}${inp('f_ville','Ville',r.ville,'text','list="dl_v"')}${inp('f_tel','Téléphone',r.phone,'tel','inputmode="tel" placeholder="0612345678"')}${inp('f_mail','Email',r.email,'email')}${inp('f_web','Site web',r.web,'url','inputmode="url"')}${dl('dl_d','domaine')}${dl('dl_v','ville')}<div class="fr" style="margin-top:8px"><button type="button" class="btn g" data-a="close">Annuler</button><button type="submit" class="btn p">Enregistrer</button></div></form>`,false);
+  $('#f_tel').addEventListener('blur',ev=>ev.target.value=formatPhone(ev.target.value));
+  $('#ef').addEventListener('submit',ev=>{ev.preventDefault();save()});
+}
+function delPage(r){S.cur=r;openPage('Supprimer',`<div class="wr">${ic('trash')}<p>Êtes-vous sûr de vouloir supprimer <b>${e(r.name)}</b> ?<br>Cette action est irréversible.</p><div class="fr"><button class="btn g" data-a="close">Annuler</button><button class="btn d" data-a="delok">Supprimer</button></div></div>`,false);
+}
+function listPage(title,items,sel,cb){
+  S.list=items;S.cb=cb;
+  openPage(title,`${items.length>8?`<label class="fl"><input id="lf" type="search" placeholder="Filtrer…" aria-label="Filtrer la liste"></label>`:''}<div id="lr">${listRows(items,sel)}</div>`);
+  $('#lf')?.addEventListener('input',ev=>{const q=norm(ev.target.value);$('#lr').innerHTML=listRows(items.filter(i=>norm(i.l).includes(q)||!i.v),sel)});
+}
+const listRows=(items,sel)=>items.map(i=>`<button class="row${i.v===sel?' sel':''}" data-a="pick" data-v="${S.list.indexOf(i)}"><span class="im">${e(i.l)}</span>${i.n!=null?`<em>${i.n}</em>`:''}</button>`).join('');
+
+/* ═══ NAVIGATION ═══ */
+function go(tab){
+  S.tab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+tab));
+  if(tab==='exp')renderExp();if(tab==='rep')renderRep();renderNav();scrollTo(0,0);
+}
+function pickFilter(k){
+  /* Facettes : n'affiche que les valeurs possibles compte tenu des AUTRES filtres actifs et de la recherche */
+  const base=eng.search(S.f.q,{...S.f,[k]:''});let items;
+  if(k==='type')items=Object.keys(TL).filter(t=>base.some(r=>r.type===t)).map(t=>({l:TL[t],v:t,n:base.filter(r=>r.type===t).length}));
+  else if(k==='categorie')items=Object.keys(CL).filter(c=>base.some(r=>r.categorie===c)).map(c=>({l:CL[c],v:c,n:base.filter(r=>r.categorie===c).length}));
+  else{const m=new Map();base.forEach(r=>{const v=(r[k]||'').trim();if(!v)return;const n=norm(v);m.has(n)?m.get(n).n++:m.set(n,{l:v,v,n:1})});items=[...m.values()].sort((a,b)=>a.l.localeCompare(b.l,'fr'))}
+  const T={type:'Type',categorie:'Catégorie',ville:'Ville',domaine:'Domaine',specialite:'Spécialité'}[k];
+  items.unshift({l:k==='categorie'||k==='ville'?'Toutes':'Tous',v:'',n:base.length});
+  listPage(T,items,S.f[k],v=>{S.f[k]=v;S.lim=60;closePage();go('rep')});
+}
+
+/* ═══ ACTIONS ═══ */
+const find=id=>S.db.find(r=>r.id===id);
+const A={
+  tab(v){if(S.tab===v){if(v==='rep'){resetF();renderRep()}else if(v==='exp'){S.exp={t:'',d:'',s:''};renderExp()}else scrollTo({top:0,behavior:'smooth'});return}go(v)},
+  theme(){const d=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=d;try{localStorage.setItem('theme',d)}catch{}icons()},
+  add(){editPage(null)},sync(){syncData()},close:closePage,
+  stat(v){resetF();if(v==='villes')return pickFilter('ville');if(v==='domaines')return pickFilter('domaine');const[k,x]=v.split(':');S.f[k]=x;go('rep')},
+  chip(v){pickFilter(v)},rmf(v){S.f[v]='';if(v==='q')$('#q').value='';renderRep()},clear(){resetF();renderRep()},qclear(){S.f.q='';$('#q').value='';renderRep();$('#q').focus()},more(){S.lim+=60;renderRep()},
+  open(v){const r=find(v);if(r)detailPage(r)},
+  pick(v){const i=S.list[+v];S.cb&&S.cb(i.v)},
+  xt(v){S.exp={t:v,d:'',s:''};renderExp()},xd(v){S.exp.d=v;S.exp.s='';renderExp()},xs(v){S.exp.s=v;renderExp()},
+  crumb(v){const x=S.exp;if(v==='')S.exp={t:'',d:'',s:''};else if(v==='t')S.exp={t:x.t,d:'',s:''};else if(v==='d')S.exp={t:x.t,d:x.d,s:''};renderExp()},
+  edit(){editPage(S.cur)},del(){delPage(S.cur)},delok:removeItem,
+  async share(){const r=S.cur,t=txt(r);if(navigator.share){try{await navigator.share({title:r.name,text:t});return}catch(x){if(x.name==='AbortError')return}}toast(await copyText(t)?'Copié dans le presse-papiers':'Copie impossible')},
+  async copy(){toast(await copyText(txt(S.cur))?'Informations copiées':'Copie impossible')},
+  vcf(){const r=S.cur,v=['BEGIN:VCARD','VERSION:3.0','FN:'+r.name];const p=formatPhone(r.phone);if(p)v.push('TEL;TYPE=WORK,VOICE:'+p);if(r.email)v.push('EMAIL:'+r.email);if(webUrl(r.web))v.push('URL:'+webUrl(r.web));v.push('END:VCARD');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([v.join('\r\n')],{type:'text/vcard'}));a.download=r.name.replace(/[^\w-]+/g,'_')+'.vcf';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Contact téléchargé')}
 };
-firebase.initializeApp(firebaseConfig);
-const dbRef=firebase.database();
+const txt=r=>[r.name,[TL[r.type],CL[r.categorie]].join(' · '),r.domaine&&'Domaine : '+r.domaine,r.specialite&&'Spécialité : '+r.specialite,r.ville&&'Ville : '+r.ville,r.phone&&'Tél : '+formatPhone(r.phone),r.email&&'Email : '+r.email,r.web&&'Web : '+r.web].filter(Boolean).join('\n');
 
-// ==================== STATE ====================
-let csvExperts=[],csvFournisseurs=[],dbData=[];
-let currentSection='home';
-let explorerStack=[];
-let repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
-let pendingDelete=null;
-let isSyncing=false;
-
-// ==================== HELPERS ====================
-function $(id){return document.getElementById(id);}
-function toast(msg){const t=$('toast');t.innerHTML=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-function showLoading(v){v?$('loadingScreen').classList.remove('hide'):$('loadingScreen').classList.add('hide');}
-function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function formatPhone(p){if(!p)return'';let c=String(p).replace(/[\s\-\(\)\.]/g,'');if(c.startsWith('00'))c='+'+c.slice(2);else if(c.startsWith('0'))c='+212'+c.slice(1);return c;}
-function getInitials(name){const parts=(name||'').trim().split(/\s+/);return parts.slice(0,2).map(p=>p[0]||'').join('').toUpperCase()||'?';}
-const COLORS=['#0078D7','#107C10','#FF8C00','#9B4F96','#00A7AF','#E81123','#13A10E','#0086F0','#005A9E','#2D2D30'];
-function getColor(name){let h=0;for(const c of name||'')h=(h*31+c.charCodeAt(0))&0xffff;return COLORS[h%COLORS.length];}
-const catNameMap={services:'Services',products:'Produits',maqola:'Maqaola','yad-amila':'Yad Amila'};
-const catClassMap={services:'badge-service',products:'badge-product',maqola:'badge-maqola','yad-amila':'badge-yad'};
-const typeMap={'fournisseurs':'FOURNISSEURS','experts':'EXPERTS'};
-const categoryMap={'services':'SERVICES','products':'PRODUITS','maqola':'MAQAOLA','yad-amila':'YAD AMILA'};
-
-function normalizeStr(s){
-  return String(s||'').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .trim();
-}
-
-// ==================== SEARCH ENGINE ====================
-class SearchEngine {
-  constructor() {
-    this.index = [];
-  }
-  buildIndex(records) {
-    this.index = records.map(record => ({
-      record: record,
-      searchText: this.buildSearchText(record),
-      keywords: this.extractKeywords(record)
-    }));
-  }
-  buildSearchText(record) {
-    const parts = [record.name, record.domaine, record.specialite, record.ville, record.phone, record.email];
-    return parts.filter(p => p).join(' ').toLowerCase();
-  }
-  extractKeywords(record) {
-    const words = new Set();
-    const text = `${record.name} ${record.domaine} ${record.specialite} ${record.ville}`.toLowerCase();
-    const important = text.split(/[\s,،]+/).filter(w => w.length > 2);
-    important.forEach(w => words.add(w));
-    return Array.from(words);
-  }
-  search(query, filters = {}) {
-    if (!query || query.trim().length < 2) {
-      return this.applyFilters(this.index.map(i => i.record), filters);
-    }
-    const terms = query.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .split(/\s+/).filter(w => w.length > 1);
-    const results = [];
-    this.index.forEach(({ record, searchText, keywords }) => {
-      let score = 0;
-      terms.forEach(term => {
-        if (searchText.includes(term)) {
-          const pos = searchText.indexOf(term);
-          score += 10 - Math.min(pos, 10);
-        }
-        if (keywords.some(k => k.includes(term))) score += 5;
-        if (record.name && record.name.toLowerCase().includes(term)) score += 3;
-        if (record.ville && record.ville.toLowerCase().includes(term)) score += 2;
-      });
-      if (score > 0) results.push({ ...record, _score: score });
-    });
-    results.sort((a, b) => b._score - a._score);
-    return this.applyFilters(results, filters);
-  }
-  applyFilters(records, filters) {
-    let filtered = records;
-    if (filters.type) filtered = filtered.filter(r => r.type === filters.type);
-    if (filters.categorie) filtered = filtered.filter(r => r.categorie === filters.categorie);
-    if (filters.ville) filtered = filtered.filter(r => r.ville && normalizeStr(r.ville) === normalizeStr(filters.ville));
-    if (filters.domaine) filtered = filtered.filter(r => r.domaine && normalizeStr(r.domaine) === normalizeStr(filters.domaine));
-    return filtered;
-  }
-}
-
-const searchEngine = new SearchEngine();
-
-// ==================== FILTER FUNCTIONS ====================
-function filterByTypeFromStats(type){
-  resetRepFilters();
-  if(type==='fournisseurs'){ repFilters.type='fournisseurs'; toast(`🔍 ${$('statFour').innerText} Fournisseurs`); }
-  else if(type==='experts'){ repFilters.type='experts'; toast(`🔍 ${$('statExp').innerText} Experts`); }
-  showSection('repertoire',true);
-  renderRepertoire();
-}
-
-function filterByCategorieFromStats(categorie){
-  resetRepFilters();
-  let key='',name='';
-  switch(categorie){
-    case 'services': key='services'; name='Services'; break;
-    case 'products': key='products'; name='Produits'; break;
-    case 'maqola': key='maqola'; name='Maqaola'; break;
-    case 'yad-amila': key='yad-amila'; name='Yad Amila'; break;
-  }
-  repFilters.categorie=key;
-  toast(`🔍 ${name}`);
-  showSection('repertoire',true);
-  renderRepertoire();
-}
-
-function filterByVilleFromStats(){
-  const villes=[...new Set(dbData.map(d=>d.ville).filter(v=>v&&v!=='null'&&v.trim()))];
-  if(villes.length===0){toast('⚠️ Aucune ville');return;}
-  showListPage('Villes',villes.sort(),(ville)=>{if(ville){resetRepFilters();repFilters.ville=ville;toast(`🔍 ${ville}`);showSection('repertoire',true);renderRepertoire();}});
-}
-
-function filterByDomaineFromStats(){
-  const domaines=[...new Set(dbData.map(d=>d.domaine).filter(d=>d&&d!=='null'&&d.trim()))];
-  if(domaines.length===0){toast('⚠️ Aucun domaine');return;}
-  showListPage('Domaines',domaines.sort(),(domaine)=>{if(domaine){resetRepFilters();repFilters.domaine=domaine;toast(`🔍 ${domaine}`);showSection('repertoire',true);renderRepertoire();}});
-}
-
-// ==================== REPERTOIRE ====================
-function getAvailableCategoriesForCurrentType(){
-  let data=[...dbData];
-  if(repFilters.type) data=data.filter(d=>d.type===repFilters.type);
-  return[...new Set(data.map(d=>d.categorie).filter(c=>c))].map(c=>catNameMap[c]).filter(c=>c);
-}
-
-function getFilteredRepertoire(){
-  return searchEngine.search(repFilters.search || '', {
-    type: repFilters.type,
-    categorie: repFilters.categorie,
-    ville: repFilters.ville,
-    domaine: repFilters.domaine
-  });
-}
-
-function getRepVilles(){
-  let data=[...dbData];
-  if(repFilters.type) data=data.filter(d=>d.type===repFilters.type);
-  if(repFilters.categorie) data=data.filter(d=>d.categorie===repFilters.categorie);
-  if(repFilters.domaine) data=data.filter(d=>d.domaine===repFilters.domaine);
-  return[...new Set(data.map(d=>d.ville).filter(v=>v&&v!=='null'&&v.trim()))].sort((a,b)=>a.localeCompare(b));
-}
-
-function getRepDomaines(){
-  let data=[...dbData];
-  if(repFilters.type) data=data.filter(d=>d.type===repFilters.type);
-  if(repFilters.categorie) data=data.filter(d=>d.categorie===repFilters.categorie);
-  if(repFilters.ville) data=data.filter(d=>d.ville===repFilters.ville);
-  return[...new Set(data.map(d=>d.domaine).filter(v=>v&&v!=='null'&&v.trim()))].sort((a,b)=>a.localeCompare(b));
-}
-
-function resetRepFilters(){
-  repFilters={type:null,categorie:null,ville:null,domaine:null,search:''};
-  const si=$('searchInput');if(si){si.value='';$('repSearchWrap').classList.remove('search-active');}
-  updateRepFilterUI();renderRepertoire();
-}
-
-function updateRepFilterUI(){
-  $('filterTypeBtn').classList.toggle('active',!!repFilters.type);
-  $('filterCatBtn').classList.toggle('active',!!repFilters.categorie);
-  $('filterVilleBtn').classList.toggle('active',!!repFilters.ville);
-  $('filterDomaineBtn').classList.toggle('active',!!repFilters.domaine);
-  const c=$('activeFilters');if(!c)return;
-  let h='';
-  if(repFilters.type) h+=`<div class="filter-tag"><i class="fas fa-tag"></i> ${repFilters.type==='fournisseurs'?'Fournisseurs':'Experts'} <button onclick="removeRepFilter('type')">✕</button></div>`;
-  if(repFilters.categorie) h+=`<div class="filter-tag"><i class="fas fa-layer-group"></i> ${catNameMap[repFilters.categorie]} <button onclick="removeRepFilter('categorie')">✕</button></div>`;
-  if(repFilters.ville) h+=`<div class="filter-tag"><i class="fas fa-map-marker-alt"></i> ${escHtml(repFilters.ville)} <button onclick="removeRepFilter('ville')">✕</button></div>`;
-  if(repFilters.domaine) h+=`<div class="filter-tag"><i class="fas fa-folder"></i> ${escHtml(repFilters.domaine)} <button onclick="removeRepFilter('domaine')">✕</button></div>`;
-  if(repFilters.search) h+=`<div class="filter-tag"><i class="fas fa-search"></i> "${escHtml(repFilters.search)}" <button onclick="removeRepFilter('search')">✕</button></div>`;
-  c.innerHTML=h;
-}
-
-function removeRepFilter(k){
-  if(k==='type')repFilters.type=null;
-  else if(k==='categorie')repFilters.categorie=null;
-  else if(k==='ville')repFilters.ville=null;
-  else if(k==='domaine')repFilters.domaine=null;
-  else if(k==='search'){repFilters.search='';const si=$('searchInput');if(si){si.value='';$('repSearchWrap').classList.remove('search-active');}}
-  updateRepFilterUI();renderRepertoire();
-}
-
-function renderRepertoire(){
-  const filtered=getFilteredRepertoire();
-  const hasAny=Object.values(repFilters).some(v=>v&&v!='');
-  const ri=$('resultInfo');
-  if(hasAny || repFilters.search){
-    ri.innerHTML=`<i class="fas fa-filter"></i> ${filtered.length} résultat(s)`;
-    ri.classList.add('visible');
-  }else{ri.classList.remove('visible');}
-  $('contactList').innerHTML=filtered.length
-    ?filtered.map(i=>buildContactRow(i)).join('')
-    :`<div class="empty-state"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">Aucun résultat</div><div class="empty-sub">Modifiez vos filtres ou votre recherche</div></div>`;
-  updateRepFilterUI();
-  updateNavBadge();
-}
-
-function updateNavBadge(){
-  const badge=$('navBadge');
-  if(badge){
-    const count = getFilteredRepertoire().length;
-    badge.textContent = count > 0 ? count : '0';
-    badge.style.display = count > 0 ? 'block' : 'none';
-  }
-}
-
-// ==================== CONTACT ROW (NO BUTTONS) ====================
-function buildContactRow(item){
-  const color=getColor(item.name);
-  const init=getInitials(item.name);
-  let details=[];
-  if(item.domaine) details.push(item.domaine);
-  if(item.ville) details.push(item.ville);
-  if(item.specialite && item.specialite!=='Général') details.push(item.specialite);
-  
-  let badges='';
-  badges+=`<span class="badge ${item.type==='fournisseurs'?'badge-fourn':'badge-expert'}">${item.type==='fournisseurs'?'Fournisseur':'Expert'}</span>`;
-  if(item.categorie&&catNameMap[item.categorie]) badges+=`<span class="badge ${catClassMap[item.categorie]}">${catNameMap[item.categorie]}</span>`;
-  
-  const enc=encodeURIComponent(JSON.stringify(item));
-  
-  return `<div class="contact-item" onclick="openDetailPage('${enc}')">
-    <div class="contact-avatar" style="background:${color}">${init}</div>
-    <div class="contact-info">
-      <div class="contact-name">${escHtml(item.name)}</div>
-      <div class="contact-details">${details.length?escHtml(details.join(' · ')):'Aucune info'}</div>
-      <div class="contact-badges">${badges}</div>
-    </div>
-  </div>`;
-}
-
-// ==================== FULL PAGE: DETAIL ====================
-function openDetailPage(enc){
-  const item=JSON.parse(decodeURIComponent(enc));
-  const color=getColor(item.name);
-  const body=$('detailPageBody');
-  
-  let badgesHtml='';
-  badgesHtml+=`<span class="badge ${item.type==='fournisseurs'?'badge-fourn':'badge-expert'}">${item.type==='fournisseurs'?'Fournisseur':'Expert'}</span>`;
-  if(item.categorie&&catNameMap[item.categorie]) badgesHtml+=`<span class="badge ${catClassMap[item.categorie]}">${catNameMap[item.categorie]}</span>`;
-  
-  const hp=item.phone&&item.phone!='null'&&item.phone.trim();
-  const he=item.email&&item.email!='null'&&item.email.trim();
-  const hw=item.web&&item.web!='null'&&item.web.startsWith('http');
-  
-  let rowsHtml='';
-  if(item.domaine) rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-folder"></i></div><div><div class="detail-label">Domaine</div><div class="detail-value">${escHtml(item.domaine)}</div></div></div>`;
-  if(item.specialite && item.specialite!='Général') rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-cog"></i></div><div><div class="detail-label">Spécialité</div><div class="detail-value">${escHtml(item.specialite)}</div></div></div>`;
-  if(item.ville) rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="detail-label">Ville</div><div class="detail-value">${escHtml(item.ville)}</div></div></div>`;
-  if(hp) rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-phone-alt"></i></div><div><div class="detail-label">Téléphone</div><div class="detail-value">${escHtml(item.phone)}</div></div></div>`;
-  if(he) rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-envelope"></i></div><div><div class="detail-label">Email</div><div class="detail-value">${escHtml(item.email)}</div></div></div>`;
-  if(hw) rowsHtml+=`<div class="detail-row"><div class="detail-icon"><i class="fas fa-globe"></i></div><div><div class="detail-label">Site Web</div><div class="detail-value">${escHtml(item.web)}</div></div></div>`;
-  
-  let actionsHtml='';
-  if(hp){
-    actionsHtml+=`<button class="detail-btn" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone-alt"></i><span>Appeler</span></button>`;
-    let wa=item.phone.replace(/[^0-9+]/g,'');
-    if(wa.startsWith('0')) wa='212'+wa.substring(1);
-    if(wa.startsWith('+')) wa=wa.substring(1);
-    actionsHtml+=`<button class="detail-btn whatsapp" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i><span>WhatsApp</span></button>`;
-  }
-  if(he) actionsHtml+=`<button class="detail-btn" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i><span>Email</span></button>`;
-  if(hw) actionsHtml+=`<button class="detail-btn" onclick="window.open('${item.web}','_blank')"><i class="fas fa-globe"></i><span>Site Web</span></button>`;
-  actionsHtml+=`<button class="detail-btn share-btn" onclick="shareCard('${enc}')"><i class="fas fa-share-alt"></i><span>Partager</span></button>`;
-  actionsHtml+=`<button class="detail-btn" onclick="copyCard('${enc}')"><i class="fas fa-copy"></i><span>Copier</span></button>`;
-  if(hp) actionsHtml+=`<button class="detail-btn" onclick="saveVCF('${escHtml(item.name)}','${item.phone}','${item.email||''}','${item.web||''}')"><i class="fas fa-save"></i><span>Contact</span></button>`;
-  
-  if(item.id){
-    actionsHtml+=`<div style="display:flex;gap:10px;width:100%;justify-content:center;padding-top:12px;border-top:1px solid var(--win10-border);margin-top:4px;flex-wrap:wrap;">
-      <button class="detail-btn" onclick="closeDetailPage();openEditPage('${item.id}')"><i class="fas fa-pen"></i><span>Modifier</span></button>
-      <button class="detail-btn danger" onclick="closeDetailPage();openDeletePage('${item.id}')"><i class="fas fa-trash-alt"></i><span>Supprimer</span></button>
-    </div>`;
-  }
-  
-  body.innerHTML = `
-    <div class="detail-avatar" style="background:${color}">${getInitials(item.name)}</div>
-    <div class="detail-name">${escHtml(item.name)}</div>
-    <div class="detail-type">${item.domaine||(item.type==='fournisseurs'?'Fournisseur':'Expert')}</div>
-    <div class="detail-badges">${badgesHtml}</div>
-    ${rowsHtml}
-    <div class="detail-actions">${actionsHtml}</div>
-  `;
-  
-  $('detailPage').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function closeDetailPage(){
-  $('detailPage').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-// ==================== FULL PAGE: ADD/EDIT ====================
-function openAddPage(){
-  $('editPageTitle').innerHTML='<i class="fas fa-plus-circle"></i> Ajouter un professionnel';
-  ['editId','editName','editDomaine','editSpecialite','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value='');
-  $('editType').value='fournisseurs';$('editCat').value='services';
-  $('editPage').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function openEditPage(id){
-  const item=dbData.find(i=>i.id===id);if(!item){toast('⚠️ Élément introuvable');return;}
-  $('editPageTitle').innerHTML='<i class="fas fa-pen"></i> Modifier un professionnel';
-  $('editId').value=item.id;$('editName').value=item.name;
-  $('editType').value=item.type;$('editCat').value=item.categorie;
-  $('editDomaine').value=item.domaine||'';$('editSpecialite').value=item.specialite||'';
-  $('editVille').value=item.ville||'';$('editPhone').value=item.phone||'';
-  $('editEmail').value=item.email||'';$('editWeb').value=item.web||'';
-  $('editPage').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function closeEditPage(){
-  $('editPage').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-async function saveItem(){
-  const id=$('editId').value;
-  const itemData={
-    id:id||`${Date.now()}_${Math.random().toString(36).slice(2)}`,
-    name:$('editName').value.trim(),type:$('editType').value,
-    categorie:$('editCat').value,domaine:$('editDomaine').value||'Autre',
-    specialite:$('editSpecialite').value||'Général',
-    ville:$('editVille').value||'',phone:formatPhone($('editPhone').value),
-    email:$('editEmail').value||'',web:$('editWeb').value||''
-  };
-  if(!itemData.name){toast('⚠️ Nom requis');return;}
+/* ═══ DATA: Firebase CRUD ═══ */
+const path=(t,c)=>`professionals/${TK[t]}/${CK[c]}`;
+const toArr=v=>v?Object.values(v).filter(Boolean):[];
+const fbArr=async p=>toArr((await S.fb.ref(p).once('value')).val());
+const needFb=()=>{if(S.fb&&!S.off)return true;toast('Firebase indisponible : modification impossible');return false};
+async function save(){
+  const g=id=>$('#'+id).value.trim(),bad=(id,m)=>{const w=$('#w_'+id);w.classList.add('er');w.querySelector('small').textContent=m;return false};
+  document.querySelectorAll('.fl.er').forEach(w=>w.classList.remove('er'));
+  let ok=true;
+  if(!g('f_name'))ok=bad('f_name','Le nom est obligatoire');
+  if(g('f_mail')&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g('f_mail')))ok=bad('f_mail','Email invalide');
+  if(g('f_web')&&!webUrl(g('f_web')))ok=bad('f_web','URL invalide');
+  if(!ok)return;if(!needFb())return;
+  const t=g('f_type')||$('#f_type').value,c=$('#f_cat').value,old=S.cur;
+  const item={id:old?.id||uid(),name:g('f_name'),domaine:g('f_dom')||'Autre',specialite:g('f_spe')||'Général',ville:g('f_ville'),phone:formatPhone(g('f_tel')),email:g('f_mail'),web:g('f_web')};
   showLoading(true);
   try{
-    const oldItem=id?dbData.find(i=>i.id===id):null;
-    if(oldItem&&(oldItem.type!==itemData.type||oldItem.categorie!==itemData.categorie)){
-      const op=`professionals/${typeMap[oldItem.type]}/${categoryMap[oldItem.categorie]}`;
-      const os=await dbRef.ref(op).once('value');
-      await dbRef.ref(op).set((os.val()||[]).filter(i=>i.id!==id));
-    }
-    const path=`professionals/${typeMap[itemData.type]}/${categoryMap[itemData.categorie]}`;
-    const snap=await dbRef.ref(path).once('value');
-    let arr=snap.val()||[];
-    const idx=arr.findIndex(i=>i.id===id);
-    if(idx!==-1)arr[idx]=itemData;else arr.push(itemData);
-    await dbRef.ref(path).set(arr);
-    toast(id?'✅ Modifié avec succès':'✅ Ajouté avec succès');
-    closeEditPage();
-    await loadDB();
-    resetRepFilters();
-  }catch(e){toast('❌ Erreur: '+e.message);}
-  showLoading(false);
+    if(old&&(old.type!==t||old.categorie!==c)){const op=path(old.type,old.categorie);await S.fb.ref(op).set((await fbArr(op)).filter(x=>x.id!==old.id))}
+    const np=path(t,c),arr=await fbArr(np),i=arr.findIndex(x=>x.id===item.id);
+    i>=0?arr[i]=item:arr.push(item);await S.fb.ref(np).set(arr);
+    await loadDB();resetF();refresh();closePage();toast(old?'Professionnel modifié':'Professionnel ajouté');
+  }catch(x){console.error(x);toast('Erreur lors de l’enregistrement')}finally{showLoading(false)}
+}
+async function removeItem(){
+  const r=S.cur;if(!r||!needFb())return;showLoading(true);
+  try{const p=path(r.type,r.categorie);await S.fb.ref(p).set((await fbArr(p)).filter(x=>x.id!==r.id));await loadDB();resetF();refresh();closePage();toast('Professionnel supprimé')}
+  catch(x){console.error(x);toast('Erreur lors de la suppression')}finally{showLoading(false)}
 }
 
-// ==================== FULL PAGE: DELETE ====================
-function openDeletePage(id){
-  const item=dbData.find(i=>i.id===id);if(!item){toast('⚠️ Élément introuvable');return;}
-  pendingDelete=item;
-  $('deleteMsg').innerHTML=`Êtes-vous sûr de vouloir supprimer <strong>${escHtml(item.name)}</strong> ? Cette action est irréversible.`;
-  $('deletePage').classList.add('show');
-  document.body.style.overflow='hidden';
+/* ═══ DATA: load + CSV sync ═══ */
+function mapRaw(raw){
+  const out=[];
+  for(const[T,tv]of Object.entries(TK))for(const[C,cv]of Object.entries(CK))
+    toArr(raw?.[tv]?.[cv]).forEach(it=>it.name&&out.push({...it,type:T,categorie:C,id:it.id||uid(),domaine:it.domaine||'Autre',specialite:it.specialite||'Général'}));
+  return out.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
 }
-
-function closeDeletePage(){
-  $('deletePage').classList.remove('show');
-  document.body.style.overflow='';
-  pendingDelete=null;
-}
-
-async function confirmDeleteItem(){
-  if(!pendingDelete)return;
-  showLoading(true);
-  try{
-    const path=`professionals/${typeMap[pendingDelete.type]}/${categoryMap[pendingDelete.categorie]}`;
-    const snap=await dbRef.ref(path).once('value');
-    await dbRef.ref(path).set((snap.val()||[]).filter(i=>i.id!==pendingDelete.id));
-    toast('🗑️ Supprimé avec succès');
-    closeDeletePage();
-    pendingDelete=null;
-    await loadDB();
-    resetRepFilters();
-  }catch(e){toast('❌ Erreur: '+e.message);}
-  showLoading(false);
-}
-
-// ==================== FULL PAGE: LIST ====================
-let _listSelectFn=null;
-function showListPage(title,items,onSelect){
-  $('listPageTitle').innerHTML=`<i class="fas fa-list"></i> ${title}`;
-  _listSelectFn=onSelect;
-  let html=`<div class="menu-item" onclick="_listSelectFn(null);closeListPage()"><div class="menu-icon" style="background:rgba(0,120,215,0.1);color:#0078D7"><i class="fas fa-undo"></i></div><span class="menu-label">Tous</span></div>`;
-  items.forEach(item=>{
-    html+=`<div class="menu-item" onclick="_listSelectFn('${escHtml(item)}');closeListPage()"><div class="menu-icon" style="background:rgba(0,120,215,0.1);color:#0078D7"><i class="fas fa-tag"></i></div><span class="menu-label">${escHtml(item)}</span></div>`;
-  });
-  $('listPageBody').innerHTML=html;
-  $('listPage').classList.add('show');
-  document.body.style.overflow='hidden';
-}
-
-function closeListPage(){
-  $('listPage').classList.remove('show');
-  document.body.style.overflow='';
-}
-
-// ==================== SHARE & COPY FUNCTIONS ====================
-function shareCard(enc){
-  const item=JSON.parse(decodeURIComponent(enc));
-  const text = `
-🏭 ${item.name}
-${item.domaine ? `📌 ${item.domaine}` : ''}
-${item.specialite && item.specialite !== 'Général' ? `🔧 ${item.specialite}` : ''}
-${item.ville ? `📍 ${item.ville}` : ''}
-${item.phone ? `📞 ${item.phone}` : ''}
-${item.email ? `📧 ${item.email}` : ''}
-${item.web ? `🌐 ${item.web}` : ''}
-`.trim();
-  if (navigator.share) {
-    navigator.share({ title: item.name, text: text }).catch(()=>{});
-  } else {
-    navigator.clipboard.writeText(text).then(()=>toast('📋 Informations copiées'))
-      .catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 Informations copiées');});
-  }
-}
-
-function copyCard(enc){
-  const item=JSON.parse(decodeURIComponent(enc));
-  const text=`${item.name}\n${item.domaine} ${item.specialite}\n${item.ville}\n${item.phone}`.trim();
-  navigator.clipboard.writeText(text).then(()=>toast('📋 Copié'))
-    .catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('📋 Copié');});
-}
-
-function saveVCF(n,p,e,w){
-  const d=`BEGIN:VCARD\nVERSION:3.0\nFN:${n}\nTEL:${p}\n${e?'EMAIL:'+e+'\n':''}${w?'URL:'+w+'\n':''}END:VCARD`;
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([d],{type:'text/vcard'}));
-  a.download=`${n.replace(/[^a-z0-9]/gi,'_')}.vcf`;document.body.appendChild(a);a.click();document.body.removeChild(a);
-  toast('📇 Contact sauvegardé');
-}
-
-// ==================== FILTER MODALS (using full page) ====================
-function showTypeFilter(){
-  showListPage('Type',['Fournisseurs','Experts'],v=>{
-    if(v==='Fournisseurs')repFilters.type='fournisseurs';
-    else if(v==='Experts')repFilters.type='experts';
-    else repFilters.type=null;
-    repFilters.categorie=null;
-    renderRepertoire();
-  });
-}
-
-function showCatFilter(){
-  let cats=getAvailableCategoriesForCurrentType();
-  if(cats.length===0){toast('⚠️ Aucune catégorie');return;}
-  showListPage('Catégorie',cats,v=>{
-    if(v==='Services')repFilters.categorie='services';
-    else if(v==='Produits')repFilters.categorie='products';
-    else if(v==='Maqaola')repFilters.categorie='maqola';
-    else if(v==='Yad Amila')repFilters.categorie='yad-amila';
-    else repFilters.categorie=null;
-    renderRepertoire();
-  });
-}
-
-function showVilleFilter(){const v=getRepVilles();if(!v.length){toast('⚠️ Aucune ville');return;}showListPage('Villes',v,val=>{repFilters.ville=val;renderRepertoire();});}
-function showDomaineFilter(){const d=getRepDomaines();if(!d.length){toast('⚠️ Aucun domaine');return;}showListPage('Domaines',d,val=>{repFilters.domaine=val;renderRepertoire();});}
-
-// ==================== EXPLORER ====================
-function renderExplorer(){
-  const bc=$('explorerBreadcrumb');
-  let bch=`<div class="bc" onclick="goExplorerLevel(0)"><i class="fas fa-home"></i> Accueil</div>`;
-  explorerStack.forEach((item,idx)=>{
-    let label='';
-    if(item.type) label=item.type==='fournisseurs'?'Fournisseurs':'Experts';
-    else if(item.domaine) label=item.domaine;
-    else if(item.specialite) label=item.specialite;
-    bch+=`<span class="bc-sep">›</span><div class="bc" onclick="goExplorerLevel(${idx+1})">${escHtml(label)}</div>`;
-  });
-  bc.innerHTML=bch;
-  const c=$('explorerContent');
-  if(explorerStack.length===0){
-    c.innerHTML=`<div class="explorer-item" onclick="explorerNavigateTo('type','fournisseurs')"><div class="explorer-icon"><i class="fas fa-industry"></i></div><div><div class="explorer-name">Fournisseurs</div><div class="explorer-count">${dbData.filter(d=>d.type==='fournisseurs').length} professionnels</div></div><i class="fas fa-chevron-right explorer-arrow"></i></div><div class="explorer-item" onclick="explorerNavigateTo('type','experts')"><div class="explorer-icon" style="background:rgba(16,124,16,0.1);color:#107C10"><i class="fas fa-microchip"></i></div><div><div class="explorer-name">Experts</div><div class="explorer-count">${dbData.filter(d=>d.type==='experts').length} professionnels</div></div><i class="fas fa-chevron-right explorer-arrow"></i></div>`;
-  }else if(explorerStack.length===1){
-    const type=explorerStack[0].type;
-    const domaines={};
-    dbData.filter(d=>d.type===type).forEach(i=>{const d=i.domaine||'Autre';domaines[d]=(domaines[d]||0)+1;});
-    c.innerHTML=Object.entries(domaines).sort().map(([d,cnt])=>`<div class="explorer-item" onclick="explorerNavigateTo('domaine','${escHtml(d)}')"><div class="explorer-icon"><i class="fas fa-folder"></i></div><div><div class="explorer-name">${escHtml(d)}</div><div class="explorer-count">${cnt} professionnels</div></div><i class="fas fa-chevron-right explorer-arrow"></i></div>`).join('');
-  }else if(explorerStack.length===2){
-    const type=explorerStack[0].type,domaine=explorerStack[1].domaine;
-    const specs={};
-    dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine).forEach(i=>{const s=i.specialite||'Général';specs[s]=(specs[s]||0)+1;});
-    c.innerHTML=Object.entries(specs).sort().map(([s,cnt])=>`<div class="explorer-item" onclick="explorerNavigateTo('specialite','${escHtml(s)}')"><div class="explorer-icon" style="background:rgba(255,140,0,0.1);color:#FF8C00"><i class="fas fa-cog"></i></div><div><div class="explorer-name">${escHtml(s)}</div><div class="explorer-count">${cnt} spécialistes</div></div><i class="fas fa-chevron-right explorer-arrow"></i></div>`).join('');
-  }else{
-    const type=explorerStack[0].type,domaine=explorerStack[1].domaine,specialite=explorerStack[2].specialite;
-    const items=dbData.filter(d=>d.type===type&&(d.domaine||'Autre')===domaine&&(d.specialite||'Général')===specialite);
-    c.innerHTML=items.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(i=>buildContactRow(i)).join('');
-  }
-}
-
-function goExplorerLevel(l){explorerStack=explorerStack.slice(0,l);renderExplorer();}
-function explorerNavigateTo(t,v){
-  if(t==='type')explorerStack=[{type:v}];
-  else if(t==='domaine')explorerStack.push({domaine:v});
-  else if(t==='specialite')explorerStack.push({specialite:v});
-  renderExplorer();
-}
-
-// ==================== SYNC ====================
-async function syncData(){
-  if(isSyncing){toast('⏳ Synchronisation en cours...');return;}
-  if(!confirm('Synchroniser les données depuis les sources CSV ?'))return;
-  isSyncing=true;showLoading(true);
-  try{
-    const structure={"FOURNISSEURS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]},"EXPERTS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]}};
-    const experts=await loadCSV(CSV_EXPERTS);
-    const fours=await loadCSV(CSV_FOURNISSEURS);
-    fours.forEach((s,i)=>{structure["FOURNISSEURS"]["SERVICES"].push({id:`four_${Date.now()}_${i}`,...s});});
-    experts.forEach((e,i)=>{structure["EXPERTS"]["YAD AMILA"].push({id:`exp_${Date.now()}_${i}`,...e});});
-    await dbRef.ref('professionals').set(structure);
-    toast('✅ Synchronisation réussie');
-    await loadDB();
-  }catch(e){toast('❌ Erreur: '+e.message);}
-  showLoading(false);isSyncing=false;
-}
-
-async function loadCSV(url){
-  try{
-    const res=await fetch(url);const text=await res.text();
-    const lines=text.split(/\r?\n/);const data=[];
-    for(let i=1;i<lines.length;i++){
-      const cols=lines[i].split(',');
-      if(cols[1]){
-        data.push({
-          name:cols[1]?.replace(/["']/g,'').trim()||'',
-          domaine:cols[2]?.replace(/["']/g,'').trim()||'Autre',
-          specialite:cols[3]?.replace(/["']/g,'').trim()||'Général',
-          ville:cols[4]?.replace(/["']/g,'').trim()||'',
-          phone:formatPhone(cols[5]?.replace(/["']/g,'').trim()),
-          email:cols[6]?.replace(/["']/g,'').trim()||'',
-          web:cols[7]?.replace(/["']/g,'').trim()||''
-        });
-      }
-    }
-    return data;
-  }catch(e){return[];}
-}
-
 async function loadDB(){
+  let raw=null;
+  try{if(!S.fb)throw 0;raw=(await S.fb.ref('professionals').once('value')).val();S.off=false}
+  catch{S.off=true;const c=await loadCSVs();S.db=c.map(r=>({...r,id:r.id||uid()}));eng.buildIndex(S.db);return}
+  S.db=mapRaw(raw);eng.buildIndex(S.db);
+}
+function splitCSV(l){const o=[];let c='',q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){c+='"';i++}else q=!q}else if(ch===','&&!q){o.push(c);c=''}else c+=ch}o.push(c);return o}
+function parseCSV(text,type,cat){
+  const clean=s=>(s||'').replace(/^["'\s]+|["'\s]+$/g,'');
+  return text.split(/\r?\n/).slice(1).map(splitCSV).filter(c=>clean(c[1])).map(c=>({id:uid(),name:clean(c[1]),domaine:clean(c[2])||'Autre',specialite:clean(c[3])||'Général',ville:clean(c[4]),phone:formatPhone(clean(c[5])),email:clean(c[6]),web:clean(c[7]),type,categorie:cat}));
+}
+async function loadCSVs(){
+  if(S.csv)return S.csv;
+  const get=async(u,t,c)=>{const r=await fetch(u);if(!r.ok)throw new Error(r.status);return parseCSV(await r.text(),t,c)};
+  const[ex,fo]=await Promise.all([get(CSV_EXPERTS,'experts','yad-amila'),get(CSV_FOURNISSEURS,'fournisseurs','services')]);
+  return S.csv=[...fo,...ex];
+}
+async function syncData(auto){
+  if(S.busy)return;if(!auto&&!confirm('Synchroniser depuis Google Sheets ? Les données actuelles seront remplacées.'))return;
+  S.busy=true;showLoading(true);
   try{
-    const snap=await dbRef.ref('professionals').once('value');
-    const data=snap.val();dbData=[];
-    if(data){
-      for(const[ft,to]of Object.entries(data)){
-        const type=ft==='FOURNISSEURS'?'fournisseurs':'experts';
-        for(const[fc,items]of Object.entries(to)){
-          let cat=null;
-          if(fc==='SERVICES')cat='services';
-          else if(fc==='PRODUITS')cat='products';
-          else if(fc==='MAQAOLA')cat='maqola';
-          else if(fc==='YAD AMILA')cat='yad-amila';
-          if(!cat||!Array.isArray(items))continue;
-          for(const item of items){
-            if(item?.name)dbData.push({...item,type,categorie:cat,id:item.id||`${type}_${Date.now()}_${Math.random()}`});
-          }
-        }
-      }
-    }
-    dbData.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-    searchEngine.buildIndex(dbData);
-    updateStats();
-    renderCurrent();
-    updateNavBadge();
-  }catch(e){toast('❌ Erreur chargement: '+e.message);}
+    S.csv=null;const all=await loadCSVs();
+    const tree={FOURNISSEURS:{SERVICES:all.filter(r=>r.type==='fournisseurs').map(({type,categorie,...r})=>r)},EXPERTS:{'YAD AMILA':all.filter(r=>r.type==='experts').map(({type,categorie,...r})=>r)}};
+    if(S.fb&&!S.off)await S.fb.ref('professionals').set(tree);
+    await loadDB();if(!auto)resetF();refresh();toast(auto?'Données synchronisées':'Synchronisation réussie');
+  }catch(x){console.error(x);toast('Échec de la synchronisation. Vérifiez votre connexion.')}
+  finally{S.busy=false;showLoading(false)}
 }
 
-// ==================== STATS ====================
-function updateStats(){
-  $('statFour').textContent=dbData.filter(d=>d.type==='fournisseurs').length;
-  $('statExp').textContent=dbData.filter(d=>d.type==='experts').length;
-  $('statVilles').textContent=new Set(dbData.map(d=>d.ville).filter(v=>v&&v!='null'&&v.trim())).size;
-  $('statDomaines').textContent=new Set(dbData.map(d=>d.domaine).filter(d=>d&&d!='null'&&d.trim())).size;
-  $('statServices').textContent=dbData.filter(d=>d.categorie==='services').length;
-  $('statProduits').textContent=dbData.filter(d=>d.categorie==='products').length;
-  $('statMaqola').textContent=dbData.filter(d=>d.categorie==='maqola').length;
-  $('statYadAmila').textContent=dbData.filter(d=>d.categorie==='yad-amila').length;
-  $('headerSub').textContent=`${dbData.length} professionnels · ${new Set(dbData.map(d=>d.domaine).filter(Boolean)).size} domaines`;
-}
-
-// ==================== NAVIGATION ====================
-function showSection(id,reset=true){
-  if(reset){
-    if(id!=='explorer')explorerStack=[];
-    if(id!=='repertoire')resetRepFilters();
-  }
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  $(id+'Section').classList.add('active');
-  document.querySelectorAll('.nav-item[data-sec]').forEach(b=>b.classList.remove('active'));
-  const tb=document.querySelector(`.nav-item[data-sec="${id}"]`);
-  if(tb)tb.classList.add('active');
-  currentSection=id;
-  if(id==='repertoire')renderRepertoire();
-  else if(id==='explorer')renderExplorer();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function handleSectionClick(id){
-  if(currentSection===id){
-    if(window.scrollY>10)window.scrollTo({top:0,behavior:'smooth'});
-    else if(id==='repertoire'){resetRepFilters();toast('🔍 Filtres réinitialisés');}
-    else if(id==='explorer'){explorerStack=[];renderExplorer();toast('↺ Explorer réinitialisé');}
-  }else showSection(id,true);
-}
-
-function renderCurrent(){
-  if(currentSection==='repertoire')renderRepertoire();
-  else if(currentSection==='explorer')renderExplorer();
-}
-
-// ==================== EVENTS ====================
-$('filterTypeBtn').onclick=showTypeFilter;
-$('filterCatBtn').onclick=showCatFilter;
-$('filterVilleBtn').onclick=showVilleFilter;
-$('filterDomaineBtn').onclick=showDomaineFilter;
-$('filterResetBtn').onclick=()=>{resetRepFilters();toast('🔍 Filtres effacés');};
-$('searchInput').addEventListener('input',e=>{
-  repFilters.search=e.target.value;
-  $('repSearchWrap').classList.toggle('search-active',!!e.target.value);
-  renderRepertoire();
-  updateRepFilterUI();
-});
-$('searchClear').onclick=()=>{
-  repFilters.search='';
-  $('searchInput').value='';
-  $('repSearchWrap').classList.remove('search-active');
-  renderRepertoire();
-  updateRepFilterUI();
-};
-document.querySelectorAll('.nav-item[data-sec]').forEach(btn=>{btn.onclick=()=>handleSectionClick(btn.dataset.sec);});
-
-// ==================== THEME & CLOCK ====================
-let isDark=false;
-function toggleTheme(){
-  isDark=!isDark;document.body.classList.toggle('dark',isDark);
-  localStorage.setItem('theme',isDark?'dark':'light');
-  const icon=$('themeBtn').querySelector('i');
-  if(icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-}
-if(localStorage.getItem('theme')==='dark'){isDark=true;document.body.classList.add('dark');const icon=$('themeBtn').querySelector('i');if(icon) icon.className='fas fa-sun';}
-$('themeBtn').onclick=toggleTheme;
-
-function updateClock(){
-  const now=new Date();
-  $('appTime').textContent=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-}
-updateClock();
-setInterval(updateClock,1000);
-
-// ==================== GLOBALS ====================
-window.openDetailPage=openDetailPage;
-window.closeDetailPage=closeDetailPage;
-window.openAddPage=openAddPage;
-window.openEditPage=openEditPage;
-window.closeEditPage=closeEditPage;
-window.openDeletePage=openDeletePage;
-window.closeDeletePage=closeDeletePage;
-window.showListPage=showListPage;
-window.closeListPage=closeListPage;
-window.saveItem=saveItem;
-window.confirmDeleteItem=confirmDeleteItem;
-window.syncData=syncData;
-window.removeRepFilter=removeRepFilter;
-window.resetRepFilters=resetRepFilters;
-window.filterByTypeFromStats=filterByTypeFromStats;
-window.filterByCategorieFromStats=filterByCategorieFromStats;
-window.filterByVilleFromStats=filterByVilleFromStats;
-window.filterByDomaineFromStats=filterByDomaineFromStats;
-window.goExplorerLevel=goExplorerLevel;
-window.explorerNavigateTo=explorerNavigateTo;
-window.shareCard=shareCard;
-window.copyCard=copyCard;
-window.saveVCF=saveVCF;
-window._listSelectFn=_listSelectFn;
-
-// ==================== INIT ====================
+/* ═══ INIT ═══ */
+function icons(){const d=document.documentElement.dataset.theme==='dark';$('#thb').innerHTML=ic(d?'sun':'moon');const b=document.querySelectorAll('header .ib');b[1].innerHTML=ic('plus');b[2].innerHTML=ic('sync')}
+const clock=()=>{$('#clk').textContent=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})};
 async function init(){
-  showLoading(true);
-  const[experts,fours]=await Promise.all([loadCSV(CSV_EXPERTS),loadCSV(CSV_FOURNISSEURS)]);
-  csvExperts=experts;csvFournisseurs=fours;
+  icons();$('#sic').innerHTML=ic('search');$('#qx').innerHTML=ic('x');clock();setInterval(clock,1000);
+  const t0=Date.now();showLoading(false);
+  try{if(window.firebase){firebase.initializeApp(FB_CFG);S.fb=firebase.database()}}catch(x){console.warn('Firebase:',x)}
+  loadCSVs().catch(()=>{});
   await loadDB();
-  if(dbData.length===0){await syncData();await loadDB();}
-  setInterval(()=>{syncData().catch(()=>{});}, 60*60*1000);
-  setTimeout(()=>showLoading(false),600);
+  if(!S.db.length&&!S.off)await syncData(true);
+  document.addEventListener('click',ev=>{const el=ev.target.closest('[data-a]');if(el&&A[el.dataset.a])A[el.dataset.a](el.dataset.v,el)});
+  document.addEventListener('keydown',ev=>{if(ev.key==='Escape')closePage()});
+  $('#q').addEventListener('input',debounce(ev=>{S.f.q=ev.target.value;S.lim=60;renderRep()},200));
+  refresh();
+  setTimeout(()=>$('#ld').classList.add('off'),Math.max(0,600-(Date.now()-t0)));
+  if(S.off)toast('Mode hors ligne : lecture seule');
+  setInterval(()=>syncData(true),60*60*1000);
 }
 init();
+})();
 </script>
 </body>
 </html>
