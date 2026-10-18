@@ -295,11 +295,22 @@ h3.t::before{content:"";width:4px;height:14px;background:linear-gradient(180deg,
 .vrow{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
 .vrow:last-child{border-bottom:0}
 .vrow .vic{width:38px;height:38px;border-radius:10px;background:var(--teal-soft);color:var(--teal-600);
-  display:grid;place-items:center;flex:none;font-size:14px}
+  display:grid;place-items:center;flex:none;font-size:14px;transition:.18s}
 [data-theme=dark] .vrow .vic{color:var(--teal-400)}
 .vrow .vtxt{flex:1;min-width:0}
 .vrow .vk{font-size:11px;color:var(--ink-400);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em}
 .vrow .vv{font-size:14px;color:var(--ink-900);font-weight:500;overflow-wrap:anywhere}
+
+/* Clickable icon+value rows — like top buttons */
+.vrow-link{text-decoration:none;color:inherit;display:flex;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;border-radius:8px;transition:.18s;margin:0 -6px;padding-inline:6px}
+.vrow-link:last-child{border-bottom:0}
+.vrow-link:hover{background:var(--surface-hover)}
+.vrow-link:hover .vic{background:var(--teal-500);color:#fff;transform:scale(1.06);box-shadow:0 4px 12px var(--teal-glow)}
+.vrow-link:hover .vv{color:var(--teal-600)}
+[data-theme=dark] .vrow-link:hover .vv{color:var(--teal-400)}
+.vrow-link .vv{color:var(--teal-600)}
+[data-theme=dark] .vrow-link .vv{color:var(--teal-400)}
+.vrow-link .vtxt{flex:1;min-width:0}
 
 .acc-header{text-align:center;padding:8px 0 18px}
 .acc-avatar{width:88px;height:88px;border-radius:22px;margin:0 auto 14px;display:grid;place-items:center;
@@ -1134,9 +1145,6 @@ function getFacets() {
   return f;
 }
 
-/* ============================================================
-   DRAWER — with clear role switching
-   ============================================================ */
 function renderDrawer() {
   const isDark = document.documentElement.dataset.theme === 'dark';
   let userHtml;
@@ -1169,7 +1177,6 @@ function renderDrawer() {
   }
   $('#drawerUser').innerHTML = userHtml;
 
-  // Navigation
   const items = [
     { id: 'home', label: 'الرئيسية', sub: 'نظرة عامة', icon: 'fa-house' },
     { id: 'dir',  label: 'الدليل',   sub: 'ابحث عن شركة', icon: 'fa-address-book' },
@@ -1184,7 +1191,6 @@ function renderDrawer() {
       ${i.badge ? `<span class="badge">${i.badge}</span>` : ''}
     </button>`).join('');
 
-  // Tools
   body += `<div class="drawer-divider"></div>`;
   body += `<div class="drawer-section">أدوات</div>`;
   body += `
@@ -1198,7 +1204,6 @@ function renderDrawer() {
       <span class="label">${isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}<small>تبديل المظهر</small></span>
     </button>`;
 
-  // Admin-specific tools
   if (S.admin) {
     body += `<div class="drawer-divider"></div>`;
     body += `<div class="drawer-section">الإدارة</div>`;
@@ -1210,12 +1215,10 @@ function renderDrawer() {
       ${canAdd() ? `<button class="drawer-item" data-a="drawerAdd"><span class="ic"><i class="fa-solid fa-plus"></i></span><span class="label">إضافة شركة<small>ملف جديد</small></span></button>` : ''}`;
   }
 
-  // Account section — always shows state + action
   body += `<div class="drawer-divider"></div>`;
   body += `<div class="drawer-section">الحساب</div>`;
 
   if (S.admin) {
-    // Admin: show admin state + ability to switch to user or logout
     body += `
       <button class="drawer-item active" data-a="noop" style="cursor:default">
         <span class="ic" style="background:var(--amber-soft);color:var(--amber-600)"><i class="fa-solid fa-shield-halved"></i></span>
@@ -1230,7 +1233,6 @@ function renderDrawer() {
         <span class="label">الخروج من وضع المدير<small>للعودة إلى الزائر</small></span>
       </button>`;
   } else if (S.user) {
-    // User: show user state + ability to switch to admin or logout
     body += `
       <button class="drawer-item active" data-a="noop" style="cursor:default">
         <span class="ic"><i class="fa-solid fa-user"></i></span>
@@ -1249,7 +1251,6 @@ function renderDrawer() {
         <span class="label">تسجيل الخروج<small>من حساب العضو</small></span>
       </button>`;
   } else {
-    // Guest: show both login options
     body += `
       <button class="drawer-item" data-a="drawerLogin">
         <span class="ic"><i class="fa-solid fa-right-to-bracket"></i></span>
@@ -1556,22 +1557,26 @@ function dashboard() {
   </div>`;
 }
 
+/* ============================================================
+   PROFILE — clickable icon+value rows
+   ============================================================ */
 function profileHTML(r) {
   const p = fmtPhone(r.phone), w = url(r.web);
   const rows = [];
-  if (shown(r.domaine)) rows.push(['fa-industry', 'القطاع', esc(r.domaine)]);
-  if (shown(r.specialite)) rows.push(['fa-screwdriver-wrench', 'التخصص', esc(r.specialite)]);
-  if (r.ville) rows.push(['fa-location-dot', 'المدينة', esc(r.ville)]);
-  if (p) rows.push(['fa-phone', 'الهاتف', `<span dir="ltr">${esc(p)}</span>`]);
-  if (r.email) rows.push(['fa-envelope', 'البريد', `<span dir="ltr">${esc(r.email)}</span>`]);
-  if (w) rows.push(['fa-globe', 'الموقع', `<span dir="ltr">${esc(r.web)}</span>`]);
+  if (shown(r.domaine)) rows.push({ type: 'static', icon: 'fa-industry', k: 'القطاع', v: esc(r.domaine) });
+  if (shown(r.specialite)) rows.push({ type: 'static', icon: 'fa-screwdriver-wrench', k: 'التخصص', v: esc(r.specialite) });
+  if (r.ville) rows.push({ type: 'static', icon: 'fa-location-dot', k: 'المدينة', v: esc(r.ville) });
+  if (p) rows.push({ type: 'link', icon: 'fa-phone', k: 'الهاتف', v: esc(p), href: `tel:${esc(p)}`, title: 'اتصال', ltr: true });
+  if (r.email) rows.push({ type: 'link', icon: 'fa-envelope', k: 'البريد', v: esc(r.email), href: `mailto:${esc(r.email)}`, title: 'إرسال بريد', ltr: true });
+  if (w) rows.push({ type: 'link', icon: 'fa-globe', k: 'الموقع', v: esc(r.web), href: esc(w), title: 'فتح الموقع', ltr: true, target: '_blank' });
 
   const vtags = `<span class="vtag">${esc(TL[r.type])}</span><span class="vtag">${esc(CL[r.categorie])}</span>${r.verified ? '<span class="vtag v"><i class="fa-solid fa-circle-check"></i> موثّق</span>' : ''}`;
   const profileUrl = `${location.origin}${location.pathname}#p=${r.id}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(profileUrl)}&color=0B1F3A&bgcolor=FFFFFF&margin=0`;
 
+  // Top buttons — NO phone call button (it's now on the phone row)
+  // Kept: WhatsApp, Share, PDF, Key, Edit, Verify, Delete, Close
   const topBtns = [
-    p && `<a class="ptbtn" href="tel:${esc(p)}" title="اتصال" aria-label="اتصال"><i class="fa-solid fa-phone"></i></a>`,
     p && `<a class="ptbtn wa" href="https://wa.me/${esc(p.replace(/\D/g, ''))}" target="_blank" rel="noopener" title="واتساب" aria-label="واتساب"><i class="fa-brands fa-whatsapp"></i></a>`,
     `<button class="ptbtn" data-a="shr" data-v="${esc(r.id)}" title="مشاركة" aria-label="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>`,
     `<button class="ptbtn pdf" data-a="pdf" data-v="${esc(r.id)}" title="PDF" aria-label="PDF"><i class="fa-solid fa-file-pdf"></i></button>`,
@@ -1581,6 +1586,19 @@ function profileHTML(r) {
     S.admin && `<button class="ptbtn del" data-a="del" data-v="${esc(r.id)}" title="حذف" aria-label="حذف"><i class="fa-solid fa-trash"></i></button>`,
     `<button class="ptbtn close" data-a="cls" title="إغلاق" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>`
   ].filter(Boolean).join('');
+
+  const rowHtml = row => {
+    if (row.type === 'link') {
+      return `<a class="vrow-link" href="${row.href}" ${row.target ? `target="${row.target}" rel="noopener"` : ''} title="${esc(row.title)}">
+        <div class="vic"><i class="fa-solid ${row.icon}"></i></div>
+        <div class="vtxt"><div class="vk">${row.k}</div><div class="vv" ${row.ltr ? 'dir="ltr"' : ''}>${row.v}</div></div>
+      </a>`;
+    }
+    return `<div class="vrow">
+      <div class="vic"><i class="fa-solid ${row.icon}"></i></div>
+      <div class="vtxt"><div class="vk">${row.k}</div><div class="vv">${row.v}</div></div>
+    </div>`;
+  };
 
   return `<div class="vcard">
     <div class="prof-top-actions">${topBtns}</div>
@@ -1592,7 +1610,7 @@ function profileHTML(r) {
       <div class="vtags">${vtags}</div>
     </div>
     <div class="vbody">
-      ${rows.map(([ic, k, v]) => `<div class="vrow"><div class="vic"><i class="fa-solid ${ic}"></i></div><div class="vtxt"><div class="vk">${k}</div><div class="vv">${v}</div></div></div>`).join('')}
+      ${rows.map(rowHtml).join('')}
     </div>
   </div>`;
 }
@@ -1696,7 +1714,6 @@ function adminUI() {
   if ($('#drawer').classList.contains('on')) renderDrawer();
 }
 function adm() {
-  // If already admin — confirm switching out
   if (S.admin) {
     S.admin = false;
     sessionStorage.removeItem('cp-admin');
@@ -1705,11 +1722,9 @@ function adm() {
     adminUI();
     toast('تم الخروج من وضع المدير');
     go(S.tab);
-    // Re-open drawer so user can choose next action
     setTimeout(openDrawer, 400);
     return;
   }
-  // If user is logged in — need to decide what to do
   if (S.user) {
     if (!confirm('أنت مسجل كعضو. سيتم تسجيل الخروج من حساب العضو للدخول كمدير. متابعة؟')) return;
     S.user = null;
@@ -2018,7 +2033,6 @@ async function doLogin() {
       trapFocus($('.mb'));
       return;
     }
-    // If previously admin — clear admin mode
     if (S.admin) {
       S.admin = false;
       sessionStorage.removeItem('cp-admin');
@@ -2466,9 +2480,6 @@ async function udel(id) {
   } catch { toast('خطأ'); }
 }
 
-/* ============================================================
-   EVENTS — helpers for role switching
-   ============================================================ */
 function logoutUser() {
   S.user = null;
   saveSess();
@@ -2508,17 +2519,11 @@ const A = {
   drawerAdminLogin() { closeDrawer(); setTimeout(adm, 200); },
   drawerLogout() {
     closeDrawer();
-    setTimeout(() => {
-      logoutUser();
-      setTimeout(openDrawer, 300);
-    }, 150);
+    setTimeout(() => { logoutUser(); setTimeout(openDrawer, 300); }, 150);
   },
   drawerAdminLogout() {
     closeDrawer();
-    setTimeout(() => {
-      logoutAdmin();
-      setTimeout(openDrawer, 300);
-    }, 150);
+    setTimeout(() => { logoutAdmin(); setTimeout(openDrawer, 300); }, 150);
   },
   drawerAdminToUser() {
     closeDrawer();
