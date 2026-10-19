@@ -1,2070 +1,598 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-<meta name="theme-color" content="#075E54">
-<title>Connect Pro · منصة التواصل المهني</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Connect Pro — منصة التواصل المهني B2B</title>
+<meta name="theme-color" content="#0E1B2C">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('cp-theme')||'light'}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --whatsapp-dark: #075E54;
-  --whatsapp-light: #128C7E;
-  --whatsapp-teal: #25D366;
-  --whatsapp-bg-dark: #1a1a1a;
-  --whatsapp-bg-light: #ece5dd;
-  --whatsapp-message-out: #dcf8c5;
-  --whatsapp-message-in: #ffffff;
-  --gray-1: #f0f2f5;
-  --gray-2: #e4e6eb;
-  --gray-3: #c4c9d1;
-  --gray-4: #8e8e94;
-  --gray-5: #3b3b3b;
-}
-
-body {
-  background: linear-gradient(135deg, var(--whatsapp-bg-dark), #0a3d32);
-  color: #ffffff;
-  font-family: 'Cairo', 'Tajawal', sans-serif;
-  overflow-x: hidden;
-  min-height: 100vh;
-}
-
-body.light {
-  background: var(--whatsapp-bg-light);
-  color: #111b21;
-}
-
-/* === WHATSAPP STYLE HEADER === */
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--whatsapp-dark);
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 200;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-bottom: none;
-  backdrop-filter: none;
-  height: 60px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-mark {
-  width: 36px;
-  height: 36px;
-  background: var(--whatsapp-teal);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 900;
-  font-size: 16px;
-  color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.logo-text h1 {
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: -0.3px;
-}
-
-.logo-text p {
-  font-size: 10px;
-  color: rgba(255,255,255,0.8);
-  font-weight: 400;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.hbtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  border: none;
-  cursor: pointer;
-  color: white;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.hbtn:hover {
-  background: rgba(255,255,255,0.2);
-}
-
-.hbtn.admin-active {
-  background: var(--whatsapp-teal);
-  color: white;
-}
-
-/* === BOTTOM NAV (WhatsApp style) === */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: var(--whatsapp-dark);
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 8px;
-  z-index: 200;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: rgba(255,255,255,0.7);
-  min-width: 70px;
-  position: relative;
-}
-
-.nav-item i { font-size: 22px; }
-.nav-item span { font-size: 11px; font-weight: 600; }
-
-.nav-item.active {
-  color: var(--whatsapp-teal);
-  background: rgba(37,211,102,0.1);
-}
-
-.nav-badge {
-  position: absolute;
-  top: 2px;
-  right: 12px;
-  background: var(--whatsapp-teal);
-  color: white;
-  font-size: 9px;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-}
-
-body.light .bottom-nav {
-  background: white;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-}
-
-body.light .nav-item {
-  color: #54656f;
-}
-
-body.light .nav-item.active {
-  color: var(--whatsapp-light);
-}
-
-/* === MAIN CONTENT === */
-.main {
-  padding: 76px 12px 76px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.section {
-  display: none;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.section.active { display: block; }
-
-/* === WHATSAPP STYLE CARDS === */
-.card {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-body.light .card {
-  background: white;
-  border: 1px solid var(--gray-2);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* === STATS (Smaller) === */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.stat-card {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 14px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  background: rgba(255,255,255,0.1);
-}
-
-.stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.stat-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  font-weight: 500;
-}
-
-body.light .stat-label { color: #54656f; }
-body.light .stat-card { background: white; border-color: var(--gray-2); }
-body.light .stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-/* === CATEGORY PILLS (Smaller) === */
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.cat-pill {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
-
-.cat-pill:hover {
-  transform: translateY(-2px);
-  background: rgba(255,255,255,0.1);
-}
-
-.cat-pill-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  margin-bottom: 6px;
-}
-
-.cat-pill-name {
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.cat-pill-count {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-body.light .cat-pill { background: white; border-color: var(--gray-2); }
-
-/* === SEARCH BAR (WhatsApp Style) === */
-.search-wrap {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 24px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  transition: all 0.2s;
-}
-
-.search-wrap:focus-within {
-  border-color: var(--whatsapp-teal);
-  box-shadow: 0 0 0 2px rgba(37,211,102,0.2);
-}
-
-.search-wrap i { color: rgba(255,255,255,0.6); font-size: 16px; }
-.search-wrap input {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: white;
-  font-family: inherit;
-}
-
-.search-wrap input::placeholder { color: rgba(255,255,255,0.5); }
-.search-wrap .clear-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(255,255,255,0.5);
-  font-size: 16px;
-  padding: 0 6px;
-  transition: all 0.2s;
-}
-
-body.light .search-wrap {
-  background: white;
-  border-color: var(--gray-2);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-body.light .search-wrap input { color: #111b21; }
-body.light .search-wrap input::placeholder { color: var(--gray-4); }
-body.light .search-wrap i { color: var(--gray-4); }
-
-/* === FILTER BUTTON (WhatsApp Style) === */
-.filter-toggle-btn {
-  background: rgba(37,211,102,0.15);
-  border: 1px solid rgba(37,211,102,0.3);
-  border-radius: 24px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  margin-bottom: 12px;
-  transition: all 0.2s;
-  color: white;
-}
-
-.filter-toggle-btn:hover {
-  background: rgba(37,211,102,0.25);
-}
-
-.filter-toggle-btn i { font-size: 14px; }
-.filter-toggle-btn span { font-size: 13px; font-weight: 600; }
-
-body.light .filter-toggle-btn {
-  background: var(--whatsapp-light);
-  border-color: var(--whatsapp-light);
-  color: white;
-}
-
-/* === FILTER PANEL (Compact) === */
-.filter-panel {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 16px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  display: none;
-}
-
-.filter-panel.open { display: block; }
-
-.filter-body {
-  padding: 12px;
-}
-
-.filter-row {
-  margin-bottom: 12px;
-}
-
-.filter-row-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.filter-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.fchip {
-  padding: 4px 10px;
-  border-radius: 20px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.8);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  font-family: inherit;
-}
-
-.fchip:hover { background: rgba(255,255,255,0.15); }
-.fchip.selected { background: var(--whatsapp-teal); border-color: var(--whatsapp-teal); color: white; }
-
-.filter-actions {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  gap: 8px;
-}
-
-.filter-reset-btn {
-  padding: 6px 12px;
-  border-radius: 20px;
-  background: rgba(233,69,96,0.15);
-  border: 1px solid rgba(233,69,96,0.3);
-  color: #e94560;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-body.light .filter-panel {
-  background: white;
-  border-color: var(--gray-2);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-body.light .filter-row-label { color: #54656f; }
-body.light .fchip {
-  background: var(--gray-1);
-  border-color: var(--gray-2);
-  color: #111b21;
-}
-body.light .fchip.selected { background: var(--whatsapp-light); color: white; }
-
-/* Active filter tags */
-.active-filter-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.aft {
-  background: rgba(37,211,102,0.15);
-  border: 1px solid rgba(37,211,102,0.3);
-  color: var(--whatsapp-teal);
-  padding: 3px 8px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.aft button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: currentColor;
-  font-size: 11px;
-  line-height: 1;
-  padding: 0;
-}
-
-.results-count {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.results-count span { color: var(--whatsapp-teal); font-weight: 700; }
-
-body.light .results-count { color: #54656f; }
-
-/* === CONTACT CARDS (WhatsApp Chat Style) === */
-.contact-list { display: flex; flex-direction: column; gap: 8px; }
-
-.contact-card {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid rgba(255,255,255,0.08);
-  position: relative;
-}
-
-.contact-card:hover {
-  transform: translateX(-3px);
-  background: rgba(255,255,255,0.08);
-}
-
-.avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 800;
-  color: white;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, var(--whatsapp-teal), var(--whatsapp-light));
-}
-
-.avatar.expert { background: linear-gradient(135deg, #128C7E, #075E54); }
-
-.contact-main { flex: 1; min-width: 0; }
-.contact-name {
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.contact-sub {
-  font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.contact-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-.cc {
-  font-size: 8px;
-  padding: 2px 6px;
-  border-radius: 8px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.cc-supplier { background: rgba(37,211,102,0.15); color: var(--whatsapp-teal); }
-.cc-expert { background: rgba(18,140,126,0.15); color: #128C7E; }
-.cc-sector { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
-
-.contact-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.cact {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  border: none;
-  cursor: pointer;
-  color: rgba(255,255,255,0.6);
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-}
-
-.cact:hover {
-  background: rgba(255,255,255,0.15);
-  color: white;
-}
-
-.cact.bookmarked { color: var(--whatsapp-teal); }
-
-body.light .contact-card {
-  background: white;
-  border-color: var(--gray-2);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
-
-body.light .contact-sub { color: #54656f; }
-body.light .cact { color: #54656f; background: var(--gray-1); }
-body.light .cact:hover { background: var(--gray-2); }
-body.light .cc-sector { background: var(--gray-1); color: #54656f; }
-
-/* === MODALS (Centered) === */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.8);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
-}
-
-.overlay.show {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.sheet {
-  background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
-  border-radius: 24px;
-  width: 90%;
-  max-width: 480px;
-  max-height: 85vh;
-  overflow-y: auto;
-  transform: scale(0.95);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.overlay.show .sheet {
-  transform: scale(1);
-}
-
-body.light .sheet {
-  background: white;
-  border-color: var(--gray-2);
-}
-
-.sheet-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  background: inherit;
-  z-index: 1;
-  border-radius: 24px 24px 0 0;
-}
-
-.sheet-title {
-  font-size: 18px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sheet-close {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  cursor: pointer;
-  color: rgba(255,255,255,0.6);
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.sheet-close:hover {
-  background: rgba(255,255,255,0.1);
-  color: white;
-}
-
-.sheet-body { padding: 20px; }
-.sheet-footer {
-  padding: 12px 20px 20px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  position: sticky;
-  bottom: 0;
-  background: inherit;
-  border-radius: 0 0 24px 24px;
-}
-
-/* Profile */
-.profile-avatar-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  font-weight: 900;
-  color: white;
-  margin: 0 auto 12px;
-  background: linear-gradient(135deg, var(--whatsapp-teal), var(--whatsapp-light));
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.profile-head { text-align: center; margin-bottom: 20px; }
-.profile-name { font-size: 20px; font-weight: 900; margin-bottom: 6px; }
-
-.info-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.info-row:last-child { border-bottom: none; }
-
-.info-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: var(--whatsapp-teal);
-  flex-shrink: 0;
-}
-
-.info-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.5);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 2px;
-}
-
-.info-value {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-body.light .info-row { border-bottom-color: var(--gray-2); }
-body.light .info-label { color: var(--gray-4); }
-body.light .info-icon { background: var(--gray-1); }
-
-/* Buttons */
-.btn {
-  padding: 8px 16px;
-  border-radius: 24px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: var(--whatsapp-teal);
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #20b959;
-  transform: translateY(-1px);
-}
-
-.btn-ghost {
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.8);
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.btn-ghost:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-.btn-danger {
-  background: rgba(233,69,96,0.15);
-  color: #e94560;
-  border: 1px solid rgba(233,69,96,0.3);
-}
-
-.btn-danger:hover {
-  background: #e94560;
-  color: white;
-}
-
-body.light .btn-ghost {
-  background: var(--gray-1);
-  border-color: var(--gray-2);
-  color: #111b21;
-}
-
-body.light .btn-ghost:hover {
-  background: var(--gray-2);
-}
-
-/* Form */
-.form-group { margin-bottom: 14px; }
-.form-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.6);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.form-input, .form-select {
-  width: 100%;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 12px;
-  font-size: 14px;
-  color: white;
-  transition: all 0.2s;
-  font-family: inherit;
-  outline: none;
-}
-
-.form-input:focus, .form-select:focus {
-  border-color: var(--whatsapp-teal);
-  box-shadow: 0 0 0 2px rgba(37,211,102,0.2);
-}
-
-body.light .form-input, body.light .form-select {
-  background: white;
-  border-color: var(--gray-2);
-  color: #111b21;
-}
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: #323232;
-  color: white;
-  padding: 8px 20px;
-  border-radius: 24px;
-  font-size: 13px;
-  font-weight: 600;
-  z-index: 1100;
-  opacity: 0;
-  pointer-events: none;
-  transition: 0.25s;
-  white-space: nowrap;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* Loading */
-.loading {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.9);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-
-.loading.gone { display: none; }
-
-.loading-ring {
-  width: 50px;
-  height: 50px;
-  border: 3px solid rgba(37,211,102,0.2);
-  border-top-color: var(--whatsapp-teal);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-text { font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 500; }
-
-/* Empty */
-.empty {
-  text-align: center;
-  padding: 40px 20px;
-}
-
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
-.empty-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-.empty-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
-
-body.light .empty-sub { color: #54656f; }
-
-/* Chart */
-.chart-card {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.chart-wrap { height: 200px; position: relative; }
-
-/* Responsive */
-@media (max-width: 500px) {
-  .stats-grid { gap: 6px; }
-  .stat-value { font-size: 16px; }
-  .stat-label { font-size: 9px; }
-  .cat-pill-name { font-size: 10px; }
-  .cat-pill-count { font-size: 14px; }
-}
+:root{
+  --ink:#0E1B2C;--ink2:#35465C;--mute:#6B7A8F;--line:#E3E7ED;--bg:#EEF1F5;--sf:#fff;--sf2:#F6F8FA;
+  --or:#FF6A1A;--or2:#FF9A3D;--orsoft:rgba(255,106,26,.12);--teal:#0F766E;--red:#DC2626;--green:#16A34A;
+  --sh:0 1px 2px rgba(14,27,44,.06),0 8px 24px -12px rgba(14,27,44,.18);
+  --hd:rgba(255,255,255,.82);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  color-scheme:light}
+[data-theme=dark]{--ink:#EAF0F8;--ink2:#B8C4D4;--mute:#8393A8;--line:#22314A;--bg:#0A111C;--sf:#111C2C;--sf2:#16243A;
+  --orsoft:rgba(255,138,61,.16);--sh:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.6);--hd:rgba(10,17,28,.8);color-scheme:dark}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html,body{overflow-x:hidden}
+body{font:14px/1.55 'IBM Plex Sans Arabic',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(900px 420px at 100% -10%,var(--orsoft),transparent 60%)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+/* top bar */
+header{position:fixed;inset:0 0 auto;z-index:30;padding-top:var(--st);background:var(--hd);
+  backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+.hin{max-width:1000px;margin:0 auto;height:64px;display:flex;align-items:center;gap:10px;padding:0 14px}
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(140deg,var(--or),var(--or2));color:#fff;display:grid;place-items:center;font-size:18px;flex:none;box-shadow:0 6px 16px -6px var(--or)}
+.brand b{display:block;font-size:17px;font-weight:700;line-height:1.2}
+.brand small{display:block;color:var(--mute);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acts{display:flex;gap:6px;flex:none}
+.ib{height:42px;min-width:42px;padding:0 12px;border-radius:14px;background:var(--sf);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:13px;transition:.15s;color:var(--ink2)}
+.ib:hover{border-color:var(--or);color:var(--or)}
+.ib.pri{background:linear-gradient(140deg,var(--or),var(--or2));border-color:transparent;color:#fff}
+.ib.pri:hover{color:#fff;filter:brightness(1.06)}
+.ib.on{background:var(--ink);color:var(--or2);border-color:var(--ink)}
+.ib.out:hover{border-color:var(--red);color:var(--red)}
+.ib .t{display:none}
+@media(min-width:720px){.ib .t{display:inline}}
+.ava{width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff}
+
+main{max-width:1000px;margin:0 auto;padding:calc(84px + var(--st)) 14px calc(110px + var(--sb))}
+.tab{display:none}.tab.on{display:block;animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+h3.t{font-size:15px;font-weight:700;margin:26px 0 12px;display:flex;align-items:center;gap:8px}
+h3.t::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--or)}
+
+/* hero */
+.hero{border-radius:24px;padding:28px 24px;background:linear-gradient(135deg,#0E1B2C 0%,#16304F 100%);color:#fff;position:relative;overflow:hidden;box-shadow:var(--sh)}
+.hero::after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;inset-inline-end:-70px;top:-90px;background:radial-gradient(circle,rgba(255,106,26,.55),transparent 65%)}
+.hero h2{font-size:22px;font-weight:700;line-height:1.35;position:relative;z-index:1}
+.hero p{margin-top:8px;color:rgba(255,255,255,.72);font-size:13.5px;max-width:460px;position:relative;z-index:1}
+.adm{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:12px 16px;border-radius:16px;background:var(--ink);color:var(--or2);font-weight:600;font-size:13px}
+.adm i{font-size:16px}.adm small{color:var(--mute);font-weight:500;margin-inline-start:auto}
+
+/* stats */
+.g4{display:grid;gap:10px;grid-template-columns:repeat(2,1fr);margin-top:14px}
+@media(min-width:620px){.g4{grid-template-columns:repeat(4,1fr)}}
+.sc{background:var(--sf);border:1px solid var(--line);border-radius:20px;padding:16px;text-align:start;box-shadow:var(--sh);transition:.18s;display:flex;flex-direction:column;gap:2px}
+.sc:hover{transform:translateY(-3px);border-color:var(--or)}
+.sc i{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--orsoft);color:var(--or);margin-bottom:10px;font-size:15px}
+.sc b{font-size:26px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.sc span{color:var(--mute);font-size:12px;font-weight:500}
+.seg{display:flex;height:10px;border-radius:99px;overflow:hidden;gap:3px}.seg i{display:block;min-width:4px;border-radius:99px}
+.cols{display:grid;gap:12px;grid-template-columns:1fr;margin-top:6px}
+@media(min-width:640px){.cols{grid-template-columns:1fr 1fr}}
+.pn{background:var(--sf);border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:var(--sh)}
+.pn>b{font-size:13px;color:var(--ink2);display:block;margin-bottom:8px}
+.sl{max-height:250px;overflow-y:auto}
+.bar{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:40px;padding:0 12px;border-radius:12px;overflow:hidden;margin-top:4px;background:var(--sf2);font-size:13px;font-weight:500}
+.bar i{position:absolute;inset-block:0;inset-inline-start:0;background:var(--orsoft)}
+.bar span,.bar b{position:relative}.bar b{font-size:12px;color:var(--or);font-weight:700}
+
+/* search */
+.sr{display:flex;align-items:center;gap:8px;height:52px;padding:0 8px 0 14px;background:var(--sf);border:1.5px solid var(--line);border-radius:18px;box-shadow:var(--sh);transition:.15s}
+.sr:focus-within{border-color:var(--or);box-shadow:0 0 0 4px var(--orsoft)}
+.sr>i{color:var(--or)}.sr input{flex:1;min-width:0;height:100%;border:0;background:none;outline:0;font-size:14.5px}
+.sr input::placeholder{color:var(--mute)}
+.sr button{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--mute);position:relative;flex:none}
+.sr .fb{background:var(--ink);color:var(--or2)}
+.bub{position:absolute;top:-5px;inset-inline-end:-5px;min-width:18px;height:18px;border-radius:9px;background:var(--or);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.chips:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 6px 0 12px;border-radius:99px;background:var(--orsoft);color:var(--or);font-weight:600;font-size:12px}
+.chip button{width:20px;height:20px;border-radius:50%;background:var(--or);color:#fff;font-size:9px;display:grid;place-items:center}
+.inf{color:var(--mute);font-size:12.5px;margin:12px 2px 10px;font-weight:500}
+
+/* cards */
+.ls{display:grid;gap:10px}
+@media(min-width:720px){.ls{grid-template-columns:1fr 1fr}}
+.card{display:flex;align-items:center;gap:12px;padding:14px;background:var(--sf);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);cursor:pointer;transition:.18s;min-width:0}
+.card:hover{transform:translateY(-2px);border-color:var(--or)}
+.av{width:48px;height:48px;border-radius:16px;color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;flex:none}
+.cm{flex:1;min-width:0}
+.cm b{display:flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm small{display:block;color:var(--mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.tg{font-size:10.5px;padding:2px 9px;border-radius:99px;background:var(--sf2);color:var(--ink2);font-weight:600;border:1px solid var(--line)}
+.tg.a{background:var(--ink);color:var(--or2);border-color:var(--ink)}
+.vb{color:var(--teal)}
+.ca{display:flex;flex-direction:column;gap:2px;flex:none}
+.ca button{width:32px;height:32px;border-radius:10px;color:var(--mute);font-size:13px}
+.ca button:hover{background:var(--sf2);color:var(--ink)}.ca .fv.on{color:#F5B301}.ca .dl:hover{color:var(--red)}
+.me{display:flex;align-items:center;gap:12px;padding:14px;margin-bottom:12px;border-radius:20px;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--teal),#115E59);box-shadow:var(--sh)}
+.me .av{background:rgba(255,255,255,.2)}.me b{display:block}.me small{opacity:.8}
+.em{text-align:center;padding:46px 16px;border:2px dashed var(--line);border-radius:20px;color:var(--mute);background:var(--sf)}
+.em i{font-size:30px;display:block;margin-bottom:10px;color:var(--or)}.em b{display:block;color:var(--ink);margin-bottom:2px}
+
+/* explorer */
+.cr{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:12px 0;font-size:12.5px}
+.cr button{padding:5px 12px;border-radius:99px;background:var(--sf);border:1px solid var(--line);font-weight:600}
+.cr button:last-child{background:var(--ink);color:var(--or2);border-color:var(--ink)}.cr i{font-size:9px;color:var(--mute)}
+.rw{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;margin-bottom:8px;border-radius:16px;background:var(--sf);border:1px solid var(--line);text-align:start;font-weight:600;transition:.15s}
+.rw:hover{border-color:var(--or);transform:translateX(-3px)}
+.rw>i:first-child{width:36px;height:36px;border-radius:12px;background:var(--orsoft);color:var(--or);display:grid;place-items:center;font-size:14px}
+.rw span{flex:1}.rw em{font-style:normal;font-size:12px;background:var(--ink);color:var(--or2);padding:2px 10px;border-radius:99px}
+.rw>i:last-child{font-size:10px;color:var(--mute)}
+
+/* buttons */
+.bt{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:14px;font-weight:700;background:linear-gradient(140deg,var(--or),var(--or2));color:#fff;transition:.15s}
+.bt:hover{filter:brightness(1.07)}.bt:disabled{opacity:.5}
+.bt.g{background:var(--sf2);color:var(--ink);border:1px solid var(--line)}
+.bt.d{background:var(--red)}.bt.w{background:#25D366}.bt.full{width:100%}
+.bt.k{background:var(--ink);color:var(--or2)}
+
+/* sheet */
+#md{position:fixed;inset:0;z-index:60;background:rgba(6,12,22,.6);backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center}
+#md.on{display:flex}
+@media(min-width:620px){#md{align-items:center;padding:16px}}
+.sheet{width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:var(--sf);border-radius:28px 28px 0 0;padding:22px 20px calc(22px + var(--sb));box-shadow:var(--sh);animation:up .25s cubic-bezier(.2,.9,.3,1)}
+@media(min-width:620px){.sheet{border-radius:28px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.sheet h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.lead{color:var(--mute);font-size:12.5px;margin-bottom:16px}
+.fl{display:block;margin-bottom:12px}.fl span{display:block;font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+.fl input,.fl select{width:100%;height:46px;padding:0 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--sf2);font-size:14px}
+.fl input:focus,.fl select:focus{outline:0;border-color:var(--or);box-shadow:0 0 0 4px var(--orsoft)}
+.fl.er input{border-color:var(--red)}
+.ac{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}.ac .full{grid-column:1/-1}
+.sw{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--sf2);border-radius:14px;margin-bottom:16px}
+.sw button{height:38px;border-radius:11px;font-weight:700;color:var(--mute)}.sw .on{background:var(--ink);color:var(--or2)}
+.fg{margin-bottom:16px}.fg>b{display:block;font-size:12.5px;margin-bottom:8px;color:var(--ink2)}
+.cs{display:flex;flex-wrap:wrap;gap:6px;max-height:150px;overflow-y:auto}
+.opt{padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--sf2);font-weight:600;font-size:12.5px}
+.opt i{font-style:normal;color:var(--mute);margin-inline-start:4px;font-size:11px}
+.opt.on{background:var(--or);border-color:var(--or);color:#fff}.opt.on i{color:#fff}
+
+/* profile */
+.ph{margin:-22px -20px 0;padding:30px 20px 22px;text-align:center;color:#fff;background:linear-gradient(135deg,#0E1B2C,#16304F);border-radius:28px 28px 0 0;position:relative;overflow:hidden}
+@media(min-width:620px){.ph{border-radius:28px 28px 0 0}}
+.ph::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;inset-inline-end:-60px;top:-80px;background:radial-gradient(circle,rgba(255,106,26,.5),transparent 65%)}
+.pl{width:76px;height:76px;border-radius:24px;margin:0 auto 12px;background:linear-gradient(140deg,var(--or),var(--or2));display:grid;place-items:center;font-size:30px;position:relative;z-index:1;box-shadow:0 10px 24px -8px var(--or)}
+.pn2{font-size:19px;font-weight:700;position:relative;z-index:1}.ps{font-size:12.5px;opacity:.7;margin-top:2px;position:relative;z-index:1}
+.ph .tags{justify-content:center;position:relative;z-index:1}.ph .tg{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff}
+.pa{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0 6px}
+.pa .ib{height:40px}
+.vr{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}.vr:last-child{border:0}
+.vr>i,.vr>a{width:38px;height:38px;border-radius:12px;background:var(--orsoft);color:var(--or);display:grid;place-items:center;flex:none}
+.vr small{display:block;color:var(--mute);font-size:11px;font-weight:600}.vr b{font-weight:600;overflow-wrap:anywhere}
+.acc{text-align:center}.acc .av{margin:0 auto 10px;width:70px;height:70px;font-size:24px;border-radius:22px}
+
+/* nav */
+#bn{position:fixed;inset-inline:0;bottom:calc(12px + var(--sb));margin:auto;width:min(420px,calc(100% - 28px));z-index:29;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border-radius:24px;background:var(--hd);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:0 16px 40px -16px rgba(0,0,0,.4)}
+.bi{height:54px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:600;color:var(--mute);position:relative;transition:.2s}
+.bi i{font-size:16px}.bi.on{background:var(--ink);color:var(--or2)}
+.bi .bub{top:4px;inset-inline-end:22px}
+#ts{position:fixed;inset-inline:0;bottom:calc(88px + var(--sb));margin:auto;width:max-content;max-width:calc(100% - 32px);z-index:90;background:var(--ink);color:var(--sf);padding:12px 18px;border-radius:14px;font-weight:600;font-size:13px;display:flex;gap:12px;align-items:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s;box-shadow:var(--sh)}
+#ts.on{opacity:1;transform:none;pointer-events:auto}#ts button{color:var(--or);font-weight:700}
+[data-theme=dark] #ts{background:var(--sf2);color:var(--ink)}
+#ld{position:fixed;inset:0;z-index:99;background:var(--bg);display:none;place-items:center}#ld.on{display:grid}
+#ld i{font-size:36px;color:var(--or);animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div id="ld" class="on"><i class="fa-solid fa-circle-notch"></i></div>
 
-<header class="header">
-  <div class="logo">
-    <div class="logo-mark"><i class="fas fa-handshake"></i></div>
-    <div class="logo-text">
-      <h1>Connect Pro</h1>
-      <p>منصة التواصل المهني</p>
-    </div>
-  </div>
-  <div class="header-actions">
-    <button class="hbtn" id="themeBtn" title="الوضع الليلي/النهاري"><i class="fas fa-circle-half-stroke"></i></button>
-    <button class="hbtn" id="adminBtn" title="لوحة المدير"><i class="fas fa-shield-halved"></i></button>
-    <button class="hbtn admin-only" id="addBtn" title="إضافة ملف" style="display:none"><i class="fas fa-plus"></i></button>
-  </div>
-</header>
+<header><div class="hin">
+  <div class="brand"><div class="logo"><i class="fa-solid fa-briefcase"></i></div>
+    <div><b>Connect Pro</b><small id="sub">شبكة الأعمال الصناعية</small></div></div>
+  <div class="acts" id="acts"></div>
+</div></header>
 
-<main class="main">
-
-  <!-- DASHBOARD -->
-  <section id="dashSection" class="section active">
-    <div class="stats-grid">
-      <div class="stat-card" onclick="quickNav('directory','type','fournisseurs')">
-        <div class="stat-icon"><i class="fas fa-industry"></i></div>
-        <div class="stat-value" id="stSuppliers">0</div>
-        <div class="stat-label">الموردين</div>
-      </div>
-      <div class="stat-card" onclick="quickNav('directory','type','experts')">
-        <div class="stat-icon"><i class="fas fa-microchip"></i></div>
-        <div class="stat-value" id="stExperts">0</div>
-        <div class="stat-label">الخبراء</div>
-      </div>
-      <div class="stat-card" onclick="quickNavPicker('ville')">
-        <div class="stat-icon"><i class="fas fa-map-pin"></i></div>
-        <div class="stat-value" id="stCities">0</div>
-        <div class="stat-label">المدن</div>
-      </div>
-      <div class="stat-card" onclick="quickNavPicker('domaine')">
-        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-        <div class="stat-value" id="stSectors">0</div>
-        <div class="stat-label">القطاعات</div>
-      </div>
-    </div>
-
-    <div class="cat-grid">
-      <div class="cat-pill" onclick="quickNav('directory','categorie','services')">
-        <div class="cat-pill-icon"><i class="fas fa-cogs"></i></div>
-        <div class="cat-pill-name">خدمات</div>
-        <div class="cat-pill-count" id="ccServices">0</div>
-      </div>
-      <div class="cat-pill" onclick="quickNav('directory','categorie','products')">
-        <div class="cat-pill-icon"><i class="fas fa-boxes-stacked"></i></div>
-        <div class="cat-pill-name">منتجات</div>
-        <div class="cat-pill-count" id="ccProducts">0</div>
-      </div>
-      <div class="cat-pill" onclick="quickNav('directory','categorie','maqola')">
-        <div class="cat-pill-icon"><i class="fas fa-hard-hat"></i></div>
-        <div class="cat-pill-name">مقاولة</div>
-        <div class="cat-pill-count" id="ccMaqola">0</div>
-      </div>
-      <div class="cat-pill" onclick="quickNav('directory','categorie','yad-amila')">
-        <div class="cat-pill-icon"><i class="fas fa-hands"></i></div>
-        <div class="cat-pill-name">يد عاملة</div>
-        <div class="cat-pill-count" id="ccYadAmila">0</div>
-      </div>
-    </div>
-
-    <div class="sync-card admin-only" id="syncCard" onclick="syncToFirebase()" style="display:none">
-      <div style="display:flex;align-items:center;gap:10px;padding:10px;background:rgba(37,211,102,0.1);border-radius:12px;margin-bottom:12px;cursor:pointer">
-        <i class="fas fa-cloud-arrow-up" style="font-size:20px;color:var(--whatsapp-teal)"></i>
-        <div style="flex:1"><div style="font-weight:600;font-size:12px">مزامنة البيانات</div><div style="font-size:10px;opacity:0.7">استيراد CSV إلى Firebase</div></div>
-        <i class="fas fa-chevron-left" style="font-size:12px"></i>
-      </div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-wrap"><canvas id="myChart"></canvas></div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px"><i class="fas fa-star" style="color:var(--whatsapp-teal)"></i> مميز</div>
-        <button onclick="renderSpotlight()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);font-size:12px"><i class="fas fa-rotate-right"></i></button>
-      </div>
-      <div id="spotlightEl"></div>
-    </div>
-
-    <div class="card">
-      <div style="font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px"><i class="fas fa-clock-rotate-left" style="color:var(--whatsapp-teal)"></i> أحدث الإضافات</div>
-      <div id="recentEl" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px"></div>
-    </div>
-  </section>
-
-  <!-- DIRECTORY -->
-  <section id="dirSection" class="section">
-    <div style="margin-bottom:12px">
-      <div style="font-size:18px;font-weight:800;margin-bottom:2px">دليل المهنيين</div>
-      <div style="font-size:11px;opacity:0.7" id="dirSubTitle">جميع الشركاء المهنيين</div>
-    </div>
-
-    <div class="search-wrap">
-      <i class="fas fa-magnifying-glass"></i>
-      <input type="text" id="dirSearch" placeholder="ابحث بالاسم، القطاع، أو المدينة..." autocomplete="off">
-      <button class="clear-btn" onclick="clearDirSearch()"><i class="fas fa-xmark"></i></button>
-    </div>
-
-    <div class="filter-toggle-btn" onclick="toggleFilterPanel()">
-      <span><i class="fas fa-sliders-h"></i> خيارات التصفية</span>
-      <i class="fas fa-chevron-down" id="filterToggleIcon"></i>
-    </div>
-
-    <div class="filter-panel" id="filterPanel">
-      <div class="filter-body">
-        <div class="filter-row">
-          <div class="filter-row-label"><i class="fas fa-tag"></i> النوع</div>
-          <div class="filter-chips" id="typeChips"></div>
-        </div>
-        <div class="filter-row">
-          <div class="filter-row-label"><i class="fas fa-layer-group"></i> التصنيف</div>
-          <div class="filter-chips" id="catChips"></div>
-        </div>
-        <div class="filter-row">
-          <div class="filter-row-label"><i class="fas fa-folder-open"></i> القطاع</div>
-          <div class="filter-chips" id="sectorChips"></div>
-        </div>
-        <div class="filter-row">
-          <div class="filter-row-label"><i class="fas fa-map-marker-alt"></i> المدينة</div>
-          <div class="filter-chips" id="cityChips"></div>
-        </div>
-        <div class="filter-actions">
-          <button class="filter-reset-btn" onclick="resetFilters()"><i class="fas fa-rotate-left"></i> مسح الكل</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="active-filter-tags" id="activeTags"></div>
-    <div class="results-count" id="resultsCount"></div>
-    <div id="dirContent" class="contact-list"></div>
-  </section>
-
-  <!-- EXPLORER -->
-  <section id="expSection" class="section">
-    <div style="margin-bottom:12px">
-      <div style="font-size:18px;font-weight:800;margin-bottom:2px">المستكشف</div>
-      <div style="font-size:11px;opacity:0.7">تصفح حسب التصنيف والقطاع</div>
-    </div>
-    <div class="search-wrap">
-      <i class="fas fa-magnifying-glass"></i>
-      <input type="text" id="expSearch" placeholder="بحث سريع...">
-    </div>
-    <div class="breadcrumb" id="expBreadcrumb" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:11px"></div>
-    <div id="expContent"></div>
-  </section>
-
-  <!-- BOOKMARKS -->
-  <section id="bmSection" class="section">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:8px"><i class="fas fa-bookmark" style="color:var(--whatsapp-teal)"></i> المفضلة <span id="bmCount" style="font-size:13px;opacity:0.7"></span></div>
-      <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="clearBookmarks()"><i class="fas fa-trash-can"></i> مسح</button>
-    </div>
-    <div id="bmContent" class="contact-list"></div>
-  </section>
-
+<main>
+  <section class="tab on" id="t-home"></section>
+  <section class="tab" id="t-dir"></section>
+  <section class="tab" id="t-exp"></section>
+  <section class="tab" id="t-fav"></section>
 </main>
 
-<nav class="bottom-nav">
-  <div class="nav-item active" data-s="dash">
-    <i class="fas fa-chart-line"></i>
-    <span>الرئيسية</span>
-  </div>
-  <div class="nav-item" data-s="dir">
-    <i class="fas fa-users"></i>
-    <span>الدليل</span>
-  </div>
-  <div class="nav-item" data-s="exp">
-    <i class="fas fa-globe"></i>
-    <span>المستكشف</span>
-  </div>
-  <div class="nav-item" data-s="bm">
-    <i class="fas fa-star"></i>
-    <span>المفضلة</span>
-    <div class="nav-badge" id="bmBadge" style="display:none"></div>
-  </div>
+<nav id="bn" aria-label="التنقل الرئيسي">
+  <button class="bi" data-a="tab" data-v="home"><i class="fa-solid fa-house"></i>الرئيسية</button>
+  <button class="bi" data-a="tab" data-v="dir"><i class="fa-solid fa-address-book"></i>الدليل</button>
+  <button class="bi" data-a="tab" data-v="exp"><i class="fa-solid fa-diagram-project"></i>المستكشف</button>
+  <button class="bi" data-a="tab" data-v="fav"><i class="fa-solid fa-star"></i>المفضلة<span class="bub" id="fb" hidden>0</span></button>
 </nav>
 
-<!-- PROFILE MODAL -->
-<div class="overlay" id="profileOverlay">
-  <div class="sheet">
-    <div class="sheet-header">
-      <h3 class="sheet-title"><i class="fas fa-user-circle"></i> الملف الشخصي</h3>
-      <button class="sheet-close" onclick="closeOverlay('profileOverlay')"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="sheet-body" id="profileBody"></div>
-    <div class="sheet-footer" id="profileFooter"></div>
-  </div>
-</div>
+<div id="md"></div>
+<div id="ts" role="status" aria-live="polite"></div>
 
-<!-- ADMIN MODAL -->
-<div class="overlay" id="adminOverlay">
-  <div class="sheet">
-    <div class="sheet-header">
-      <h3 class="sheet-title"><i class="fas fa-shield-halved"></i> دخول المدير</h3>
-      <button class="sheet-close" onclick="closeOverlay('adminOverlay')"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="sheet-body">
-      <div class="form-group">
-        <label class="form-label">كلمة المرور</label>
-        <input type="password" id="adminPass" class="form-input" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')verifyAdmin()">
-      </div>
-    </div>
-    <div class="sheet-footer">
-      <button class="btn btn-ghost" onclick="closeOverlay('adminOverlay')">إلغاء</button>
-      <button class="btn btn-primary" onclick="verifyAdmin()"><i class="fas fa-unlock"></i> دخول</button>
-    </div>
-  </div>
-</div>
-
-<!-- EDIT MODAL -->
-<div class="overlay" id="editOverlay">
-  <div class="sheet">
-    <div class="sheet-header">
-      <h3 class="sheet-title" id="editTitle">إضافة ملف</h3>
-      <button class="sheet-close" onclick="closeOverlay('editOverlay')"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="sheet-body">
-      <input type="hidden" id="editId">
-      <div class="form-group">
-        <label class="form-label">الاسم *</label>
-        <input type="text" id="editName" class="form-input" placeholder="الاسم الكامل">
-      </div>
-      <div class="form-group">
-        <label class="form-label">النوع</label>
-        <select id="editType" class="form-select">
-          <option value="fournisseurs">مورد</option>
-          <option value="experts">خبير</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">التصنيف</label>
-        <select id="editCat" class="form-select">
-          <option value="services">خدمات</option>
-          <option value="products">منتجات</option>
-          <option value="maqola">مقاولة</option>
-          <option value="yad-amila">يد عاملة</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">القطاع</label>
-        <input type="text" id="editDomaine" class="form-input" placeholder="مثال: البناء والأشغال">
-      </div>
-      <div class="form-group">
-        <label class="form-label">التخصص</label>
-        <input type="text" id="editSpec" class="form-input" placeholder="مثال: هندسة مدنية">
-      </div>
-      <div class="form-group">
-        <label class="form-label">المدينة</label>
-        <input type="text" id="editVille" class="form-input" placeholder="مثال: الدار البيضاء">
-      </div>
-      <div class="form-group">
-        <label class="form-label">الهاتف</label>
-        <input type="tel" id="editPhone" class="form-input" placeholder="0600000000" dir="ltr">
-      </div>
-      <div class="form-group">
-        <label class="form-label">البريد الإلكتروني</label>
-        <input type="email" id="editEmail" class="form-input" placeholder="example@email.com" dir="ltr">
-      </div>
-      <div class="form-group">
-        <label class="form-label">الموقع الإلكتروني</label>
-        <input type="url" id="editWeb" class="form-input" placeholder="https://..." dir="ltr">
-      </div>
-    </div>
-    <div class="sheet-footer">
-      <button class="btn btn-ghost" onclick="closeOverlay('editOverlay')">إلغاء</button>
-      <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- DELETE CONFIRM -->
-<div class="overlay" id="delOverlay">
-  <div class="sheet">
-    <div class="sheet-header">
-      <h3 class="sheet-title"><i class="fas fa-trash-can"></i> تأكيد الحذف</h3>
-      <button class="sheet-close" onclick="closeOverlay('delOverlay')"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="sheet-body"><p id="delMsg" style="font-size:14px;line-height:1.6"></p></div>
-    <div class="sheet-footer">
-      <button class="btn btn-ghost" onclick="closeOverlay('delOverlay')">إلغاء</button>
-      <button class="btn btn-danger" onclick="doDelete()"><i class="fas fa-trash-can"></i> حذف</button>
-    </div>
-  </div>
-</div>
-
-<!-- PICKER MODAL -->
-<div class="overlay" id="pickerOverlay">
-  <div class="sheet">
-    <div class="sheet-header">
-      <h3 class="sheet-title" id="pickerTitle">اختر</h3>
-      <button class="sheet-close" onclick="closeOverlay('pickerOverlay')"><i class="fas fa-xmark"></i></button>
-    </div>
-    <div class="sheet-body" id="pickerBody"></div>
-  </div>
-</div>
-
-<div class="toast" id="toastEl"></div>
-<div class="loading" id="loadingEl">
-  <div class="loading-ring"></div>
-  <div class="loading-text">جاري التحميل...</div>
-</div>
-
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 <script>
-// ============================================================
-// CONFIG
-// ============================================================
-const CSV_EXPERTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true&output=csv";
-const CSV_FOURNISSEURS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true&output=csv";
-const ADMIN_PWD = "admin123";
+(()=>{'use strict';
+const FBC={apiKey:"AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",authDomain:"said-rahil-default-rtdb.firebaseio.com",databaseURL:"https://said-rahil-default-rtdb.firebaseio.com/",projectId:"said-rahil",storageBucket:"said-rahil.firebasestorage.app"};
+const ADMIN_PASS='1';
+const TK={fournisseurs:'FOURNISSEURS',experts:'EXPERTS'},CK={services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
+const TL={fournisseurs:'مورّد',experts:'خبير'},CL={services:'خدمات',products:'منتجات',maqola:'مقاولة','yad-amila':'يد عاملة'};
+const FLD={type:'type',cat:'categorie',dom:'domaine',ville:'ville'};
+const DOMI={'البناء':'fa-helmet-safety','التجارة':'fa-store','تكنولوجيا':'fa-laptop-code','الصناعة':'fa-industry','السياحة':'fa-plane','الصحة':'fa-heart-pulse','التعليم':'fa-graduation-cap','الفلاحة':'fa-seedling','النقل':'fa-truck','المالية':'fa-coins','الغذاء':'fa-utensils','الطاقة':'fa-bolt'};
+const PAL=[['#FF6A1A','#FF9A3D'],['#0F766E','#14B8A6'],['#2563EB','#6366F1'],['#7C3AED','#EC4899'],['#DC2626','#F97316'],['#475569','#1E293B'],['#CA8A04','#EAB308']];
+const CC=['#FF6A1A','#EAB308','#0F766E','#6366F1'];
 
-firebase.initializeApp({
-  apiKey: "AIzaSyBQKPqut41Jqs28Zn_z-I_ffD-iNCnFpdU",
-  authDomain: "said-rahil-default-rtdb.firebaseio.com",
-  databaseURL: "https://said-rahil-default-rtdb.firebaseio.com/",
-  projectId: "said-rahil"
+const S={db:[],tab:'home',lim:40,f:{type:[],cat:[],dom:[],ville:[]},q:'',fav:[],user:null,admin:sessionStorage.getItem('cp-admin')==='1',exp:{t:'',d:'',s:''},fb:null,editId:null,delId:null};
+try{S.fav=JSON.parse(localStorage.getItem('cp-fav')||'[]')}catch{}
+
+/* helpers */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f\u064B-\u065F\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').toLowerCase().replace(/\s+/g,' ').trim();
+const hit=(v,q)=>{const n=norm(v);return norm(q).split(' ').every(t=>n.includes(t))};
+const inits=n=>{const p=String(n||'').trim().split(/\s+/).filter(Boolean);return !p.length?'?':p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[1][0]).toUpperCase()};
+const grad=n=>{let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))>>>0;const[a,b]=PAL[h%PAL.length];return `linear-gradient(140deg,${a},${b})`};
+const fmtPhone=p=>{let d=String(p||'').replace(/[^\d+]/g,'');if(!d)return'';if(d.startsWith('00'))d='+'+d.slice(2);if(d.startsWith('+'))return d;if(d.startsWith('0'))return'+212'+d.slice(1);if(d.startsWith('212'))return'+'+d;return d};
+const validPhone=p=>/^\+\d{9,15}$/.test(fmtPhone(p));
+const uid=()=>`${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
+const url=w=>{if(!w)return'';const u=/^https?:\/\//i.test(w)?w:'https://'+w;return/^https?:\/\/\S+$/i.test(u)?u:''};
+const shown=v=>v&&v!=='Autre'&&v!=='Général'?v:'';
+const sha=async s=>{try{return[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('')}catch{return'f'+btoa(unescape(encodeURIComponent(s)))}};
+const uidOf=async i=>'u_'+(await sha('cp:'+i)).slice(0,24);
+const safeEq=(a,b)=>{if(!a||!b||a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0};
+const debounce=(fn,w=200)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),w)}};
+const uniq=k=>[...new Set(S.db.map(r=>(r[k]||'').trim()).filter(Boolean))].filter(v=>!['Autre','Général'].includes(v));
+const byId=id=>S.db.find(r=>r.id===id);
+const lbl=(k,v)=>k==='type'?TL[v]||v:k==='cat'?CL[v]||v:v;
+const domIcon=d=>DOMI[String(d||'').trim()]||'fa-briefcase';
+const toArr=v=>v?Object.values(v).filter(Boolean):[];
+const path=(t,c)=>`professionals/${TK[t]}/${CK[c]}`;
+const canEdit=r=>!!r&&(S.admin||(!!S.user&&S.user.profileId===r.id));
+const canAdd=()=>S.admin||(!!S.user&&!S.user.profileId);
+const isFav=id=>S.fav.includes(id);
+const needFb=()=>S.fb?true:(toast('Firebase غير متاح'),false);
+const log=(a,d)=>{try{S.fb?.ref('logs').push({t:Date.now(),u:S.admin?'admin':S.user?.name||'زائر',a,d:String(d||'')}).catch(()=>{})}catch{}};
+const baseUrl=()=>location.protocol==='file:'?(localStorage.getItem('cp-base')||''):location.origin+location.pathname;
+
+let tt,undoFn=null;
+function toast(m,u=null){const t=$('#ts');t.innerHTML=`<span>${esc(m)}</span>${u?'<button data-a="undo">تراجع</button>':''}`;undoFn=u;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>{t.classList.remove('on');undoFn=null},u?5000:2500)}
+const busy=b=>$('#ld').classList.toggle('on',b);
+function openM(h){$('#md').innerHTML=`<div class="sheet">${h}</div>`;$('#md').classList.add('on');document.body.style.overflow='hidden';setTimeout(()=>$('#md input,#md select')?.focus(),60)}
+function closeM(){$('#md').classList.remove('on');document.body.style.overflow=''}
+const empty=(t,s='',i='fa-folder-open')=>`<div class="em"><i class="fa-solid ${i}"></i><b>${esc(t)}</b>${s?`<small>${esc(s)}</small>`:''}</div>`;
+const fld=(id,l,t='text',x='',v='')=>`<label class="fl" id="w_${id}"><span>${l}</span><input id="${id}" type="${t}" value="${esc(v)}" ${x}></label>`;
+const sel=(id,l,o,v)=>`<label class="fl"><span>${l}</span><select id="${id}">${Object.entries(o).map(([k,t])=>`<option value="${k}"${k===v?' selected':''}>${t}</option>`).join('')}</select></label>`;
+
+/* data */
+function mapRaw(raw){const o=[];for(const[T,tv]of Object.entries(TK))for(const[C,cv]of Object.entries(CK))toArr(raw?.[tv]?.[cv]).forEach(i=>{if(i.name)o.push({...i,type:T,categorie:C,id:i.id||uid(),domaine:i.domaine||'Autre',specialite:i.specialite||'Général'})});return o}
+async function loadDB(){
+  let raw=null,ok=false;
+  try{if(!S.fb)throw 0;raw=(await S.fb.ref('professionals').once('value')).val();ok=true}catch{}
+  S.db=mapRaw(raw);
+  if(ok&&S.db.length)try{localStorage.setItem('cp-cache',JSON.stringify(S.db))}catch{}
+  if(!ok&&!S.db.length)try{S.db=JSON.parse(localStorage.getItem('cp-cache')||'[]')}catch{}
+}
+async function refreshUser(){
+  let id;try{id=JSON.parse(localStorage.getItem('cp-user')||'null')?.id}catch{}
+  S.user=null;if(!id||!S.fb)return;
+  try{const u=(await S.fb.ref('users/'+id).once('value')).val();if(u)S.user={id,name:u.name,ident:u.ident,profileId:u.profileId||''}}catch{}
+}
+const saveSess=()=>{try{S.user?localStorage.setItem('cp-user',JSON.stringify({id:S.user.id})):localStorage.removeItem('cp-user')}catch{}};
+
+/* filtering */
+function match(r,skip){
+  for(const k in FLD){if(k===skip)continue;const a=S.f[k];if(a.length&&!a.some(v=>norm(r[FLD[k]])===norm(v)))return false}
+  if(S.q){if(/^(موثق|verified)$/i.test(S.q))return!!r.verified;return hit([r.name,r.domaine,r.specialite,r.ville,r.phone,r.email].join(' '),S.q)}
+  return true;
+}
+const results=()=>S.db.filter(r=>match(r)).sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+const activeCount=()=>Object.values(S.f).reduce((n,a)=>n+a.length,0)+(S.q?1:0);
+const clearF=()=>{S.f={type:[],cat:[],dom:[],ville:[]};S.q='';S.lim=40};
+function facet(k){const m=new Map();S.db.filter(r=>match(r,k)).forEach(r=>{const v=(r[FLD[k]]||'').trim();if(v&&v!=='Autre'&&v!=='Général')m.set(v,(m.get(v)||0)+1)});return[...m].sort((a,b)=>b[1]-a[1])}
+
+/* views */
+const vb=r=>r.verified?'<i class="fa-solid fa-circle-check vb" title="موثّق"></i>':'';
+const card=r=>`<div class="card" data-a="open" data-v="${esc(r.id)}" role="button" tabindex="0">
+  <div class="av" style="background:${grad(r.name)}">${esc(inits(r.name))}</div>
+  <div class="cm"><b>${esc(r.name)} ${vb(r)}</b><small>${esc([shown(r.domaine),r.ville].filter(Boolean).join(' · '))}</small>
+    <div class="tags"><span class="tg a">${TL[r.type]}</span><span class="tg">${CL[r.categorie]}</span></div></div>
+  <div class="ca">
+    <button class="fv${isFav(r.id)?' on':''}" data-a="fav" data-v="${esc(r.id)}" aria-label="المفضلة"><i class="fa-${isFav(r.id)?'solid':'regular'} fa-star"></i></button>
+    <button data-a="shr" data-v="${esc(r.id)}" aria-label="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>
+    ${canEdit(r)?`<button data-a="edit" data-v="${esc(r.id)}" aria-label="تعديل"><i class="fa-solid fa-pen"></i></button>`:''}
+    ${S.admin?`<button class="dl" data-a="del" data-v="${esc(r.id)}" aria-label="حذف"><i class="fa-solid fa-trash"></i></button>`:''}
+  </div></div>`;
+
+function topbar(){
+  let h=`<button class="ib" data-a="theme" title="تبديل المظهر" aria-label="تبديل المظهر"><i class="fa-solid ${document.documentElement.dataset.theme==='dark'?'fa-sun':'fa-moon'}"></i></button>`;
+  if(canAdd())h+=`<button class="ib pri" data-a="add" title="إضافة شركة" aria-label="إضافة شركة"><i class="fa-solid fa-plus"></i><span class="t">إضافة</span></button>`;
+  h+=S.user
+    ?`<button class="ib" data-a="acc" title="حسابي" aria-label="حسابي"><span class="ava" style="background:${grad(S.user.name)}">${esc(inits(S.user.name))}</span><span class="t">حسابي</span></button>`
+    :!S.admin?`<button class="ib" data-a="auth" title="تسجيل الدخول" aria-label="تسجيل الدخول"><i class="fa-solid fa-right-to-bracket"></i><span class="t">دخول</span></button>`:'';
+  h+=S.admin
+    ?`<button class="ib out" data-a="alogout" title="خروج المدير" aria-label="خروج المدير"><i class="fa-solid fa-right-from-bracket"></i><span class="t">خروج</span></button>`
+    :`<button class="ib" data-a="alogin" title="دخول المدير" aria-label="دخول المدير"><i class="fa-solid fa-shield-halved"></i></button>`;
+  $('#acts').innerHTML=h;
+}
+
+function home(){
+  const c=(k,v)=>S.db.filter(r=>r[k]===v).length;
+  const st=[['fa-truck-field','موردون',c('type','fournisseurs'),'type:fournisseurs'],['fa-user-tie','خبراء',c('type','experts'),'type:experts'],['fa-city','مدن',uniq('ville').length,'f'],['fa-industry','قطاعات',uniq('domaine').length,'f']];
+  const cats=Object.keys(CL).map((k,i)=>['cat:'+k,CL[k],c('categorie',k),CC[i]]);
+  const sc=(i,l,n,a)=>`<button class="sc" data-a="stat" data-v="${a}"><i class="fa-solid ${i}"></i><b>${n}</b><span>${l}</span></button>`;
+  const top=(f,k)=>{const m=new Map();S.db.forEach(r=>{const v=(r[f]||'').trim();if(v&&!['Autre','Général'].includes(v))m.set(v,(m.get(v)||0)+1)});
+    const g=[...m].sort((a,b)=>b[1]-a[1]);if(!g.length)return'<p class="inf">لا بيانات</p>';
+    return`<div class="sl">${g.map(([v,n])=>`<button class="bar" data-a="bar" data-k="${k}" data-v="${esc(v)}"><i style="width:${Math.round(n/g[0][1]*100)}%"></i><span>${esc(v)}</span><b>${n}</b></button>`).join('')}</div>`};
+  $('#sub').textContent=`${S.db.length} شركة · ${uniq('domaine').length} قطاع`;
+  $('#t-home').innerHTML=`
+  ${S.admin?`<div class="adm"><i class="fa-solid fa-shield-halved"></i>وضع المدير<small>تحكم كامل في الملفات</small></div>`:''}
+  <div class="hero"><h2>منصة التواصل الصناعي B2B</h2><p>دليل الشركات والخبراء — ابحث، تواصل، وابنِ شبكتك الصناعية في المغرب.</p></div>
+  <h3 class="t">نظرة عامة</h3>
+  <div class="g4" style="margin-top:0">${st.map(x=>sc(...x)).join('')}</div>
+  <h3 class="t">توزيع الشركات</h3>
+  <div class="seg">${cats.filter(x=>x[2]).map(x=>`<i style="flex:${x[2]} 0 0;background:${x[3]}"></i>`).join('')}</div>
+  <div class="g4">${cats.map((x,i)=>sc(['fa-screwdriver-wrench','fa-boxes-stacked','fa-helmet-safety','fa-people-carry-box'][i],x[1],x[2],x[0])).join('')}</div>
+  <div class="cols"><div class="pn"><b>أكثر القطاعات نشاطاً</b>${top('domaine','dom')}</div><div class="pn"><b>أكثر المدن</b>${top('ville','ville')}</div></div>`;
+}
+
+function meCard(){
+  const me=S.user?.profileId&&byId(S.user.profileId);if(!me)return'';
+  return`<div class="me" data-a="open" data-v="${esc(me.id)}" role="button" tabindex="0"><div class="av">${esc(inits(me.name))}</div><div style="flex:1;min-width:0"><b>${esc(me.name)}</b><small>شركتي</small></div><i class="fa-solid fa-chevron-left"></i></div>`;
+}
+function dirShell(){
+  $('#t-dir').innerHTML=`<div class="sr"><i class="fa-solid fa-magnifying-glass"></i>
+    <input id="q" type="search" placeholder="ابحث عن شركة، خبير، قطاع..." value="${esc(S.q)}" autocomplete="off" aria-label="بحث">
+    <button data-a="qx" id="qx" hidden aria-label="مسح"><i class="fa-solid fa-xmark"></i></button>
+    <button class="fb" data-a="fmodal" aria-label="تصفية"><i class="fa-solid fa-sliders"></i><span class="bub" id="fc" hidden>0</span></button></div>
+    <div class="chips" id="chips"></div><div class="inf" id="inf"></div><div id="me"></div><div class="ls" id="ls"></div>`;
+  $('#q').addEventListener('input',debounce(e=>{S.q=e.target.value;S.lim=40;dirList()},200));
+  dirList();
+}
+function dirList(){
+  const chips=[];
+  for(const k in FLD)for(const v of S.f[k])chips.push(`<span class="chip">${esc(lbl(k,v))}<button data-a="chipx" data-k="${k}" data-v="${esc(v)}" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button></span>`);
+  $('#chips').innerHTML=chips.join('');
+  const r=results(),n=activeCount();
+  $('#inf').textContent=`${r.length} شركة من أصل ${S.db.length}`;
+  $('#qx').hidden=!S.q;$('#fc').hidden=!n;$('#fc').textContent=n;$('#me').innerHTML=meCard();
+  $('#ls').innerHTML=r.length?r.slice(0,S.lim).map(card).join('')+(r.length>S.lim?`<button class="bt g" style="grid-column:1/-1" data-a="more">عرض المزيد (${r.length-S.lim})</button>`:''):empty('لا توجد نتائج','جرّب تغيير البحث أو التصفية','fa-magnifying-glass');
+}
+
+function explorer(){
+  const{t,d,s}=S.exp;
+  const cs=[['الرئيسية','']];if(t)cs.push([TL[t]+'ون','t']);if(d)cs.push([d,'d']);if(s)cs.push([s,'s']);
+  const base=S.db.filter(r=>!t||r.type===t);
+  const grp=(l,k)=>{const m=new Map();l.forEach(r=>{const v=r[k]||'—';m.set(v,(m.get(v)||0)+1)});return[...m].sort((a,b)=>b[1]-a[1])};
+  const row=(i,n,c,a,v)=>`<button class="rw" data-a="${a}" data-v="${esc(v)}"><i class="fa-solid ${i}"></i><span>${esc(n)}</span><em>${c}</em><i class="fa-solid fa-chevron-left"></i></button>`;
+  let body;
+  if(!t)body=['fournisseurs','experts'].map(x=>row(x==='experts'?'fa-user-tie':'fa-truck-field',TL[x]+'ون',S.db.filter(r=>r.type===x).length,'xt',x)).join('');
+  else if(!d)body=grp(base,'domaine').map(g=>row(domIcon(g[0]),g[0],g[1],'xd',g[0])).join('');
+  else if(!s)body=grp(base.filter(r=>r.domaine===d),'specialite').map(g=>row('fa-screwdriver-wrench',g[0],g[1],'xs',g[0])).join('');
+  else body='<div class="ls">'+base.filter(r=>r.domaine===d&&r.specialite===s).map(card).join('')+'</div>';
+  $('#t-exp').innerHTML=`<div class="cr">${cs.map((c,i)=>(i?'<i class="fa-solid fa-chevron-left"></i>':'')+`<button data-a="xc" data-v="${c[1]}">${esc(c[0])}</button>`).join('')}</div>${body||empty('لا عناصر')}`;
+}
+function favorites(){
+  const f=S.fav.map(byId).filter(Boolean);
+  $('#t-fav').innerHTML=`<h3 class="t" style="margin-top:0">المفضلة (${f.length})</h3>${f.length?`<div class="ls">${f.map(card).join('')}</div>`:empty('لا مفضلات بعد','اضغط النجمة على أي شركة لإضافتها هنا','fa-star')}`;
+}
+function go(t){
+  if(S.tab==='dir'&&t!=='dir')clearF();
+  if(S.tab==='exp'&&t!=='exp')S.exp={t:'',d:'',s:''};
+  S.tab=t;
+  document.querySelectorAll('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-'+t));
+  ({home,dir:dirShell,exp:explorer,fav:favorites})[t]();
+  document.querySelectorAll('.bi').forEach(e=>e.classList.toggle('on',e.dataset.v===t));
+  topbar();favBadge();scrollTo(0,0);
+}
+const rerender=()=>go(S.tab);
+function favBadge(){const b=$('#fb');b.hidden=!S.fav.length;b.textContent=S.fav.length>99?'99+':S.fav.length}
+
+/* filter sheet */
+function filterModal(){
+  const F=[['type','النوع'],['cat','التصنيف'],['dom','القطاع'],['ville','المدينة']];
+  openM(`<h2>تصفية النتائج</h2><p class="lead">اختر قيمة أو أكثر من كل فئة</p>`+F.map(([k,l])=>`<div class="fg"><b>${l}</b><div class="cs">${facet(k).map(([v,n])=>`<button class="opt${S.f[k].some(x=>norm(x)===norm(v))?' on':''}" data-a="fp" data-k="${k}" data-v="${esc(v)}">${esc(lbl(k,v))}<i>${n}</i></button>`).join('')||'<small>—</small>'}</div></div>`).join('')+
+  `<div class="ac"><button class="bt g" data-a="fclr">مسح الكل</button><button class="bt" data-a="fdone">عرض النتائج</button></div>`);
+}
+
+/* profile */
+function profile(id){
+  const r=byId(id);if(!r)return toast('الملف غير موجود');
+  const p=fmtPhone(r.phone),w=url(r.web);
+  const rows=[];
+  if(shown(r.domaine))rows.push(['fa-industry','القطاع',esc(r.domaine)]);
+  if(shown(r.specialite))rows.push(['fa-screwdriver-wrench','التخصص',esc(r.specialite)]);
+  if(r.ville)rows.push(['fa-location-dot','المدينة',esc(r.ville)]);
+  if(p)rows.push(['fa-phone','الهاتف',`<span dir="ltr">${esc(p)}</span>`,'tel:'+esc(p)]);
+  if(r.email)rows.push(['fa-envelope','البريد',`<span dir="ltr">${esc(r.email)}</span>`,'mailto:'+esc(r.email)]);
+  if(w)rows.push(['fa-globe','الموقع',`<span dir="ltr">${esc(r.web)}</span>`,esc(w),1]);
+  openM(`<div class="ph"><div class="pl"><i class="fa-solid ${domIcon(r.domaine)}"></i></div>
+    <div class="pn2">${esc(r.name)} ${r.verified?'<i class="fa-solid fa-circle-check" style="color:var(--or2)"></i>':''}</div>
+    <div class="ps">${esc([shown(r.domaine),r.ville].filter(Boolean).join(' · '))}</div>
+    <div class="tags" style="margin-top:10px"><span class="tg">${TL[r.type]}</span><span class="tg">${CL[r.categorie]}</span></div></div>
+    <div class="pa">
+      ${p?`<a class="ib" style="color:#25D366" href="https://wa.me/${esc(p.replace(/\D/g,''))}" target="_blank" rel="noopener" aria-label="واتساب"><i class="fa-brands fa-whatsapp"></i></a>`:''}
+      <button class="ib" data-a="shr" data-v="${esc(r.id)}" aria-label="مشاركة"><i class="fa-solid fa-share-nodes"></i></button>
+      <button class="ib" data-a="fav" data-v="${esc(r.id)}" aria-label="المفضلة"><i class="fa-${isFav(r.id)?'solid':'regular'} fa-star"></i></button>
+      ${canEdit(r)?`<button class="ib" data-a="edit" data-v="${esc(r.id)}" aria-label="تعديل"><i class="fa-solid fa-pen"></i></button>`:''}
+      ${S.admin?`<button class="ib${r.verified?' on':''}" data-a="vrf" data-v="${esc(r.id)}" aria-label="توثيق"><i class="fa-solid fa-circle-check"></i></button><button class="ib out" data-a="del" data-v="${esc(r.id)}" aria-label="حذف"><i class="fa-solid fa-trash"></i></button>`:''}
+      <button class="ib" data-a="cls" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+    ${rows.map(([i,k,v,h,ext])=>`<div class="vr">${h?`<a href="${h}"${ext?' target="_blank" rel="noopener"':''}><i class="fa-solid ${i}"></i></a>`:`<i class="fa-solid ${i}"></i>`}<div><small>${k}</small><b>${v}</b></div></div>`).join('')}`);
+}
+async function share(id){
+  const r=byId(id);if(!r)return;
+  const text=[`🏢 ${r.name}`,`🏷️ ${TL[r.type]} · ${CL[r.categorie]}`,shown(r.domaine)&&`🏭 ${r.domaine}`,r.ville&&`📍 ${r.ville}`,fmtPhone(r.phone)&&`📞 ${fmtPhone(r.phone)}`,r.email&&`✉️ ${r.email}`,url(r.web)&&`🌐 ${url(r.web)}`,baseUrl()&&`🔗 ${baseUrl()}#p=${r.id}`].filter(Boolean).join('\n');
+  if(navigator.share){try{await navigator.share({title:r.name,text});return}catch(e){if(e.name==='AbortError')return}}
+  try{await navigator.clipboard.writeText(text);toast('تم النسخ')}catch{toast('تعذر النسخ')}
+}
+function toggleFav(id){
+  const i=S.fav.indexOf(id);i>=0?S.fav.splice(i,1):S.fav.push(id);
+  try{localStorage.setItem('cp-fav',JSON.stringify(S.fav))}catch{}
+  toast(i>=0?'أُزيلت من المفضلة':'أُضيفت للمفضلة');
+  if(!$('#md').classList.contains('on'))rerender();else{favBadge();profile(id)}
+}
+
+/* CRUD */
+function form(r){
+  S.editId=r?.id||null;r=r||{type:'fournisseurs',categorie:'services'};
+  openM(`<h2>${r.id?'تعديل الشركة':'إضافة شركة جديدة'}</h2><p class="lead">${r.id?'حدّث بيانات الشركة':'سجّل شركتك في الشبكة المهنية'}</p>
+    ${fld('f_n','اسم الشركة *','text','placeholder="مثال: شركة النور للصناعة"',r.name||'')}
+    ${sel('f_t','النوع',TL,r.type)}${sel('f_c','التصنيف',CL,r.categorie)}
+    ${fld('f_d','القطاع','text','list="dd"',shown(r.domaine))}${fld('f_s','التخصص','text','',shown(r.specialite))}
+    ${fld('f_vl','المدينة','text','list="dv"',r.ville||'')}${fld('f_p','الهاتف','tel','dir="ltr" placeholder="+212 6 12 34 56 78"',r.phone||'')}
+    ${fld('f_m','البريد الإلكتروني','email','dir="ltr"',r.email||'')}${fld('f_w','الموقع الإلكتروني','url','dir="ltr"',r.web||'')}
+    ${S.admin?`<label class="fl" style="display:flex;gap:10px;align-items:center"><input id="f_v" type="checkbox" ${r.verified?'checked':''} style="width:18px;height:18px;accent-color:var(--or)"><span style="margin:0">ملف موثّق</span></label>`:''}
+    <datalist id="dd">${uniq('domaine').map(v=>`<option value="${esc(v)}">`).join('')}</datalist><datalist id="dv">${uniq('ville').map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="save"><i class="fa-solid fa-check"></i> حفظ</button></div>`);
+}
+async function save(){
+  const g=i=>$('#'+i).value.trim();
+  document.querySelectorAll('.fl.er').forEach(e=>e.classList.remove('er'));
+  const bad=(i,m)=>{$('#w_'+i).classList.add('er');toast(m);return false};
+  let ok=true;
+  if(!g('f_n'))ok=bad('f_n','الاسم مطلوب');
+  if(g('f_m')&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g('f_m')))ok=bad('f_m','بريد غير صالح');
+  if(g('f_w')&&!url(g('f_w')))ok=bad('f_w','رابط غير صالح');
+  if(g('f_p')&&!validPhone(g('f_p')))ok=bad('f_p','هاتف غير صالح');
+  if(!ok||!needFb())return;
+  const t=g('f_t'),c=g('f_c'),old=S.editId?byId(S.editId):null;
+  if(old?!canEdit(old):!canAdd())return toast('غير مسموح');
+  const it={id:old?.id||uid(),name:g('f_n'),domaine:g('f_d')||'Autre',specialite:g('f_s')||'Général',ville:g('f_vl'),phone:fmtPhone(g('f_p')),email:g('f_m'),web:g('f_w'),createdAt:old?.createdAt||Date.now()};
+  const vEl=$('#f_v');if(S.admin&&vEl)it.verified=!!vEl.checked;else if(old?.verified)it.verified=true;
+  const ow=old?old.owner:(S.admin?'':S.user.id);if(ow)it.owner=ow;
+  busy(true);
+  try{
+    if(old&&(old.type!==t||old.categorie!==c))await S.fb.ref(`${path(old.type,old.categorie)}/${old.id}`).remove();
+    await S.fb.ref(`${path(t,c)}/${it.id}`).update(it);
+    if(!old&&!S.admin){S.user.profileId=it.id;await S.fb.ref('users/'+S.user.id+'/profileId').set(it.id)}
+    log(old?'edit':'add',it.name);await loadDB();closeM();rerender();toast(old?'تم التعديل':'تمت الإضافة');
+  }catch(e){console.error(e);toast('خطأ في الحفظ')}finally{busy(false)}
+}
+function delAsk(id){
+  const r=byId(id);if(!r||!S.admin)return;S.delId=r.id;
+  openM(`<h2>حذف الشركة</h2><p class="lead">هل تريد حذف <b style="color:var(--ink)">${esc(r.name)}</b>؟ يمكنك التراجع بعد الحذف.</p>
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt d" data-a="delok"><i class="fa-solid fa-trash"></i> حذف</button></div>`);
+}
+async function delOk(){
+  const r=S.delId&&byId(S.delId);if(!r||!S.admin||!needFb())return;const snap={...r};busy(true);
+  try{
+    await S.fb.ref(`${path(r.type,r.categorie)}/${r.id}`).remove();
+    S.fav=S.fav.filter(x=>x!==r.id);try{localStorage.setItem('cp-fav',JSON.stringify(S.fav))}catch{}
+    log('delete',r.name);await loadDB();closeM();rerender();
+    toast(`حُذفت: ${r.name}`,async()=>{try{const{type,categorie,...x}=snap;await S.fb.ref(`${path(type,categorie)}/${x.id}`).set(x);await loadDB();rerender();toast('تم التراجع')}catch{toast('تعذر التراجع')}});
+  }catch(e){console.error(e);toast('خطأ في الحذف')}finally{busy(false)}
+}
+async function verify(id){
+  if(!S.admin||!needFb())return;const r=byId(id);if(!r)return;busy(true);
+  try{await S.fb.ref(`${path(r.type,r.categorie)}/${id}/verified`).set(!r.verified);log('verify',r.name);await loadDB();toast(r.verified?'تم إلغاء التوثيق':'تم التوثيق');profile(id);rerender()}
+  catch{toast('خطأ')}finally{busy(false)}
+}
+
+/* auth */
+function adminLogin(){
+  if(S.user&&!confirm('سيتم تسجيل الخروج من حساب العضو للدخول كمدير. متابعة؟'))return;
+  openM(`<h2>دخول المدير</h2><p class="lead">أدخل كلمة المرور للتحكم الكامل</p>${fld('pw','كلمة المرور','password','autocomplete="current-password"')}
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt k" data-a="alogin2"><i class="fa-solid fa-lock-open"></i> دخول</button></div>`);
+  $('#pw').onkeydown=e=>e.key==='Enter'&&A.alogin2();
+}
+function authModal(mode='in'){
+  const sw=`<div class="sw"><button class="${mode==='in'?'on':''}" data-a="auth" data-v="in">دخول</button><button class="${mode==='up'?'on':''}" data-a="auth" data-v="up">حساب شركة</button></div>`;
+  openM(mode==='in'
+  ?`<h2>تسجيل الدخول</h2><p class="lead">الهاتف والرمز السري</p>${sw}${fld('li_i','رقم الهاتف','tel','dir="ltr" autocomplete="username" placeholder="+212 6 12 34 56 78"',localStorage.getItem('cp-lastphone')||'')}${fld('li_p','الرمز السري','password','autocomplete="current-password"')}
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="doLogin">دخول</button></div>`
+  :`<h2>إنشاء حساب شركة</h2><p class="lead">أضف شركتك إلى الشبكة المهنية</p>${sw}${fld('su_n','اسم الشركة *','text','autocomplete="organization"')}${fld('su_i','رقم الهاتف *','tel','dir="ltr" autocomplete="tel"')}${fld('su_p','الرمز السري (6 أحرف فأكثر) *','password','autocomplete="new-password"')}
+    ${sel('su_t','النوع',TL,'fournisseurs')}${sel('su_c','التصنيف',CL,'services')}${fld('su_d','القطاع','text','list="dd2"')}${fld('su_v','المدينة','text','list="dv2"')}
+    <datalist id="dd2">${uniq('domaine').map(v=>`<option value="${esc(v)}">`).join('')}</datalist><datalist id="dv2">${uniq('ville').map(v=>`<option value="${esc(v)}">`).join('')}</datalist>
+    <div class="ac"><button class="bt g" data-a="cls">إلغاء</button><button class="bt" data-a="doSignup">إنشاء</button></div>`);
+}
+async function doLogin(){
+  if(!needFb())return;const raw=$('#li_i').value.trim(),p=$('#li_p').value;
+  if(!raw||!p)return toast('أدخل البيانات');
+  busy(true);
+  try{
+    const u=await uidOf(fmtPhone(raw)),r=(await S.fb.ref('users/'+u).once('value')).val();
+    if(!r)return toast('لا يوجد حساب بهذا الرقم');
+    if(!safeEq(r.hash,await sha(r.salt+p)))return toast('الرمز غير صحيح');
+    try{localStorage.setItem('cp-lastphone',fmtPhone(r.ident))}catch{}
+    S.admin=false;sessionStorage.removeItem('cp-admin');
+    S.user={id:u,name:r.name,ident:r.ident,profileId:r.profileId||''};saveSess();log('login','');closeM();toast('مرحباً '+r.name);rerender();
+  }catch(e){console.error(e);toast('خطأ')}finally{busy(false)}
+}
+async function doSignup(){
+  if(!needFb())return;
+  const n=$('#su_n').value.trim(),i=fmtPhone($('#su_i').value),p=$('#su_p').value,t=$('#su_t').value,c=$('#su_c').value,d=$('#su_d').value.trim()||'Autre',v=$('#su_v').value.trim();
+  if(!n)return toast('اسم الشركة مطلوب');if(!validPhone(i))return toast('هاتف غير صالح');if(p.length<6)return toast('الرمز قصير');
+  busy(true);
+  try{
+    const u=await uidOf(i);
+    if((await S.fb.ref('users/'+u).once('value')).val())return toast('الحساب موجود');
+    const salt=uid();await S.fb.ref('users/'+u).set({name:n,ident:i,salt,hash:await sha(salt+p),createdAt:Date.now()});
+    const ex=S.db.find(r=>!r.owner&&fmtPhone(r.phone)===i);let pid;
+    if(ex){await S.fb.ref(`${path(ex.type,ex.categorie)}/${ex.id}`).update({owner:u});pid=ex.id}
+    else{const it={id:uid(),name:n,domaine:d,specialite:'Général',ville:v,phone:i,email:'',web:'',owner:u,createdAt:Date.now()};await S.fb.ref(`${path(t,c)}/${it.id}`).set(it);pid=it.id}
+    await S.fb.ref('users/'+u+'/profileId').set(pid);
+    await loadDB();S.admin=false;sessionStorage.removeItem('cp-admin');S.user={id:u,name:n,ident:i,profileId:pid};saveSess();
+    try{localStorage.setItem('cp-lastphone',i)}catch{}
+    log('signup',n);closeM();toast('تم إنشاء الحساب');rerender();
+  }catch(e){console.error(e);toast('خطأ')}finally{busy(false)}
+}
+function account(){
+  const u=S.user;if(!u)return;
+  openM(`<div class="acc"><div class="av" style="background:${grad(u.name)}">${esc(inits(u.name))}</div><h2>${esc(u.name)}</h2><p class="lead" dir="ltr">${esc(u.ident)}</p></div>
+    <div class="ac">
+      ${u.profileId?`<button class="bt full" data-a="open" data-v="${esc(u.profileId)}"><i class="fa-solid fa-building"></i> عرض شركتي</button><button class="bt g full" data-a="edit" data-v="${esc(u.profileId)}"><i class="fa-solid fa-pen"></i> تعديل بيانات الشركة</button>`:`<button class="bt full" data-a="add"><i class="fa-solid fa-plus"></i> إضافة شركتي</button>`}
+      <button class="bt g" data-a="uout"><i class="fa-solid fa-right-from-bracket"></i> خروج</button>
+      <button class="bt d" data-a="udelme"><i class="fa-solid fa-user-slash"></i> حذف الحساب</button>
+    </div>`);
+}
+async function deleteMe(){
+  if(!S.user||!needFb()||!confirm('حذف حسابك؟ يبقى ملف الشركة في الدليل.'))return;busy(true);
+  try{const u=S.user,p=u.profileId&&byId(u.profileId);
+    if(p)await S.fb.ref(`${path(p.type,p.categorie)}/${p.id}/owner`).remove();
+    await S.fb.ref('users/'+u.id).remove();S.user=null;saveSess();await loadDB();closeM();toast('تم حذف الحساب');rerender()}
+  catch{toast('خطأ')}finally{busy(false)}
+}
+
+/* actions */
+const A={
+  theme(){const d=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=d;try{localStorage.setItem('cp-theme',d)}catch{}topbar()},
+  add(){closeM();canAdd()?form(null):toast('غير مسموح')},
+  auth:v=>authModal(v||'in'),doLogin,doSignup,acc:account,udelme:deleteMe,
+  uout(){S.user=null;saveSess();closeM();toast('تم تسجيل الخروج');rerender()},
+  alogin:adminLogin,
+  alogin2(){
+    if($('#pw').value===ADMIN_PASS){S.user=null;saveSess();S.admin=true;sessionStorage.setItem('cp-admin','1');closeM();toast('مرحباً — وضع المدير');rerender()}
+    else{$('#pw').parentElement.classList.add('er');toast('كلمة المرور خاطئة')}
+  },
+  alogout(){S.admin=false;sessionStorage.removeItem('cp-admin');toast('تم الخروج من وضع المدير');rerender()},
+  tab:v=>{if(S.tab===v){if(v==='dir'){clearF();dirShell()}else if(v==='exp'){S.exp={t:'',d:'',s:''};explorer()}else scrollTo({top:0,behavior:'smooth'})}else go(v)},
+  cls:closeM,open(id){profile(id)},shr:share,fav:toggleFav,edit(id){const r=byId(id);canEdit(r)?form(r):toast('غير مسموح')},
+  del:delAsk,delok:delOk,save,vrf:verify,
+  undo(){if(undoFn){undoFn();undoFn=null;$('#ts').classList.remove('on')}},
+  stat(v){if(v==='f'){filterModal();return}const i=v.indexOf(':');clearF();S.f[v.slice(0,i)]=[v.slice(i+1)];go('dir')},
+  bar(v,el){clearF();S.f[el.dataset.k]=[v];go('dir')},
+  chipx(v,el){const k=el.dataset.k;S.f[k]=S.f[k].filter(x=>norm(x)!==norm(v));S.lim=40;dirList()},
+  qx(){S.q='';$('#q').value='';dirList()},more(){S.lim+=40;dirList()},
+  fmodal:filterModal,
+  fp(v,el){const k=el.dataset.k,a=S.f[k],i=a.findIndex(x=>norm(x)===norm(v));i>=0?a.splice(i,1):a.push(v);el.classList.toggle('on',i<0);S.lim=40;if(S.tab==='dir')dirList()},
+  fclr(){clearF();filterModal();if(S.tab==='dir'){$('#q').value='';dirList()}},
+  fdone(){closeM();if(S.tab!=='dir'){const keep={...S.f},q=S.q;S.tab='';S.f=keep;S.q=q;go('dir')}},
+  xt:v=>{S.exp={t:v,d:'',s:''};explorer()},xd:v=>{S.exp.d=v;S.exp.s='';explorer()},xs:v=>{S.exp.s=v;explorer()},
+  xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:''}:v==='t'?{t:x.t,d:'',s:''}:v==='d'?{t:x.t,d:x.d,s:''}:x;explorer()}
+};
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]');
+  if(el&&A[el.dataset.a]){e.stopPropagation();A[el.dataset.a](el.dataset.v,el)}
+  else if(e.target.id==='md')closeM();
 });
-const db = firebase.database();
-
-// ============================================================
-// STATE
-// ============================================================
-let allData = [];
-let csvExperts = [];
-let csvFournisseurs = [];
-let isAdmin = false;
-let curSection = 'dash';
-let bookmarks = JSON.parse(localStorage.getItem('cp_bm') || '[]');
-let pendingDel = null;
-let pickerCb = null;
-let myChart = null;
-let explorerStack = [];
-
-const filters = { type: null, categorie: null, domaine: null, ville: null, search: '' };
-let filterPanelOpen = false;
-
-// ============================================================
-// HELPERS
-// ============================================================
-const $ = id => document.getElementById(id);
-const esc = s => String(s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const norm = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-const hit = (v,q) => norm(v).includes(norm(q));
-const getInits = name => (name||'').trim().split(/\s+/).slice(0,2).map(p=>p[0]||'').join('').toUpperCase()||'?';
-const fmtPhone = p => { if(!p) return ''; let s=String(p).replace(/[\s\-\(\)\.]/g,''); if(s.startsWith('00'))s='+'+s.slice(2); else if(s.startsWith('0'))s='+212'+s.slice(1); return s; };
-
-function toast(msg) {
-  const t = $('toastEl');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function setLoading(v) { v ? $('loadingEl').classList.remove('gone') : $('loadingEl').classList.add('gone'); }
-
-function openOverlay(id) { $(id).classList.add('show'); }
-function closeOverlay(id) { $(id).classList.remove('show'); }
-
-// ============================================================
-// THEME
-// ============================================================
-function toggleTheme() {
-  document.body.classList.toggle('light');
-  localStorage.setItem('cpTheme', document.body.classList.contains('light') ? 'light' : 'dark');
-  if (myChart) refreshChart();
-}
-if (localStorage.getItem('cpTheme') === 'light') document.body.classList.add('light');
-
-// ============================================================
-// NAVIGATION
-// ============================================================
-function switchSection(s) {
-  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const sMap = { dash: 'dashSection', dir: 'dirSection', exp: 'expSection', bm: 'bmSection' };
-  $(sMap[s]).classList.add('active');
-  document.querySelector(`.nav-item[data-s="${s}"]`).classList.add('active');
-  curSection = s;
-  if (s === 'dir') renderDirectory();
-  else if (s === 'exp') renderExplorer();
-  else if (s === 'bm') renderBookmarks();
-  else renderDashboard();
-}
-
-function quickNav(section, key, val) {
-  resetFiltersQuiet();
-  filters[key] = val;
-  switchSection(section);
-}
-
-function quickNavPicker(field) {
-  const vals = [...new Set(allData.map(d => d[field]).filter(v => v && v.trim()))].sort();
-  if (!vals.length) { toast('لا توجد بيانات'); return; }
-  const labels = { ville: 'اختر مدينة', domaine: 'اختر قطاعاً' };
-  openPicker(labels[field] || 'اختر', vals, val => {
-    if (val) { resetFiltersQuiet(); filters[field] = val; switchSection('dir'); }
-  });
-}
-
-// ============================================================
-// FILTER ENGINE
-// ============================================================
-function getFilteredData() {
-  return allData.filter(d => {
-    if (filters.type && d.type !== filters.type) return false;
-    if (filters.categorie && d.categorie !== filters.categorie) return false;
-    if (filters.domaine && norm(d.domaine) !== norm(filters.domaine)) return false;
-    if (filters.ville && norm(d.ville) !== norm(filters.ville)) return false;
-    if (filters.search && filters.search.trim()) {
-      const q = filters.search.trim();
-      if (!hit(d.name,q) && !hit(d.domaine,q) && !hit(d.ville,q) && !hit(d.specialite,q)) return false;
-    }
-    return true;
-  });
-}
-
-function getAvailableValues(field) {
-  const base = allData.filter(d => {
-    if (filters.type && d.type !== filters.type) return false;
-    if (filters.categorie && d.categorie !== filters.categorie) return false;
-    if (filters.domaine && norm(d.domaine) !== norm(filters.domaine)) return false;
-    if (filters.ville && norm(d.ville) !== norm(filters.ville)) return false;
-    return true;
-  });
-  return [...new Set(base.map(d => d[field]).filter(v => v && v.trim()))].sort((a,b) => a.localeCompare(b,'ar'));
-}
-
-const CAT_NAMES = { services: 'خدمات', products: 'منتجات', maqola: 'مقاولة', 'yad-amila': 'يد عاملة' };
-const TYPE_NAMES = { fournisseurs: 'موردين', experts: 'خبراء' };
-
-function setFilter(key, val) {
-  if (filters[key] === val) {
-    filters[key] = null;
-  } else {
-    filters[key] = val;
-    if (key === 'type') { filters.categorie = null; filters.domaine = null; filters.ville = null; }
-    if (key === 'categorie') { filters.domaine = null; filters.ville = null; }
-    if (key === 'domaine') { filters.ville = null; }
-  }
-  refreshFilterUI();
-  renderDirectory();
-}
-
-function resetFilters() {
-  filters.type = null; filters.categorie = null; filters.domaine = null; filters.ville = null; filters.search = '';
-  $('dirSearch').value = '';
-  refreshFilterUI();
-  renderDirectory();
-}
-
-function resetFiltersQuiet() {
-  filters.type = null; filters.categorie = null; filters.domaine = null; filters.ville = null; filters.search = '';
-}
-
-function refreshFilterUI() {
-  const filteredData = getFilteredData();
-  
-  const typeData = allData;
-  const availTypes = [...new Set(typeData.map(d=>d.type))];
-  $('typeChips').innerHTML = ['fournisseurs','experts'].map(t => {
-    const count = typeData.filter(d=>d.type===t).length;
-    const sel = filters.type === t ? 'selected' : '';
-    const dis = !availTypes.includes(t) ? 'disabled' : '';
-    return `<button class="fchip ${sel} ${dis}" onclick="setFilter('type','${t}')">${TYPE_NAMES[t]} <span style="font-size:9px">(${count})</span></button>`;
-  }).join('');
-
-  const catAvail = getAvailableValues('categorie');
-  $('catChips').innerHTML = ['services','products','maqola','yad-amila'].map(c => {
-    const count = allData.filter(d=>d.categorie===c).length;
-    const sel = filters.categorie === c ? 'selected' : '';
-    const dis = !catAvail.includes(c) ? 'disabled' : '';
-    return `<button class="fchip ${sel} ${dis}" onclick="setFilter('categorie','${c}')">${CAT_NAMES[c]} <span style="font-size:9px">(${count})</span></button>`;
-  }).join('');
-
-  const sectors = getAvailableValues('domaine');
-  $('sectorChips').innerHTML = sectors.length
-    ? sectors.map(s => {
-        const count = allData.filter(d=>norm(d.domaine)===norm(s)).length;
-        const sel = filters.domaine === s ? 'selected' : '';
-        return `<button class="fchip ${sel}" onclick="setFilter('domaine',\`${s.replace(/`/g,"'")}\`)">${esc(s).substring(0,20)} <span style="font-size:9px">(${count})</span></button>`;
-      }).join('')
-    : '<span style="font-size:11px;opacity:0.5">لا توجد خيارات</span>';
-
-  const cities = getAvailableValues('ville');
-  $('cityChips').innerHTML = cities.length
-    ? cities.map(v => {
-        const count = allData.filter(d=>norm(d.ville)===norm(v)).length;
-        const sel = filters.ville === v ? 'selected' : '';
-        return `<button class="fchip ${sel}" onclick="setFilter('ville',\`${v.replace(/`/g,"'")}\`)">${esc(v)} <span style="font-size:9px">(${count})</span></button>`;
-      }).join('')
-    : '<span style="font-size:11px;opacity:0.5">لا توجد خيارات</span>';
-
-  let tags = '';
-  if (filters.type) tags += `<div class="aft"><i class="fas fa-tag"></i> ${TYPE_NAMES[filters.type]}<button onclick="setFilter('type','${filters.type}')">✕</button></div>`;
-  if (filters.categorie) tags += `<div class="aft"><i class="fas fa-layer-group"></i> ${CAT_NAMES[filters.categorie]}<button onclick="setFilter('categorie','${filters.categorie}')">✕</button></div>`;
-  if (filters.domaine) tags += `<div class="aft"><i class="fas fa-folder"></i> ${esc(filters.domaine).substring(0,25)}<button onclick="setFilter('domaine',\`${filters.domaine.replace(/`/g,"'")}\`)">✕</button></div>`;
-  if (filters.ville) tags += `<div class="aft"><i class="fas fa-map-marker-alt"></i> ${esc(filters.ville)}<button onclick="setFilter('ville',\`${filters.ville.replace(/`/g,"'")}\`)">✕</button></div>`;
-  $('activeTags').innerHTML = tags;
-}
-
-function toggleFilterPanel() {
-  filterPanelOpen = !filterPanelOpen;
-  $('filterPanel').classList.toggle('open', filterPanelOpen);
-  const icon = $('#filterToggleIcon');
-  if (icon) icon.style.transform = filterPanelOpen ? 'rotate(180deg)' : 'rotate(0deg)';
-}
-
-// ============================================================
-// DIRECTORY
-// ============================================================
-function renderDirectory() {
-  refreshFilterUI();
-  const data = getFilteredData();
-  const total = allData.length;
-  
-  $('resultsCount').innerHTML = data.length < total
-    ? `عرض <span>${data.length}</span> من أصل ${total} ملف`
-    : `إجمالي <span>${total}</span> ملف مهني`;
-
-  $('dirSubTitle').textContent = `${data.length} نتيجة`;
-
-  if (!data.length) {
-    $('dirContent').innerHTML = `<div class="empty"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">لا توجد نتائج</div><div class="empty-sub">حاول تعديل خيارات البحث أو التصفية</div></div>`;
-    return;
-  }
-
-  data.sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
-  $('dirContent').innerHTML = data.map(renderContactCard).join('');
-}
-
-function renderContactCard(item) {
-  const bm = bookmarks.includes(item.id);
-  const isExpert = item.type === 'experts';
-  return `
-    <div class="contact-card" onclick="showProfile('${item.id}')">
-      <div class="avatar ${isExpert?'expert':''}">${getInits(item.name)}</div>
-      <div class="contact-main">
-        <div class="contact-name">${esc(item.name)}</div>
-        <div class="contact-sub">${esc([item.domaine,item.ville].filter(Boolean).join(' · '))||'معلومات غير متوفرة'}</div>
-        <div class="contact-chips">
-          <span class="cc ${isExpert?'cc-expert':'cc-supplier'}">${isExpert?'خبير':'مورد'}</span>
-          ${item.categorie ? `<span class="cc cc-sector">${CAT_NAMES[item.categorie]||item.categorie}</span>` : ''}
-        </div>
-      </div>
-      <div class="contact-actions">
-        <button class="cact ${bm?'bookmarked':''}" onclick="event.stopPropagation();toggleBm('${item.id}')" title="حفظ">
-          <i class="${bm?'fas':'far'} fa-bookmark"></i>
-        </button>
-        <button class="cact" onclick="event.stopPropagation();shareItem('${item.id}')" title="مشاركة">
-          <i class="fas fa-share-alt"></i>
-        </button>
-        ${isAdmin ? `
-        <button class="cact" onclick="event.stopPropagation();openEdit('${item.id}')" title="تعديل">
-          <i class="fas fa-pen"></i>
-        </button>
-        <button class="cact" onclick="event.stopPropagation();openDel('${item.id}')" title="حذف">
-          <i class="fas fa-trash-can"></i>
-        </button>
-        ` : ''}
-      </div>
-    </div>
-  `;
-}
-
-// ============================================================
-// EXPLORER
-// ============================================================
-function renderExplorer() {
-  const expQ = $('expSearch').value.trim();
-  let data = allData.filter(d => !expQ || hit(d.name,expQ)||hit(d.domaine,expQ)||hit(d.ville,expQ));
-
-  let html = '';
-  if (explorerStack.length === 0) {
-    const s = data.filter(d=>d.type==='fournisseurs').length;
-    const e = data.filter(d=>d.type==='experts').length;
-    html = `
-      <div class="contact-card" onclick="expNav('type','fournisseurs')">
-        <div class="avatar"><i class="fas fa-industry"></i></div>
-        <div class="contact-main"><div class="contact-name">الموردين</div><div class="contact-sub">${s} شركة</div></div>
-        <i class="fas fa-chevron-left" style="color:var(--whatsapp-teal)"></i>
-      </div>
-      <div class="contact-card" onclick="expNav('type','experts')">
-        <div class="avatar expert"><i class="fas fa-microchip"></i></div>
-        <div class="contact-main"><div class="contact-name">الخبراء</div><div class="contact-sub">${e} خبير</div></div>
-        <i class="fas fa-chevron-left" style="color:var(--whatsapp-teal)"></i>
-      </div>`;
-  } else if (explorerStack.length === 1) {
-    const type = explorerStack[0].type;
-    const base = data.filter(d=>d.type===type);
-    const sectors = {};
-    base.forEach(d => { const s=d.domaine||'أخرى'; sectors[s]=(sectors[s]||0)+1; });
-    html = Object.entries(sectors).sort().map(([s,cnt]) =>
-      `<div class="contact-card" onclick="expNav('domaine','${esc(s).replace(/'/g,"\\'")}')">
-        <div class="avatar"><i class="fas fa-folder-open"></i></div>
-        <div class="contact-main"><div class="contact-name">${esc(s)}</div><div class="contact-sub">${cnt} ملف</div></div>
-        <i class="fas fa-chevron-left"></i>
-      </div>`
-    ).join('');
-  } else if (explorerStack.length === 2) {
-    const type = explorerStack[0].type, dom = explorerStack[1].domaine;
-    const base = data.filter(d=>d.type===type && (d.domaine||'أخرى')===dom);
-    const specs = {};
-    base.forEach(d => { const sp=d.specialite||'عام'; specs[sp]=(specs[sp]||0)+1; });
-    html = Object.entries(specs).sort().map(([sp,cnt]) =>
-      `<div class="contact-card" onclick="expNav('specialite','${esc(sp).replace(/'/g,"\\'")}')">
-        <div class="avatar"><i class="fas fa-gear"></i></div>
-        <div class="contact-main"><div class="contact-name">${esc(sp)}</div><div class="contact-sub">${cnt} متخصص</div></div>
-        <i class="fas fa-chevron-left"></i>
-      </div>`
-    ).join('');
-  } else {
-    const type = explorerStack[0].type, dom = explorerStack[1].domaine, spec = explorerStack[2].specialite;
-    const items = data.filter(d=>d.type===type && (d.domaine||'أخرى')===dom && (d.specialite||'عام')===spec);
-    html = items.length ? items.map(renderContactCard).join('') : '<div class="empty"><div class="empty-icon"><i class="fas fa-user-slash"></i></div><div class="empty-title">لا توجد نتائج</div></div>';
-  }
-
-  $('expContent').innerHTML = html || '<div class="empty"><div class="empty-icon"><i class="fas fa-folder-open"></i></div><div class="empty-title">لا توجد عناصر</div></div>';
-  renderExpBreadcrumb();
-}
-
-function expNav(key, val) {
-  if (key==='type') explorerStack=[{type:val}];
-  else if (key==='domaine') explorerStack.push({domaine:val});
-  else if (key==='specialite') explorerStack.push({specialite:val});
-  renderExplorer();
-}
-
-function expGo(level) { explorerStack=explorerStack.slice(0,level); renderExplorer(); }
-
-function renderExpBreadcrumb() {
-  let html = `<div class="bc-item" onclick="expGo(0)" style="background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:16px;cursor:pointer"><i class="fas fa-home"></i> الرئيسية</div>`;
-  explorerStack.forEach((item,i) => {
-    const label = item.type ? TYPE_NAMES[item.type]||item.type : item.domaine||item.specialite||'';
-    html += `<span style="color:rgba(255,255,255,0.3)">›</span><div class="bc-item" style="background:${i===explorerStack.length-1?'var(--whatsapp-teal)':'rgba(255,255,255,0.05)'};padding:4px 10px;border-radius:16px;cursor:pointer" onclick="expGo(${i+1})">${esc(label)}</div>`;
-  });
-  $('expBreadcrumb').innerHTML = html;
-}
-
-// ============================================================
-// BOOKMARKS
-// ============================================================
-function renderBookmarks() {
-  const saved = allData.filter(d=>bookmarks.includes(d.id));
-  $('bmCount').textContent = saved.length ? `(${saved.length})` : '';
-  $('bmContent').innerHTML = saved.length
-    ? saved.map(renderContactCard).join('')
-    : `<div class="empty"><div class="empty-icon"><i class="far fa-bookmark"></i></div><div class="empty-title">لا توجد مفضلة</div><div class="empty-sub">اضغط على أيقونة الإشارة لحفظ الملفات</div></div>`;
-}
-
-function toggleBm(id) {
-  bookmarks.includes(id) ? (bookmarks=bookmarks.filter(b=>b!==id), toast('إزالة من المفضلة')) : (bookmarks.push(id), toast('إضافة إلى المفضلة'));
-  localStorage.setItem('cp_bm', JSON.stringify(bookmarks));
-  updateBmBadge();
-  if (curSection==='bm') renderBookmarks();
-  else renderCurrentSection();
-}
-
-function clearBookmarks() {
-  if (!bookmarks.length) return;
-  bookmarks = [];
-  localStorage.setItem('cp_bm', JSON.stringify(bookmarks));
-  updateBmBadge();
-  renderBookmarks();
-  toast('تم مسح المفضلة');
-}
-
-function updateBmBadge() {
-  const b = $('bmBadge');
-  b.textContent = bookmarks.length;
-  b.style.display = bookmarks.length ? 'flex' : 'none';
-}
-
-// ============================================================
-// PROFILE
-// ============================================================
-function showProfile(id) {
-  const item = allData.find(i=>i.id===id);
-  if (!item) return;
-  const isExpert = item.type==='experts';
-  const bm = bookmarks.includes(id);
-
-  $('profileBody').innerHTML = `
-    <div class="profile-head">
-      <div class="profile-avatar-large ${isExpert?'expert':''}">${getInits(item.name)}</div>
-      <div class="profile-name">${esc(item.name)}</div>
-      <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
-        <span class="cc ${isExpert?'cc-expert':'cc-supplier'}" style="padding:4px 12px;border-radius:20px">${isExpert?'خبير':'مورد'}</span>
-        ${item.categorie?`<span class="cc cc-sector" style="padding:4px 12px;border-radius:20px">${CAT_NAMES[item.categorie]||item.categorie}</span>`:''}
-      </div>
-    </div>
-    ${item.domaine&&item.domaine!=='Autre'?`<div class="info-row"><div class="info-icon"><i class="fas fa-folder"></i></div><div class="info-content"><div class="info-label">القطاع</div><div class="info-value">${esc(item.domaine)}</div></div></div>`:''}
-    ${item.specialite&&item.specialite!=='Général'?`<div class="info-row"><div class="info-icon"><i class="fas fa-gear"></i></div><div class="info-content"><div class="info-label">التخصص</div><div class="info-value">${esc(item.specialite)}</div></div></div>`:''}
-    ${item.ville?`<div class="info-row"><div class="info-icon"><i class="fas fa-map-marker-alt"></i></div><div class="info-content"><div class="info-label">المدينة</div><div class="info-value">${esc(item.ville)}</div></div></div>`:''}
-    ${item.phone?`<div class="info-row"><div class="info-icon"><i class="fas fa-phone"></i></div><div class="info-content"><div class="info-label">الهاتف</div><div class="info-value" dir="ltr">${esc(item.phone)}</div></div></div>`:''}
-    ${item.email?`<div class="info-row"><div class="info-icon"><i class="fas fa-envelope"></i></div><div class="info-content"><div class="info-label">البريد</div><div class="info-value" dir="ltr">${esc(item.email)}</div></div></div>`:''}
-    ${item.web?`<div class="info-row"><div class="info-icon"><i class="fas fa-globe"></i></div><div class="info-content"><div class="info-label">الموقع</div><div class="info-value" dir="ltr"><a href="${esc(item.web)}" target="_blank" style="color:var(--whatsapp-teal)">${esc(item.web)}</a></div></div></div>`:''}
-  `;
-
-  let footer = '';
-  if (item.phone) {
-    footer += `<button class="btn btn-primary" onclick="window.location.href='tel:${item.phone}'"><i class="fas fa-phone"></i> اتصال</button>`;
-    let wa = item.phone.replace(/[^0-9+]/g,'');
-    if (wa.startsWith('0')) wa='212'+wa.substring(1);
-    if (wa.startsWith('+')) wa=wa.substring(1);
-    footer += `<button class="btn btn-primary" style="background:#25D366;border:none" onclick="window.open('https://wa.me/${wa}','_blank')"><i class="fab fa-whatsapp"></i> واتساب</button>`;
-  }
-  if (item.email) footer += `<button class="btn btn-ghost" onclick="window.location.href='mailto:${item.email}'"><i class="fas fa-envelope"></i></button>`;
-  footer += `<button class="btn btn-ghost" onclick="toggleBmFromProfile('${id}')" id="bmBtn_${id}"><i class="${bm?'fas':'far'} fa-bookmark"></i> ${bm?'محفوظ':'حفظ'}</button>`;
-  footer += `<button class="btn btn-ghost" onclick="shareItem('${id}')"><i class="fas fa-share-alt"></i></button>`;
-  if (isAdmin) {
-    footer += `<button class="btn btn-ghost" onclick="closeOverlay('profileOverlay');openEdit('${id}')"><i class="fas fa-pen"></i> تعديل</button>`;
-    footer += `<button class="btn btn-danger" onclick="closeOverlay('profileOverlay');openDel('${id}')"><i class="fas fa-trash-can"></i> حذف</button>`;
-  }
-  $('profileFooter').innerHTML = footer;
-  openOverlay('profileOverlay');
-}
-
-function toggleBmFromProfile(id) {
-  toggleBm(id);
-  const bm = bookmarks.includes(id);
-  const btn = $(`bmBtn_${id}`);
-  if (btn) btn.innerHTML = `<i class="${bm?'fas':'far'} fa-bookmark"></i> ${bm?'محفوظ':'حفظ'}`;
-}
-
-function shareItem(id) {
-  const item = allData.find(i=>i.id===id);
-  if (!item) return;
-  const text = `📌 ${item.name}\n🏭 ${item.type==='fournisseurs'?'مورد':'خبير'}\n📍 ${item.ville||'المغرب'}\n📂 ${item.domaine||''}${item.phone?'\n📞 '+item.phone:''}`;
-  if (navigator.share) navigator.share({title:item.name,text}).catch(()=>{});
-  else { navigator.clipboard?.writeText(text).then(()=>toast('تم نسخ المعلومات')); window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank'); }
-}
-
-// ============================================================
-// DASHBOARD
-// ============================================================
-function renderDashboard() {
-  $('stSuppliers').textContent = allData.filter(d=>d.type==='fournisseurs').length;
-  $('stExperts').textContent = allData.filter(d=>d.type==='experts').length;
-  $('stCities').textContent = [...new Set(allData.map(d=>d.ville).filter(v=>v&&v.trim()))].length;
-  $('stSectors').textContent = [...new Set(allData.map(d=>d.domaine).filter(v=>v&&v.trim()))].length;
-  $('ccServices').textContent = allData.filter(d=>d.categorie==='services').length;
-  $('ccProducts').textContent = allData.filter(d=>d.categorie==='products').length;
-  $('ccMaqola').textContent = allData.filter(d=>d.categorie==='maqola').length;
-  $('ccYadAmila').textContent = allData.filter(d=>d.categorie==='yad-amila').length;
-  refreshChart();
-  renderSpotlight();
-  renderRecent();
-}
-
-function renderSpotlight() {
-  if (!allData.length) { $('spotlightEl').innerHTML='<div class="empty-sub">لا توجد بيانات</div>'; return; }
-  const item = allData[Math.floor(Math.random()*Math.min(allData.length,30))];
-  const isExpert = item.type==='experts';
-  $('spotlightEl').innerHTML = `
-    <div class="contact-card" onclick="showProfile('${item.id}')" style="padding:8px">
-      <div class="avatar ${isExpert?'expert':''}" style="width:44px;height:44px">${getInits(item.name)}</div>
-      <div class="contact-main">
-        <div class="contact-name">${esc(item.name)}</div>
-        <div class="contact-sub">${esc([item.domaine,item.ville].filter(Boolean).join(' · '))||'معلومات غير متوفرة'}</div>
-      </div>
-      <i class="fas fa-chevron-left" style="color:var(--whatsapp-teal)"></i>
-    </div>`;
-}
-
-function renderRecent() {
-  const recent = allData.slice(0,8);
-  if (!recent.length) { $('recentEl').innerHTML='<div class="empty-sub">لا توجد بيانات</div>'; return; }
-  $('recentEl').innerHTML = recent.map(item => `
-    <div onclick="showProfile('${item.id}')" style="text-align:center;min-width:70px;cursor:pointer">
-      <div class="avatar ${item.type==='experts'?'expert':''}" style="width:50px;height:50px;margin:0 auto 6px">${getInits(item.name)}</div>
-      <div style="font-size:10px;font-weight:600">${esc(item.name.substring(0,12))}</div>
-      <div style="font-size:9px;opacity:0.6">${esc(item.ville||item.domaine||'').substring(0,10)}</div>
-    </div>`).join('');
-}
-
-// ============================================================
-// CHART
-// ============================================================
-function refreshChart() {
-  const vals = [
-    allData.filter(d=>d.categorie==='services').length,
-    allData.filter(d=>d.categorie==='products').length,
-    allData.filter(d=>d.categorie==='maqola').length,
-    allData.filter(d=>d.categorie==='yad-amila').length
-  ];
-  const ctx = $('myChart').getContext('2d');
-  if (myChart) myChart.destroy();
-  const isLight = document.body.classList.contains('light');
-  const tc = isLight ? '#111b21' : 'white';
-  const colors = ['#25D366', '#128C7E', '#075E54', '#0a3d32'];
-  myChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['خدمات','منتجات','مقاولة','يد عاملة'],
-      datasets: [{
-        data: vals,
-        backgroundColor: colors,
-        borderWidth: 0
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: true,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: tc, font:{size:10,family:'Cairo'}, padding:12 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} ملف` } }
-      }
-    }
-  });
-}
-
-// ============================================================
-// ADMIN
-// ============================================================
-function openAdminPanel() {
-  if (isAdmin) { logoutAdmin(); } else { $('adminPass').value=''; openOverlay('adminOverlay'); }
-}
-
-function verifyAdmin() {
-  if ($('adminPass').value === ADMIN_PWD) {
-    isAdmin = true;
-    sessionStorage.setItem('cpAdmin','1');
-    document.querySelectorAll('.admin-only').forEach(el => { el.style.display = 'flex'; });
-    $('adminBtn').classList.add('admin-active');
-    closeOverlay('adminOverlay');
-    toast('✓ وضع المدير مفعل');
-    renderCurrentSection();
-  } else { toast('كلمة المرور غير صحيحة'); }
-}
-
-function logoutAdmin() {
-  isAdmin = false;
-  sessionStorage.removeItem('cpAdmin');
-  document.querySelectorAll('.admin-only').forEach(el => { el.style.display = 'none'; });
-  $('adminBtn').classList.remove('admin-active');
-  toast('تم الخروج من وضع المدير');
-  renderCurrentSection();
-}
-
-function checkAdmin() {
-  if (sessionStorage.getItem('cpAdmin')==='1') {
-    isAdmin=true;
-    document.querySelectorAll('.admin-only').forEach(el=>{el.style.display='flex';});
-    $('adminBtn').classList.add('admin-active');
-  }
-}
-
-// ============================================================
-// CRUD (Admin Only)
-// ============================================================
-function openAdd() {
-  if (!isAdmin) { toast('صلاحية المدير مطلوبة'); return; }
-  $('editTitle').textContent='إضافة ملف جديد';
-  ['editId','editName','editDomaine','editSpec','editVille','editPhone','editEmail','editWeb'].forEach(id=>$(id).value='');
-  $('editType').value='fournisseurs'; $('editCat').value='services';
-  openOverlay('editOverlay');
-}
-
-function openEdit(id) {
-  if (!isAdmin) { toast('صلاحية المدير مطلوبة'); return; }
-  const item = allData.find(i=>i.id===id);
-  if (!item) return;
-  $('editTitle').textContent='تعديل ملف';
-  $('editId').value=item.id; $('editName').value=item.name||''; $('editType').value=item.type;
-  $('editCat').value=item.categorie||'services'; $('editDomaine').value=item.domaine||'';
-  $('editSpec').value=item.specialite||''; $('editVille').value=item.ville||'';
-  $('editPhone').value=item.phone||''; $('editEmail').value=item.email||''; $('editWeb').value=item.web||'';
-  openOverlay('editOverlay');
-}
-
-async function saveProfile() {
-  if (!isAdmin) { toast('صلاحية المدير مطلوبة'); return; }
-  const id = $('editId').value;
-  const data = {
-    id: id || `${Date.now()}_${Math.random().toString(36).slice(2)}`,
-    name: $('editName').value.trim(),
-    type: $('editType').value,
-    categorie: $('editCat').value,
-    domaine: $('editDomaine').value.trim()||'Autre',
-    specialite: $('editSpec').value.trim()||'Général',
-    ville: $('editVille').value.trim(),
-    phone: fmtPhone($('editPhone').value),
-    email: $('editEmail').value.trim(),
-    web: $('editWeb').value.trim()
-  };
-  if (!data.name) { toast('الاسم مطلوب'); return; }
-  setLoading(true);
-  try {
-    const typeKey = data.type==='fournisseurs'?'FOURNISSEURS':'EXPERTS';
-    const catMap = {services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
-    const catKey = catMap[data.categorie]||'SERVICES';
-    const path = `professionals/${typeKey}/${catKey}`;
-    const snap = await db.ref(path).once('value');
-    let arr = snap.val()||[];
-    const idx = arr.findIndex(i=>i.id===id);
-    idx!==-1 ? arr[idx]=data : arr.push(data);
-    await db.ref(path).set(arr);
-    toast(id?'✓ تم التحديث':'✓ تمت الإضافة');
-    closeOverlay('editOverlay');
-    await loadDB();
-  } catch(e) { toast('خطأ: '+e.message); }
-  setLoading(false);
-}
-
-function openDel(id) {
-  if (!isAdmin) { toast('صلاحية المدير مطلوبة'); return; }
-  const item = allData.find(i=>i.id===id);
-  if (!item) return;
-  pendingDel = id;
-  $('delMsg').innerHTML = `هل أنت متأكد من حذف ملف <strong>${esc(item.name)}</strong>؟<br><span style="font-size:11px;opacity:0.6">لا يمكن التراجع عن هذا الإجراء.</span>`;
-  openOverlay('delOverlay');
-}
-
-async function doDelete() {
-  if (!isAdmin||!pendingDel) return;
-  const item = allData.find(i=>i.id===pendingDel);
-  if (!item) return;
-  setLoading(true);
-  try {
-    const typeKey = item.type==='fournisseurs'?'FOURNISSEURS':'EXPERTS';
-    const catMap = {services:'SERVICES',products:'PRODUITS',maqola:'MAQAOLA','yad-amila':'YAD AMILA'};
-    const catKey = catMap[item.categorie]||'SERVICES';
-    const path = `professionals/${typeKey}/${catKey}`;
-    const snap = await db.ref(path).once('value');
-    await db.ref(path).set((snap.val()||[]).filter(i=>i.id!==pendingDel));
-    toast('✓ تم الحذف');
-    closeOverlay('delOverlay');
-    pendingDel = null;
-    await loadDB();
-  } catch(e) { toast('خطأ'); }
-  setLoading(false);
-}
-
-// ============================================================
-// SYNC (Admin Only)
-// ============================================================
-async function syncToFirebase() {
-  if (!isAdmin) { toast('صلاحية المدير مطلوبة'); return; }
-  if (!confirm('سيتم استبدال جميع البيانات. هل أنت متأكد؟')) return;
-  setLoading(true);
-  try {
-    const struct = {"FOURNISSEURS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]},"EXPERTS":{"SERVICES":[],"PRODUITS":[],"MAQAOLA":[],"YAD AMILA":[]}};
-    csvFournisseurs.forEach((item,i)=>{struct["FOURNISSEURS"]["SERVICES"].push({id:`four_${Date.now()}_${i}`,name:item.name||'',domaine:item.domaine||'Autre',specialite:item.specialite||'Général',ville:item.ville||'',phone:item.phone||'',email:item.email||'',web:item.web||''});});
-    csvExperts.forEach((item,i)=>{struct["EXPERTS"]["YAD AMILA"].push({id:`exp_${Date.now()}_${i}`,name:item.name||'',domaine:item.domaine||'Autre',specialite:item.specialite||'Général',ville:item.ville||'',phone:item.phone||'',email:item.email||'',web:item.web||''});});
-    await db.ref('professionals').set(struct);
-    toast('✓ تمت المزامنة');
-    await loadDB();
-  } catch(e) { toast('خطأ: '+e.message); }
-  setLoading(false);
-}
-
-// ============================================================
-// PICKER
-// ============================================================
-function openPicker(title, items, cb) {
-  pickerCb = cb;
-  $('pickerTitle').textContent = title;
-  $('pickerBody').innerHTML = `
-    <div class="contact-card" onclick="pickItem(null)">
-      <div class="avatar"><i class="fas fa-layer-group"></i></div>
-      <div class="contact-main"><div class="contact-name">الكل</div></div>
-    </div>
-    ${items.map(it=>`<div class="contact-card" onclick="pickItem(\`${String(it).replace(/`/g,"'")}\`)">
-      <div class="avatar"><i class="fas fa-tag"></i></div>
-      <div class="contact-main"><div class="contact-name">${esc(it)}</div></div>
-    </div>`).join('')}`;
-  openOverlay('pickerOverlay');
-}
-
-function pickItem(val) { if(pickerCb) pickerCb(val); closeOverlay('pickerOverlay'); }
-
-// ============================================================
-// DATA LOADING
-// ============================================================
-async function loadCSV(url) {
-  try {
-    const res = await fetch(url);
-    const text = await res.text();
-    return text.split(/\r?\n/).slice(1)
-      .filter(line=>line.trim())
-      .map(line=>{
-        const cols=line.split(',');
-        if (!cols[1]?.trim()) return null;
-        return {
-          name: cols[1]?.replace(/["']/g,'').trim()||'',
-          domaine: cols[2]?.replace(/["']/g,'').trim()||'Autre',
-          specialite: cols[3]?.replace(/["']/g,'').trim()||'Général',
-          ville: cols[4]?.replace(/["']/g,'').trim()||'',
-          phone: fmtPhone(cols[5]?.replace(/["']/g,'').trim()),
-          email: cols[6]?.replace(/["']/g,'').trim()||'',
-          web: cols[7]?.replace(/["']/g,'').trim()||''
-        };
-      }).filter(Boolean);
-  } catch(e) { return []; }
-}
-
-async function loadDB() {
-  try {
-    const snap = await db.ref('professionals').once('value');
-    const raw = snap.val();
-    allData = [];
-    if (raw) {
-      for (const [typeKey,cats] of Object.entries(raw)) {
-        const type = typeKey==='FOURNISSEURS'?'fournisseurs':'experts';
-        const catMap = {'SERVICES':'services','PRODUITS':'products','MAQAOLA':'maqola','YAD AMILA':'yad-amila'};
-        for (const [catKey,items] of Object.entries(cats)) {
-          const categorie = catMap[catKey]||'services';
-          if (Array.isArray(items)) {
-            items.forEach(item => {
-              if (item?.name) allData.push({...item, type, categorie, id: item.id||`${type}_${Date.now()}_${Math.random()}`});
-            });
-          }
-        }
-      }
-    }
-    allData.sort((a,b)=>(a.name||'').localeCompare(b.name||'','ar'));
-    renderCurrentSection();
-    updateBmBadge();
-  } catch(e) { toast('خطأ في تحميل البيانات'); }
-}
-
-function renderCurrentSection() {
-  if (curSection==='dir') renderDirectory();
-  else if (curSection==='exp') renderExplorer();
-  else if (curSection==='bm') renderBookmarks();
-  else renderDashboard();
-}
-
-// ============================================================
-// EVENTS
-// ============================================================
-document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click', ()=>switchSection(el.dataset.s)));
-$('themeBtn').addEventListener('click', toggleTheme);
-$('adminBtn').addEventListener('click', openAdminPanel);
-$('addBtn').addEventListener('click', openAdd);
-
-$('dirSearch').addEventListener('input', e => {
-  filters.search = e.target.value;
-  refreshFilterUI();
-  renderDirectory();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeM();
+  if(e.key==='Enter'&&e.target.classList?.contains('card'))A.open(e.target.dataset.v);
 });
 
-$('expSearch').addEventListener('input', ()=>renderExplorer());
-
-document.querySelectorAll('.overlay').forEach(el => {
-  el.addEventListener('click', e => { if(e.target===el) el.classList.remove('show'); });
-});
-
-function clearDirSearch() {
-  $('dirSearch').value='';
-  filters.search='';
-  refreshFilterUI();
-  renderDirectory();
-}
-
-// ============================================================
-// INIT
-// ============================================================
-async function init() {
-  setLoading(true);
-  checkAdmin();
-  const [exp,four] = await Promise.all([loadCSV(CSV_EXPERTS), loadCSV(CSV_FOURNISSEURS)]);
-  csvExperts = exp; csvFournisseurs = four;
-  await loadDB();
-  refreshFilterUI();
-  setTimeout(()=>{ setLoading(false); toast('مرحباً بك في Connect Pro ✨'); }, 400);
-}
-
-init();
-
-// Expose globals
-window.switchSection=switchSection; window.quickNav=quickNav; window.quickNavPicker=quickNavPicker;
-window.showProfile=showProfile; window.toggleBm=toggleBm; window.toggleBmFromProfile=toggleBmFromProfile;
-window.shareItem=shareItem; window.closeOverlay=closeOverlay; window.verifyAdmin=verifyAdmin;
-window.openEdit=openEdit; window.openAdd=openAdd; window.openDel=openDel; window.doDelete=doDelete;
-window.saveProfile=saveProfile; window.syncToFirebase=syncToFirebase;
-window.setFilter=setFilter; window.resetFilters=resetFilters; window.toggleFilterPanel=toggleFilterPanel;
-window.expNav=expNav; window.expGo=expGo; window.pickItem=pickItem; window.clearBookmarks=clearBookmarks;
-window.clearDirSearch=clearDirSearch; window.logoutAdmin=logoutAdmin;
+(async()=>{
+  try{if(window.firebase){firebase.initializeApp(FBC);S.fb=firebase.database()}}catch(e){console.warn(e)}
+  await loadDB();await refreshUser();
+  go('home');busy(false);
+  const m=location.hash.match(/^#p=(.+)$/);
+  if(m)setTimeout(()=>{const r=byId(m[1]);r?profile(r.id):toast('الرابط غير صالح')},300);
+})();
+})();
 </script>
 </body>
 </html>
