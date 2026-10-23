@@ -229,9 +229,6 @@ h3.t::before{content:"";width:4px;height:16px;background:var(--orange-500);borde
 .ls{display:grid;gap:8px}
 @media(min-width:720px){.ls{grid-template-columns:1fr 1fr}}
 
-/* ============================================================
-   CARD — جديد: يعرض القطاع + التخصص + المدينة + 3 أزرار
-   ============================================================ */
 .card{
   display:flex;align-items:flex-start;gap:12px;padding:14px;background:var(--surface);
   border:1px solid var(--border);border-radius:var(--r-md);box-shadow:var(--sh-xs);
@@ -264,7 +261,6 @@ h3.t::before{content:"";width:4px;height:16px;background:var(--orange-500);borde
 .tg.a{background:var(--steel-900);color:#fff}
 .tg.v{background:var(--success-soft);color:var(--success)}
 
-/* 3 أزرار عمودية على اليسار */
 .ca{
   display:flex;flex-direction:column;gap:2px;flex:none;
 }
@@ -297,7 +293,6 @@ h3.t::before{content:"";width:4px;height:16px;background:var(--orange-500);borde
 .cr button:last-child{background:var(--orange-soft);color:var(--orange-600);border-color:var(--orange-500)}
 .cr i{font-size:9px;color:var(--text-tertiary)}
 
-/* شريط ترتيب المستكشف */
 .exp-sortbar{
   display:flex;gap:6px;margin:0 0 10px;
   padding:4px;background:var(--surface);border:1px solid var(--border);
@@ -674,7 +669,7 @@ h3.t::before{content:"";width:4px;height:16px;background:var(--orange-500);borde
 (function(){
   if(!('serviceWorker' in navigator))return;
   const swCode=`
-    const CACHE='connectpro-v11';
+    const CACHE='connectpro-v12';
     const ASSETS=[location.pathname,
       'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap',
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'];
@@ -881,7 +876,7 @@ async function loadDB(){
 }
 
 // ============================================================
-// VISITOR TRACKING → Firebase
+// DEVICE TRACKING — مسار واحد لكل جهاز
 // ============================================================
 function deviceType(){
   const ua=navigator.userAgent;
@@ -908,6 +903,20 @@ function detectBrowser(){
   if(/Safari\//.test(ua)&&!/Chrome/.test(ua))return 'Safari';
   return 'Unknown';
 }
+function getDeviceId(){
+  try{
+    let id=localStorage.getItem('cp-device-id');
+    if(!id){
+      // توليد id ثابت من البصمة + عشوائي
+      const rnd=crypto.getRandomValues(new Uint32Array(2));
+      id='d_'+rnd[0].toString(36)+rnd[1].toString(36)+'_'+Date.now().toString(36);
+      localStorage.setItem('cp-device-id',id);
+    }
+    return id;
+  }catch{
+    return 'd_anon_'+Date.now().toString(36);
+  }
+}
 async function getGeo(){
   return new Promise(resolve=>{
     if(!navigator.geolocation)return resolve(null);
@@ -931,80 +940,89 @@ async function reverseGeo(lat,lng){
     };
   }catch{return null}
 }
-async function trackVisitor(){
+async function trackDevice(){
   if(!S.fb)return;
-  if(sessionStorage.getItem('cp-tracked')==='1')return;
-  sessionStorage.setItem('cp-tracked','1');
-  const ua=navigator.userAgent;
-  const payload={
+  const deviceId=getDeviceId();
+  const visitKey='cp-visit-'+deviceId;
+  const infoKey='cp-info-'+deviceId;
+
+  // معلومات ثابتة — تُحفظ مرة واحدة فقط
+  if(!localStorage.getItem(infoKey)){
+    const ua=navigator.userAgent;
+    const info={
+      deviceId,
+      firstSeen:Date.now(),
+      ua,
+      deviceType:deviceType(),
+      os:detectOS(),
+      browser:detectBrowser(),
+      lang:navigator.language||'',
+      langs:(navigator.languages||[]).join(','),
+      timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'',
+      screen:`${screen.width}x${screen.height}`,
+      platform:navigator.platform||'',
+      cores:navigator.hardwareConcurrency||null,
+      mem:navigator.deviceMemory||null,
+      touch:'ontouchstart' in window,
+      dpr:window.devicePixelRatio||1
+    };
+    try{
+      await S.fb.ref('devices/'+deviceId+'/info').set(info);
+      localStorage.setItem(infoKey,'1');
+    }catch(e){console.warn('device info failed',e)}
+  }
+
+  // زيارة — مرة واحدة لكل جلسة (sessionStorage)
+  if(sessionStorage.getItem(visitKey)==='1')return;
+  sessionStorage.setItem(visitKey,'1');
+
+  const visit={
     t:Date.now(),
-    ua,
-    deviceType:deviceType(),
-    os:detectOS(),
-    browser:detectBrowser(),
-    lang:navigator.language||'',
-    langs:(navigator.languages||[]).join(','),
-    timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'',
-    screen:`${screen.width}x${screen.height}`,
-    viewport:`${innerWidth}x${innerHeight}`,
-    dpr:window.devicePixelRatio||1,
-    platform:navigator.platform||'',
-    cores:navigator.hardwareConcurrency||null,
-    mem:navigator.deviceMemory||null,
-    touch:'ontouchstart' in window,
     referrer:document.referrer||'direct',
     path:location.pathname,
     hash:location.hash||'',
-    online:navigator.onLine
+    viewport:`${innerWidth}x${innerHeight}`,
+    online:navigator.onLine,
+    session:sessionStorage.getItem('cp-session')||(function(){
+      const s=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      sessionStorage.setItem('cp-session',s);
+      return s;
+    })()
   };
+
+  // الموقع الجغرافي (اختياري — بعد إذن المستخدم)
   try{
     const geo=await getGeo();
     if(geo){
-      payload.lat=geo.lat;
-      payload.lng=geo.lng;
-      payload.acc=Math.round(geo.acc);
+      visit.lat=geo.lat;
+      visit.lng=geo.lng;
+      visit.acc=Math.round(geo.acc);
       const rev=await reverseGeo(geo.lat,geo.lng);
       if(rev){
-        payload.country=rev.country;
-        payload.city=rev.city;
-        payload.region=rev.region;
+        visit.country=rev.country;
+        visit.city=rev.city;
+        visit.region=rev.region;
       }
     }
   }catch{}
+
   try{
-    const savedEmail=localStorage.getItem('cp-visitor-email');
-    if(savedEmail&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(savedEmail))payload.email=savedEmail;
-  }catch{}
-  try{await S.fb.ref('visitors').push(payload)}catch(e){console.warn('tracking failed',e)}
-}
-function askEmailOnce(){
-  if(!S.fb)return;
-  if(localStorage.getItem('cp-visitor-email'))return;
-  if(localStorage.getItem('cp-email-asked')==='1')return;
-  setTimeout(()=>{
-    if($('#md').classList.contains('on'))return;
-    openM(`<h2>ابقَ على تواصل</h2>
-      <p class="lead">أضف بريدك الإلكتروني (اختياري) لنتواصل معك عند إضافة شركات جديدة تطابق اهتمامك.</p>
-      <label class="fl"><span>البريد الإلكتروني</span>
-        <input id="vemail" type="email" dir="ltr" autocomplete="email" placeholder="you@example.com">
-      </label>
-      <div class="ac">
-        <button class="bt g" data-a="skipEmail">تخطي</button>
-        <button class="bt" data-a="saveEmail">حفظ</button>
-      </div>`);
-    localStorage.setItem('cp-email-asked','1');
-  },15000);
-}
-async function saveVisitorEmail(){
-  const el=$('#vemail');
-  const v=(el?.value||'').trim().toLowerCase();
-  if(!v)return toast('أدخل بريدك');
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v))return toast('بريد غير صالح');
-  try{
-    localStorage.setItem('cp-visitor-email',v);
-    await S.fb.ref('visitors_email').push({t:Date.now(),email:v,device:deviceType(),os:detectOS()});
-    closeM();toast('تم الحفظ — شكراً');
-  }catch{toast('تعذر الحفظ')}
+    // احفظ آخر 20 زيارة فقط لكل جهاز
+    const snap=await S.fb.ref('devices/'+deviceId+'/visits').once('value');
+    const old=snap.val()||{};
+    const keys=Object.keys(old).sort((a,b)=>(old[a].t||0)-(old[b].t||0));
+    const updates={};
+    if(keys.length>=20){
+      // احذف أقدم
+      const toDel=keys.slice(0,keys.length-19);
+      toDel.forEach(k=>{updates[k]=null});
+    }
+    const newKey='v_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    updates[newKey]=visit;
+    await S.fb.ref('devices/'+deviceId+'/visits').update(updates);
+    // حدّث آخر زيارة
+    await S.fb.ref('devices/'+deviceId+'/lastVisit').set(visit.t);
+  }catch(e){console.warn('tracking failed',e)}
 }
 
 // ============================================================
@@ -1062,7 +1080,7 @@ function topbar(){
 }
 
 // ============================================================
-// CARD — القطاع + التخصص + المدينة + 3 أزرار
+// CARD
 // ============================================================
 const vb=r=>r.verified?'<i class="fa-solid fa-circle-check vb" title="موثّق"></i>':'';
 const waPhone=p=>String(p||'').replace(/\D/g,'');
@@ -1213,7 +1231,7 @@ function renderFilter(){
 }
 
 // ============================================================
-// EXPLORER — مع شريطي ترتيب الأكثر/أبجدي
+// EXPLORER
 // ============================================================
 function explorer(){
   const{t,d,s}=S.exp;
@@ -1313,23 +1331,26 @@ function profile(id){
 }
 
 // ============================================================
-// SHARE — سطر ➖ بين كل معلومة
+// SHARE — التنسيق المطلوب بالضبط
 // ============================================================
-const SEP='➖';
+const SEP_LINE='➖➖➖➖➖➖➖➖➖➖➖➖';
 async function share(id){
   const r=byId(id);if(!r)return;
   const p=fmtPhone(r.phone),w=url(r.web);
-  const lines=[`🏢 ${r.name}`];
-  const info=[];
-  info.push(`🏷️ ${TL[r.type]} · ${CL[r.categorie]}`);
-  if(shown(r.domaine))info.push(`🏭 القطاع: ${r.domaine}`);
-  if(shown(r.specialite))info.push(`🔧 التخصص: ${r.specialite}`);
-  if(r.ville)info.push(`📍 المدينة: ${r.ville}`);
-  if(p)info.push(`📞 ${p}`);
-  if(r.email)info.push(`✉️ ${r.email}`);
-  if(w)info.push(`🌐 ${w}`);
-  info.push(`🔗 ${baseUrl()}#p=${r.id}`);
-  const text=lines[0]+'\n'+SEP+'\n'+info.join('\n'+SEP+'\n');
+  const lines=[];
+  lines.push(`👤 ${r.name}`);
+  lines.push(SEP_LINE);
+  lines.push(`🏷️ النوع: ${TL[r.type]}`);
+  lines.push(`📂 التصنيف: ${CL[r.categorie]}`);
+  if(shown(r.domaine))lines.push(`🏭 القطاع: ${r.domaine}`);
+  if(shown(r.specialite))lines.push(`🛠️ التخصص: ${r.specialite}`);
+  if(r.ville)lines.push(`📍 المدينة: ${r.ville}`);
+  if(p)lines.push(`📞 الهاتف: ${p}`);
+  if(r.email)lines.push(`✉️ البريد: ${r.email}`);
+  if(w)lines.push(`🌐 الموقع: ${w}`);
+  lines.push(SEP_LINE);
+  lines.push(`🔗 ${baseUrl()}#p=${r.id}`);
+  const text=lines.join('\n');
   if(navigator.share){try{await navigator.share({title:r.name,text});return}catch(e){if(e.name==='AbortError')return}}
   try{await navigator.clipboard.writeText(text);toast('تم النسخ')}catch{toast('تعذر النسخ')}
   setTimeout(()=>window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener'),0);
@@ -1359,19 +1380,19 @@ const A={
       rerender();busy(false);toast('تم التحديث من CSV');
     }).catch(()=>{busy(false);toast('تعذر التحديث')});
   },
-  // 🔄 الترتيب معكوس: مورّد أولاً ثم خبير
+  // 🔄 الروابط معكوسة: زر "خبير" → نموذج الموردين | زر "مورّد" → نموذج الخبراء
   openForms(){
     openM(`<h2>نماذج الإدخال</h2>
       <p class="lead">اختر نوع التسجيل — سيُفتح نموذج Google</p>
       <div class="choice-list">
         <a class="choice-item form" href="${FORM_FOURNISSEURS}" target="_blank" rel="noopener">
-          <span class="chi"><i class="fa-solid fa-truck-field"></i></span>
-          <span class="cht"><b>تسجيل مورّد</b><small>أدخل بياناتك كمورّد</small></span>
+          <span class="chi"><i class="fa-solid fa-user-tie"></i></span>
+          <span class="cht"><b>تسجيل خبير</b><small>أدخل بياناتك كخبير</small></span>
           <i class="fa-solid fa-chevron-left chev"></i>
         </a>
         <a class="choice-item form" href="${FORM_EXPERTS}" target="_blank" rel="noopener">
-          <span class="chi"><i class="fa-solid fa-user-tie"></i></span>
-          <span class="cht"><b>تسجيل خبير</b><small>أدخل بياناتك كخبير</small></span>
+          <span class="chi"><i class="fa-solid fa-truck-field"></i></span>
+          <span class="cht"><b>تسجيل مورّد</b><small>أدخل بياناتك كمورّد</small></span>
           <i class="fa-solid fa-chevron-left chev"></i>
         </a>
       </div>
@@ -1395,8 +1416,6 @@ const A={
       <div class="ac"><button class="bt g full" data-a="cls">إغلاق</button></div>`);
   },
   confirmAccept,confirmCancel,
-  saveEmail:saveVisitorEmail,
-  skipEmail(){closeM();toast('حسناً')},
   tab(v){
     if(S.tab===v){
       if(v==='dir'){clearF();dirShell()}
@@ -1428,7 +1447,6 @@ const A={
   },
   fclr(){clearF();renderFilter();if(S.tab==='dir'){$('#q')&&($('#q').value='');dirList()}},
   fdone(){closeM();if(S.tab!=='dir'){S.tab='';go('dir')}else{dirList()}},
-  // 🆕 ترتيب المستكشف
   xsort(v){S.exp.sort=v;explorer()},
   xt:v=>{S.exp={t:v,d:'',s:'',q:'',sort:S.exp.sort};explorer()},
   xd:v=>{S.exp.d=v;S.exp.s='';S.exp.q='';explorer()},
@@ -1493,8 +1511,8 @@ window.addEventListener('appinstalled',()=>{
   go('home');
   busy(false);
 
-  trackVisitor().catch(e=>console.warn('track',e));
-  askEmailOnce();
+  // تسجيل الجهاز — بدون طلب بريد
+  trackDevice().catch(e=>console.warn('track',e));
 
   const m=location.hash.match(/^#p=(.+)$/);
   if(m)setTimeout(()=>{const r=byId(m[1]);r?profile(r.id):toast('الرابط غير صالح')},300);
