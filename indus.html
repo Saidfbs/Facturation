@@ -15,7 +15,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root{
-  /* Modern palette — slate + emerald + amber accents */
   --ink-950:#0A0F1A;--ink-900:#0F172A;--ink-800:#1E293B;--ink-700:#334155;--ink-600:#475569;--ink-500:#64748B;--ink-400:#94A3B8;--ink-300:#CBD5E1;--ink-200:#E2E8F0;--ink-100:#F1F5F9;--ink-50:#F8FAFC;
   --accent:#10B981;--accent-dark:#059669;--accent-light:#34D399;--accent-soft:rgba(16,185,129,.12);
   --amber:#F59E0B;--amber-dark:#D97706;--amber-soft:rgba(245,158,11,.14);
@@ -612,9 +611,9 @@ h3.t .h3-badge{
 #loc-banner .la .allow:hover{filter:brightness(1.06)}
 #loc-banner .la .allow i{font-size:10px;margin-inline-end:4px}
 
-/* ============ BOTTOM NAV ============ */
+/* ============ BOTTOM NAV (4 items) ============ */
 #bn{
-  position:fixed;inset-inline:0;bottom:0;z-index:29;display:grid;grid-template-columns:repeat(5,1fr);
+  position:fixed;inset-inline:0;bottom:0;z-index:29;display:grid;grid-template-columns:repeat(4,1fr);
   padding:8px 6px calc(8px + var(--sb));
   background:color-mix(in srgb,var(--surface) 92%,transparent);
   backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);
@@ -629,12 +628,6 @@ h3.t .h3-badge{
 .bi.on{color:var(--accent-dark)}
 .bi.on i{transform:scale(1.1)}
 .bi.on::after{content:"";position:absolute;top:0;inset-inline:calc(50% - 16px);width:32px;height:3px;background:linear-gradient(90deg,var(--accent),var(--sky));border-radius:0 0 4px 4px}
-.bi .bub{
-  position:absolute;top:2px;inset-inline-end:calc(50% - 24px);min-width:18px;height:18px;padding:0 5px;
-  border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-dark));color:#fff;
-  font:700 10px var(--fh);display:grid;place-items:center;line-height:1;box-shadow:0 0 0 2px var(--surface);
-}
-.bi .bub[hidden]{display:none}
 
 /* ============ TOAST ============ */
 #ts{
@@ -745,7 +738,6 @@ h3.t .h3-badge{
   <section class="tab" id="t-dir"></section>
   <section class="tab" id="t-exp"></section>
   <section class="tab" id="t-about"></section>
-  <section class="tab" id="t-fav"></section>
 </main>
 
 <nav id="bn" aria-label="التنقل الرئيسي">
@@ -753,7 +745,6 @@ h3.t .h3-badge{
   <button class="bi" data-a="tab" data-v="dir"><i class="fa-solid fa-address-book"></i><span>الدليل</span></button>
   <button class="bi" data-a="tab" data-v="exp"><i class="fa-solid fa-diagram-project"></i><span>المستكشف</span></button>
   <button class="bi" data-a="tab" data-v="about"><i class="fa-solid fa-circle-info"></i><span>من نحن</span></button>
-  <button class="bi" data-a="tab" data-v="fav"><i class="fa-solid fa-star"></i><span>المفضلة</span><span class="bub" id="fb" hidden>0</span></button>
 </nav>
 
 <div id="loc-banner">
@@ -1319,25 +1310,18 @@ function renderExplorerList(){
   return'<div class="ls">'+base.filter(r=>r.domaine===d&&r.specialite===s).map(card).join('')+'</div>';
 }
 
-// FAVORITES (also visible here)
-function favorites(){
-  const f=S.fav.map(byId).filter(Boolean);
-  $('#t-fav').innerHTML=`<h3 class="t" style="margin-top:0">المفضلة <span class="h3-badge">${f.length}</span></h3>${f.length?`<div class="ls">${f.map(card).join('')}</div><button class="bt g" data-a="favclr" style="margin-top:14px;width:100%"><i class="fa-solid fa-trash"></i> مسح الكل</button>`:empty('لا مفضلات بعد','اضغط النجمة على أي شركة','fa-star')}`;
-}
-
 // NAV
 function go(t){
   if(S.tab==='dir'&&t!=='dir')clearF();
   if(S.tab==='exp'&&t!=='exp')S.exp={t:'',d:'',s:'',q:'',sort:S.exp.sort};
   S.tab=t;
   $$('.tab').forEach(e=>e.classList.toggle('on',e.id==='t-'+t));
-  ({home,dir:dirShell,exp:explorer,about,fav:favorites})[t]();
+  ({home,dir:dirShell,exp:explorer,about})[t]();
   $$('.bi').forEach(e=>e.classList.toggle('on',e.dataset.v===t));
-  topbar();favBadge();
+  topbar();
   window.scrollTo({top:0,behavior:'instant'});
 }
 const rerender=()=>go(S.tab);
-function favBadge(){const b=$('#fb');if(!b)return;b.hidden=!S.fav.length;b.textContent=S.fav.length>99?'99+':S.fav.length}
 
 // PROFILE
 function profile(id){
@@ -1390,7 +1374,6 @@ function toggleFav(id){
   const i=S.fav.indexOf(id);i>=0?S.fav.splice(i,1):S.fav.push(id);
   try{localStorage.setItem('cp-fav',JSON.stringify(S.fav))}catch{}
   toast(i>=0?'أُزيلت من المفضلة':'أُضيفت إلى المفضلة');
-  favBadge();
   if(!$('#md').classList.contains('on'))rerender();else profile(id);
 }
 
@@ -1510,13 +1493,7 @@ const A={
   xd:v=>{S.exp.d=v;S.exp.s='';S.exp.q='';explorer()},
   xs:v=>{S.exp.s=v;S.exp.q='';explorer()},
   qxexp(){S.exp.q='';explorer()},
-  xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:'',q:'',sort:x.sort}:v==='t'?{t:x.t,d:'',s:'',q:'',sort:x.sort}:v==='d'?{t:x.t,d:x.d,s:'',q:'',sort:x.sort}:x;explorer()},
-  favclr(){askConfirm({title:'مسح المفضلة',message:'إزالة كل الشركات من المفضلة؟',icon:'fa-star',tone:'warning',confirmLabel:'مسح الكل',onConfirm:()=>{S.fav=[];try{localStorage.removeItem('cp-fav')}catch{};favorites();favBadge()}})},
-  installPWA(){
-    if(!S.installEvent)return toast('التثبيت غير متاح');
-    S.installEvent.prompt();
-    S.installEvent.userChoice.then(({outcome})=>{if(outcome==='accepted'){S.installEvent=null;toast('جاري التثبيت...')}});
-  }
+  xc(v){const x=S.exp;S.exp=v===''?{t:'',d:'',s:'',q:'',sort:x.sort}:v==='t'?{t:x.t,d:'',s:'',q:'',sort:x.sort}:v==='d'?{t:x.t,d:x.d,s:'',q:'',sort:x.sort}:x;explorer()}
 };
 
 document.addEventListener('click',e=>{
