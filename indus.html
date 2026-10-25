@@ -471,7 +471,11 @@ h3.t .h3-badge{
 .fsect.on .ic{background:var(--rust);color:#fff}
 .fsect .name{flex:1;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14.5px}
 .fsect.on .name{color:var(--rust-dark);font-weight:700}
-.fsect .val{font:600 12px var(--ff);color:var(--rust);max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsect .val{
+  font:600 12px var(--ff);color:var(--rust);max-width:65%;
+  white-space:normal;text-align:end;line-height:1.4;
+  overflow:visible;word-break:break-word;
+}
 .fsect .num,.fopt .n{
   font:400 14px var(--fh);color:var(--text-2);min-width:30px;text-align:center;
   background:var(--surface-2);padding:2px 8px;border:1px solid var(--border);
@@ -496,7 +500,11 @@ h3.t .h3-badge{
   display:grid;place-items:center;color:transparent;font-size:10px;transition:.12s;background:var(--surface);
 }
 .fopt.on .box{border-color:var(--rust);background:var(--rust);color:#fff}
-.fopt .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:600}
+.fopt .name{
+  flex:1;min-width:0;white-space:normal;text-align:start;
+  overflow:visible;word-break:break-word;line-height:1.4;
+  font-size:14px;font-weight:600;
+}
 .fopt.on .name{font-weight:700;color:var(--rust-dark)}
 .fopt.clear{border-style:dashed}
 .fopt.clear .name{color:var(--danger)}
@@ -651,7 +659,7 @@ h3.t .h3-badge{
 #loc-banner .la .allow:hover{background:var(--rust-light)}
 #loc-banner .la .allow i{font-size:10px;margin-inline-end:4px}
 
-/* ============ BOTTOM NAV (4 items) ============ */
+/* ============ BOTTOM NAV ============ */
 #bn{
   position:fixed;inset-inline:0;bottom:0;z-index:29;display:grid;grid-template-columns:repeat(4,1fr);
   padding:6px 4px calc(6px + var(--sb));background:var(--steel-900);
@@ -843,7 +851,7 @@ h3.t .h3-badge{
 (function(){
   if(!('serviceWorker' in navigator))return;
   const swCode=`
-    const CACHE='connectpro-v22';
+    const CACHE='connectpro-v23';
     const ASSETS=[location.pathname,
       'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap',
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'];
@@ -1012,7 +1020,7 @@ async function fetchFromCSV(){
   const fournisseurs=parseCSV(fourTxt,'fournisseurs','services');
   const map=new Map();[...fournisseurs,...experts].forEach(r=>{if(!map.has(r.id))map.set(r.id,r)});
   return [...map.values()];
-}
+};
 async function loadDB(){
   try{
     const data=await fetchFromCSV();
@@ -1021,9 +1029,9 @@ async function loadDB(){
       const newHash=computeCsvHash(S.db);
       if(S.lastCsvHash&&S.lastCsvHash!==newHash)S.isDirty=true;
       else if(!S.lastCsvHash){S.isDirty=false;S.lastCsvHash=newHash;try{localStorage.setItem('cp-csv-hash',newHash)}catch{}}
+      // ✅ آخر عضو واحد من كل نوع فقط (مورّد + خبير = 2)
       const expertsList=S.db.filter(r=>r.type==='experts');
       const fournisseursList=S.db.filter(r=>r.type==='fournisseurs');
-      // فقط آخر عضوين (أحدث عضوين) من كل قائمة — إجمالي 2
       const latestExperts=expertsList.slice(-1);
       const latestFournisseurs=fournisseursList.slice(-1);
       S.newMembers=[...latestFournisseurs,...latestExperts];
@@ -1328,7 +1336,7 @@ function renderFilter(){
       </div>`;
     const avail=getFacet(S.filterPanel.key,curSort);
     const selected=S.f[S.filterPanel.key];
-    html+=avail.map(([v,n])=>{const on=selected.some(x=>norm(x)===norm(v));return`<button class="fopt${on?' on':''}" data-a="fpick" data-v="${esc(v)}"><span class="box"><i class="fa-solid fa-check"></i></span><span class="name" style="white-space:normal;text-align:start;overflow:visible;word-break:break-word">${esc(lbl(S.filterPanel.key,v))}</span><span class="n">${n}</span></button>`}).join('')||'<p class="em">لا قيم</p>';
+    html+=avail.map(([v,n])=>{const on=selected.some(x=>norm(x)===norm(v));return`<button class="fopt${on?' on':''}" data-a="fpick" data-v="${esc(v)}"><span class="box"><i class="fa-solid fa-check"></i></span><span class="name">${esc(lbl(S.filterPanel.key,v))}</span><span class="n">${n}</span></button>`}).join('')||'<p class="em">لا قيم</p>';
     if(selected.length)html+=`<button class="fopt clear" data-a="fclearsec"><span class="box" style="border-color:transparent;color:transparent"></span><span class="name">إزالة (${selected.length})</span></button>`;
   }
   const n=activeCount();const resCount=results().length;
@@ -1363,7 +1371,7 @@ function renderExplorerList(){
   return'<div class="ls">'+base.filter(r=>r.domaine===d&&r.specialite===s).map(card).join('')+'</div>';
 }
 
-// NAV — scroll to top when tapping bottom nav
+// NAV — scroll to top when tapping the same nav item or when switching
 function go(t){
   if(S.tab==='dir'&&t!=='dir')clearF();
   if(S.tab==='exp'&&t!=='exp')S.exp={t:'',d:'',s:'',q:'',sort:S.exp.sort};
@@ -1521,9 +1529,10 @@ const A={
   shrLink:shareLink,pdf:makePDF,confirmAccept,confirmCancel,
   tab(v){
     if(S.tab===v){
+      // ✅ نفس القسم → تمرير للأعلى
+      window.scrollTo({top:0,behavior:'smooth'});
       if(v==='dir'){clearF();dirShell()}
       else if(v==='exp'){S.exp={t:'',d:'',s:'',q:'',sort:S.exp.sort};explorer()}
-      else window.scrollTo({top:0,behavior:'smooth'});
     }else go(v);
   },
   cls:closeM,open(id){profile(id)},shr:share,fav:toggleFav,
@@ -1537,9 +1546,10 @@ const A={
   fsect(v){S.filterPanel.mode='pick';S.filterPanel.key=v;renderFilter()},
   fback(){S.filterPanel.mode='sections';S.filterPanel.key=null;renderFilter()},
   fsort(v){S.sortF[S.filterPanel.key]=v;renderFilter()},
-  fclearsec(){S.f[S.filterPanel.key]=[];S.lim=40;clearFacetCache();renderFilter();if(S.tab==='dir')dirList()},
-  fpick(v){const k=S.filterPanel.key,arr=S.f[k];const i=arr.findIndex(x=>norm(x)===norm(v));if(i>=0)arr.splice(i,1);else arr.push(v);S.lim=40;clearFacetCache();renderFilter();if(S.tab==='dir')dirList()},
-  fclr(){clearF();renderFilter();if(S.tab==='dir'){$('#q')&&($('#q').value='');dirList()}},
+  // ✅ لا تحديث النتائج حتى الضغط على "عرض"
+  fclearsec(){S.f[S.filterPanel.key]=[];S.lim=40;clearFacetCache();renderFilter();},
+  fpick(v){const k=S.filterPanel.key,arr=S.f[k];const i=arr.findIndex(x=>norm(x)===norm(v));if(i>=0)arr.splice(i,1);else arr.push(v);S.lim=40;clearFacetCache();renderFilter();},
+  fclr(){clearF();renderFilter();},
   fdone(){closeM();if(S.tab!=='dir'){S.tab='';go('dir')}else dirList()},
   xsort(v){S.exp.sort=v;explorer()},
   xt:v=>{S.exp={t:v,d:'',s:'',q:'',sort:S.exp.sort};explorer()},
