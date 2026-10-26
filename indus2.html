@@ -27,10 +27,7 @@ header{position:fixed;inset:0 0 auto;z-index:30;padding-top:var(--st);background
 .acts{display:flex;gap:5px}
 .ib{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.1);color:#E2E8F0;display:inline-grid;place-items:center;position:relative;transition:.15s;flex:none}
 .ib:hover{background:rgba(255,255,255,.2)}.ib.pri{background:var(--pri);color:#fff}.ib.grn{background:var(--sky);color:#fff}
-.ib.map-btn{background:var(--sky);color:#fff;width:auto;padding:0 10px;gap:6px;font-weight:700}
-.ib.map-btn .dot{width:8px;height:8px;border-radius:50%;background:#fff;display:inline-block;margin-inline-end:2px}
-.ib.live{width:auto;padding:0 10px;gap:6px;background:rgba(22,163,74,.2);color:#4ADE80;font-weight:700}
-.ib.live .dot{width:8px;height:8px;border-radius:50%;background:#4ADE80}
+.ib.map-btn{background:var(--sky);color:#fff}
 main{max-width:1100px;margin:0 auto;padding:calc(70px + var(--st)) 12px calc(88px + var(--sb))}
 .tab{display:none}.tab.on{display:block;animation:fu .25s}@keyframes fu{from{opacity:0;transform:translateY(6px)}}
 .hero{padding:24px 20px;border-radius:20px;background:linear-gradient(135deg,var(--ink),#1E3A5F);color:#fff;position:relative;overflow:hidden;box-shadow:var(--sh)}
@@ -250,6 +247,7 @@ const pk=p=>{const d=String(p||'').replace(/\D/g,'');return d?'p'+d:''};
 const waP=p=>String(p||'').replace(/\D/g,'');
 const getVisits=id=>{const r=byId(id);if(!r)return 0;const k=pk(fmtPhone(r.phone)),v=k&&S.visits.get(k);return v?(v.nombre||v.count||0):0};
 const isOnline=id=>{const r=byId(id);if(!r)return false;const k=pk(fmtPhone(r.phone));return !!(k&&S.loc[k]&&S.loc[k].latitude&&S.loc[k].lastSeen&&(Date.now()-S.loc[k].lastSeen<300000))};
+const onlineCount=()=>Object.values(S.loc||{}).filter(v=>v&&v.latitude&&v.lastSeen&&(Date.now()-v.lastSeen<300000)).length;
 const myLoc=()=>{if(!S.me)return null;const k=pk(S.me.phone);return k?S.loc[k]:null};
 const empty=(t,s='',i='fa-folder-open')=>`<div class="em"><i class="fa-solid ${i}"></i><b>${esc(t)}</b>${s?`<small>${esc(s)}</small>`:''}</div>`;
 const secHead=(i,t,s,b='')=>`<div class="sh"><i class="fa-solid ${i}"></i><b>${esc(t)}${s?`<small>${esc(s)}</small>`:''}</b>${b?`<em>${esc(b)}</em>`:''}</div>`;
@@ -286,7 +284,7 @@ function sorted(){const a=S.db.filter(r=>match(r));a.sort(S.dirSort==='visits'?(
 
 /* ---------- Views ---------- */
 function topbar(){const dk=document.documentElement.dataset.theme==='dark';
- $('#acts').innerHTML=`<button class="ib map-btn" data-a="openMap" title="الخريطة"><i class="fa-solid fa-map-location-dot"></i> <span class="dot"></span>${Object.keys(S.loc||{}).length}</button>
+ $('#acts').innerHTML=`<button class="ib map-btn" data-a="openMap" title="الخريطة"><i class="fa-solid fa-map-location-dot"></i></button>
  <button class="ib" data-a="theme"><i class="fa-solid ${dk?'fa-sun':'fa-moon'}"></i></button>
  <button class="ib pri" data-a="openForms"><i class="fa-solid fa-pen-to-square"></i></button>
  <button class="ib grn" data-a="openSheets"><i class="fa-solid fa-table"></i></button>`;
@@ -423,8 +421,8 @@ function initPick(){if(!$('#map')||!window.L)return;baseMap();let mk=null;const 
  S.map.on('click',async e=>{const{lat,lng}=e.latlng;if(mk)mk.setLatLng([lat,lng]);else mk=L.marker([lat,lng],{icon:ic}).addTo(S.map);S.pLat=+lat.toFixed(6);S.pLng=+lng.toFixed(6);$('#cpb').disabled=false;S.pCity=await reverseGeo(lat,lng)||''});
  getGeo().then(g=>{if(g&&S.map)S.map.setView([g.lat,g.lng],10)})}
 async function confirmPick(){if(!S.pLat)return toast('حدد موقعاً على الخريطة');if(!S.me)return toast('اختر حسابك أولاً');busy(true);try{await saveLoc(S.me,S.pLat,S.pLng,S.pCity);localStorage.setItem('cp-loc-permission','granted');closeM();toast('تم حفظ موقعك');setTimeout(()=>mapWindow(S.pLat,S.pLng,S.pCity),300)}catch{toast('فشل الحفظ')}finally{busy(false)}}
-function mapWindow(lat,lng,city){const a=S.me;
- openM(`<h2>خريطة الشركات</h2><p class="lead" style="margin:0">الشركات التي شاركت موقعها</p>${a?`<div class="acb"><div class="av" style="background:${grad(a.name)}">${esc(inits(a.name))}</div><div><b>${esc(a.name)}</b><small>${esc(a.phone||'')}</small></div><button data-a="changeAcc">تغيير</button></div>`:''}
+function mapWindow(lat,lng,city){const a=S.me,oc=onlineCount();
+ openM(`<h2>خريطة الشركات <span style="font-size:13px;font-weight:600;background:rgba(22,163,74,.15);color:var(--ok);padding:2px 10px;border-radius:99px;margin-inline-start:6px"><i class="fa-solid fa-circle" style="font-size:7px"></i> ${oc} متصل</span></h2><p class="lead" style="margin:0">الشركات التي شاركت موقعها</p>${a?`<div class="acb"><div class="av" style="background:${grad(a.name)}">${esc(inits(a.name))}</div><div><b>${esc(a.name)}</b><small>${esc(a.phone||'')}</small></div><button data-a="changeAcc">تغيير</button></div>`:''}
  <div id="mapWrap"><div id="map"></div><div class="mctl"><div class="leg"><span><b style="background:#EA580C"></b>موقعي</span><span><b style="background:#0EA5E9"></b>شركات</span></div><div><button data-a="mapRecenter"><i class="fa-solid fa-location-crosshairs"></i></button><button data-a="mapRefresh"><i class="fa-solid fa-rotate"></i></button></div></div><div id="mapEmpty" class="mempty"><i class="fa-solid fa-map-location-dot"></i><b>لا توجد شركات على الخريطة بعد</b><small>كن أول من يشارك موقعه</small></div></div>
  <div class="mf"><button class="bt g" data-a="cls"><i class="fa-solid fa-xmark"></i> إغلاق</button><button class="bt k" data-a="pickFromMap"><i class="fa-solid fa-map-pin"></i> تعديل</button><button class="bt" data-a="shareMyLocation"><i class="fa-solid fa-share-nodes"></i> مشاركة</button></div>`,{noFocus:true,map:true});
  setTimeout(()=>initMap(lat,lng,city),80)}
