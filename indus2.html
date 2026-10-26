@@ -575,7 +575,7 @@ h3.t .h3-badge{font:600 11px var(--fh2);letter-spacing:.06em;background:var(--ru
 (function(){
   if(!('serviceWorker' in navigator))return;
   const swCode=`
-    const CACHE='connectpro-v25';
+    const CACHE='connectpro-v26';
     const ASSETS=[location.pathname,
       'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap',
       'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
@@ -701,7 +701,16 @@ const baseUrl=()=>location.protocol==='file:'?(localStorage.getItem('cp-base')||
 const simpleHash=str=>{let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0}return String(h)};
 const computeCsvHash=rows=>simpleHash(rows.map(r=>r.id).sort().join('|'));
 const phoneKey=p=>{const d=String(p||'').replace(/\D/g,'');return d?('p'+d):''};
-const getVisits=id=>{const r=byId(id);if(!r)return 0;const k=phoneKey(fmtPhone(r.phone));return (k&&S.visits.get(k))?.count||0};
+
+// ✅ FIX: read both `nombre` (French) and `count` (legacy) fields
+const getVisits=id=>{
+  const r=byId(id);if(!r)return 0;
+  const k=phoneKey(fmtPhone(r.phone));
+  if(!k)return 0;
+  const v=S.visits.get(k);
+  if(!v)return 0;
+  return v.nombre||v.count||0;
+};
 
 let tt,undoFn=null;
 function toast(m,u=null){
@@ -794,18 +803,19 @@ async function loadVisitsAndLocations(){
   }catch(e){console.warn('load visits/locations failed',e)}
 }
 
-// ✅ Record visit ONLY when opening profile
-async function recordVisit(account){
-  if(!account||!S.fb)return;
-  const phone=fmtPhone(account.phone);const k=phoneKey(phone);
+// ✅ Record visit ONLY when opening a profile (French fields)
+async function recordVisitForProfile(profileRecord){
+  if(!profileRecord||!S.fb)return;
+  const phone=fmtPhone(profileRecord.phone);const k=phoneKey(phone);
   if(!k)return;
   try{
     const ref=S.fb.ref('visits/'+k);
-    const snap=await ref.once('value');const cur=snap.val()||{count:0};
+    const snap=await ref.once('value');const cur=snap.val()||{};
     const now=Date.now();
-    await ref.update({name:account.name,phone,count:(cur.count||0)+1,lastVisit:now,firstVisit:cur.firstVisit||now});
-    S.visits.set(k,{name:account.name,phone,count:(cur.count||0)+1,lastVisit:now,firstVisit:cur.firstVisit||now});
-    return (cur.count||0)+1;
+    const updated={nom:profileRecord.name,telephone:phone,nombre:(cur.nombre||cur.count||0)+1,derniereVisite:now,premiereVisite:cur.premiereVisite||now};
+    await ref.update(updated);
+    S.visits.set(k,updated);
+    return updated.nombre;
   }catch(e){console.warn('record visit failed',e)}
 }
 
@@ -815,8 +825,9 @@ async function saveLocation(account,lat,lng,city){
   const phone=fmtPhone(account.phone);const k=phoneKey(phone);
   if(!k)return false;
   try{
-    await S.fb.ref('locations/'+k).update({nom:account.name,telephone:phone,latitude:lat,longitude:lng,ville:city||'',misAJour:Date.now()});
-    S.locations[k]={nom:account.name,telephone:phone,latitude:lat,longitude:lng,ville:city||'',misAJour:Date.now()};
+    const data={nom:account.name,telephone:phone,latitude:lat,longitude:lng,ville:city||'',misAJour:Date.now()};
+    await S.fb.ref('locations/'+k).update(data);
+    S.locations[k]=data;
     return true;
   }catch(e){console.warn('save location failed',e);return false}
 }
@@ -955,6 +966,7 @@ function home(){
 }
 
 function about(){
+  // ✅ Share button uses data-url + data-name and A.shrLink receives (v, el)
   const renderLinks=(items,kind)=>items.map(it=>`
     <div class="link-card ${kind}">
       <div class="lc-ic"><i class="fa-brands ${kind==='fb'?'fa-facebook-f':'fa-whatsapp'}"></i></div>
@@ -1114,22 +1126,11 @@ function go(t){
 }
 const rerender=()=>go(S.tab);
 
-// ✅ Profile opens → records visit for the profile owner (viewer's account visits the profile)
+// ✅ Profile: record visit for profile owner, then show profile with updated count
 async function profile(id){
   const r=byId(id);if(!r)return toast('الملف غير موجود');
-  // ✅ Increment visit count for this profile when opened
-  if(S.fb&&r.phone){
-    const k=phoneKey(fmtPhone(r.phone));
-    if(k){
-      try{
-        const ref=S.fb.ref('visits/'+k);
-        const snap=await ref.once('value');const cur=snap.val()||{count:0};
-        const now=Date.now();
-        await ref.update({nom:r.name,telephone:fmtPhone(r.phone),nombre:(cur.nombre||0)+1,derniereVisite:now,premiereVisite:cur.premiereVisite||now});
-        S.visits.set(k,{nom:r.name,telephone:fmtPhone(r.phone),nombre:(cur.nombre||0)+1,derniereVisite:now,premiereVisite:cur.premiereVisite||now});
-      }catch(e){console.warn('visit incr failed',e)}
-    }
-  }
+  // ✅ Increment visit count BEFORE rendering (so count shows)
+  const newCount=await recordVisitForProfile(r);
   const p=fmtPhone(r.phone),w=url(r.web);
   const rows=[];
   if(shown(r.domaine))rows.push(['fa-industry','القطاع',esc(r.domaine)]);
@@ -1152,8 +1153,12 @@ async function profile(id){
     ${rows.map(([i,k,v,h,ext])=>`<div class="vr">${h?`<a href="${h}"${ext?' target="_blank" rel="noopener"':''}><i class="fa-solid ${i}"></i></a>`:`<i class="fa-solid ${i}"></i>`}<div><small>${k}</small><b>${v}</b></div></div>`).join('')}
     ${isMine?'<p class="inf" style="text-align:center;color:var(--success);margin-top:12px"><i class="fa-solid fa-circle-check"></i> هذا حسابك الحالي</p>':''}
     `);
-  // Refresh the card view count in place
-  setTimeout(()=>{if(S.tab==='dir')dirList();else if(S.tab==='home')home();else if(S.tab==='fav')favShell()},400);
+  // Refresh lists to show updated visit count
+  setTimeout(()=>{
+    if(S.tab==='dir')dirList();
+    else if(S.tab==='home')home();
+    else if(S.tab==='fav')favShell();
+  },300);
 }
 
 const SEP_LINE='➖➖➖➖➖➖➖➖➖➖➖➖';
@@ -1173,16 +1178,25 @@ async function share(id){
   try{await navigator.clipboard.writeText(text);toast('تم النسخ')}catch{toast('تعذر النسخ')}
   setTimeout(()=>window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener'),0);
 }
-// ✅ Fixed shareLink: reads URL/name from element.dataset (not object)
-async function shareLink(el){
-  if(!el||!el.dataset)return;
-  const rawUrl=el.dataset.url||el.dataset.v||'';
-  const name=el.dataset.name||'';
-  if(!rawUrl||typeof rawUrl!=='string'||rawUrl.startsWith('['))return toast('رابط غير صالح');
-  const text=[`🔗 ${name||'رابط'}`,SEP_LINE,rawUrl].join('\n');
-  if(navigator.share){try{await navigator.share({title:name||'رابط',text});return}catch(e){if(e.name==='AbortError')return}}
-  try{await navigator.clipboard.writeText(rawUrl);toast('تم نسخ الرابط')}catch{toast('تعذر النسخ')}
+
+// ✅ FIXED: shareLink receives (v, el), reads URL from el.dataset.url
+async function shareLink(v, el){
+  // el is the button element (second arg from A dispatcher)
+  const rawUrl = el?.dataset?.url || (typeof v==='string' && v.startsWith('http') ? v : '');
+  const name = el?.dataset?.name || '';
+  if(!rawUrl || typeof rawUrl!=='string' || !/^https?:\/\//i.test(rawUrl)){
+    return toast('رابط غير صالح');
+  }
+  const text = name ? `${name}\n${rawUrl}` : rawUrl;
+  if(navigator.share){
+    try{await navigator.share({title:name||'مشاركة',text,url:rawUrl});return}
+    catch(e){if(e.name==='AbortError')return}
+  }
+  try{await navigator.clipboard.writeText(rawUrl);toast('تم نسخ الرابط')}
+  catch{toast('تعذر النسخ')}
+  setTimeout(()=>window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener'),0);
 }
+
 function toggleFav(id){
   const i=S.fav.indexOf(id);i>=0?S.fav.splice(i,1):S.fav.push(id);
   try{localStorage.setItem('cp-fav',JSON.stringify(S.fav))}catch{}
@@ -1225,7 +1239,6 @@ async function makePDF(id){
   finally{h?.remove();busy(false)}
 }
 
-// ✅ Sync in French field names, no devices
 async function syncCSV(){
   if(!S.fb)return toast('Firebase غير متاح');
   if(!S.isDirty&&S.lastCsvHash)return toast('كل شيء متزامن بالفعل');
@@ -1280,7 +1293,6 @@ function pickAccount(id){
   if(cb)setTimeout(cb,300);
 }
 
-// ✅ Location flow with two options: GPS or pick from map
 async function startLocationFlow(){
   if(!S.myAccount)return;
   const k=phoneKey(S.myAccount.phone);
@@ -1289,7 +1301,6 @@ async function startLocationFlow(){
     openMapWindow(existing.latitude,existing.longitude,existing.ville);
     return;
   }
-  // Show choice: GPS or pick from map
   openM(`<div class="fmodal-h"><h2>تحديد موقعك</h2><div class="sub">اختر الطريقة المناسبة لك</div></div>
     <div class="choice-list">
       <button class="choice-card" data-a="useGPS" style="width:100%;text-align:start">
@@ -1337,7 +1348,7 @@ function pickFromMapFlow(){
   openM(`<div class="fmodal-h"><h2>اختر موقعك على الخريطة</h2><div class="sub">انقر على المكان الذي تريد حفظه</div></div>
     <div id="mapWrap" style="height:60vh;min-height:340px">
       <div id="map"></div>
-      <div class="map-ctrl"><button data-a="mapRecenter" title="تمركز"><i class="fa-solid fa-location-crosshairs"></i></button></div>
+      <div class="map-ctrl"><button data-a="mapRecenterPick" title="تمركز"><i class="fa-solid fa-location-crosshairs"></i></button></div>
     </div>
     <div class="ac" style="margin-top:14px">
       <button class="bt g" data-a="cls">إلغاء</button>
@@ -1349,7 +1360,6 @@ function pickFromMapFlow(){
 function initPickMap(){
   const el=document.getElementById('map');if(!el||!window.L)return;
   try{if(S.map){S.map.remove()}}catch{}
-  // Default center on Morocco
   S.map=L.map('map',{zoomControl:true,attributionControl:false}).setView([31.7917,-7.0926],6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(S.map);
   let pickedMarker=null;
@@ -1365,7 +1375,6 @@ function initPickMap(){
     S._pickedCity=city||'';
     if(pickedMarker)pickedMarker.bindPopup(`<b>موقعك المحدد</b><small>${esc(city||`${lat.toFixed(3)}, ${lng.toFixed(3)}`)}</small>`).openPopup();
   });
-  // Try to get current location as starting point
   getGeo().then(g=>{if(g&&S.map)S.map.setView([g.lat,g.lng],10)});
 }
 
@@ -1427,14 +1436,12 @@ function initMap(myLat,myLng,myCity){
   if(myLat&&myLng){
     S.myMarker=L.marker([myLat,myLng],{icon:myIcon}).addTo(S.map).bindPopup(`<b>موقعي</b><small>${esc(myCity||'')}</small>`);
   }
-  // Load other locations (French field names)
   const entries=Object.entries(S.locations||{}).filter(([k,v])=>v&&v.latitude&&v.longitude&&k!==myKey);
   entries.forEach(([k,v])=>{
     const m=L.marker([v.latitude,v.longitude],{icon:coIcon}).addTo(S.map);
     m.bindPopup(`<b>${esc(v.nom||'')}</b><small>${esc(v.ville||'')}</small><br><a class="mp-btn" href="#" onclick="window.__openProfileByPhone('${esc(v.telephone||'')}');return false">فتح الملف</a>`);
     S.mapMarkers.push(m);
   });
-  // ✅ Hide/show empty overlay correctly
   const emptyEl=document.getElementById('mapEmpty');
   const hasOther=entries.length>0;
   if(emptyEl)emptyEl.style.display=hasOther?'none':'flex';
@@ -1479,7 +1486,8 @@ const A={
     },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
   },
   skipLocation(){$('#loc-banner').classList.remove('on');localStorage.setItem('cp-loc-permission','skipped');S.locPermission='skipped';toast('حسناً')},
-  shrLink(el){shareLink(el)},
+  // ✅ Share link: dispatch passes (v, el), we call shareLink(v, el)
+  shrLink(v, el){shareLink(v, el)},
   pdf:makePDF,confirmAccept,confirmCancel,
   tab(v){
     if(S.tab===v){
@@ -1515,6 +1523,7 @@ const A={
   pickAcc(id){pickAccount(id)},
   changeAcc(){S.myAccount=null;try{localStorage.removeItem('cp-my-account')}catch{};closeM();setTimeout(()=>openAccountPicker(()=>startLocationFlow()),200)},
   mapRecenter(){if(S.myMarker&&S.map)S.map.setView(S.myMarker.getLatLng(),12);else toast('لا يوجد موقع محفوظ')},
+  mapRecenterPick(){getGeo().then(g=>{if(g&&S.map)S.map.setView([g.lat,g.lng],12);else toast('لا يمكن تحديد موقعك')})},
   mapRefresh(){loadVisitsAndLocations().then(()=>{const k=S.myAccount?phoneKey(S.myAccount.phone):null;const loc=k?S.locations[k]:null;initMap(loc?.latitude,loc?.longitude,loc?.ville)})},
   useGPS(){useGPSFlow()},
   pickFromMap(){pickFromMapFlow()},
@@ -1540,9 +1549,6 @@ document.addEventListener('keydown',e=>{
   go('home');
   busy(false);
   topbar();
-  if(S.myAccount){
-    // No auto visit — visits only recorded when a profile is opened
-  }
   const m=location.hash.match(/^#p=(.+)$/);
   if(m)setTimeout(()=>{const r=byId(m[1]);r?profile(r.id):toast('الرابط غير صالح')},300);
 })();
