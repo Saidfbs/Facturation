@@ -193,6 +193,30 @@ main{max-width:1100px;margin:0 auto;padding:calc(84px + var(--st)) 12px calc(92p
 #ld{position:fixed;inset:0;z-index:99;background:var(--ink);display:none;place-items:center}#ld.on{display:grid}
 #ld::before{content:"";position:absolute;inset:0 0 auto;height:10px;background:var(--haz)}
 #ld i{font-size:44px;color:var(--acc);animation:sp 1.2s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ── Loader orbiting gears (feature #4) ── */
+.ld-orbit{position:relative;width:170px;height:170px;display:grid;place-items:center}
+.ld-orbit .g-main{font-size:44px;color:var(--acc);animation:sp 1.2s linear infinite;position:relative;z-index:2}
+.ld-orbit .ring{position:absolute;inset:0;animation:orb 3.6s linear infinite}
+.ld-orbit .ring.r2{animation-duration:5.2s;animation-direction:reverse;inset:-14px}
+.ld-orbit .ring.r3{animation-duration:7s;inset:14px}
+.ld-orbit .ring .mini{position:absolute;font-size:15px;color:var(--pri);background:var(--ink);border-radius:50%;padding:4px;animation:sp 1.8s linear infinite}
+.ld-orbit .ring.r2 .mini{font-size:12px;color:var(--acc)}
+.ld-orbit .ring.r3 .mini{font-size:11px;color:#C3CCD6}
+.ld-orbit .ring .mini:nth-child(1){top:-6px;left:50%;transform:translateX(-50%)}
+.ld-orbit .ring .mini:nth-child(2){bottom:-6px;left:50%;transform:translateX(-50%)}
+.ld-orbit .ring.r2 .mini:nth-child(1){top:50%;left:-6px;transform:translateY(-50%)}
+.ld-orbit .ring.r2 .mini:nth-child(2){top:50%;right:-6px;transform:translateY(-50%)}
+@keyframes orb{to{transform:rotate(360deg)}}
+
+/* ── Floating WhatsApp (feature #6) ── */
+#fw{position:fixed;inset-inline-end:16px;bottom:calc(96px + var(--sb));z-index:28;width:54px;height:54px;border-radius:50%;background:var(--wa);color:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.28),0 0 0 3px rgba(255,255,255,.15);transition:.15s}
+#fw:hover{transform:scale(1.06);background:#0E7466}
+#fw:active{transform:scale(.96)}
+#fw::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--wa);opacity:.35;animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(.9);opacity:.5}70%{transform:scale(1.15);opacity:0}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){#fw::after{animation:none}}
+
 #off{position:fixed;top:calc(var(--st) + 66px);inset-inline-end:10px;z-index:80;padding:4px 12px;border-radius:3px;background:var(--bad);color:#fff;font-size:12px;display:none}#off.on{display:block}
 
 /* PDF card (rendered off-screen) */
@@ -212,7 +236,14 @@ main{max-width:1100px;margin:0 auto;padding:calc(84px + var(--st)) 12px calc(92p
 </style>
 </head>
 <body>
-<div id="ld" class="on"><i class="fa-solid fa-gear"></i></div>
+<div id="ld" class="on">
+  <div class="ld-orbit">
+    <div class="ring r1"><i class="fa-solid fa-gear mini"></i><i class="fa-solid fa-gear mini"></i></div>
+    <div class="ring r2"><i class="fa-solid fa-gear mini"></i><i class="fa-solid fa-gear mini"></i></div>
+    <div class="ring r3"><i class="fa-solid fa-gear mini"></i><i class="fa-solid fa-gear mini"></i></div>
+    <i class="fa-solid fa-gear g-main"></i>
+  </div>
+</div>
 <div id="off"><i class="fa-solid fa-wifi"></i> غير متصل</div>
 <header><div class="hin">
 <div class="brand"><div class="logo"><i class="fa-solid fa-industry"></i></div><div style="min-width:0"><b>Réseau Industriel</b><small id="sub">نربط الموردين والشركات في مكان واحد</small></div></div>
@@ -227,6 +258,7 @@ main{max-width:1100px;margin:0 auto;padding:calc(84px + var(--st)) 12px calc(92p
 <button class="bi" data-a="tab" data-v="exp"><i class="fa-solid fa-diagram-project"></i>المستكشف</button>
 <button class="bi" data-a="tab" data-v="about"><i class="fa-solid fa-circle-info"></i>من نحن</button>
 </nav>
+<a id="fw" href="https://wa.me/212690292010" target="_blank" rel="noopener" aria-label="تواصل مباشر عبر واتساب"><i class="fa-brands fa-whatsapp"></i></a>
 <div id="md"></div><div id="ts" role="status"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -238,9 +270,12 @@ const G="https://docs.google.com/spreadsheets/d/e/";
 const ID_E="2PACX-1vSjj2c3fjfHowy8yxOfpVAsfXLRVgSQPJQ7PVc4wvI2dI7g0hQwF32QoByKExzadiHivu3oKYRpgWKK/pub?gid=42570462&single=true";
 const ID_F="2PACX-1vT9oFi63lhgtX8h-DstURguy8B5Vv6GmzTqDWIWSEVXDcicvyeZd7iyVX8gZ2ldtMC8YRRVsUOzG92G/pub?gid=587124901&single=true";
 const CSV_E=G+ID_E+"&output=csv",CSV_F=G+ID_F+"&output=csv";
-const SHEET_E=G+ID_E.replace('/pub?','/pubhtml?'),SHEET_F=G+ID_F.replace('/pub?','/pubhtml?');
-const FORM_E="https://docs.google.com/forms/d/1pCC8_PVX6T0f0mTsNr8Y3DFDS0xNrfq_z7XdWysk5pQ/viewform";
-const FORM_F="https://docs.google.com/forms/d/1bnD7CGNxrf-eR0Cr7Wo0PmWDqTJMwCYLF-NaX6g9IpM/viewform";
+/* ── Feature #1: FORM_E = expert form, FORM_F = supplier form (corrected) ── */
+const FORM_E="https://docs.google.com/forms/d/1bnD7CGNxrf-eR0Cr7Wo0PmWDqTJMwCYLF-NaX6g9IpM/viewform";
+const FORM_F="https://docs.google.com/forms/d/1pCC8_PVX6T0f0mTsNr8Y3DFDS0xNrfq_z7XdWysk5pQ/viewform";
+/* ── Feature #3: sheets open as real Drive files (/edit), not published copies ── */
+const SHEET_E="https://docs.google.com/spreadsheets/d/11vFaN_hQNxEIuE69QitX0d1v97MvI19_tQMwne2C_10/edit";
+const SHEET_F="https://docs.google.com/spreadsheets/d/13TPNWBs7aFPJA0AUmUZixQvQjPmOXNqbVmCJMIkDr2c/edit";
 const NET={name:'RÉSEAU INDUSTRIEL PROFESSIONNEL MAROCAIN',tag:'نربط الموردين والشركات في مكان واحد.'};
 const FBP=[{n:'Électricité industrielle Du maroc',d:'1,600 متابع',u:'https://www.facebook.com/share/19NsqAp4kq/'},{n:'Tech industrie maroc',d:'9,300 متابع',u:'https://www.facebook.com/share/1FEy2YuS6X/'}];
 const FBG=[{n:'Les fournisseurs industrielle',d:'29,000 عضو',u:'https://www.facebook.com/share/g/19gvCd4q1F/'},{n:'Les services industriels',d:'6,200 عضو',u:'https://www.facebook.com/share/g/1BNu7WqqkK/'}];
@@ -397,15 +432,16 @@ async function profile(id){const r=byId(id);if(!r)return toast('الملف غي�
  setTimeout(()=>{if(S.tab==='dir')dirList();else if(S.tab==='home')home();else if(S.tab==='fav')favShell()},300)}
 
 const SEP='➖➖➖➖➖➖➖➖➖➖➖➖';
+/* ── Feature #5: share links once only (no duplicated URL) ── */
 async function share(id){const r=byId(id);if(!r)return;const p=fmtPhone(r.phone),w=url(r.web);
  const L=[`👤 ${r.name}`,SEP,`🏷️ النوع: ${TL[r.type]}`,`📂 التصنيف: ${CL[r.categorie]}`];
  if(shown(r.domaine))L.push(`🏭 القطاع: ${r.domaine}`);if(shown(r.specialite))L.push(`🛠️ التخصص: ${r.specialite}`);if(r.ville)L.push(`📍 المدينة: ${r.ville}`);if(p)L.push(`📞 الهاتف: ${p}`);if(r.email)L.push(`✉️ البريد: ${r.email}`);if(w)L.push(`🌐 الموقع: ${w}`);
- L.push(SEP,`🔗 ${baseUrl()}#p=${r.id}`);const text=L.join('\n');
+ const link=baseUrl()?`${baseUrl()}#p=${r.id}`:'';if(link)L.push(SEP,`🔗 ${link}`);const text=L.join('\n');
  if(navigator.share){try{await navigator.share({title:r.name,text});return}catch(e){if(e.name==='AbortError')return}}
  try{await navigator.clipboard.writeText(text);toast('تم النسخ')}catch{toast('تعذر النسخ')}
  setTimeout(()=>window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener'),0)}
 async function shareLink(v,el){const u=el?.dataset?.url||'',n=el?.dataset?.name||'';if(!/^https?:\/\//i.test(u))return toast('رابط غير صالح');
- if(navigator.share){try{await navigator.share({title:n||'مشاركة',text:n?`${n}\n${u}`:u,url:u});return}catch(e){if(e.name==='AbortError')return}}
+ if(navigator.share){try{await navigator.share({title:n||'مشاركة',text:n?`${n}\n${u}`:u});return}catch(e){if(e.name==='AbortError')return}}
  try{await navigator.clipboard.writeText(u);toast('تم نسخ الرابط')}catch{toast('تعذر النسخ')}}
 function toggleFav(id){const i=S.fav.indexOf(id);i>=0?S.fav.splice(i,1):S.fav.push(id);try{localStorage.setItem('cp-fav',JSON.stringify(S.fav))}catch{}toast(i>=0?'أُزيلت من المفضلة':'أُضيفت إلى المفضلة');topbar();if(!$('#md').classList.contains('on'))rerender()}
 
